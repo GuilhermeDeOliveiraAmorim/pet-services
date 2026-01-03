@@ -24,19 +24,32 @@ import (
 func NewRouter(uc factory.UseCases, tokenService domainauth.TokenService) *gin.Engine {
 	r := gin.Default()
 
+	// Global rate limiting middleware
+	globalRateLimiter := NewRateLimiter()
+	r.Use(globalRateLimiter.RateLimitMiddleware())
+
 	v1 := r.Group("/api/v1")
 
 	// Swagger UI (static spec placeholder)
 	v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	// Auth
+	// Auth (stricter rate limiting for security)
 	authGroup := v1.Group("/auth")
+	authGroup.Use(CriticalEndpointRateLimiter())
 	RegisterAuthRoutes(authGroup, NewAuthHandler(uc.Auth))
 
 	// Users
 	userGroup := v1.Group("/users")
 	userGroup.Use(AuthMiddleware(tokenService))
 	RegisterUserRoutes(userGroup, NewUserHandler(uc.User))
+
+	// Password reset and email verification endpoints (stricter rate limiting)
+	userPublic := v1.Group("/users")
+	userPublic.Use(CriticalEndpointRateLimiter())
+	userPublic.POST("/password-reset/request", NewUserHandler(uc.User).RequestPasswordReset)
+	userPublic.POST("/password-reset/confirm", NewUserHandler(uc.User).ConfirmPasswordReset)
+	userPublic.POST("/email/verification/request", NewUserHandler(uc.User).RequestEmailVerification)
+	userPublic.POST("/email/verification/confirm", NewUserHandler(uc.User).ConfirmEmailVerification)
 
 	// Providers
 	providerPublic := v1.Group("/providers")

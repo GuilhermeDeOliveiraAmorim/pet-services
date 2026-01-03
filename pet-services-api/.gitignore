@@ -2,3 +2,4 @@
 .env
 api
 main
+test-rate-limiting.sh
