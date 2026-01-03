@@ -1,11 +1,10 @@
 package factory
 
 import (
-	"log/slog"
-
 	"gorm.io/gorm"
 
 	"github.com/guilherme/pet-services-api/internal/application/auth"
+	"github.com/guilherme/pet-services-api/internal/application/logging"
 	"github.com/guilherme/pet-services-api/internal/application/provider"
 	"github.com/guilherme/pet-services-api/internal/application/request"
 	"github.com/guilherme/pet-services-api/internal/application/review"
@@ -24,7 +23,7 @@ type Config struct {
 	EmailService         domainUser.EmailService
 	PasswordResetBaseURL string
 	EmailVerifyBaseURL   string
-	Logger               *slog.Logger
+	Logger               logging.LoggerService
 }
 
 // UseCases agrupa fábricas de casos de uso por contexto.
