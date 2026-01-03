@@ -43,13 +43,7 @@ func NewRouter(uc factory.UseCases, tokenService domainauth.TokenService) *gin.E
 	userGroup.Use(AuthMiddleware(tokenService))
 	RegisterUserRoutes(userGroup, NewUserHandler(uc.User))
 
-	// Password reset and email verification endpoints (stricter rate limiting)
-	userPublic := v1.Group("/users")
-	userPublic.Use(CriticalEndpointRateLimiter())
-	userPublic.POST("/password-reset/request", NewUserHandler(uc.User).RequestPasswordReset)
-	userPublic.POST("/password-reset/confirm", NewUserHandler(uc.User).ConfirmPasswordReset)
-	userPublic.POST("/email/verification/request", NewUserHandler(uc.User).RequestEmailVerification)
-	userPublic.POST("/email/verification/confirm", NewUserHandler(uc.User).ConfirmEmailVerification)
+	// Remover rotas públicas duplicadas (já registradas em RegisterUserRoutes)
 
 	// Providers
 	providerPublic := v1.Group("/providers")
