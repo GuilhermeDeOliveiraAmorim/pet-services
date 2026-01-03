@@ -7,6 +7,9 @@ import (
 
 const (
 	versionInitial = "20260103000000"
+	versionV2      = "20260103000001"
+	versionV3      = "20260103000002"
+	versionV4      = "20260103000003"
 )
 
 func getMigrations() []Migration {
@@ -15,6 +18,21 @@ func getMigrations() []Migration {
 			Version:     versionInitial,
 			Description: "Initial schema (users, providers, requests, reviews, tokens)",
 			Up:          migrationInitialSchema,
+		},
+		{
+			Version:     versionV2,
+			Description: "Add relationships and rename service_requests to requests",
+			Up:          migrationAddRelationshipsV2,
+		},
+		{
+			Version:     versionV3,
+			Description: "Add user relationships to tokens",
+			Up:          migrationAddTokenRelationshipsV3,
+		},
+		{
+			Version:     versionV4,
+			Description: "Add performance indexes for faster queries",
+			Up:          migrationAddIndexesV4,
 		},
 	}
 }
@@ -27,6 +45,47 @@ func migrationInitialSchema(db *gorm.DB) error {
 		&models.ProviderService{},
 		&models.ProviderPhoto{},
 		&models.ProviderWorkingHour{},
+		&models.ServiceRequest{},
+		&models.Review{},
+		&models.RefreshToken{},
+		&models.EmailVerificationToken{},
+		&models.PasswordResetToken{},
+	)
+}
+
+// migrationAddRelationshipsV2 adiciona relações e renomeia service_requests para requests.
+func migrationAddRelationshipsV2(db *gorm.DB) error {
+	// Renomear tabela service_requests para requests
+	if db.Migrator().HasTable("service_requests") {
+		if err := db.Migrator().RenameTable("service_requests", "requests"); err != nil {
+			return err
+		}
+	}
+
+	// Reexecuta AutoMigrate para adicionar as relações definidas nos modelos
+	return db.AutoMigrate(
+		&models.Provider{},
+		&models.ServiceRequest{},
+		&models.Review{},
+	)
+}
+
+// migrationAddTokenRelationshipsV3 adiciona relações de user_id aos tokens.
+func migrationAddTokenRelationshipsV3(db *gorm.DB) error {
+	// Reexecuta AutoMigrate para adicionar as relações definidas nos modelos
+	return db.AutoMigrate(
+		&models.RefreshToken{},
+		&models.EmailVerificationToken{},
+		&models.PasswordResetToken{},
+	)
+}
+
+// migrationAddIndexesV4 adiciona índices para melhorar a performance de consultas.
+func migrationAddIndexesV4(db *gorm.DB) error {
+	// Reexecuta AutoMigrate para adicionar todos os índices definidos nos modelos
+	return db.AutoMigrate(
+		&models.User{},
+		&models.Provider{},
 		&models.ServiceRequest{},
 		&models.Review{},
 		&models.RefreshToken{},

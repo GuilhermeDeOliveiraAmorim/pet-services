@@ -38,17 +38,18 @@ type Provider struct {
 	State          string         `gorm:"size:60"`
 	ZipCode        string         `gorm:"size:20;index:idx_providers_zip"`
 	Country        string         `gorm:"size:80;default:Brasil"`
-	Latitude       *float64       `gorm:"type:decimal(10,7)"`
-	Longitude      *float64       `gorm:"type:decimal(10,7)"`
+	Latitude       *float64       `gorm:"type:decimal(10,7);index:idx_providers_location"`
+	Longitude      *float64       `gorm:"type:decimal(10,7);index:idx_providers_location"`
 	PriceRange     PriceRange     `gorm:"type:varchar(8);default:'$';index:idx_providers_price"`
-	AvgRating      float64        `gorm:"type:decimal(3,2);default:0"`
+	AvgRating      float64        `gorm:"type:decimal(3,2);default:0;index:idx_providers_rating"`
 	TotalReviews   int            `gorm:"default:0"`
 	IsActive       bool           `gorm:"default:false;index:idx_providers_active"`
-	ApprovalStatus ApprovalStatus `gorm:"type:varchar(16);default:'pending';index:idx_providers_approval"`
+	ApprovalStatus ApprovalStatus `gorm:"type:varchar(16);default:'pending';index:idx_providers_approval;index:idx_providers_active_approval,composite:idx_providers_active_approval"`
 	ModerationNote string         `gorm:"size:500"`
-	CreatedAt      time.Time      `gorm:"autoCreateTime"`
+	CreatedAt      time.Time      `gorm:"autoCreateTime;index:idx_providers_created_at"`
 	UpdatedAt      time.Time      `gorm:"autoUpdateTime"`
 
+	User         *User                 `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:RESTRICT"`
 	Services     []ProviderService     `gorm:"foreignKey:ProviderID;constraint:OnDelete:CASCADE"`
 	Photos       []ProviderPhoto       `gorm:"foreignKey:ProviderID;constraint:OnDelete:CASCADE"`
 	WorkingHours []ProviderWorkingHour `gorm:"foreignKey:ProviderID;constraint:OnDelete:CASCADE"`
