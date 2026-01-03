@@ -1,13 +1,12 @@
 package http
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/guilherme/pet-services-api/internal/application/auth"
-	domainauth "github.com/guilherme/pet-services-api/internal/domain/auth"
+	"github.com/guilherme/pet-services-api/internal/application/exceptions"
 	"github.com/guilherme/pet-services-api/internal/domain/user"
 	"github.com/guilherme/pet-services-api/internal/infra/factory"
 )
@@ -51,33 +50,31 @@ type signupRequest struct {
 // @Router /auth/signup [post]
 func (h *AuthHandler) Signup(c *gin.Context) {
 	var req signupRequest
-	if err := BindAndValidateJSON(c, &req); err != nil {
-		h.errorService.RespondWithError(c, err, "invalid_payload", http.StatusBadRequest)
+	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_payload", http.StatusBadRequest)
 		return
 	}
 
 	userType, err := parseUserType(req.Type)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_user_type", err.Error()))
+		h.errorService.RespondWithProblems(c, []exceptions.ProblemDetails{{
+			Type:   string(exceptions.BadRequest),
+			Title:  "Tipo de usuário inválido",
+			Status: http.StatusBadRequest,
+			Detail: err.Error(),
+		}}, "invalid_user_type", http.StatusBadRequest)
 		return
 	}
 
-	out, err := h.uc.Signup.Execute(c.Request.Context(), auth.SignupInput{
+	out, problems := h.uc.Signup.Execute(c.Request.Context(), auth.SignupInput{
 		Email:    req.Email,
 		Name:     req.Name,
 		Phone:    req.Phone,
 		Password: req.Password,
 		Type:     userType,
 	})
-	if err != nil {
-		switch {
-		case errors.Is(err, user.ErrUserAlreadyExists):
-			c.JSON(http.StatusConflict, errorResponse("user_exists", err.Error()))
-		case errors.Is(err, user.ErrInvalidPassword), errors.Is(err, user.ErrInvalidEmail):
-			c.JSON(http.StatusBadRequest, errorResponse("invalid_credentials", err.Error()))
-		default:
-			c.JSON(http.StatusInternalServerError, errorResponse("signup_failed", err.Error()))
-		}
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "signup_failed", http.StatusBadRequest)
 		return
 	}
 
@@ -108,25 +105,17 @@ type loginRequest struct {
 // @Router /auth/login [post]
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req loginRequest
-	if err := BindAndValidateJSON(c, &req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":  "invalid_payload",
-			"fields": ValidationErrorResponse(err),
-		})
+	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_payload", http.StatusBadRequest)
 		return
 	}
 
-	out, err := h.uc.Login.Execute(c.Request.Context(), auth.LoginInput{
+	out, problems := h.uc.Login.Execute(c.Request.Context(), auth.LoginInput{
 		Email:    req.Email,
 		Password: req.Password,
 	})
-	if err != nil {
-		switch {
-		case errors.Is(err, domainauth.ErrInvalidCredentials), errors.Is(err, user.ErrUserNotFound):
-			c.JSON(http.StatusUnauthorized, errorResponse("invalid_credentials", err.Error()))
-		default:
-			c.JSON(http.StatusInternalServerError, errorResponse("login_failed", err.Error()))
-		}
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "login_failed", http.StatusUnauthorized)
 		return
 	}
 
@@ -156,25 +145,14 @@ type refreshRequest struct {
 // @Router /auth/refresh [post]
 func (h *AuthHandler) Refresh(c *gin.Context) {
 	var req refreshRequest
-	if err := BindAndValidateJSON(c, &req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":  "invalid_payload",
-			"fields": ValidationErrorResponse(err),
-		})
+	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_payload", http.StatusBadRequest)
 		return
 	}
 
-	out, err := h.uc.Refresh.Execute(c.Request.Context(), auth.RefreshInput{RefreshToken: req.RefreshToken})
-	if err != nil {
-		switch {
-		case errors.Is(err, domainauth.ErrInvalidCredentials),
-			errors.Is(err, domainauth.ErrRefreshTokenNotFound),
-			errors.Is(err, domainauth.ErrRefreshTokenRevoked),
-			errors.Is(err, domainauth.ErrRefreshTokenExpired):
-			c.JSON(http.StatusUnauthorized, errorResponse("invalid_refresh_token", err.Error()))
-		default:
-			c.JSON(http.StatusInternalServerError, errorResponse("refresh_failed", err.Error()))
-		}
+	out, problems := h.uc.Refresh.Execute(c.Request.Context(), auth.RefreshInput{RefreshToken: req.RefreshToken})
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_refresh_token", http.StatusUnauthorized)
 		return
 	}
 
@@ -204,21 +182,14 @@ type logoutRequest struct {
 // @Router /auth/logout [post]
 func (h *AuthHandler) Logout(c *gin.Context) {
 	var req logoutRequest
-	if err := BindAndValidateJSON(c, &req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":  "invalid_payload",
-			"fields": ValidationErrorResponse(err),
-		})
+	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_payload", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.uc.Logout.Execute(c.Request.Context(), auth.LogoutInput{RefreshToken: req.RefreshToken}); err != nil {
-		switch {
-		case errors.Is(err, domainauth.ErrInvalidCredentials):
-			c.JSON(http.StatusUnauthorized, errorResponse("invalid_refresh_token", err.Error()))
-		default:
-			c.JSON(http.StatusInternalServerError, errorResponse("logout_failed", err.Error()))
-		}
+	problems := h.uc.Logout.Execute(c.Request.Context(), auth.LogoutInput{RefreshToken: req.RefreshToken})
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_refresh_token", http.StatusUnauthorized)
 		return
 	}
 

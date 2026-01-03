@@ -11,6 +11,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/guilherme/pet-services-api/internal/application/logging"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
@@ -30,14 +32,14 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	logger := slog.Default()
+	logger := logging.NewSlogLogger()
 
 	// ─────────────────────────────────────────────────────────────────────────
 	// 1. Configuration
 	// ─────────────────────────────────────────────────────────────────────────
 
 	cfg := infradatabase.DefaultConfig()
-	cfg.Logger = logger
+	cfg.Logger = logger.Logger() // *slog.Logger para o banco
 
 	// ─────────────────────────────────────────────────────────────────────────
 	// 2. Database Connection
@@ -45,11 +47,26 @@ func main() {
 
 	db, sqlDB, err := infradatabase.Open(ctx, cfg)
 	if err != nil {
-		logger.Error("failed to connect database", "error", err)
+		logger.Log(logging.Logger{
+			Context: ctx,
+			Code:    500,
+			Message: "failed to connect database",
+			From:    "main",
+			Layer:   logging.LoggerLayers.SERVER,
+			TypeLog: logging.LoggerTypes.ERROR,
+			Error:   err,
+		})
 		os.Exit(1)
 	}
-	defer infradatabase.Close(logger, sqlDB)
-	logger.Info("database connected")
+	defer infradatabase.Close(logger.Logger(), sqlDB)
+	logger.Log(logging.Logger{
+		Context: ctx,
+		Code:    200,
+		Message: "database connected",
+		From:    "main",
+		Layer:   logging.LoggerLayers.SERVER,
+		TypeLog: logging.LoggerTypes.INFO,
+	})
 
 	// ─────────────────────────────────────────────────────────────────────────
 	// 3. Infrastructure Providers (real implementations)
@@ -59,7 +76,14 @@ func main() {
 	accessSecret := os.Getenv("JWT_ACCESS_SECRET")
 	refreshSecret := os.Getenv("JWT_REFRESH_SECRET")
 	if accessSecret == "" || refreshSecret == "" {
-		logger.Error("JWT_ACCESS_SECRET and JWT_REFRESH_SECRET must be set")
+		logger.Log(logging.Logger{
+			Context: ctx,
+			Code:    500,
+			Message: "JWT_ACCESS_SECRET and JWT_REFRESH_SECRET must be set",
+			From:    "main",
+			Layer:   logging.LoggerLayers.SERVER,
+			TypeLog: logging.LoggerTypes.ERROR,
+		})
 		os.Exit(1)
 	}
 
@@ -72,11 +96,25 @@ func main() {
 		AccessDuration:  accessDuration,
 		RefreshDuration: refreshDuration,
 	})
-	logger.Info("jwt token service initialized")
+	logger.Log(logging.Logger{
+		Context: ctx,
+		Code:    200,
+		Message: "jwt token service initialized",
+		From:    "main",
+		Layer:   logging.LoggerLayers.SERVER,
+		TypeLog: logging.LoggerTypes.INFO,
+	})
 
 	// Password Hasher (Bcrypt)
 	passwordHasher := infrabcrypt.NewPasswordHasher()
-	logger.Info("bcrypt password hasher initialized")
+	logger.Log(logging.Logger{
+		Context: ctx,
+		Code:    200,
+		Message: "bcrypt password hasher initialized",
+		From:    "main",
+		Layer:   logging.LoggerLayers.SERVER,
+		TypeLog: logging.LoggerTypes.INFO,
+	})
 
 	// Email Service (SMTP or Stub)
 	emailHost := os.Getenv("SMTP_HOST")
@@ -87,8 +125,15 @@ func main() {
 
 	var emailService infraemail.EmailServiceInterface
 	if strings.TrimSpace(emailHost) == "" || strings.TrimSpace(emailHost) == "localhost" {
-		logger.Info("using stub email service (no SMTP configured)")
-		emailService = infraemail.NewStubEmailService(logger)
+		logger.Log(logging.Logger{
+			Context: ctx,
+			Code:    200,
+			Message: "using stub email service (no SMTP configured)",
+			From:    "main",
+			Layer:   logging.LoggerLayers.SERVER,
+			TypeLog: logging.LoggerTypes.INFO,
+		})
+		emailService = infraemail.NewStubEmailService(logger.Logger())
 	} else {
 		port := 587
 		if emailPort != "" {
@@ -102,9 +147,16 @@ func main() {
 			User:     emailUser,
 			Password: emailPass,
 			FromAddr: emailFrom,
-			Logger:   logger,
+			Logger:   logger.Logger(),
 		})
-		logger.Info("smtp email service initialized", "host", emailHost, "port", port)
+		logger.Log(logging.Logger{
+			Context: ctx,
+			Code:    200,
+			Message: "smtp email service initialized",
+			From:    "main",
+			Layer:   logging.LoggerLayers.SERVER,
+			TypeLog: logging.LoggerTypes.INFO,
+		})
 	}
 
 	// ─────────────────────────────────────────────────────────────────────────
@@ -129,7 +181,7 @@ func main() {
 
 	// Global middlewares
 	router.Use(requestIDMiddleware())
-	router.Use(structuredLoggingMiddleware(logger))
+	router.Use(structuredLoggingMiddleware(logger.Logger()))
 	router.Use(corsMiddleware())
 
 	// Health endpoints (public)
@@ -169,7 +221,14 @@ func main() {
 	errChan := make(chan error, 1)
 
 	go func() {
-		logger.Info("server starting", "addr", addr)
+		logger.Log(logging.Logger{
+			Context: ctx,
+			Code:    200,
+			Message: "server starting",
+			From:    "main",
+			Layer:   logging.LoggerLayers.SERVER,
+			TypeLog: logging.LoggerTypes.INFO,
+		})
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			errChan <- err
 		}
@@ -181,20 +240,51 @@ func main() {
 
 	select {
 	case err := <-errChan:
-		logger.Error("server error", "error", err)
+		logger.Log(logging.Logger{
+			Context: ctx,
+			Code:    500,
+			Message: "server error",
+			From:    "main",
+			Layer:   logging.LoggerLayers.SERVER,
+			TypeLog: logging.LoggerTypes.ERROR,
+			Error:   err,
+		})
 		os.Exit(1)
-	case sig := <-sigChan:
-		logger.Info("signal received", "signal", sig.String())
+	case <-sigChan:
+		logger.Log(logging.Logger{
+			Context: ctx,
+			Code:    200,
+			Message: "signal received",
+			From:    "main",
+			Layer:   logging.LoggerLayers.SERVER,
+			TypeLog: logging.LoggerTypes.INFO,
+			Error:   nil,
+		})
 
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer shutdownCancel()
 
 		if err := srv.Shutdown(shutdownCtx); err != nil {
-			logger.Error("shutdown error", "error", err)
+			logger.Log(logging.Logger{
+				Context: ctx,
+				Code:    500,
+				Message: "shutdown error",
+				From:    "main",
+				Layer:   logging.LoggerLayers.SERVER,
+				TypeLog: logging.LoggerTypes.ERROR,
+				Error:   err,
+			})
 			os.Exit(1)
 		}
 
-		logger.Info("server shutdown complete")
+		logger.Log(logging.Logger{
+			Context: ctx,
+			Code:    200,
+			Message: "server shutdown complete",
+			From:    "main",
+			Layer:   logging.LoggerLayers.SERVER,
+			TypeLog: logging.LoggerTypes.INFO,
+		})
 	}
 }
 

@@ -3,20 +3,18 @@ package http
 import (
 	"errors"
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
 	"github.com/guilherme/pet-services-api/internal/application/user"
-	domainauth "github.com/guilherme/pet-services-api/internal/domain/auth"
 	domainuser "github.com/guilherme/pet-services-api/internal/domain/user"
 	"github.com/guilherme/pet-services-api/internal/infra/factory"
 )
 
 // UserHandler expõe endpoints relacionados a usuário.
 type UserHandler struct {
-	uc factory.UserUseCases
+	uc           factory.UserUseCases
 	errorService *ErrorService
 }
 
@@ -53,17 +51,11 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 		return
 	}
 
-	profile, err := h.uc.GetProfile.Execute(c.Request.Context(), user.GetProfileInput{UserID: userID})
-	if err != nil {
-		switch {
-		case errors.Is(err, domainuser.ErrUserNotFound):
-			h.errorService.RespondWithError(c, err, "user_not_found", http.StatusNotFound)
-		default:
-			h.errorService.RespondWithError(c, err, "get_profile_failed", http.StatusInternalServerError)
-		}
+	profile, problems := h.uc.GetProfile.Execute(c.Request.Context(), user.GetProfileInput{UserID: userID})
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "get_profile_failed", http.StatusBadRequest)
 		return
 	}
-
 	c.JSON(http.StatusOK, userToResponse(profile))
 }
 
@@ -95,43 +87,23 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 	}
 
 	var req updateProfileRequest
-	if err := BindAndValidateJSON(c, &req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":  "invalid_payload",
-			"fields": ValidationErrorResponse(err),
-		})
+	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_payload", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.uc.UpdateProfile.Execute(c.Request.Context(), user.UpdateProfileInput{
+	problems := h.uc.UpdateProfile.Execute(c.Request.Context(), user.UpdateProfileInput{
 		UserID:    userID,
 		Name:      req.Name,
 		Phone:     req.Phone,
 		Address:   req.Address,
 		Latitude:  req.Latitude,
 		Longitude: req.Longitude,
-	}); err != nil {
-		switch {
-		case errors.Is(err, domainuser.ErrUserNotFound):
-			c.JSON(http.StatusNotFound, errorResponse("user_not_found", err.Error()))
-		case errors.Is(err, domainuser.ErrInvalidPhone), strings.Contains(err.Error(), "coordenadas inválidas"):
-			c.JSON(http.StatusBadRequest, errorResponse("invalid_data", err.Error()))
-		default:
-			// ChangePassword troca a senha do usuário autenticado.
-			// @Summary Change password
-			// @Tags users
-			// @Security BearerAuth
-			// @Accept json
-			// @Produce json
-			// @Param request body changePasswordRequest true "Password payload"
-			// @Success 200 {object} map[string]interface{}
-			// @Failure 400 {object} map[string]interface{}
-			// @Router /users/change-password [post]
-			c.JSON(http.StatusInternalServerError, errorResponse("update_profile_failed", err.Error()))
-		}
+	})
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "update_profile_failed", http.StatusBadRequest)
 		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
@@ -150,39 +122,20 @@ func (h *UserHandler) ChangePassword(c *gin.Context) {
 	}
 
 	var req changePasswordRequest
-	if err := BindAndValidateJSON(c, &req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":  "invalid_payload",
-			"fields": ValidationErrorResponse(err),
-		})
+	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_payload", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.uc.ChangePassword.Execute(c.Request.Context(), user.ChangePasswordInput{
+	problems := h.uc.ChangePassword.Execute(c.Request.Context(), user.ChangePasswordInput{
 		UserID:          userID,
 		CurrentPassword: req.CurrentPassword,
 		NewPassword:     req.NewPassword,
-	}); err != nil {
-		// RequestPasswordReset envia email de redefinição.
-		// @Summary Request password reset
-		// @Tags users
-		// @Accept json
-		// @Produce json
-		// @Param request body requestPasswordResetRequest true "Reset request"
-		// @Success 200 {object} map[string]interface{}
-		// @Failure 400 {object} map[string]interface{}
-		// @Router /users/password-reset/request [post]
-		switch {
-		case errors.Is(err, domainuser.ErrUserNotFound):
-			c.JSON(http.StatusNotFound, errorResponse("user_not_found", err.Error()))
-		case errors.Is(err, domainauth.ErrInvalidCredentials), errors.Is(err, domainuser.ErrInvalidPassword):
-			c.JSON(http.StatusUnauthorized, errorResponse("invalid_credentials", err.Error()))
-		default:
-			c.JSON(http.StatusBadRequest, errorResponse("change_password_failed", err.Error()))
-		}
+	})
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "change_password_failed", http.StatusBadRequest)
 		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
@@ -194,25 +147,16 @@ type requestPasswordResetRequest struct {
 // RequestPasswordReset inicia fluxo de reset por email.
 func (h *UserHandler) RequestPasswordReset(c *gin.Context) {
 	var req requestPasswordResetRequest
-	if err := BindAndValidateJSON(c, &req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":  "invalid_payload",
-			"fields": ValidationErrorResponse(err),
-		})
+	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_payload", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.uc.RequestPasswordReset.Execute(c.Request.Context(), user.RequestPasswordResetInput{Email: req.Email}); err != nil {
-		switch {
-		case errors.Is(err, domainuser.ErrInvalidEmail):
-			c.JSON(http.StatusBadRequest, errorResponse("invalid_email", err.Error()))
-		default:
-			// Por segurança, respostas genéricas
-			c.JSON(http.StatusOK, gin.H{"status": "ok"})
-		}
+	problems := h.uc.RequestPasswordReset.Execute(c.Request.Context(), user.RequestPasswordResetInput{Email: req.Email})
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "request_password_reset_failed", http.StatusBadRequest)
 		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
@@ -235,27 +179,19 @@ type confirmPasswordResetRequest struct {
 // ConfirmPasswordReset aplica o reset de senha.
 func (h *UserHandler) ConfirmPasswordReset(c *gin.Context) {
 	var req confirmPasswordResetRequest
-	if err := BindAndValidateJSON(c, &req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":  "invalid_payload",
-			"fields": ValidationErrorResponse(err),
-		})
+	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_payload", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.uc.ConfirmPasswordReset.Execute(c.Request.Context(), user.ConfirmPasswordResetInput{
+	problems := h.uc.ConfirmPasswordReset.Execute(c.Request.Context(), user.ConfirmPasswordResetInput{
 		Token:       req.Token,
 		NewPassword: req.NewPassword,
-	}); err != nil {
-		switch {
-		case errors.Is(err, domainuser.ErrPasswordResetTokenInvalid), errors.Is(err, domainuser.ErrInvalidPassword):
-			c.JSON(http.StatusBadRequest, errorResponse("invalid_token_or_password", err.Error()))
-		default:
-			c.JSON(http.StatusInternalServerError, errorResponse("confirm_reset_failed", err.Error()))
-		}
+	})
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "confirm_password_reset_failed", http.StatusBadRequest)
 		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	// ConfirmEmailVerification confirma email com código/token.
 	// @Summary Confirm email verification
@@ -276,18 +212,11 @@ func (h *UserHandler) RequestEmailVerification(c *gin.Context) {
 		return
 	}
 
-	if err := h.uc.RequestEmailVerification.Execute(c.Request.Context(), user.RequestEmailVerificationInput{UserID: userID}); err != nil {
-		switch {
-		case errors.Is(err, domainuser.ErrUserNotFound):
-			c.JSON(http.StatusNotFound, errorResponse("user_not_found", err.Error()))
-		case errors.Is(err, domainuser.ErrEmailAlreadyVerified):
-			c.JSON(http.StatusConflict, errorResponse("email_already_verified", err.Error()))
-		default:
-			c.JSON(http.StatusInternalServerError, errorResponse("request_email_verification_failed", err.Error()))
-		}
+	problems := h.uc.RequestEmailVerification.Execute(c.Request.Context(), user.RequestEmailVerificationInput{UserID: userID})
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "request_email_verification_failed", http.StatusBadRequest)
 		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	// DeleteAccount deleta (soft ou hard) a conta do usuário autenticado.
 	// @Summary Delete account
@@ -308,26 +237,16 @@ type confirmEmailVerificationRequest struct {
 // ConfirmEmailVerification confirma email.
 func (h *UserHandler) ConfirmEmailVerification(c *gin.Context) {
 	var req confirmEmailVerificationRequest
-	if err := BindAndValidateJSON(c, &req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":  "invalid_payload",
-			"fields": ValidationErrorResponse(err),
-		})
+	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_payload", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.uc.ConfirmEmailVerification.Execute(c.Request.Context(), user.ConfirmEmailVerificationInput{Token: req.Token}); err != nil {
-		switch {
-		case errors.Is(err, domainuser.ErrEmailVerificationTokenInvalid):
-			c.JSON(http.StatusBadRequest, errorResponse("invalid_token", err.Error()))
-		case errors.Is(err, domainuser.ErrEmailAlreadyVerified):
-			c.JSON(http.StatusConflict, errorResponse("email_already_verified", err.Error()))
-		default:
-			c.JSON(http.StatusInternalServerError, errorResponse("confirm_email_verification_failed", err.Error()))
-		}
+	problems := h.uc.ConfirmEmailVerification.Execute(c.Request.Context(), user.ConfirmEmailVerificationInput{Token: req.Token})
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "confirm_email_verification_failed", http.StatusBadRequest)
 		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
@@ -341,16 +260,11 @@ func (h *UserHandler) DeleteAccount(c *gin.Context) {
 
 	hard := c.Query("hard") == "true"
 
-	if err := h.uc.DeleteAccount.Execute(c.Request.Context(), user.DeleteAccountInput{UserID: userID, HardDelete: hard}); err != nil {
-		switch {
-		case errors.Is(err, domainuser.ErrUserNotFound):
-			c.JSON(http.StatusNotFound, errorResponse("user_not_found", err.Error()))
-		default:
-			c.JSON(http.StatusBadRequest, errorResponse("delete_account_failed", err.Error()))
-		}
+	problems := h.uc.DeleteAccount.Execute(c.Request.Context(), user.DeleteAccountInput{UserID: userID, HardDelete: hard})
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "delete_account_failed", http.StatusBadRequest)
 		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 

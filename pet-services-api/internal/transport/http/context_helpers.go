@@ -8,9 +8,67 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
+	"github.com/guilherme/pet-services-api/internal/application/exceptions"
 	domainprovider "github.com/guilherme/pet-services-api/internal/domain/provider"
 	domainuser "github.com/guilherme/pet-services-api/internal/domain/user"
 )
+
+// extractUserIDProblems extrai o user_id do contexto, retornando problemas padronizados.
+func extractUserIDProblems(c *gin.Context) (uuid.UUID, []exceptions.ProblemDetails) {
+	userID, err := extractUserID(c)
+	if err != nil {
+		return uuid.Nil, []exceptions.ProblemDetails{{
+			Type:   string(exceptions.Unauthorized),
+			Title:  "Não autorizado",
+			Status: http.StatusUnauthorized,
+			Detail: err.Error(),
+		}}
+	}
+	return userID, nil
+}
+
+// providerIDFromContextProblems resolve provider vinculado ao usuário autenticado, retornando problemas padronizados.
+func providerIDFromContextProblems(c *gin.Context, repo domainprovider.Repository, requireProvider bool) (uuid.UUID, []exceptions.ProblemDetails) {
+	userType := extractUserType(c)
+	if requireProvider && userType != "" && userType != domainuser.UserTypeProvider {
+		return uuid.Nil, []exceptions.ProblemDetails{{
+			Type:   string(exceptions.Forbidden),
+			Title:  "Apenas prestadores podem executar esta ação",
+			Status: http.StatusForbidden,
+		}}
+	}
+	if !requireProvider && userType != domainuser.UserTypeProvider {
+		return uuid.Nil, nil
+	}
+	userID, err := extractUserID(c)
+	if err != nil {
+		return uuid.Nil, []exceptions.ProblemDetails{{
+			Type:   string(exceptions.Unauthorized),
+			Title:  "Não autorizado",
+			Status: http.StatusUnauthorized,
+			Detail: err.Error(),
+		}}
+	}
+	p, err := repo.FindByUserID(c.Request.Context(), userID)
+	if err != nil {
+		switch {
+		case errors.Is(err, gorm.ErrRecordNotFound), errors.Is(err, domainprovider.ErrProviderNotFound):
+			return uuid.Nil, []exceptions.ProblemDetails{{
+				Type:   string(exceptions.NotFound),
+				Title:  "Prestador não encontrado para este usuário",
+				Status: http.StatusNotFound,
+			}}
+		default:
+			return uuid.Nil, []exceptions.ProblemDetails{{
+				Type:   string(exceptions.InternalServerError),
+				Title:  "Erro ao buscar prestador",
+				Status: http.StatusInternalServerError,
+				Detail: err.Error(),
+			}}
+		}
+	}
+	return p.ID, nil
+}
 
 // extractUserType retorna o tipo de usuário do contexto, se presente.
 func extractUserType(c *gin.Context) domainuser.UserType {
@@ -23,38 +81,4 @@ func extractUserType(c *gin.Context) domainuser.UserType {
 		}
 	}
 	return ""
-}
-
-// providerIDFromContext resolve o provider vinculado ao usuário autenticado.
-// Se requireProvider for true, também valida se o user_type é provider.
-func providerIDFromContext(c *gin.Context, repo domainprovider.Repository, requireProvider bool) (uuid.UUID, bool) {
-	userType := extractUserType(c)
-	if requireProvider && userType != "" && userType != domainuser.UserTypeProvider {
-		c.JSON(http.StatusForbidden, errorResponse("forbidden", "apenas prestadores podem executar esta ação"))
-		return uuid.Nil, false
-	}
-
-	// Para ações opcionais, apenas resolve se de fato é provider.
-	if !requireProvider && userType != domainuser.UserTypeProvider {
-		return uuid.Nil, true
-	}
-
-	userID, err := extractUserID(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, errorResponse("unauthorized", err.Error()))
-		return uuid.Nil, false
-	}
-
-	p, err := repo.FindByUserID(c.Request.Context(), userID)
-	if err != nil {
-		switch {
-		case errors.Is(err, gorm.ErrRecordNotFound), errors.Is(err, domainprovider.ErrProviderNotFound):
-			c.JSON(http.StatusNotFound, errorResponse("provider_not_found", "prestador não encontrado para este usuário"))
-		default:
-			c.JSON(http.StatusInternalServerError, errorResponse("provider_lookup_failed", err.Error()))
-		}
-		return uuid.Nil, false
-	}
-
-	return p.ID, true
 }

@@ -2,7 +2,46 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/guilherme/pet-services-api/internal/application/exceptions"
 )
+
+// ProblemDetailsDTO representa um erro detalhado para resposta HTTP.
+type ProblemDetailsDTO struct {
+	Type   string `json:"type,omitempty"`
+	Title  string `json:"title"`
+	Status int    `json:"status"`
+	Detail string `json:"detail,omitempty"`
+}
+
+// RespondWithProblems responde com um ou mais ProblemDetails.
+func (s *ErrorService) RespondWithProblems(c *gin.Context, problems []exceptions.ProblemDetails, defaultCode string, defaultStatus int) {
+	if len(problems) == 0 {
+		c.JSON(defaultStatus, ErrorDTO{Message: "Erro desconhecido", Code: defaultCode})
+		return
+	}
+	// Se só há um problema, responde direto
+	if len(problems) == 1 {
+		p := problems[0]
+		c.JSON(p.Status, ProblemDetailsDTO{
+			Type:   p.Type,
+			Title:  p.Title,
+			Status: p.Status,
+			Detail: p.Detail,
+		})
+		return
+	}
+	// Caso múltiplos problemas, retorna array
+	dtos := make([]ProblemDetailsDTO, 0, len(problems))
+	for _, p := range problems {
+		dtos = append(dtos, ProblemDetailsDTO{
+			Type:   p.Type,
+			Title:  p.Title,
+			Status: p.Status,
+			Detail: p.Detail,
+		})
+	}
+	c.JSON(defaultStatus, gin.H{"errors": dtos})
+}
 
 type ErrorDTO struct {
 	Message string `json:"message"`

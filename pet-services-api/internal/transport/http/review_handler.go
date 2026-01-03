@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
+	"github.com/guilherme/pet-services-api/internal/application/exceptions"
 	"github.com/guilherme/pet-services-api/internal/application/review"
 	domainprovider "github.com/guilherme/pet-services-api/internal/domain/provider"
 	domainreview "github.com/guilherme/pet-services-api/internal/domain/review"
@@ -76,35 +77,43 @@ type submitReviewRequest struct {
 // @Failure 400 {object} map[string]interface{}
 // @Router /reviews [post]
 func (h *ReviewHandler) Submit(c *gin.Context) {
-	ownerID, err := extractUserID(c)
-	if err != nil {
-		h.errorService.RespondWithError(c, err, "unauthorized", http.StatusUnauthorized)
+	ownerID, problems := extractUserIDProblems(c)
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 	if ut := extractUserType(c); ut != "" && ut != domainuser.UserTypeOwner {
-		h.errorService.RespondWithError(c, errors.New("apenas donos podem registrar avaliações"), "forbidden", http.StatusForbidden)
+		h.errorService.RespondWithProblems(c, []exceptions.ProblemDetails{{
+			Type:   string(exceptions.Forbidden),
+			Title:  "Apenas donos podem registrar avaliações",
+			Status: http.StatusForbidden,
+		}}, "forbidden", http.StatusForbidden)
 		return
 	}
 	var req submitReviewRequest
-	if err := BindAndValidateJSON(c, &req); err != nil {
-		h.errorService.RespondWithError(c, err, "invalid_payload", http.StatusBadRequest)
+	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_payload", http.StatusBadRequest)
 		return
 	}
 	reqID, err := uuid.Parse(req.RequestID)
 	if err != nil {
-		h.errorService.RespondWithError(c, err, "invalid_request_id", http.StatusBadRequest)
+		h.errorService.RespondWithProblems(c, []exceptions.ProblemDetails{{
+			Type:   string(exceptions.BadRequest),
+			Title:  "ID da solicitação inválido",
+			Status: http.StatusBadRequest,
+			Detail: err.Error(),
+		}}, "invalid_request_id", http.StatusBadRequest)
 		return
 	}
 
-	reviewCreated, err := h.uc.Submit.Execute(c.Request.Context(), review.SubmitReviewInput{
+	reviewCreated, problems := h.uc.Submit.Execute(c.Request.Context(), review.SubmitReviewInput{
 		RequestID: reqID,
 		OwnerID:   ownerID,
 		Rating:    req.Rating,
 		Comment:   req.Comment,
 	})
-	if err != nil {
-		status, dto := h.errorService.ReviewErrorToDTO(err)
-		h.errorService.RespondWithError(c, errors.New(dto.Message), dto.Code, status)
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "submit_review_failed", http.StatusBadRequest)
 		return
 	}
 
@@ -128,19 +137,25 @@ func (h *ReviewHandler) Submit(c *gin.Context) {
 // @Failure 403 {object} map[string]interface{}
 // @Router /reviews/provider/{provider_id} [get]
 func (h *ReviewHandler) ListForProvider(c *gin.Context) {
-	providerID, ok := parseUUIDParam(c, "provider_id", "invalid_provider_id")
-	if !ok {
+	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_provider_id", http.StatusBadRequest)
 		return
 	}
 
 	// Se o usuário autenticado for prestador, ele só pode listar o próprio perfil.
 	if extractUserType(c) == domainuser.UserTypeProvider {
-		authProviderID, ok := providerIDFromContext(c, h.providerRepo, true)
-		if !ok {
+		authProviderID, problems := providerIDFromContextProblems(c, h.providerRepo, true)
+		if len(problems) > 0 {
+			h.errorService.RespondWithProblems(c, problems, "forbidden", http.StatusForbidden)
 			return
 		}
 		if authProviderID != providerID {
-			h.errorService.RespondWithError(c, errors.New("não autorizado a listar avaliações de outro prestador"), "forbidden", http.StatusForbidden)
+			h.errorService.RespondWithProblems(c, []exceptions.ProblemDetails{{
+				Type:   string(exceptions.Forbidden),
+				Title:  "Não autorizado a listar avaliações de outro prestador",
+				Status: http.StatusForbidden,
+			}}, "forbidden", http.StatusForbidden)
 			return
 		}
 	}
@@ -148,10 +163,9 @@ func (h *ReviewHandler) ListForProvider(c *gin.Context) {
 	page := parseIntDefault(c.Query("page"), 1)
 	limit := parseIntDefault(c.Query("limit"), 20)
 
-	reviews, total, err := h.uc.ListForProvider.Execute(c.Request.Context(), review.ListReviewsForProviderInput{ProviderID: providerID, Page: page, Limit: limit})
-	if err != nil {
-		status, dto := h.errorService.ListReviewsErrorToDTO(err)
-		h.errorService.RespondWithError(c, errors.New(dto.Message), dto.Code, status)
+	reviews, total, problems := h.uc.ListForProvider.Execute(c.Request.Context(), review.ListReviewsForProviderInput{ProviderID: providerID, Page: page, Limit: limit})
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "list_reviews_failed", http.StatusBadRequest)
 		return
 	}
 

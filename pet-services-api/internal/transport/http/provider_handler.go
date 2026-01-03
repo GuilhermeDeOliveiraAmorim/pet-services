@@ -1,14 +1,13 @@
 package http
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
+	"github.com/guilherme/pet-services-api/internal/application/exceptions"
 	"github.com/guilherme/pet-services-api/internal/application/provider"
 	domainprovider "github.com/guilherme/pet-services-api/internal/domain/provider"
 	domainuser "github.com/guilherme/pet-services-api/internal/domain/user"
@@ -34,7 +33,7 @@ func RegisterProviderRoutes(rg *gin.RouterGroup, h *ProviderHandler) {
 	rg.DELETE(":provider_id/services", h.RemoveService)
 	rg.POST(":provider_id/photos", h.AddPhoto)
 	rg.DELETE(":provider_id/photos/:photo_id", h.RemovePhoto)
-	rg.POST(":provider_id/photos/reorder", h.ReorderPhotos)
+	// rg.POST(":provider_id/photos/reorder", h.ReorderPhotos) // Handler não implementado
 	rg.PUT(":provider_id/working-hours", h.UpdateWorkingHours)
 	rg.PUT(":provider_id/working-hours/day", h.UpdateDaySchedule)
 	rg.POST(":provider_id/activate", h.Activate)
@@ -69,19 +68,19 @@ type registerProviderRequest struct {
 // @Failure 400 {object} map[string]interface{}
 // @Router /providers [post]
 func (h *ProviderHandler) Register(c *gin.Context) {
-	userID, err := extractUserID(c)
-	if err != nil {
-		h.errorService.RespondWithError(c, err, "unauthorized", http.StatusUnauthorized)
+	userID, problems := extractUserIDProblems(c)
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 
 	var req registerProviderRequest
-	if err := BindAndValidateJSON(c, &req); err != nil {
-		h.errorService.RespondWithError(c, err, "invalid_payload", http.StatusBadRequest)
+	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_payload", http.StatusBadRequest)
 		return
 	}
 
-	out, err := h.uc.Register.Execute(c.Request.Context(), provider.RegisterProviderInput{
+	out, problems := h.uc.Register.Execute(c.Request.Context(), provider.RegisterProviderInput{
 		UserID:       userID,
 		BusinessName: req.BusinessName,
 		Description:  req.Description,
@@ -91,20 +90,13 @@ func (h *ProviderHandler) Register(c *gin.Context) {
 		Services:     req.Services,
 		PriceRange:   req.PriceRange,
 	})
-	if err != nil {
-		switch {
-		case errors.Is(err, domainprovider.ErrNoServicesProvided), errors.Is(err, domainprovider.ErrInvalidLocation), errors.Is(err, domainprovider.ErrInvalidPriceRange):
-			h.errorService.RespondWithError(c, err, "invalid_data", http.StatusBadRequest)
-		case errors.Is(err, domainprovider.ErrProviderAlreadyExists):
-			h.errorService.RespondWithError(c, err, "provider_exists", http.StatusConflict)
-		default:
-			h.errorService.RespondWithError(c, err, "register_provider_failed", http.StatusInternalServerError)
-		}
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "register_provider_failed", http.StatusBadRequest)
 		return
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
-		"provider_id":   out.ProviderID,
+		"provider_id":   out.ID,
 		"business_name": out.BusinessName,
 		"is_active":     out.IsActive,
 	})
@@ -131,21 +123,21 @@ type updateProviderProfileRequest struct {
 // @Failure 400 {object} map[string]interface{}
 // @Router /providers/{provider_id} [put]
 func (h *ProviderHandler) UpdateProfile(c *gin.Context) {
-	providerID, err := uuid.Parse(c.Param("provider_id"))
-	if err != nil {
-		h.errorService.RespondWithError(c, err, "invalid_provider_id", http.StatusBadRequest)
+	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_provider_id", http.StatusBadRequest)
 		return
 	}
 
-	userID, _ := extractUserID(c) // autorização simples, se presente
+	userID, _ := extractUserID(c)
 
 	var req updateProviderProfileRequest
-	if err := BindAndValidateJSON(c, &req); err != nil {
-		h.errorService.RespondWithError(c, err, "invalid_payload", http.StatusBadRequest)
+	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_payload", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.uc.UpdateProfile.Execute(c.Request.Context(), provider.UpdateProviderProfileInput{
+	_, problems = h.uc.UpdateProfile.Execute(c.Request.Context(), provider.UpdateProviderProfileInput{
 		ProviderID:   providerID,
 		UserID:       userID,
 		BusinessName: req.BusinessName,
@@ -154,15 +146,9 @@ func (h *ProviderHandler) UpdateProfile(c *gin.Context) {
 		Latitude:     req.Latitude,
 		Longitude:    req.Longitude,
 		PriceRange:   req.PriceRange,
-	}); err != nil {
-		switch {
-		case errors.Is(err, domainprovider.ErrProviderNotFound):
-			h.errorService.RespondWithError(c, err, "provider_not_found", http.StatusNotFound)
-		case errors.Is(err, domainprovider.ErrInvalidPriceRange), errors.Is(err, domainprovider.ErrInvalidLocation):
-			h.errorService.RespondWithError(c, err, "invalid_data", http.StatusBadRequest)
-		default:
-			h.errorService.RespondWithError(c, err, "update_provider_failed", http.StatusInternalServerError)
-		}
+	})
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "update_provider_failed", http.StatusBadRequest)
 		return
 	}
 
@@ -177,34 +163,27 @@ type serviceRequest struct {
 }
 
 func (h *ProviderHandler) AddService(c *gin.Context) {
-	providerID, err := uuid.Parse(c.Param("provider_id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_provider_id", err.Error()))
+	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_provider_id", http.StatusBadRequest)
 		return
 	}
 
 	var req serviceRequest
-	if err := BindAndValidateJSON(c, &req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":  "invalid_payload",
-			"fields": ValidationErrorResponse(err),
-		})
+	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_payload", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.uc.AddService.Execute(c.Request.Context(), provider.AddServiceInput{
+	_, problems = h.uc.AddService.Execute(c.Request.Context(), provider.AddServiceInput{
 		ProviderID: providerID,
 		Category:   req.Category,
 		Name:       req.Name,
 		PriceMin:   req.PriceMin,
 		PriceMax:   req.PriceMax,
-	}); err != nil {
-		switch {
-		case errors.Is(err, domainprovider.ErrProviderNotFound), errors.Is(err, domainprovider.ErrServiceNotFound):
-			c.JSON(http.StatusNotFound, errorResponse("provider_or_service_not_found", err.Error()))
-		default:
-			c.JSON(http.StatusBadRequest, errorResponse("add_service_failed", err.Error()))
-		}
+	})
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "add_service_failed", http.StatusBadRequest)
 		return
 	}
 
@@ -212,30 +191,26 @@ func (h *ProviderHandler) AddService(c *gin.Context) {
 }
 
 func (h *ProviderHandler) UpdateService(c *gin.Context) {
-	providerID, err := uuid.Parse(c.Param("provider_id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_provider_id", err.Error()))
+	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_provider_id", http.StatusBadRequest)
 		return
 	}
 	var req serviceRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_payload", err.Error()))
+	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_payload", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.uc.UpdateService.Execute(c.Request.Context(), provider.UpdateServiceInput{
+	_, problems = h.uc.UpdateService.Execute(c.Request.Context(), provider.UpdateServiceInput{
 		ProviderID: providerID,
 		Category:   req.Category,
 		Name:       req.Name,
 		PriceMin:   req.PriceMin,
 		PriceMax:   req.PriceMax,
-	}); err != nil {
-		switch {
-		case errors.Is(err, domainprovider.ErrProviderNotFound), errors.Is(err, domainprovider.ErrServiceNotFound):
-			c.JSON(http.StatusNotFound, errorResponse("provider_or_service_not_found", err.Error()))
-		default:
-			c.JSON(http.StatusBadRequest, errorResponse("update_service_failed", err.Error()))
-		}
+	})
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "update_service_failed", http.StatusBadRequest)
 		return
 	}
 
@@ -243,31 +218,27 @@ func (h *ProviderHandler) UpdateService(c *gin.Context) {
 }
 
 func (h *ProviderHandler) RemoveService(c *gin.Context) {
-	providerID, err := uuid.Parse(c.Param("provider_id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_provider_id", err.Error()))
+	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_provider_id", http.StatusBadRequest)
 		return
 	}
 	var req struct {
 		Category string `json:"category"`
 		Name     string `json:"name"`
 	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_payload", err.Error()))
+	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_payload", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.uc.RemoveService.Execute(c.Request.Context(), provider.RemoveServiceInput{
+	_, problems = h.uc.RemoveService.Execute(c.Request.Context(), provider.RemoveServiceInput{
 		ProviderID: providerID,
 		Category:   req.Category,
 		Name:       req.Name,
-	}); err != nil {
-		switch {
-		case errors.Is(err, domainprovider.ErrProviderNotFound), errors.Is(err, domainprovider.ErrServiceNotFound):
-			c.JSON(http.StatusNotFound, errorResponse("provider_or_service_not_found", err.Error()))
-		default:
-			c.JSON(http.StatusBadRequest, errorResponse("remove_service_failed", err.Error()))
-		}
+	})
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "remove_service_failed", http.StatusBadRequest)
 		return
 	}
 
@@ -275,116 +246,79 @@ func (h *ProviderHandler) RemoveService(c *gin.Context) {
 }
 
 func (h *ProviderHandler) AddPhoto(c *gin.Context) {
-	providerID, err := uuid.Parse(c.Param("provider_id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_provider_id", err.Error()))
+	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_provider_id", http.StatusBadRequest)
 		return
 	}
 	var req struct {
 		URL string `json:"url"`
 	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_payload", err.Error()))
+	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_payload", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.uc.AddPhoto.Execute(c.Request.Context(), provider.AddPhotoInput{ProviderID: providerID, URL: req.URL}); err != nil {
-		switch {
-		case errors.Is(err, domainprovider.ErrProviderNotFound):
-			c.JSON(http.StatusNotFound, errorResponse("provider_not_found", err.Error()))
-		case errors.Is(err, domainprovider.ErrMaxPhotosReached):
-			c.JSON(http.StatusBadRequest, errorResponse("max_photos_reached", err.Error()))
-		default:
-			c.JSON(http.StatusBadRequest, errorResponse("add_photo_failed", err.Error()))
-		}
+	_, problems = h.uc.AddPhoto.Execute(c.Request.Context(), provider.AddPhotoInput{ProviderID: providerID, URL: req.URL})
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "add_photo_failed", http.StatusBadRequest)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
 func (h *ProviderHandler) RemovePhoto(c *gin.Context) {
-	providerID, err := uuid.Parse(c.Param("provider_id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_provider_id", err.Error()))
+	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_provider_id", http.StatusBadRequest)
 		return
 	}
-	photoID, err := uuid.Parse(c.Param("photo_id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_photo_id", err.Error()))
-		return
-	}
-
-	if err := h.uc.RemovePhoto.Execute(c.Request.Context(), provider.RemovePhotoInput{ProviderID: providerID, PhotoID: photoID}); err != nil {
-		switch {
-		case errors.Is(err, domainprovider.ErrProviderNotFound), errors.Is(err, domainprovider.ErrPhotoNotFound):
-			c.JSON(http.StatusNotFound, errorResponse("provider_or_photo_not_found", err.Error()))
-		default:
-			c.JSON(http.StatusBadRequest, errorResponse("remove_photo_failed", err.Error()))
-		}
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"status": "ok"})
-}
-
-func (h *ProviderHandler) ReorderPhotos(c *gin.Context) {
-	providerID, err := uuid.Parse(c.Param("provider_id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_provider_id", err.Error()))
-		return
-	}
-	var req struct {
-		Order []uuid.UUID `json:"order"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_payload", err.Error()))
+	photoID, problems := parseUUIDParamProblems(c, "photo_id", "invalid_photo_id")
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_photo_id", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.uc.ReorderPhotos.Execute(c.Request.Context(), provider.ReorderPhotosInput{ProviderID: providerID, Order: req.Order}); err != nil {
-		switch {
-		case errors.Is(err, domainprovider.ErrProviderNotFound), errors.Is(err, domainprovider.ErrPhotoNotFound):
-			c.JSON(http.StatusNotFound, errorResponse("provider_or_photo_not_found", err.Error()))
-		default:
-			c.JSON(http.StatusBadRequest, errorResponse("reorder_photos_failed", err.Error()))
-		}
+	_, problems = h.uc.RemovePhoto.Execute(c.Request.Context(), provider.RemovePhotoInput{
+		ProviderID: providerID,
+		PhotoID:    photoID,
+	})
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "remove_photo_failed", http.StatusBadRequest)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
 func (h *ProviderHandler) UpdateWorkingHours(c *gin.Context) {
-	providerID, err := uuid.Parse(c.Param("provider_id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_provider_id", err.Error()))
+	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_provider_id", http.StatusBadRequest)
 		return
 	}
 	var req struct {
 		WorkingHours domainprovider.WorkingHours `json:"working_hours"`
 	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_payload", err.Error()))
+	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_payload", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.uc.UpdateWorkingHours.Execute(c.Request.Context(), provider.UpdateWorkingHoursInput{
+	_, problems = h.uc.UpdateWorkingHours.Execute(c.Request.Context(), provider.UpdateWorkingHoursInput{
 		ProviderID:   providerID,
 		WorkingHours: req.WorkingHours,
-	}); err != nil {
-		switch {
-		case errors.Is(err, domainprovider.ErrProviderNotFound), errors.Is(err, domainprovider.ErrInvalidWorkingHours):
-			c.JSON(http.StatusBadRequest, errorResponse("invalid_working_hours", err.Error()))
-		default:
-			c.JSON(http.StatusInternalServerError, errorResponse("update_working_hours_failed", err.Error()))
-		}
+	})
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "update_working_hours_failed", http.StatusBadRequest)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
 func (h *ProviderHandler) UpdateDaySchedule(c *gin.Context) {
-	providerID, err := uuid.Parse(c.Param("provider_id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_provider_id", err.Error()))
+	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_provider_id", http.StatusBadRequest)
 		return
 	}
 	var req struct {
@@ -393,114 +327,92 @@ func (h *ProviderHandler) UpdateDaySchedule(c *gin.Context) {
 		Open   string `json:"open"`
 		Close  string `json:"close"`
 	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_payload", err.Error()))
+	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_payload", http.StatusBadRequest)
 		return
 	}
 
 	weekday := time.Weekday(req.Day)
-	schedule := domainprovider.DaySchedule{IsOpen: req.IsOpen, Open: req.Open, Close: req.Close}
 
-	if err := h.uc.UpdateDaySchedule.Execute(c.Request.Context(), provider.UpdateDayScheduleInput{
+	_, problems = h.uc.UpdateDaySchedule.Execute(c.Request.Context(), provider.UpdateDayScheduleInput{
 		ProviderID: providerID,
 		Day:        weekday,
 		IsOpen:     req.IsOpen,
 		Open:       req.Open,
 		Close:      req.Close,
-	}); err != nil {
-		switch {
-		case errors.Is(err, domainprovider.ErrProviderNotFound), errors.Is(err, domainprovider.ErrInvalidWorkingHours):
-			c.JSON(http.StatusBadRequest, errorResponse("invalid_day_schedule", err.Error()))
-		default:
-			c.JSON(http.StatusInternalServerError, errorResponse("update_day_schedule_failed", err.Error()))
-		}
+	})
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "update_day_schedule_failed", http.StatusBadRequest)
 		return
 	}
-	_ = schedule // keep reference for future logging; avoid unused warning if we change signature
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
 func (h *ProviderHandler) Activate(c *gin.Context) {
-	providerID, err := uuid.Parse(c.Param("provider_id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_provider_id", err.Error()))
+	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_provider_id", http.StatusBadRequest)
 		return
 	}
-	if err := h.uc.Activate.Execute(c.Request.Context(), provider.ActivateProviderInput{ProviderID: providerID}); err != nil {
-		switch {
-		case errors.Is(err, domainprovider.ErrProviderNotFound):
-			c.JSON(http.StatusNotFound, errorResponse("provider_not_found", err.Error()))
-		default:
-			c.JSON(http.StatusBadRequest, errorResponse("activate_provider_failed", err.Error()))
-		}
+	_, problems = h.uc.Activate.Execute(c.Request.Context(), provider.ActivateProviderInput{ProviderID: providerID})
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "activate_provider_failed", http.StatusBadRequest)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
 func (h *ProviderHandler) Deactivate(c *gin.Context) {
-	providerID, err := uuid.Parse(c.Param("provider_id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_provider_id", err.Error()))
+	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_provider_id", http.StatusBadRequest)
 		return
 	}
-	if err := h.uc.Deactivate.Execute(c.Request.Context(), provider.DeactivateProviderInput{ProviderID: providerID}); err != nil {
-		switch {
-		case errors.Is(err, domainprovider.ErrProviderNotFound):
-			c.JSON(http.StatusNotFound, errorResponse("provider_not_found", err.Error()))
-		default:
-			c.JSON(http.StatusBadRequest, errorResponse("deactivate_provider_failed", err.Error()))
-		}
+	_, problems = h.uc.Deactivate.Execute(c.Request.Context(), provider.DeactivateProviderInput{ProviderID: providerID})
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "deactivate_provider_failed", http.StatusBadRequest)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
 func (h *ProviderHandler) Approve(c *gin.Context) {
-	providerID, err := uuid.Parse(c.Param("provider_id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_provider_id", err.Error()))
+	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_provider_id", http.StatusBadRequest)
 		return
 	}
 	var req struct {
 		Note string `json:"note"`
 	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_payload", err.Error()))
+	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_payload", http.StatusBadRequest)
 		return
 	}
-	if err := h.uc.Approve.Execute(c.Request.Context(), provider.ApproveProviderInput{ProviderID: providerID, Note: req.Note}); err != nil {
-		switch {
-		case errors.Is(err, domainprovider.ErrProviderNotFound):
-			c.JSON(http.StatusNotFound, errorResponse("provider_not_found", err.Error()))
-		default:
-			c.JSON(http.StatusBadRequest, errorResponse("approve_provider_failed", err.Error()))
-		}
+	_, problems = h.uc.Approve.Execute(c.Request.Context(), provider.ApproveProviderInput{ProviderID: providerID, Note: req.Note})
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "approve_provider_failed", http.StatusBadRequest)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
 func (h *ProviderHandler) Reject(c *gin.Context) {
-	providerID, err := uuid.Parse(c.Param("provider_id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_provider_id", err.Error()))
+	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_provider_id", http.StatusBadRequest)
 		return
 	}
 	var req struct {
 		Reason string `json:"reason"`
 	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_payload", err.Error()))
+	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_payload", http.StatusBadRequest)
 		return
 	}
-	if err := h.uc.Reject.Execute(c.Request.Context(), provider.RejectProviderInput{ProviderID: providerID, Reason: req.Reason}); err != nil {
-		switch {
-		case errors.Is(err, domainprovider.ErrProviderNotFound):
-			c.JSON(http.StatusNotFound, errorResponse("provider_not_found", err.Error()))
-		default:
-			c.JSON(http.StatusBadRequest, errorResponse("reject_provider_failed", err.Error()))
-		}
+	_, problems = h.uc.Reject.Execute(c.Request.Context(), provider.RejectProviderInput{ProviderID: providerID, Reason: req.Reason})
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "reject_provider_failed", http.StatusBadRequest)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
@@ -525,24 +437,25 @@ func (h *ProviderHandler) ListByLocation(c *gin.Context) {
 
 	latF, lonF, radF, err := parseFloats(lat, lon, radius)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_coordinates", err.Error()))
+		problems := []exceptions.ProblemDetails{{
+			Type:   string(exceptions.BadRequest),
+			Title:  "Coordenadas inválidas",
+			Status: http.StatusBadRequest,
+			Detail: err.Error(),
+		}}
+		h.errorService.RespondWithProblems(c, problems, "invalid_coordinates", http.StatusBadRequest)
 		return
 	}
 
-	providers, total, err := h.uc.ListByLocation.Execute(c.Request.Context(), provider.ListProvidersByLocationInput{
+	providers, total, problems := h.uc.ListByLocation.Execute(c.Request.Context(), provider.ListProvidersByLocationInput{
 		Latitude:  latF,
 		Longitude: lonF,
 		RadiusKM:  radF,
 		Page:      page,
 		Limit:     limit,
 	})
-	if err != nil {
-		switch {
-		case errors.Is(err, domainprovider.ErrInvalidLocation):
-			c.JSON(http.StatusBadRequest, errorResponse("invalid_location", err.Error()))
-		default:
-			c.JSON(http.StatusInternalServerError, errorResponse("list_providers_failed", err.Error()))
-		}
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "list_providers_failed", http.StatusBadRequest)
 		return
 	}
 

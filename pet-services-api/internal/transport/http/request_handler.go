@@ -8,12 +8,28 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
+	"github.com/guilherme/pet-services-api/internal/application/exceptions"
 	"github.com/guilherme/pet-services-api/internal/application/request"
 	domainprovider "github.com/guilherme/pet-services-api/internal/domain/provider"
 	domainrequest "github.com/guilherme/pet-services-api/internal/domain/request"
 	domainuser "github.com/guilherme/pet-services-api/internal/domain/user"
 	"github.com/guilherme/pet-services-api/internal/infra/factory"
 )
+
+// parseUUIDParamProblems converte parâmetro de rota para UUID, retornando problemas padronizados.
+func parseUUIDParamProblems(c *gin.Context, name string, errCode string) (uuid.UUID, []exceptions.ProblemDetails) {
+	value := c.Param(name)
+	id, err := uuid.Parse(value)
+	if err != nil {
+		return uuid.Nil, []exceptions.ProblemDetails{{
+			Type:   string(exceptions.BadRequest),
+			Title:  "UUID inválido",
+			Status: http.StatusBadRequest,
+			Detail: err.Error(),
+		}}
+	}
+	return id, nil
+}
 
 // RequestHandler expõe endpoints de solicitações de serviço.
 type RequestHandler struct {
@@ -107,16 +123,19 @@ func (h *RequestHandler) Create(c *gin.Context) {
 		Notes:         req.Notes,
 	}
 
-	created, err := h.uc.Create.Execute(c.Request.Context(), input)
-	if err != nil {
-		switch {
-		case errors.Is(err, domainprovider.ErrProviderNotFound):
-			h.errorService.RespondWithError(c, err, "provider_not_found", http.StatusNotFound)
-		case errors.Is(err, domainprovider.ErrProviderNotActive), errors.Is(err, domainrequest.ErrInvalidPreferredDate), errors.Is(err, domainrequest.ErrInvalidServiceType):
-			h.errorService.RespondWithError(c, err, "invalid_request", http.StatusBadRequest)
-		default:
-			h.errorService.RespondWithError(c, err, "create_request_failed", http.StatusInternalServerError)
+	created, problems := h.uc.Create.Execute(c.Request.Context(), input)
+	if len(problems) > 0 {
+		// Busca o status do primeiro problema para resposta
+		status := http.StatusBadRequest
+		for _, p := range problems {
+			if p.Status >= 500 {
+				status = http.StatusInternalServerError
+				break
+			} else if p.Status == http.StatusNotFound {
+				status = http.StatusNotFound
+			}
 		}
+		h.errorService.RespondWithProblems(c, problems, "create_request_failed", status)
 		return
 	}
 
@@ -138,24 +157,29 @@ func (h *RequestHandler) Create(c *gin.Context) {
 // @Failure 400 {object} map[string]interface{}
 // @Router /requests/{request_id}/accept [post]
 func (h *RequestHandler) Accept(c *gin.Context) {
-	requestID, ok := parseUUIDParam(c, "request_id", "invalid_request_id")
-	if !ok {
+	requestID, problems := parseUUIDParamProblems(c, "request_id", "invalid_request_id")
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_request_id", http.StatusBadRequest)
 		return
 	}
-	providerID, ok := providerIDFromContext(c, h.providerRepo, true)
-	if !ok {
+	providerID, problems := providerIDFromContextProblems(c, h.providerRepo, true)
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_provider", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.uc.Accept.Execute(c.Request.Context(), request.AcceptRequestInput{RequestID: requestID, ProviderID: providerID}); err != nil {
-		switch {
-		case errors.Is(err, domainprovider.ErrProviderNotFound), errors.Is(err, domainrequest.ErrRequestNotFound):
-			h.errorService.RespondWithError(c, err, "request_or_provider_not_found", http.StatusNotFound)
-		case errors.Is(err, domainprovider.ErrProviderNotActive), errors.Is(err, domainrequest.ErrInvalidStatusTransition):
-			h.errorService.RespondWithError(c, err, "cannot_accept", http.StatusBadRequest)
-		default:
-			h.errorService.RespondWithError(c, err, "accept_request_failed", http.StatusInternalServerError)
+	problems = h.uc.Accept.Execute(c.Request.Context(), request.AcceptRequestInput{RequestID: requestID, ProviderID: providerID})
+	if len(problems) > 0 {
+		status := http.StatusBadRequest
+		for _, p := range problems {
+			if p.Status >= 500 {
+				status = http.StatusInternalServerError
+				break
+			} else if p.Status == http.StatusNotFound {
+				status = http.StatusNotFound
+			}
 		}
+		h.errorService.RespondWithProblems(c, problems, "accept_request_failed", status)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "accepted"})
@@ -173,12 +197,14 @@ func (h *RequestHandler) Accept(c *gin.Context) {
 // @Failure 400 {object} map[string]interface{}
 // @Router /requests/{request_id}/reject [post]
 func (h *RequestHandler) Reject(c *gin.Context) {
-	requestID, ok := parseUUIDParam(c, "request_id", "invalid_request_id")
-	if !ok {
+	requestID, problems := parseUUIDParamProblems(c, "request_id", "invalid_request_id")
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_request_id", http.StatusBadRequest)
 		return
 	}
-	providerID, ok := providerIDFromContext(c, h.providerRepo, true)
-	if !ok {
+	providerID, problems := providerIDFromContextProblems(c, h.providerRepo, true)
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_provider", http.StatusBadRequest)
 		return
 	}
 	var req struct {
@@ -188,15 +214,18 @@ func (h *RequestHandler) Reject(c *gin.Context) {
 		h.errorService.RespondWithError(c, err, "invalid_payload", http.StatusBadRequest)
 		return
 	}
-	if err := h.uc.Reject.Execute(c.Request.Context(), request.RejectRequestInput{RequestID: requestID, ProviderID: providerID, Reason: req.Reason}); err != nil {
-		switch {
-		case errors.Is(err, domainprovider.ErrProviderNotFound), errors.Is(err, domainrequest.ErrRequestNotFound):
-			h.errorService.RespondWithError(c, err, "request_or_provider_not_found", http.StatusNotFound)
-		case errors.Is(err, domainprovider.ErrProviderNotActive), errors.Is(err, domainrequest.ErrInvalidStatusTransition):
-			h.errorService.RespondWithError(c, err, "cannot_reject", http.StatusBadRequest)
-		default:
-			h.errorService.RespondWithError(c, err, "reject_request_failed", http.StatusInternalServerError)
+	problems = h.uc.Reject.Execute(c.Request.Context(), request.RejectRequestInput{RequestID: requestID, ProviderID: providerID, Reason: req.Reason})
+	if len(problems) > 0 {
+		status := http.StatusBadRequest
+		for _, p := range problems {
+			if p.Status >= 500 {
+				status = http.StatusInternalServerError
+				break
+			} else if p.Status == http.StatusNotFound {
+				status = http.StatusNotFound
+			}
 		}
+		h.errorService.RespondWithProblems(c, problems, "reject_request_failed", status)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "rejected"})
@@ -212,24 +241,29 @@ func (h *RequestHandler) Reject(c *gin.Context) {
 // @Failure 400 {object} map[string]interface{}
 // @Router /requests/{request_id}/complete [post]
 func (h *RequestHandler) Complete(c *gin.Context) {
-	requestID, ok := parseUUIDParam(c, "request_id", "invalid_request_id")
-	if !ok {
+	requestID, problems := parseUUIDParamProblems(c, "request_id", "invalid_request_id")
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_request_id", http.StatusBadRequest)
 		return
 	}
-	providerID, ok := providerIDFromContext(c, h.providerRepo, true)
-	if !ok {
+	providerID, problems := providerIDFromContextProblems(c, h.providerRepo, true)
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_provider", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.uc.Complete.Execute(c.Request.Context(), request.CompleteRequestInput{RequestID: requestID, ProviderID: providerID}); err != nil {
-		switch {
-		case errors.Is(err, domainprovider.ErrProviderNotFound), errors.Is(err, domainrequest.ErrRequestNotFound):
-			h.errorService.RespondWithError(c, err, "request_or_provider_not_found", http.StatusNotFound)
-		case errors.Is(err, domainrequest.ErrInvalidStatusTransition):
-			h.errorService.RespondWithError(c, err, "cannot_complete", http.StatusBadRequest)
-		default:
-			h.errorService.RespondWithError(c, err, "complete_request_failed", http.StatusInternalServerError)
+	problems = h.uc.Complete.Execute(c.Request.Context(), request.CompleteRequestInput{RequestID: requestID, ProviderID: providerID})
+	if len(problems) > 0 {
+		status := http.StatusBadRequest
+		for _, p := range problems {
+			if p.Status >= 500 {
+				status = http.StatusInternalServerError
+				break
+			} else if p.Status == http.StatusNotFound {
+				status = http.StatusNotFound
+			}
 		}
+		h.errorService.RespondWithProblems(c, problems, "complete_request_failed", status)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "completed"})
@@ -259,15 +293,18 @@ func (h *RequestHandler) Cancel(c *gin.Context) {
 		return
 	}
 
-	if err := h.uc.Cancel.Execute(c.Request.Context(), request.CancelRequestInput{RequestID: requestID, OwnerID: ownerID}); err != nil {
-		switch {
-		case errors.Is(err, domainrequest.ErrRequestNotFound):
-			h.errorService.RespondWithError(c, err, "request_not_found", http.StatusNotFound)
-		case errors.Is(err, domainrequest.ErrInvalidStatusTransition):
-			h.errorService.RespondWithError(c, err, "cannot_cancel", http.StatusBadRequest)
-		default:
-			h.errorService.RespondWithError(c, err, "cancel_request_failed", http.StatusBadRequest)
+	problems := h.uc.Cancel.Execute(c.Request.Context(), request.CancelRequestInput{RequestID: requestID, OwnerID: ownerID})
+	if len(problems) > 0 {
+		status := http.StatusBadRequest
+		for _, p := range problems {
+			if p.Status >= 500 {
+				status = http.StatusInternalServerError
+				break
+			} else if p.Status == http.StatusNotFound {
+				status = http.StatusNotFound
+			}
 		}
+		h.errorService.RespondWithProblems(c, problems, "cancel_request_failed", status)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "cancelled"})
@@ -292,22 +329,27 @@ func (h *RequestHandler) GetStatus(c *gin.Context) {
 	userType := extractUserType(c)
 	providerID := uuid.Nil
 	if userType == domainuser.UserTypeProvider {
-		resolvedID, ok := providerIDFromContext(c, h.providerRepo, true)
-		if !ok {
+		resolvedID, problems := providerIDFromContextProblems(c, h.providerRepo, true)
+		if len(problems) > 0 {
+			h.errorService.RespondWithProblems(c, problems, "invalid_provider", http.StatusBadRequest)
 			return
 		}
 		providerID = resolvedID
 		userID = uuid.Nil // evita conflitar owner vs provider
 	}
 
-	result, err := h.uc.GetStatus.Execute(c.Request.Context(), request.GetRequestStatusInput{RequestID: requestID, OwnerID: userID, ProviderID: providerID})
-	if err != nil {
-		switch {
-		case errors.Is(err, domainrequest.ErrRequestNotFound):
-			h.errorService.RespondWithError(c, err, "request_not_found", http.StatusNotFound)
-		default:
-			h.errorService.RespondWithError(c, err, "cannot_view_request", http.StatusForbidden)
+	result, problems := h.uc.GetStatus.Execute(c.Request.Context(), request.GetRequestStatusInput{RequestID: requestID, OwnerID: userID, ProviderID: providerID})
+	if len(problems) > 0 {
+		status := http.StatusBadRequest
+		for _, p := range problems {
+			if p.Status >= 500 {
+				status = http.StatusInternalServerError
+				break
+			} else if p.Status == http.StatusNotFound {
+				status = http.StatusNotFound
+			}
 		}
+		h.errorService.RespondWithProblems(c, problems, "cannot_view_request", status)
 		return
 	}
 
@@ -343,9 +385,18 @@ func (h *RequestHandler) ListForOwner(c *gin.Context) {
 	page := parseIntDefault(c.Query("page"), 1)
 	limit := parseIntDefault(c.Query("limit"), 20)
 
-	items, total, err := h.uc.ListForOwner.Execute(c.Request.Context(), request.ListRequestsForOwnerInput{OwnerID: ownerID, Page: page, Limit: limit})
-	if err != nil {
-		h.errorService.RespondWithError(c, err, "list_requests_failed", http.StatusInternalServerError)
+	items, total, problems := h.uc.ListForOwner.Execute(c.Request.Context(), request.ListRequestsForOwnerInput{OwnerID: ownerID, Page: page, Limit: limit})
+	if len(problems) > 0 {
+		status := http.StatusBadRequest
+		for _, p := range problems {
+			if p.Status >= 500 {
+				status = http.StatusInternalServerError
+				break
+			} else if p.Status == http.StatusNotFound {
+				status = http.StatusNotFound
+			}
+		}
+		h.errorService.RespondWithProblems(c, problems, "list_requests_failed", status)
 		return
 	}
 
@@ -363,16 +414,26 @@ func (h *RequestHandler) ListForOwner(c *gin.Context) {
 // @Success 200 {object} map[string]interface{}
 // @Router /requests/provider [get]
 func (h *RequestHandler) ListForProvider(c *gin.Context) {
-	providerID, ok := providerIDFromContext(c, h.providerRepo, true)
-	if !ok {
+	providerID, problems := providerIDFromContextProblems(c, h.providerRepo, true)
+	if len(problems) > 0 {
+		h.errorService.RespondWithProblems(c, problems, "invalid_provider", http.StatusBadRequest)
 		return
 	}
 	page := parseIntDefault(c.Query("page"), 1)
 	limit := parseIntDefault(c.Query("limit"), 20)
 
-	items, total, err := h.uc.ListForProvider.Execute(c.Request.Context(), request.ListRequestsForProviderInput{ProviderID: providerID, Page: page, Limit: limit})
-	if err != nil {
-		h.errorService.RespondWithError(c, err, "list_requests_failed", http.StatusInternalServerError)
+	items, total, problems := h.uc.ListForProvider.Execute(c.Request.Context(), request.ListRequestsForProviderInput{ProviderID: providerID, Page: page, Limit: limit})
+	if len(problems) > 0 {
+		status := http.StatusBadRequest
+		for _, p := range problems {
+			if p.Status >= 500 {
+				status = http.StatusInternalServerError
+				break
+			} else if p.Status == http.StatusNotFound {
+				status = http.StatusNotFound
+			}
+		}
+		h.errorService.RespondWithProblems(c, problems, "list_requests_failed", status)
 		return
 	}
 
@@ -399,9 +460,18 @@ func (h *RequestHandler) ListByStatus(c *gin.Context) {
 	page := parseIntDefault(c.Query("page"), 1)
 	limit := parseIntDefault(c.Query("limit"), 20)
 
-	items, total, err := h.uc.ListByStatus.Execute(c.Request.Context(), request.ListRequestsByStatusInput{Status: status, Page: page, Limit: limit})
-	if err != nil {
-		h.errorService.RespondWithError(c, err, "list_requests_failed", http.StatusInternalServerError)
+	items, total, problems := h.uc.ListByStatus.Execute(c.Request.Context(), request.ListRequestsByStatusInput{Status: status, Page: page, Limit: limit})
+	if len(problems) > 0 {
+		status := http.StatusBadRequest
+		for _, p := range problems {
+			if p.Status >= 500 {
+				status = http.StatusInternalServerError
+				break
+			} else if p.Status == http.StatusNotFound {
+				status = http.StatusNotFound
+			}
+		}
+		h.errorService.RespondWithProblems(c, problems, "list_requests_failed", status)
 		return
 	}
 	resp := mapRequests(items)
