@@ -58,14 +58,14 @@ type registerProviderRequest struct {
 }
 
 // Register cria perfil de prestador para o usuário autenticado.
-// @Summary Create provider profile
+// @Summary Register provider profile
 // @Tags providers
 // @Security BearerAuth
 // @Accept json
 // @Produce json
-// @Param request body object true "Provider payload"
-// @Success 201 {object} map[string]interface{}
-// @Failure 400 {object} map[string]interface{}
+// @Param request body registerProviderRequest true "Provider payload"
+// @Success 201 {object} provider.RegisterProviderOutput
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
 // @Router /providers [post]
 func (h *ProviderHandler) Register(c *gin.Context) {
 	userID, problems := extractUserIDProblems(c)
@@ -118,9 +118,9 @@ type updateProviderProfileRequest struct {
 // @Accept json
 // @Produce json
 // @Param provider_id path string true "Provider ID"
-// @Param request body object true "Profile payload"
-// @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} map[string]interface{}
+// @Param request body updateProviderProfileRequest true "Profile payload"
+// @Success 200 {object} domainprovider.Provider
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
 // @Router /providers/{provider_id} [put]
 func (h *ProviderHandler) UpdateProfile(c *gin.Context) {
 	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
@@ -162,6 +162,17 @@ type serviceRequest struct {
 	PriceMax float64 `json:"price_max" validate:"required,gtfield=PriceMin"`
 }
 
+// AddService adiciona um serviço ao prestador.
+// @Summary Add service to provider
+// @Tags providers
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param provider_id path string true "Provider ID"
+// @Param request body serviceRequest true "Service payload"
+// @Success 200 {object} domainprovider.Provider
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Router /providers/{provider_id}/services [post]
 func (h *ProviderHandler) AddService(c *gin.Context) {
 	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
 	if len(problems) > 0 {
@@ -190,6 +201,17 @@ func (h *ProviderHandler) AddService(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
+// UpdateService atualiza um serviço do prestador.
+// @Summary Update provider service
+// @Tags providers
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param provider_id path string true "Provider ID"
+// @Param request body serviceRequest true "Service payload"
+// @Success 200 {object} domainprovider.Provider
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Router /providers/{provider_id}/services [put]
 func (h *ProviderHandler) UpdateService(c *gin.Context) {
 	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
 	if len(problems) > 0 {
@@ -217,6 +239,17 @@ func (h *ProviderHandler) UpdateService(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
+// RemoveService remove um serviço do prestador.
+// @Summary Remove provider service
+// @Tags providers
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param provider_id path string true "Provider ID"
+// @Param request body object true "Service identifier"
+// @Success 200 {object} domainprovider.Provider
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Router /providers/{provider_id}/services [delete]
 func (h *ProviderHandler) RemoveService(c *gin.Context) {
 	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
 	if len(problems) > 0 {
@@ -245,6 +278,17 @@ func (h *ProviderHandler) RemoveService(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
+// AddPhoto adiciona uma foto ao prestador.
+// @Summary Add photo to provider
+// @Tags providers
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param provider_id path string true "Provider ID"
+// @Param request body object true "Photo payload"
+// @Success 200 {object} domainprovider.Provider
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Router /providers/{provider_id}/photos [post]
 func (h *ProviderHandler) AddPhoto(c *gin.Context) {
 	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
 	if len(problems) > 0 {
@@ -267,6 +311,16 @@ func (h *ProviderHandler) AddPhoto(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
+// RemovePhoto remove uma foto do prestador.
+// @Summary Remove photo from provider
+// @Tags providers
+// @Security BearerAuth
+// @Produce json
+// @Param provider_id path string true "Provider ID"
+// @Param photo_id path string true "Photo ID"
+// @Success 200 {object} domainprovider.Provider
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Router /providers/{provider_id}/photos/{photo_id} [delete]
 func (h *ProviderHandler) RemovePhoto(c *gin.Context) {
 	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
 	if len(problems) > 0 {
@@ -290,6 +344,17 @@ func (h *ProviderHandler) RemovePhoto(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
+// UpdateWorkingHours atualiza o horário de funcionamento do prestador.
+// @Summary Update provider working hours
+// @Tags providers
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param provider_id path string true "Provider ID"
+// @Param request body object true "Working hours payload"
+// @Success 200 {object} domainprovider.Provider
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Router /providers/{provider_id}/working-hours [put]
 func (h *ProviderHandler) UpdateWorkingHours(c *gin.Context) {
 	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
 	if len(problems) > 0 {
@@ -315,6 +380,17 @@ func (h *ProviderHandler) UpdateWorkingHours(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
+// UpdateDaySchedule atualiza o horário de um dia específico do prestador.
+// @Summary Update provider day schedule
+// @Tags providers
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param provider_id path string true "Provider ID"
+// @Param request body object true "Day schedule payload"
+// @Success 200 {object} domainprovider.Provider
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Router /providers/{provider_id}/working-hours/day [put]
 func (h *ProviderHandler) UpdateDaySchedule(c *gin.Context) {
 	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
 	if len(problems) > 0 {
@@ -348,6 +424,15 @@ func (h *ProviderHandler) UpdateDaySchedule(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
+// Activate ativa o perfil do prestador.
+// @Summary Activate provider profile
+// @Tags providers
+// @Security BearerAuth
+// @Produce json
+// @Param provider_id path string true "Provider ID"
+// @Success 200 {object} domainprovider.Provider
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Router /providers/{provider_id}/activate [post]
 func (h *ProviderHandler) Activate(c *gin.Context) {
 	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
 	if len(problems) > 0 {
@@ -362,6 +447,15 @@ func (h *ProviderHandler) Activate(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
+// Deactivate desativa o perfil do prestador.
+// @Summary Deactivate provider profile
+// @Tags providers
+// @Security BearerAuth
+// @Produce json
+// @Param provider_id path string true "Provider ID"
+// @Success 200 {object} domainprovider.Provider
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Router /providers/{provider_id}/deactivate [post]
 func (h *ProviderHandler) Deactivate(c *gin.Context) {
 	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
 	if len(problems) > 0 {
@@ -376,6 +470,17 @@ func (h *ProviderHandler) Deactivate(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
+// Approve aprova o perfil do prestador.
+// @Summary Approve provider profile
+// @Tags providers
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param provider_id path string true "Provider ID"
+// @Param request body object true "Approval note"
+// @Success 200 {object} domainprovider.Provider
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Router /providers/{provider_id}/approve [post]
 func (h *ProviderHandler) Approve(c *gin.Context) {
 	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
 	if len(problems) > 0 {
@@ -397,6 +502,17 @@ func (h *ProviderHandler) Approve(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
+// Reject rejeita o perfil do prestador.
+// @Summary Reject provider profile
+// @Tags providers
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param provider_id path string true "Provider ID"
+// @Param request body object true "Rejection reason"
+// @Success 200 {object} domainprovider.Provider
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Router /providers/{provider_id}/reject [post]
 func (h *ProviderHandler) Reject(c *gin.Context) {
 	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
 	if len(problems) > 0 {
@@ -418,6 +534,12 @@ func (h *ProviderHandler) Reject(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
+// ListProvidersByLocationResponseDTO representa a resposta da listagem de prestadores por localização.
+type ListProvidersByLocationResponseDTO struct {
+	Items []domainprovider.Provider `json:"items"`
+	Total int64                     `json:"total"`
+}
+
 // ListByLocation retorna prestadores ativos próximos à localização.
 // @Summary List providers by location
 // @Tags providers
@@ -427,8 +549,8 @@ func (h *ProviderHandler) Reject(c *gin.Context) {
 // @Param radius_km query number true "Raio em km"
 // @Param page query int false "Página"
 // @Param limit query int false "Limite"
-// @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} map[string]interface{}
+// @Success 200 {object} http.ListProvidersByLocationResponseDTO
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
 // @Router /providers/search/location [get]
 func (h *ProviderHandler) ListByLocation(c *gin.Context) {
 	lat, lon, radius := c.Query("lat"), c.Query("lon"), c.Query("radius_km")

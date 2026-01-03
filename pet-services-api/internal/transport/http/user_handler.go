@@ -41,8 +41,8 @@ func RegisterUserRoutes(rg *gin.RouterGroup, h *UserHandler) {
 // @Tags users
 // @Security BearerAuth
 // @Produce json
-// @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} map[string]interface{}
+// @Success 200 {object} domainuser.User
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
 // @Router /users/me [get]
 func (h *UserHandler) GetProfile(c *gin.Context) {
 	userID, err := extractUserID(c)
@@ -59,17 +59,7 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 	c.JSON(http.StatusOK, userToResponse(profile))
 }
 
-// updateProfileRequest payload para atualização parcial.
-// UpdateProfile atualiza dados do usuário autenticado.
-// @Summary Update current user profile
-// @Tags users
-// @Security BearerAuth
-// @Accept json
-// @Produce json
-// @Param request body updateProfileRequest true "Profile payload"
-// @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} map[string]interface{}
-// @Router /users/me [put]
+// --- DTOs de payload agrupados ---
 type updateProfileRequest struct {
 	Name      *string             `json:"name" validate:"omitempty,min=3,max=100"`
 	Phone     *string             `json:"phone" validate:"omitempty,min=10,max=20"`
@@ -78,7 +68,37 @@ type updateProfileRequest struct {
 	Longitude *float64            `json:"longitude" validate:"omitempty,min=-180,max=180"`
 }
 
+type changePasswordRequest struct {
+	CurrentPassword string `json:"current_password" validate:"required,min=1"`
+	NewPassword     string `json:"new_password" validate:"required,min=8,max=128"`
+}
+
+type requestPasswordResetRequest struct {
+	Email string `json:"email" validate:"required,email"`
+}
+
+type confirmPasswordResetRequest struct {
+	Token       string `json:"token" validate:"required,min=10"`
+	NewPassword string `json:"new_password" validate:"required,min=8,max=128"`
+}
+
+type confirmEmailVerificationRequest struct {
+	Token string `json:"token" validate:"required,min=10"`
+}
+
 // UpdateProfile atualiza dados do usuário autenticado.
+// @Summary Atualizar perfil do usuário
+// @Tags users
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param request body updateProfileRequest true "Dados do perfil"
+// @Success 200 {object} map[string]interface{} "Status da operação"
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
+// @Router /users/me [put]
 func (h *UserHandler) UpdateProfile(c *gin.Context) {
 	userID, err := extractUserID(c)
 	if err != nil {
@@ -107,13 +127,19 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
-// changePasswordRequest payload.
-type changePasswordRequest struct {
-	CurrentPassword string `json:"current_password" validate:"required,min=1"`
-	NewPassword     string `json:"new_password" validate:"required,min=8,max=128"`
-}
-
 // ChangePassword troca a senha do usuário autenticado.
+// @Summary Trocar senha do usuário
+// @Tags users
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param request body changePasswordRequest true "Dados para troca de senha"
+// @Success 200 {object} map[string]interface{} "Status da operação"
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
+// @Router /users/change-password [post]
 func (h *UserHandler) ChangePassword(c *gin.Context) {
 	userID, err := extractUserID(c)
 	if err != nil {
@@ -139,12 +165,18 @@ func (h *UserHandler) ChangePassword(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
-// requestPasswordResetRequest payload.
-type requestPasswordResetRequest struct {
-	Email string `json:"email" validate:"required,email"`
-}
-
 // RequestPasswordReset inicia fluxo de reset por email.
+// @Summary Solicitar reset de senha
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param request body requestPasswordResetRequest true "Email para reset de senha"
+// @Success 200 {object} map[string]interface{} "Status da operação"
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
+// @Router /users/password-reset/request [post]
 func (h *UserHandler) RequestPasswordReset(c *gin.Context) {
 	var req requestPasswordResetRequest
 	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
@@ -160,23 +192,18 @@ func (h *UserHandler) RequestPasswordReset(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
-// confirmPasswordResetRequest payload.
-type confirmPasswordResetRequest struct {
-	Token       string `json:"token" validate:"required,min=10"`
-	NewPassword string `json:"new_password" validate:"required,min=8,max=128"`
-}
-
-// RequestEmailVerification envia email com link de verificação.
-// @Summary Request email verification
+// ConfirmPasswordReset aplica o reset de senha.
+// @Summary Confirmar reset de senha
 // @Tags users
-// @Security BearerAuth
 // @Accept json
 // @Produce json
-// @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} map[string]interface{}
-// @Router /users/email/verification/request [post]
-
-// ConfirmPasswordReset aplica o reset de senha.
+// @Param request body confirmPasswordResetRequest true "Dados para reset de senha"
+// @Success 200 {object} map[string]interface{} "Status da operação"
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
+// @Router /users/password-reset/confirm [post]
 func (h *UserHandler) ConfirmPasswordReset(c *gin.Context) {
 	var req confirmPasswordResetRequest
 	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
@@ -193,18 +220,19 @@ func (h *UserHandler) ConfirmPasswordReset(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
-	// ConfirmEmailVerification confirma email com código/token.
-	// @Summary Confirm email verification
-	// @Tags users
-	// @Accept json
-	// @Produce json
-	// @Param request body confirmEmailVerificationRequest true "Verification confirm"
-	// @Success 200 {object} map[string]interface{}
-	// @Failure 400 {object} map[string]interface{}
-	// @Router /users/email/verification/confirm [post]
 }
 
 // RequestEmailVerification dispara email de verificação.
+// @Summary Solicitar verificação de email
+// @Tags users
+// @Security BearerAuth
+// @Produce json
+// @Success 200 {object} map[string]interface{} "Status da operação"
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
+// @Router /users/email/verification/request [post]
 func (h *UserHandler) RequestEmailVerification(c *gin.Context) {
 	userID, err := extractUserID(c)
 	if err != nil {
@@ -225,16 +253,22 @@ func (h *UserHandler) RequestEmailVerification(c *gin.Context) {
 	// @Produce json
 	// @Param hard query bool false "Hard delete"
 	// @Success 200 {object} map[string]interface{}
-	// @Failure 400 {object} map[string]interface{}
+	// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
 	// @Router /users/me [delete]
 }
 
-// confirmEmailVerificationRequest payload.
-type confirmEmailVerificationRequest struct {
-	Token string `json:"token" validate:"required,min=10"`
-}
-
 // ConfirmEmailVerification confirma email.
+// @Summary Confirmar verificação de email
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param request body confirmEmailVerificationRequest true "Token de verificação"
+// @Success 200 {object} map[string]interface{} "Status da operação"
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
+// @Router /users/email/verification/confirm [post]
 func (h *UserHandler) ConfirmEmailVerification(c *gin.Context) {
 	var req confirmEmailVerificationRequest
 	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
@@ -251,6 +285,17 @@ func (h *UserHandler) ConfirmEmailVerification(c *gin.Context) {
 }
 
 // DeleteAccount deleta (soft ou hard) a conta do usuário autenticado.
+// @Summary Deletar conta do usuário
+// @Tags users
+// @Security BearerAuth
+// @Produce json
+// @Param hard query bool false "Hard delete"
+// @Success 200 {object} map[string]interface{} "Status da operação"
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
+// @Router /users/me [delete]
 func (h *UserHandler) DeleteAccount(c *gin.Context) {
 	userID, err := extractUserID(c)
 	if err != nil {

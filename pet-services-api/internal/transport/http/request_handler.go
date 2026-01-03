@@ -17,7 +17,7 @@ import (
 )
 
 // parseUUIDParamProblems converte parâmetro de rota para UUID, retornando problemas padronizados.
-func parseUUIDParamProblems(c *gin.Context, name string, errCode string) (uuid.UUID, []exceptions.ProblemDetails) {
+func parseUUIDParamProblems(c *gin.Context, name string, _ string) (uuid.UUID, []exceptions.ProblemDetails) {
 	value := c.Param(name)
 	id, err := uuid.Parse(value)
 	if err != nil {
@@ -70,14 +70,17 @@ type createRequestPayload struct {
 }
 
 // Create cria uma solicitação de serviço.
-// @Summary Create service request
+// @Summary Criar solicitação de serviço
 // @Tags requests
 // @Security BearerAuth
 // @Accept json
 // @Produce json
-// @Param request body object true "Request payload"
-// @Success 201 {object} map[string]interface{}
-// @Failure 400 {object} map[string]interface{}
+// @Param request body request.CreateRequestInput true "Dados da solicitação"
+// @Success 201 {object} map[string]interface{} "ID e status da solicitação criada"
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
 // @Router /requests [post]
 func (h *RequestHandler) Create(c *gin.Context) {
 	ownerID, err := extractUserID(c)
@@ -148,13 +151,16 @@ func (h *RequestHandler) Create(c *gin.Context) {
 }
 
 // Accept permite ao prestador aceitar uma solicitação.
-// @Summary Accept request
+// @Summary Aceitar solicitação
 // @Tags requests
 // @Security BearerAuth
 // @Produce json
-// @Param request_id path string true "Request ID"
-// @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} map[string]interface{}
+// @Param request_id path string true "ID da solicitação"
+// @Success 200 {object} map[string]interface{} "Status de aceitação"
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
 // @Router /requests/{request_id}/accept [post]
 func (h *RequestHandler) Accept(c *gin.Context) {
 	requestID, problems := parseUUIDParamProblems(c, "request_id", "invalid_request_id")
@@ -186,15 +192,18 @@ func (h *RequestHandler) Accept(c *gin.Context) {
 }
 
 // Reject permite ao prestador rejeitar uma solicitação.
-// @Summary Reject request
+// @Summary Rejeitar solicitação
 // @Tags requests
 // @Security BearerAuth
 // @Accept json
 // @Produce json
-// @Param request_id path string true "Request ID"
-// @Param request body object true "Rejection reason"
-// @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} map[string]interface{}
+// @Param request_id path string true "ID da solicitação"
+// @Param request body object true "Motivo da rejeição"
+// @Success 200 {object} map[string]interface{} "Status de rejeição"
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
 // @Router /requests/{request_id}/reject [post]
 func (h *RequestHandler) Reject(c *gin.Context) {
 	requestID, problems := parseUUIDParamProblems(c, "request_id", "invalid_request_id")
@@ -232,13 +241,16 @@ func (h *RequestHandler) Reject(c *gin.Context) {
 }
 
 // Complete marca a solicitação como concluída.
-// @Summary Complete request
+// @Summary Concluir solicitação
 // @Tags requests
 // @Security BearerAuth
 // @Produce json
-// @Param request_id path string true "Request ID"
-// @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} map[string]interface{}
+// @Param request_id path string true "ID da solicitação"
+// @Success 200 {object} map[string]interface{} "Status de conclusão"
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
 // @Router /requests/{request_id}/complete [post]
 func (h *RequestHandler) Complete(c *gin.Context) {
 	requestID, problems := parseUUIDParamProblems(c, "request_id", "invalid_request_id")
@@ -270,13 +282,16 @@ func (h *RequestHandler) Complete(c *gin.Context) {
 }
 
 // Cancel permite ao dono cancelar a solicitação.
-// @Summary Cancel request
+// @Summary Cancelar solicitação
 // @Tags requests
 // @Security BearerAuth
 // @Produce json
-// @Param request_id path string true "Request ID"
-// @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} map[string]interface{}
+// @Param request_id path string true "ID da solicitação"
+// @Success 200 {object} map[string]interface{} "Status de cancelamento"
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
 // @Router /requests/{request_id}/cancel [post]
 func (h *RequestHandler) Cancel(c *gin.Context) {
 	requestID, ok := parseUUIDParam(c, "request_id", "invalid_request_id")
@@ -311,13 +326,17 @@ func (h *RequestHandler) Cancel(c *gin.Context) {
 }
 
 // GetStatus retorna detalhes da solicitação para dono ou prestador vinculado.
-// @Summary Get request status
+// @Summary Consultar status da solicitação
 // @Tags requests
 // @Security BearerAuth
 // @Produce json
-// @Param request_id path string true "Request ID"
-// @Success 200 {object} map[string]interface{}
-// @Failure 403 {object} map[string]interface{}
+// @Param request_id path string true "ID da solicitação"
+// @Success 200 {object} map[string]interface{} "Detalhes da solicitação"
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 403 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
 // @Router /requests/{request_id}/status [get]
 func (h *RequestHandler) GetStatus(c *gin.Context) {
 	requestID, ok := parseUUIDParam(c, "request_id", "invalid_request_id")
@@ -364,13 +383,17 @@ func (h *RequestHandler) GetStatus(c *gin.Context) {
 }
 
 // ListForOwner lista solicitações do dono autenticado.
-// @Summary List requests for owner
+// @Summary Listar solicitações do dono
 // @Tags requests
 // @Security BearerAuth
 // @Produce json
 // @Param page query int false "Página"
 // @Param limit query int false "Limite"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} map[string]interface{} "Lista de solicitações"
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
 // @Router /requests/owner [get]
 func (h *RequestHandler) ListForOwner(c *gin.Context) {
 	ownerID, err := extractUserID(c)
@@ -405,13 +428,17 @@ func (h *RequestHandler) ListForOwner(c *gin.Context) {
 }
 
 // ListForProvider lista solicitações do prestador autenticado.
-// @Summary List requests for provider
+// @Summary Listar solicitações do prestador
 // @Tags requests
 // @Security BearerAuth
 // @Produce json
 // @Param page query int false "Página"
 // @Param limit query int false "Limite"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} map[string]interface{} "Lista de solicitações"
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
 // @Router /requests/provider [get]
 func (h *RequestHandler) ListForProvider(c *gin.Context) {
 	providerID, problems := providerIDFromContextProblems(c, h.providerRepo, true)
@@ -442,14 +469,18 @@ func (h *RequestHandler) ListForProvider(c *gin.Context) {
 }
 
 // ListByStatus lista solicitações por status.
-// @Summary List requests by status
+// @Summary Listar solicitações por status
 // @Tags requests
 // @Security BearerAuth
 // @Produce json
 // @Param status query string true "Status"
 // @Param page query int false "Página"
 // @Param limit query int false "Limite"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} map[string]interface{} "Lista de solicitações"
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
 // @Router /requests/status [get]
 func (h *RequestHandler) ListByStatus(c *gin.Context) {
 	status := domainrequest.Status(c.Query("status"))

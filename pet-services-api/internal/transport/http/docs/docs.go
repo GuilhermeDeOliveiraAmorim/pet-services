@@ -42,15 +42,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/auth.LoginOutput"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
                         }
                     }
                 }
@@ -88,8 +86,7 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
                         }
                     }
                 }
@@ -122,15 +119,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/auth.RefreshOutput"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
                         }
                     }
                 }
@@ -163,15 +158,13 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/auth.SignupOutput"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
                         }
                     }
                 }
@@ -193,7 +186,7 @@ const docTemplate = `{
                 "tags": [
                     "providers"
                 ],
-                "summary": "Create provider profile",
+                "summary": "Register provider profile",
                 "parameters": [
                     {
                         "description": "Provider payload",
@@ -201,7 +194,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object"
+                            "$ref": "#/definitions/http.registerProviderRequest"
                         }
                     }
                 ],
@@ -209,15 +202,13 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/provider.RegisterProviderOutput"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
                         }
                     }
                 }
@@ -271,15 +262,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/http.ListProvidersByLocationResponseDTO"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
                         }
                     }
                 }
@@ -316,6 +305,96 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
+                            "$ref": "#/definitions/http.updateProviderProfileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/provider.Provider"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/providers/{provider_id}/activate": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "providers"
+                ],
+                "summary": "Activate provider profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Provider ID",
+                        "name": "provider_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/provider.Provider"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/providers/{provider_id}/approve": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "providers"
+                ],
+                "summary": "Approve provider profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Provider ID",
+                        "name": "provider_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Approval note",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
                             "type": "object"
                         }
                     }
@@ -324,15 +403,451 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/provider.Provider"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/providers/{provider_id}/deactivate": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "providers"
+                ],
+                "summary": "Deactivate provider profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Provider ID",
+                        "name": "provider_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/provider.Provider"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/providers/{provider_id}/photos": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "providers"
+                ],
+                "summary": "Add photo to provider",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Provider ID",
+                        "name": "provider_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Photo payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/provider.Provider"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/providers/{provider_id}/photos/{photo_id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "providers"
+                ],
+                "summary": "Remove photo from provider",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Provider ID",
+                        "name": "provider_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Photo ID",
+                        "name": "photo_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/provider.Provider"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/providers/{provider_id}/reject": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "providers"
+                ],
+                "summary": "Reject provider profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Provider ID",
+                        "name": "provider_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Rejection reason",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/provider.Provider"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/providers/{provider_id}/services": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "providers"
+                ],
+                "summary": "Update provider service",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Provider ID",
+                        "name": "provider_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Service payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.serviceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/provider.Provider"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "providers"
+                ],
+                "summary": "Add service to provider",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Provider ID",
+                        "name": "provider_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Service payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.serviceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/provider.Provider"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "providers"
+                ],
+                "summary": "Remove provider service",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Provider ID",
+                        "name": "provider_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Service identifier",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/provider.Provider"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/providers/{provider_id}/working-hours": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "providers"
+                ],
+                "summary": "Update provider working hours",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Provider ID",
+                        "name": "provider_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Working hours payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/provider.Provider"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/providers/{provider_id}/working-hours/day": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "providers"
+                ],
+                "summary": "Update provider day schedule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Provider ID",
+                        "name": "provider_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Day schedule payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/provider.Provider"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
                         }
                     }
                 }
@@ -354,21 +869,21 @@ const docTemplate = `{
                 "tags": [
                     "requests"
                 ],
-                "summary": "Create service request",
+                "summary": "Criar solicitação de serviço",
                 "parameters": [
                     {
-                        "description": "Request payload",
+                        "description": "Dados da solicitação",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object"
+                            "$ref": "#/definitions/request.CreateRequestInput"
                         }
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "ID e status da solicitação criada",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -377,8 +892,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
                         }
                     }
                 }
@@ -397,7 +929,7 @@ const docTemplate = `{
                 "tags": [
                     "requests"
                 ],
-                "summary": "List requests for owner",
+                "summary": "Listar solicitações do dono",
                 "parameters": [
                     {
                         "type": "integer",
@@ -414,10 +946,34 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Lista de solicitações",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
                         }
                     }
                 }
@@ -436,7 +992,7 @@ const docTemplate = `{
                 "tags": [
                     "requests"
                 ],
-                "summary": "List requests for provider",
+                "summary": "Listar solicitações do prestador",
                 "parameters": [
                     {
                         "type": "integer",
@@ -453,10 +1009,34 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Lista de solicitações",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
                         }
                     }
                 }
@@ -475,7 +1055,7 @@ const docTemplate = `{
                 "tags": [
                     "requests"
                 ],
-                "summary": "List requests by status",
+                "summary": "Listar solicitações por status",
                 "parameters": [
                     {
                         "type": "string",
@@ -499,10 +1079,34 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Lista de solicitações",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
                         }
                     }
                 }
@@ -521,11 +1125,11 @@ const docTemplate = `{
                 "tags": [
                     "requests"
                 ],
-                "summary": "Accept request",
+                "summary": "Aceitar solicitação",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Request ID",
+                        "description": "ID da solicitação",
                         "name": "request_id",
                         "in": "path",
                         "required": true
@@ -533,7 +1137,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Status de aceitação",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -542,8 +1146,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
                         }
                     }
                 }
@@ -562,11 +1183,11 @@ const docTemplate = `{
                 "tags": [
                     "requests"
                 ],
-                "summary": "Cancel request",
+                "summary": "Cancelar solicitação",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Request ID",
+                        "description": "ID da solicitação",
                         "name": "request_id",
                         "in": "path",
                         "required": true
@@ -574,7 +1195,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Status de cancelamento",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -583,8 +1204,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
                         }
                     }
                 }
@@ -603,11 +1241,11 @@ const docTemplate = `{
                 "tags": [
                     "requests"
                 ],
-                "summary": "Complete request",
+                "summary": "Concluir solicitação",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Request ID",
+                        "description": "ID da solicitação",
                         "name": "request_id",
                         "in": "path",
                         "required": true
@@ -615,7 +1253,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Status de conclusão",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -624,8 +1262,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
                         }
                     }
                 }
@@ -647,17 +1302,17 @@ const docTemplate = `{
                 "tags": [
                     "requests"
                 ],
-                "summary": "Reject request",
+                "summary": "Rejeitar solicitação",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Request ID",
+                        "description": "ID da solicitação",
                         "name": "request_id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Rejection reason",
+                        "description": "Motivo da rejeição",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -668,7 +1323,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Status de rejeição",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -677,8 +1332,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
                         }
                     }
                 }
@@ -697,11 +1369,11 @@ const docTemplate = `{
                 "tags": [
                     "requests"
                 ],
-                "summary": "Get request status",
+                "summary": "Consultar status da solicitação",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Request ID",
+                        "description": "ID da solicitação",
                         "name": "request_id",
                         "in": "path",
                         "required": true
@@ -709,17 +1381,40 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Detalhes da solicitação",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
                         }
                     }
                 }
@@ -741,31 +1436,53 @@ const docTemplate = `{
                 "tags": [
                     "reviews"
                 ],
-                "summary": "Submit review",
+                "summary": "Submeter avaliação",
                 "parameters": [
                     {
-                        "description": "Review payload",
+                        "description": "Dados da avaliação",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object"
+                            "$ref": "#/definitions/review.SubmitReviewInput"
                         }
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "Avaliação criada",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/review.Review"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
                         }
                     }
                 }
@@ -784,11 +1501,11 @@ const docTemplate = `{
                 "tags": [
                     "reviews"
                 ],
-                "summary": "List provider reviews",
+                "summary": "Listar avaliações do prestador",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Provider ID",
+                        "description": "ID do prestador",
                         "name": "provider_id",
                         "in": "path",
                         "required": true
@@ -808,17 +1525,209 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Lista de avaliações",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/http.ListReviewsResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/change-password": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Trocar senha do usuário",
+                "parameters": [
+                    {
+                        "description": "Dados para troca de senha",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.changePasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Status da operação",
+                        "schema": {
                             "type": "object",
                             "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/email/verification/confirm": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Confirmar verificação de email",
+                "parameters": [
+                    {
+                        "description": "Token de verificação",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.confirmEmailVerificationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Status da operação",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/email/verification/request": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Solicitar verificação de email",
+                "responses": {
+                    "200": {
+                        "description": "Status da operação",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
                         }
                     }
                 }
@@ -842,6 +1751,48 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
+                            "$ref": "#/definitions/github_com_guilherme_pet-services-api_internal_domain_user.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Atualizar perfil do usuário",
+                "parameters": [
+                    {
+                        "description": "Dados do perfil",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.updateProfileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Status da operação",
+                        "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
@@ -849,8 +1800,196 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Deletar conta do usuário",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Hard delete",
+                        "name": "hard",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Status da operação",
+                        "schema": {
                             "type": "object",
                             "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/password-reset/confirm": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Confirmar reset de senha",
+                "parameters": [
+                    {
+                        "description": "Dados para reset de senha",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.confirmPasswordResetRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Status da operação",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/password-reset/request": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Solicitar reset de senha",
+                "parameters": [
+                    {
+                        "description": "Email para reset de senha",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.requestPasswordResetRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Status da operação",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
                         }
                     }
                 }
@@ -858,63 +1997,807 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "http.loginRequest": {
+        "auth.LoginOutput": {
             "type": "object",
             "properties": {
-                "email": {
+                "accessExpiresAt": {
+                    "type": "integer"
+                },
+                "accessToken": {
                     "type": "string"
                 },
-                "password": {
+                "refreshExpiresAt": {
+                    "type": "integer"
+                },
+                "refreshToken": {
+                    "type": "string"
+                },
+                "userID": {
+                    "type": "string"
+                },
+                "userType": {
+                    "$ref": "#/definitions/user.UserType"
+                }
+            }
+        },
+        "auth.RefreshOutput": {
+            "type": "object",
+            "properties": {
+                "accessExpiresAt": {
+                    "type": "integer"
+                },
+                "accessToken": {
+                    "type": "string"
+                },
+                "refreshExpiresAt": {
+                    "type": "integer"
+                },
+                "refreshToken": {
+                    "type": "string"
+                },
+                "userID": {
+                    "type": "string"
+                },
+                "userType": {
                     "type": "string"
                 }
             }
         },
-        "http.refreshRequest": {
+        "auth.SignupOutput": {
             "type": "object",
             "properties": {
-                "refresh_token": {
+                "accessExpiresAt": {
+                    "type": "integer"
+                },
+                "accessToken": {
                     "type": "string"
+                },
+                "refreshExpiresAt": {
+                    "type": "integer"
+                },
+                "refreshToken": {
+                    "type": "string"
+                },
+                "userID": {
+                    "type": "string"
+                },
+                "userType": {
+                    "$ref": "#/definitions/user.UserType"
                 }
             }
         },
-        "http.signupRequest": {
+        "exceptions.ProblemDetails": {
             "type": "object",
             "properties": {
-                "email": {
+                "detail": {
                     "type": "string"
                 },
-                "name": {
+                "instance": {
                     "type": "string"
                 },
-                "password": {
-                    "type": "string"
+                "status": {
+                    "type": "integer"
                 },
-                "phone": {
+                "title": {
                     "type": "string"
                 },
                 "type": {
                     "type": "string"
                 }
             }
-        }
-    },
-    "securityDefinitions": {
-        "BearerAuth": {
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header"
+        },
+        "exceptions.ProblemDetailsOutputDTO": {
+            "type": "object",
+            "properties": {
+                "problem_details": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/exceptions.ProblemDetails"
+                    }
+                }
+            }
+        },
+        "github_com_guilherme_pet-services-api_internal_domain_user.User": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "email": {
+                    "$ref": "#/definitions/user.Email"
+                },
+                "emailVerified": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "location": {
+                    "$ref": "#/definitions/user.Location"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "description": "hash bcrypt",
+                    "type": "string"
+                },
+                "phone": {
+                    "$ref": "#/definitions/user.Phone"
+                },
+                "type": {
+                    "$ref": "#/definitions/user.UserType"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.ListProvidersByLocationResponseDTO": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/provider.Provider"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "http.ListReviewsResponseDTO": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/review.Review"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "http.changePasswordRequest": {
+            "type": "object",
+            "required": [
+                "current_password",
+                "new_password"
+            ],
+            "properties": {
+                "current_password": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "new_password": {
+                    "type": "string",
+                    "maxLength": 128,
+                    "minLength": 8
+                }
+            }
+        },
+        "http.confirmEmailVerificationRequest": {
+            "type": "object",
+            "required": [
+                "token"
+            ],
+            "properties": {
+                "token": {
+                    "type": "string",
+                    "minLength": 10
+                }
+            }
+        },
+        "http.confirmPasswordResetRequest": {
+            "type": "object",
+            "required": [
+                "new_password",
+                "token"
+            ],
+            "properties": {
+                "new_password": {
+                    "type": "string",
+                    "maxLength": 128,
+                    "minLength": 8
+                },
+                "token": {
+                    "type": "string",
+                    "minLength": 10
+                }
+            }
+        },
+        "http.loginRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            }
+        },
+        "http.refreshRequest": {
+            "type": "object",
+            "required": [
+                "refresh_token"
+            ],
+            "properties": {
+                "refresh_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.registerProviderRequest": {
+            "type": "object",
+            "required": [
+                "address",
+                "business_name",
+                "description",
+                "latitude",
+                "longitude",
+                "price_range",
+                "services"
+            ],
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/user.Address"
+                },
+                "business_name": {
+                    "type": "string",
+                    "maxLength": 150,
+                    "minLength": 3
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "minLength": 10
+                },
+                "latitude": {
+                    "type": "number",
+                    "maximum": 90,
+                    "minimum": -90
+                },
+                "longitude": {
+                    "type": "number",
+                    "maximum": 180,
+                    "minimum": -180
+                },
+                "price_range": {
+                    "$ref": "#/definitions/provider.PriceRange"
+                },
+                "services": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/provider.ServiceInput"
+                    }
+                }
+            }
+        },
+        "http.requestPasswordResetRequest": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.serviceRequest": {
+            "type": "object",
+            "required": [
+                "category",
+                "name",
+                "price_max",
+                "price_min"
+            ],
+            "properties": {
+                "category": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 2
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 3
+                },
+                "price_max": {
+                    "type": "number"
+                },
+                "price_min": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            }
+        },
+        "http.signupRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "password",
+                "phone",
+                "type"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 3
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 128,
+                    "minLength": 8
+                },
+                "phone": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 10
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "owner",
+                        "provider"
+                    ]
+                }
+            }
+        },
+        "http.updateProfileRequest": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/user.Address"
+                },
+                "latitude": {
+                    "type": "number",
+                    "maximum": 90,
+                    "minimum": -90
+                },
+                "longitude": {
+                    "type": "number",
+                    "maximum": 180,
+                    "minimum": -180
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 3
+                },
+                "phone": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 10
+                }
+            }
+        },
+        "http.updateProviderProfileRequest": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/user.Address"
+                },
+                "business_name": {
+                    "type": "string",
+                    "maxLength": 150,
+                    "minLength": 3
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "minLength": 10
+                },
+                "latitude": {
+                    "type": "number",
+                    "maximum": 90,
+                    "minimum": -90
+                },
+                "longitude": {
+                    "type": "number",
+                    "maximum": 180,
+                    "minimum": -180
+                },
+                "price_range": {
+                    "$ref": "#/definitions/provider.PriceRange"
+                }
+            }
+        },
+        "provider.ApprovalStatus": {
+            "type": "string",
+            "enum": [
+                "pending",
+                "approved",
+                "rejected"
+            ],
+            "x-enum-varnames": [
+                "ApprovalPending",
+                "ApprovalApproved",
+                "ApprovalRejected"
+            ]
+        },
+        "provider.DaySchedule": {
+            "type": "object",
+            "properties": {
+                "close": {
+                    "description": "Formato: \"18:00\"",
+                    "type": "string"
+                },
+                "isOpen": {
+                    "type": "boolean"
+                },
+                "open": {
+                    "description": "Formato: \"08:00\"",
+                    "type": "string"
+                }
+            }
+        },
+        "provider.Photo": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "order": {
+                    "type": "integer"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "provider.PriceRange": {
+            "type": "string",
+            "enum": [
+                "$",
+                "$$",
+                "$$$"
+            ],
+            "x-enum-varnames": [
+                "PriceRangeLow",
+                "PriceRangeMedium",
+                "PriceRangeHigh"
+            ]
+        },
+        "provider.Provider": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/user.Address"
+                },
+                "approvalStatus": {
+                    "$ref": "#/definitions/provider.ApprovalStatus"
+                },
+                "avgRating": {
+                    "type": "number"
+                },
+                "businessName": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "location": {
+                    "$ref": "#/definitions/user.Location"
+                },
+                "moderationNote": {
+                    "type": "string"
+                },
+                "photos": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/provider.Photo"
+                    }
+                },
+                "priceRange": {
+                    "$ref": "#/definitions/provider.PriceRange"
+                },
+                "services": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/provider.Service"
+                    }
+                },
+                "totalReviews": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/github_com_guilherme_pet-services-api_internal_domain_user.User"
+                },
+                "userID": {
+                    "type": "string"
+                },
+                "workingHours": {
+                    "$ref": "#/definitions/provider.WorkingHours"
+                }
+            }
+        },
+        "provider.RegisterProviderOutput": {
+            "type": "object",
+            "properties": {
+                "businessName": {
+                    "type": "string"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "providerID": {
+                    "type": "string"
+                }
+            }
+        },
+        "provider.Service": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "priceMax": {
+                    "type": "number"
+                },
+                "priceMin": {
+                    "type": "number"
+                }
+            }
+        },
+        "provider.ServiceInput": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "priceMax": {
+                    "type": "number"
+                },
+                "priceMin": {
+                    "type": "number"
+                }
+            }
+        },
+        "provider.WorkingHours": {
+            "type": "object",
+            "properties": {
+                "friday": {
+                    "$ref": "#/definitions/provider.DaySchedule"
+                },
+                "monday": {
+                    "$ref": "#/definitions/provider.DaySchedule"
+                },
+                "saturday": {
+                    "$ref": "#/definitions/provider.DaySchedule"
+                },
+                "sunday": {
+                    "$ref": "#/definitions/provider.DaySchedule"
+                },
+                "thursday": {
+                    "$ref": "#/definitions/provider.DaySchedule"
+                },
+                "tuesday": {
+                    "$ref": "#/definitions/provider.DaySchedule"
+                },
+                "wednesday": {
+                    "$ref": "#/definitions/provider.DaySchedule"
+                }
+            }
+        },
+        "request.CreateRequestInput": {
+            "type": "object",
+            "properties": {
+                "notes": {
+                    "type": "string"
+                },
+                "ownerID": {
+                    "type": "string"
+                },
+                "petAge": {
+                    "type": "integer"
+                },
+                "petBreed": {
+                    "type": "string"
+                },
+                "petName": {
+                    "type": "string"
+                },
+                "petNotes": {
+                    "type": "string"
+                },
+                "petType": {
+                    "$ref": "#/definitions/request.PetType"
+                },
+                "petWeight": {
+                    "type": "number"
+                },
+                "preferredDate": {
+                    "type": "string"
+                },
+                "preferredTime": {
+                    "description": "HH:MM",
+                    "type": "string"
+                },
+                "providerID": {
+                    "type": "string"
+                },
+                "serviceType": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.PetType": {
+            "type": "string",
+            "enum": [
+                "dog",
+                "cat",
+                "bird",
+                "rabbit",
+                "fish",
+                "rodent",
+                "reptile",
+                "other"
+            ],
+            "x-enum-varnames": [
+                "PetTypeDog",
+                "PetTypeCat",
+                "PetTypeBird",
+                "PetTypeRabbit",
+                "PetTypeFish",
+                "PetTypeRodent",
+                "PetTypeReptile",
+                "PetTypeOther"
+            ]
+        },
+        "review.Review": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "ownerID": {
+                    "type": "string"
+                },
+                "providerID": {
+                    "type": "string"
+                },
+                "rating": {
+                    "type": "integer"
+                },
+                "requestID": {
+                    "type": "string"
+                }
+            }
+        },
+        "review.SubmitReviewInput": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "ownerID": {
+                    "type": "string"
+                },
+                "rating": {
+                    "type": "integer"
+                },
+                "requestID": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.Address": {
+            "type": "object",
+            "properties": {
+                "city": {
+                    "type": "string"
+                },
+                "complement": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "district": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "street": {
+                    "type": "string"
+                },
+                "zipCode": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.Email": {
+            "type": "object"
+        },
+        "user.Location": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/user.Address"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                }
+            }
+        },
+        "user.Phone": {
+            "type": "object"
+        },
+        "user.UserType": {
+            "type": "string",
+            "enum": [
+                "owner",
+                "provider"
+            ],
+            "x-enum-varnames": [
+                "UserTypeOwner",
+                "UserTypeProvider"
+            ]
         }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0.0",
+	Version:          "",
 	Host:             "",
-	BasePath:         "/api/v1",
-	Schemes:          []string{"http"},
-	Title:            "Pet Services API",
-	Description:      "API para autenticação, usuários, prestadores, solicitações e avaliações.",
+	BasePath:         "",
+	Schemes:          []string{},
+	Title:            "",
+	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

@@ -15,6 +15,12 @@ import (
 	"github.com/guilherme/pet-services-api/internal/infra/factory"
 )
 
+// ListReviewsResponseDTO representa a resposta da listagem de avaliações de um prestador.
+type ListReviewsResponseDTO struct {
+	Items []domainreview.Review `json:"items"`
+	Total int64                 `json:"total"`
+}
+
 func (s *ErrorService) ListReviewsErrorToDTO(err error) (int, ErrorDTO) {
 	switch {
 	case errors.Is(err, domainreview.ErrReviewNotFound):
@@ -39,8 +45,6 @@ func (s *ErrorService) ReviewErrorToDTO(err error) (int, ErrorDTO) {
 		return http.StatusBadRequest, ErrorDTO{Code: "submit_review_failed", Message: err.Error()}
 	}
 }
-
-// ...existing code...
 
 // ReviewHandler expõe endpoints de avaliações.
 type ReviewHandler struct {
@@ -67,14 +71,18 @@ type submitReviewRequest struct {
 }
 
 // Submit cria avaliação para solicitação concluída.
-// @Summary Submit review
+// @Summary Submeter avaliação
 // @Tags reviews
 // @Security BearerAuth
 // @Accept json
 // @Produce json
-// @Param request body object true "Review payload"
-// @Success 201 {object} map[string]interface{}
-// @Failure 400 {object} map[string]interface{}
+// @Param request body review.SubmitReviewInput true "Dados da avaliação"
+// @Success 201 {object} domainreview.Review "Avaliação criada"
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 403 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
 // @Router /reviews [post]
 func (h *ReviewHandler) Submit(c *gin.Context) {
 	ownerID, problems := extractUserIDProblems(c)
@@ -126,15 +134,19 @@ func (h *ReviewHandler) Submit(c *gin.Context) {
 }
 
 // ListForProvider lista avaliações de um prestador.
-// @Summary List provider reviews
+// @Summary Listar avaliações do prestador
 // @Tags reviews
 // @Security BearerAuth
 // @Produce json
-// @Param provider_id path string true "Provider ID"
+// @Param provider_id path string true "ID do prestador"
 // @Param page query int false "Página"
 // @Param limit query int false "Limite"
-// @Success 200 {object} map[string]interface{}
-// @Failure 403 {object} map[string]interface{}
+// @Success 200 {object} http.ListReviewsResponseDTO "Lista de avaliações"
+// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 403 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
+// @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
 // @Router /reviews/provider/{provider_id} [get]
 func (h *ReviewHandler) ListForProvider(c *gin.Context) {
 	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
