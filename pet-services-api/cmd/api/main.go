@@ -137,7 +137,6 @@ func main() {
 	router.GET("/ready", readinessHandler(db))
 
 	// Register v1 routes
-	httpapi.NewRouter(useCases, tokenService)
 	routerWithRoutes := httpapi.NewRouter(useCases, tokenService)
 
 	// Copy routes from the new router to our router with middlewares
