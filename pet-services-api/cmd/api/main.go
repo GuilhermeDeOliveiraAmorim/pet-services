@@ -210,7 +210,7 @@ func corsMiddleware() gin.HandlerFunc {
 // Handlers
 // ─────────────────────────────────────────────────────────────────────────
 
-func healthHandler(db *gorm.DB) gin.HandlerFunc {
+func healthHandler(_ *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"status": "ok",

@@ -9,7 +9,6 @@ import (
 	"gorm.io/gorm/clause"
 
 	providerdom "github.com/guilherme/pet-services-api/internal/domain/provider"
-	userdom "github.com/guilherme/pet-services-api/internal/domain/user"
 	"github.com/guilherme/pet-services-api/internal/models"
 )
 
@@ -208,12 +207,4 @@ func (r *ProviderRepository) UpdateRating(ctx context.Context, providerID uuid.U
 				"avg_rating":    newAvg,
 			}).Error
 	})
-}
-
-// helper to rebuild provider from user location.
-func copyUserAddress(u *userdom.User) userdom.Address {
-	if u == nil || u.Location == nil {
-		return userdom.Address{}
-	}
-	return u.Location.Address
 }

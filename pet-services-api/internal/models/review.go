@@ -12,7 +12,7 @@ type Review struct {
 	RequestID  uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:idx_reviews_request"`
 	ProviderID uuid.UUID `gorm:"type:uuid;not null;index:idx_reviews_provider"`
 	OwnerID    uuid.UUID `gorm:"type:uuid;not null;index:idx_reviews_owner"`
-	Rating     int       `gorm:"not null;check:rating_between_1_5"`
+	Rating     int       `gorm:"not null;check:rating >= 1 AND rating <= 5"`
 	Comment    string    `gorm:"size:1000"`
 	CreatedAt  time.Time `gorm:"autoCreateTime"`
 }
