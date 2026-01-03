@@ -6,25 +6,26 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
+	"github.com/guilherme/pet-services-api/internal/application/exceptions"
 	"github.com/guilherme/pet-services-api/internal/application/logging"
 	"github.com/guilherme/pet-services-api/internal/domain/provider"
 	"github.com/guilherme/pet-services-api/internal/domain/user"
 )
 
-// RegisterProviderUseCase orquestra a criação de um perfil de prestador.
+// RegisterProviderUseCase orquestra a criaç
 type RegisterProviderUseCase struct {
 	providerRepo provider.Repository
 	userRepo     user.Repository
-	logger       *slog.Logger
+	logger       logging.LoggerService
 }
 
 // NewRegisterProviderUseCase cria um novo caso de uso.
 func NewRegisterProviderUseCase(providerRepo provider.Repository, userRepo user.Repository, logger *slog.Logger) *RegisterProviderUseCase {
-	return &RegisterProviderUseCase{
-		providerRepo: providerRepo,
-		userRepo:     userRepo,
-		logger:       logging.EnsureLogger(logger),
-	}
+       return &RegisterProviderUseCase{
+	       providerRepo: providerRepo,
+	       userRepo:     userRepo,
+	       logger:       logging.NewSlogLogger(),
+       }
 }
 
 // RegisterProviderInput representa os dados necessários para criar um prestador.
@@ -55,75 +56,191 @@ type RegisterProviderOutput struct {
 }
 
 // Execute cria um perfil de prestador validando regras básicas de domínio.
-func (uc *RegisterProviderUseCase) Execute(ctx context.Context, input RegisterProviderInput) (*RegisterProviderOutput, error) {
-	var (
-		result *RegisterProviderOutput
-		err    error
-	)
-	defer logging.UseCase(ctx, uc.logger, "RegisterProviderUseCase", slog.String("user_id", input.UserID.String()), slog.String("business_name", input.BusinessName))(&err)
+func (uc *RegisterProviderUseCase) Execute(ctx context.Context, input RegisterProviderInput) (*provider.Provider, []exceptions.ProblemDetails) {
+       uc.logger.Log(logging.Logger{
+	       Context: ctx,
+	       TypeLog: logging.LoggerTypes.INFO,
+	       Layer:   logging.LoggerLayers.USECASES,
+	       Code:    exceptions.RFC200_CODE,
+	       From:    "RegisterProviderUseCase",
+	       Message: logging.DEFAULTMESSAGES.START,
+       })
 
-	if input.BusinessName == "" {
-		err = provider.NewValidationError("business_name", "nome do negócio é obrigatório")
-		return nil, err
-	}
+       if input.UserID == uuid.Nil {
+	       uc.logger.Log(logging.Logger{
+		       Context: ctx,
+		       TypeLog: logging.LoggerTypes.ERROR,
+		       Layer:   logging.LoggerLayers.USECASES,
+		       Code:    exceptions.RFC400_CODE,
+		       From:    "RegisterProviderUseCase",
+		       Message: "UserID é obrigatório",
+		       Error:   fmt.Errorf("userID é obrigatório"),
+	       })
+	       return nil, []exceptions.ProblemDetails{{
+		       Type:   exceptions.RFC400,
+		       Title:  "UserID é obrigatório",
+		       Status: exceptions.RFC400_CODE,
+		       Detail: "O ID do usuário é obrigatório.",
+	       }}
+       }
+       if input.BusinessName == "" {
+	       uc.logger.Log(logging.Logger{
+		       Context: ctx,
+		       TypeLog: logging.LoggerTypes.ERROR,
+		       Layer:   logging.LoggerLayers.USECASES,
+		       Code:    exceptions.RFC400_CODE,
+		       From:    "RegisterProviderUseCase",
+		       Message: "Nome do negócio é obrigatório",
+		       Error:   fmt.Errorf("nome do negócio é obrigatório"),
+	       })
+	       return nil, []exceptions.ProblemDetails{{
+		       Type:   exceptions.RFC400,
+		       Title:  "Nome do negócio é obrigatório",
+		       Status: exceptions.RFC400_CODE,
+		       Detail: "O nome do negócio é obrigatório.",
+	       }}
+       }
+       if len(input.Services) == 0 {
+	       uc.logger.Log(logging.Logger{
+		       Context: ctx,
+		       TypeLog: logging.LoggerTypes.ERROR,
+		       Layer:   logging.LoggerLayers.USECASES,
+		       Code:    exceptions.RFC400_CODE,
+		       From:    "RegisterProviderUseCase",
+		       Message: "Nenhum serviço informado",
+		       Error:   provider.ErrNoServicesProvided,
+	       })
+	       return nil, []exceptions.ProblemDetails{{
+		       Type:   exceptions.RFC400,
+		       Title:  "Nenhum serviço informado",
+		       Status: exceptions.RFC400_CODE,
+		       Detail: "É necessário informar ao menos um serviço.",
+	       }}
+       }
+       for _, svc := range input.Services {
+	       if svc.Name == "" {
+		       uc.logger.Log(logging.Logger{
+			       Context: ctx,
+			       TypeLog: logging.LoggerTypes.ERROR,
+			       Layer:   logging.LoggerLayers.USECASES,
+			       Code:    exceptions.RFC400_CODE,
+			       From:    "RegisterProviderUseCase",
+			       Message: "Nome do serviço é obrigatório",
+			       Error:   fmt.Errorf("nome do serviço é obrigatório"),
+		       })
+		       return nil, []exceptions.ProblemDetails{{
+			       Type:   exceptions.RFC400,
+			       Title:  "Nome do serviço é obrigatório",
+			       Status: exceptions.RFC400_CODE,
+			       Detail: "O nome do serviço é obrigatório.",
+		       }}
+	       }
+	       if svc.PriceMin < 0 || svc.PriceMax < 0 {
+		       uc.logger.Log(logging.Logger{
+			       Context: ctx,
+			       TypeLog: logging.LoggerTypes.ERROR,
+			       Layer:   logging.LoggerLayers.USECASES,
+			       Code:    exceptions.RFC400_CODE,
+			       From:    "RegisterProviderUseCase",
+			       Message: "Preço não pode ser negativo",
+			       Error:   fmt.Errorf("preço não pode ser negativo"),
+		       })
+		       return nil, []exceptions.ProblemDetails{{
+			       Type:   exceptions.RFC400,
+			       Title:  "Preço não pode ser negativo",
+			       Status: exceptions.RFC400_CODE,
+			       Detail: "O preço do serviço não pode ser negativo.",
+		       }}
+	       }
+	       if svc.PriceMax > 0 && svc.PriceMin > svc.PriceMax {
+		       uc.logger.Log(logging.Logger{
+			       Context: ctx,
+			       TypeLog: logging.LoggerTypes.ERROR,
+			       Layer:   logging.LoggerLayers.USECASES,
+			       Code:    exceptions.RFC400_CODE,
+			       From:    "RegisterProviderUseCase",
+			       Message: "Preço máximo deve ser maior ou igual ao mínimo",
+			       Error:   fmt.Errorf("preço máximo deve ser maior ou igual ao mínimo"),
+		       })
+		       return nil, []exceptions.ProblemDetails{{
+			       Type:   exceptions.RFC400,
+			       Title:  "Preço máximo deve ser maior ou igual ao mínimo",
+			       Status: exceptions.RFC400_CODE,
+			       Detail: "O preço máximo deve ser maior ou igual ao mínimo.",
+		       }}
+	       }
+       }
 
-	if len(input.Services) == 0 {
-		err = provider.ErrNoServicesProvided
-		return nil, err
-	}
+       u, err := uc.userRepo.FindByID(ctx, input.UserID)
+       if err != nil {
+	       uc.logger.Log(logging.Logger{
+		       Context: ctx,
+		       TypeLog: logging.LoggerTypes.ERROR,
+		       Layer:   logging.LoggerLayers.USECASES,
+		       Code:    exceptions.RFC404_CODE,
+		       From:    "RegisterProviderUseCase",
+		       Message: "Usuário não encontrado",
+		       Error:   user.ErrUserNotFound,
+	       })
+	       return nil, []exceptions.ProblemDetails{{
+		       Type:   exceptions.RFC404,
+		       Title:  "Usuário não encontrado",
+		       Status: exceptions.RFC404_CODE,
+		       Detail: "O usuário informado não foi encontrado.",
+	       }}
+       }
+       if u.Type != user.UserTypeProvider {
+	       uc.logger.Log(logging.Logger{
+		       Context: ctx,
+		       TypeLog: logging.LoggerTypes.ERROR,
+		       Layer:   logging.LoggerLayers.USECASES,
+		       Code:    exceptions.RFC400_CODE,
+		       From:    "RegisterProviderUseCase",
+		       Message: "Usuário não é do tipo provider",
+		       Error:   fmt.Errorf("usuário não é do tipo provider"),
+	       })
+	       return nil, []exceptions.ProblemDetails{{
+		       Type:   exceptions.RFC400,
+		       Title:  "Usuário não é do tipo provider",
+		       Status: exceptions.RFC400_CODE,
+		       Detail: "O usuário informado não é do tipo provider.",
+	       }}
+       }
 
-	for _, svc := range input.Services {
-		if svc.Name == "" {
-			err = provider.NewValidationError("service.name", "nome do serviço é obrigatório")
-			return nil, err
-		}
-		if svc.PriceMin < 0 || svc.PriceMax < 0 {
-			err = provider.NewValidationError("service.price", "preço não pode ser negativo")
-			return nil, err
-		}
-		if svc.PriceMax > 0 && svc.PriceMin > svc.PriceMax {
-			err = provider.NewValidationError("service.price", "preço máximo deve ser maior ou igual ao mínimo")
-			return nil, err
-		}
-	}
+       p := provider.NewProvider(input.UserID, input.BusinessName, input.Description)
+       p.SetLocation(input.Latitude, input.Longitude, input.Address)
+       for _, svc := range input.Services {
+	       p.AddService(svc.Category, svc.Name, svc.PriceMin, svc.PriceMax)
+       }
+       if input.PriceRange != "" {
+	       p.PriceRange = input.PriceRange
+       }
+       if err := uc.providerRepo.Create(ctx, p); err != nil {
+	       uc.logger.Log(logging.Logger{
+		       Context: ctx,
+		       TypeLog: logging.LoggerTypes.ERROR,
+		       Layer:   logging.LoggerLayers.USECASES,
+		       Code:    exceptions.RFC500_CODE,
+		       From:    "RegisterProviderUseCase",
+		       Message: "Falha ao registrar prestador",
+		       Error:   err,
+	       })
+	       return nil, []exceptions.ProblemDetails{{
+		       Type:   exceptions.RFC500,
+		       Title:  "Falha ao registrar prestador",
+		       Status: exceptions.RFC500_CODE,
+		       Detail: err.Error(),
+	       }}
+       }
 
-	// Verifica se o usuário existe e é do tipo provider
-	u, err := uc.userRepo.FindByID(ctx, input.UserID)
-	if err != nil {
-		err = user.ErrUserNotFound
-		return nil, err
-	}
-	if u.Type != user.UserTypeProvider {
-		err = fmt.Errorf("usuário não é do tipo provider")
-		return nil, err
-	}
+       uc.logger.Log(logging.Logger{
+	       Context: ctx,
+	       TypeLog: logging.LoggerTypes.INFO,
+	       Layer:   logging.LoggerLayers.USECASES,
+	       Code:    exceptions.RFC200_CODE,
+	       From:    "RegisterProviderUseCase",
+	       Message: logging.DEFAULTMESSAGES.END,
+       })
 
-	// Cria entidade Provider
-	p := provider.NewProvider(input.UserID, input.BusinessName, input.Description)
-
-	// Define localização
-	p.SetLocation(input.Latitude, input.Longitude, input.Address)
-
-	// Define serviços
-	for _, svc := range input.Services {
-		p.AddService(svc.Category, svc.Name, svc.PriceMin, svc.PriceMax)
-	}
-
-	// Define faixa de preço (opcional)
-	if input.PriceRange != "" {
-		p.PriceRange = input.PriceRange
-	}
-
-	// Persiste
-	if err := uc.providerRepo.Create(ctx, p); err != nil {
-		return nil, err
-	}
-
-	result = &RegisterProviderOutput{
-		ProviderID:   p.ID,
-		BusinessName: p.BusinessName,
-		IsActive:     p.IsActive,
-	}
-
-	return result, nil
+       return p, nil
 }
