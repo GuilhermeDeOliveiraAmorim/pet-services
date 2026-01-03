@@ -79,6 +79,10 @@ func (p *Provider) RemoveService(category, name string) {
 
 // AddPhoto adiciona uma foto ao prestador
 func (p *Provider) AddPhoto(url string) error {
+	if url == "" {
+		return NewValidationError("photo.url", "url da foto é obrigatória")
+	}
+
 	if len(p.Photos) >= 10 {
 		return ErrMaxPhotosReached
 	}
@@ -95,22 +99,58 @@ func (p *Provider) AddPhoto(url string) error {
 }
 
 // RemovePhoto remove uma foto por ID
-func (p *Provider) RemovePhoto(photoID uuid.UUID) {
+
+func (p *Provider) RemovePhoto(photoID uuid.UUID) error {
 	filtered := []Photo{}
+	found := false
 	for _, photo := range p.Photos {
 		if photo.ID != photoID {
 			filtered = append(filtered, photo)
+			continue
 		}
+		found = true
 	}
 	p.Photos = filtered
 	p.reorderPhotos()
 	p.UpdatedAt = time.Now()
+
+	if !found {
+		return ErrPhotoNotFound
+	}
+
+	return nil
 }
 
 func (p *Provider) reorderPhotos() {
 	for i := range p.Photos {
 		p.Photos[i].Order = i
 	}
+}
+
+// ReorderPhotos ajusta a ordem das fotos pelo array de IDs
+func (p *Provider) ReorderPhotos(order []uuid.UUID) error {
+	if len(order) != len(p.Photos) {
+		return NewValidationError("photos.order", "lista de ordenação não corresponde ao número de fotos")
+	}
+
+	index := make(map[uuid.UUID]Photo, len(p.Photos))
+	for _, photo := range p.Photos {
+		index[photo.ID] = photo
+	}
+
+	reordered := make([]Photo, 0, len(p.Photos))
+	for i, id := range order {
+		photo, ok := index[id]
+		if !ok {
+			return ErrPhotoNotFound
+		}
+		photo.Order = i
+		reordered = append(reordered, photo)
+	}
+
+	p.Photos = reordered
+	p.UpdatedAt = time.Now()
+	return nil
 }
 
 // SetLocation define a localização do prestador
