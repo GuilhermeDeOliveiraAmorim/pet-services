@@ -16,5 +16,9 @@ func NewRouter(uc factory.UseCases) *gin.Engine {
 	authGroup := v1.Group("/auth")
 	RegisterAuthRoutes(authGroup, NewAuthHandler(uc.Auth))
 
+	// Users
+	userGroup := v1.Group("/users")
+	RegisterUserRoutes(userGroup, NewUserHandler(uc.User))
+
 	return r
 }
