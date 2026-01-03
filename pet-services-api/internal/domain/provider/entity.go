@@ -124,10 +124,44 @@ func (p *Provider) SetLocation(latitude, longitude float64, address user.Address
 	p.UpdatedAt = time.Now()
 }
 
-// SetWorkingHours define o horário de funcionamento
-func (p *Provider) SetWorkingHours(hours WorkingHours) {
+// SetWorkingHours define o horário de funcionamento com validação
+func (p *Provider) SetWorkingHours(hours WorkingHours) error {
+	if err := hours.Validate(); err != nil {
+		return err
+	}
+
 	p.WorkingHours = hours
 	p.UpdatedAt = time.Now()
+	return nil
+}
+
+// SetDaySchedule atualiza o horário de um dia específico
+func (p *Provider) SetDaySchedule(day time.Weekday, schedule DaySchedule) error {
+	if err := schedule.Validate(day.String()); err != nil {
+		return err
+	}
+
+	switch day {
+	case time.Monday:
+		p.WorkingHours.Monday = schedule
+	case time.Tuesday:
+		p.WorkingHours.Tuesday = schedule
+	case time.Wednesday:
+		p.WorkingHours.Wednesday = schedule
+	case time.Thursday:
+		p.WorkingHours.Thursday = schedule
+	case time.Friday:
+		p.WorkingHours.Friday = schedule
+	case time.Saturday:
+		p.WorkingHours.Saturday = schedule
+	case time.Sunday:
+		p.WorkingHours.Sunday = schedule
+	default:
+		return ErrInvalidWorkingHours
+	}
+
+	p.UpdatedAt = time.Now()
+	return nil
 }
 
 // Activate ativa o prestador
