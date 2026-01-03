@@ -14,12 +14,13 @@ import (
 
 // AuthHandler expõe endpoints de autenticação.
 type AuthHandler struct {
-	uc factory.AuthUseCases
+	uc           factory.AuthUseCases
+	errorService *ErrorService
 }
 
 // NewAuthHandler cria um novo handler de autenticação.
-func NewAuthHandler(uc factory.AuthUseCases) *AuthHandler {
-	return &AuthHandler{uc: uc}
+func NewAuthHandler(uc factory.AuthUseCases, errorService *ErrorService) *AuthHandler {
+	return &AuthHandler{uc: uc, errorService: errorService}
 }
 
 // RegisterAuthRoutes registra rotas de autenticação em um grupo.
@@ -51,10 +52,7 @@ type signupRequest struct {
 func (h *AuthHandler) Signup(c *gin.Context) {
 	var req signupRequest
 	if err := BindAndValidateJSON(c, &req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":  "invalid_payload",
-			"fields": ValidationErrorResponse(err),
-		})
+		h.errorService.RespondWithError(c, err, "invalid_payload", http.StatusBadRequest)
 		return
 	}
 

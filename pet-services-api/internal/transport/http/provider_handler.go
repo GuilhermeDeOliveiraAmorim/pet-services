@@ -17,11 +17,12 @@ import (
 
 // ProviderHandler expõe endpoints de prestadores.
 type ProviderHandler struct {
-	uc factory.ProviderUseCases
+	uc           factory.ProviderUseCases
+	errorService *ErrorService
 }
 
-func NewProviderHandler(uc factory.ProviderUseCases) *ProviderHandler {
-	return &ProviderHandler{uc: uc}
+func NewProviderHandler(uc factory.ProviderUseCases, errorService *ErrorService) *ProviderHandler {
+	return &ProviderHandler{uc: uc, errorService: errorService}
 }
 
 // RegisterProviderRoutes registra rotas autenticadas de prestadores.
@@ -70,16 +71,13 @@ type registerProviderRequest struct {
 func (h *ProviderHandler) Register(c *gin.Context) {
 	userID, err := extractUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, errorResponse("unauthorized", err.Error()))
+		h.errorService.RespondWithError(c, err, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 
 	var req registerProviderRequest
 	if err := BindAndValidateJSON(c, &req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":  "invalid_payload",
-			"fields": ValidationErrorResponse(err),
-		})
+		h.errorService.RespondWithError(c, err, "invalid_payload", http.StatusBadRequest)
 		return
 	}
 
@@ -96,11 +94,11 @@ func (h *ProviderHandler) Register(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, domainprovider.ErrNoServicesProvided), errors.Is(err, domainprovider.ErrInvalidLocation), errors.Is(err, domainprovider.ErrInvalidPriceRange):
-			c.JSON(http.StatusBadRequest, errorResponse("invalid_data", err.Error()))
+			h.errorService.RespondWithError(c, err, "invalid_data", http.StatusBadRequest)
 		case errors.Is(err, domainprovider.ErrProviderAlreadyExists):
-			c.JSON(http.StatusConflict, errorResponse("provider_exists", err.Error()))
+			h.errorService.RespondWithError(c, err, "provider_exists", http.StatusConflict)
 		default:
-			c.JSON(http.StatusInternalServerError, errorResponse("register_provider_failed", err.Error()))
+			h.errorService.RespondWithError(c, err, "register_provider_failed", http.StatusInternalServerError)
 		}
 		return
 	}
@@ -135,7 +133,7 @@ type updateProviderProfileRequest struct {
 func (h *ProviderHandler) UpdateProfile(c *gin.Context) {
 	providerID, err := uuid.Parse(c.Param("provider_id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_provider_id", err.Error()))
+		h.errorService.RespondWithError(c, err, "invalid_provider_id", http.StatusBadRequest)
 		return
 	}
 
@@ -143,10 +141,7 @@ func (h *ProviderHandler) UpdateProfile(c *gin.Context) {
 
 	var req updateProviderProfileRequest
 	if err := BindAndValidateJSON(c, &req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":  "invalid_payload",
-			"fields": ValidationErrorResponse(err),
-		})
+		h.errorService.RespondWithError(c, err, "invalid_payload", http.StatusBadRequest)
 		return
 	}
 
@@ -162,11 +157,11 @@ func (h *ProviderHandler) UpdateProfile(c *gin.Context) {
 	}); err != nil {
 		switch {
 		case errors.Is(err, domainprovider.ErrProviderNotFound):
-			c.JSON(http.StatusNotFound, errorResponse("provider_not_found", err.Error()))
+			h.errorService.RespondWithError(c, err, "provider_not_found", http.StatusNotFound)
 		case errors.Is(err, domainprovider.ErrInvalidPriceRange), errors.Is(err, domainprovider.ErrInvalidLocation):
-			c.JSON(http.StatusBadRequest, errorResponse("invalid_data", err.Error()))
+			h.errorService.RespondWithError(c, err, "invalid_data", http.StatusBadRequest)
 		default:
-			c.JSON(http.StatusInternalServerError, errorResponse("update_provider_failed", err.Error()))
+			h.errorService.RespondWithError(c, err, "update_provider_failed", http.StatusInternalServerError)
 		}
 		return
 	}

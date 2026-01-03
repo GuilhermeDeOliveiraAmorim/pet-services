@@ -19,10 +19,11 @@ import (
 type RequestHandler struct {
 	uc           factory.RequestUseCases
 	providerRepo domainprovider.Repository
+	errorService *ErrorService
 }
 
-func NewRequestHandler(uc factory.RequestUseCases, providerRepo domainprovider.Repository) *RequestHandler {
-	return &RequestHandler{uc: uc, providerRepo: providerRepo}
+func NewRequestHandler(uc factory.RequestUseCases, providerRepo domainprovider.Repository, errorService *ErrorService) *RequestHandler {
+	return &RequestHandler{uc: uc, providerRepo: providerRepo, errorService: errorService}
 }
 
 // RegisterRequestRoutes registra rotas autenticadas de solicitações.
@@ -65,32 +66,29 @@ type createRequestPayload struct {
 func (h *RequestHandler) Create(c *gin.Context) {
 	ownerID, err := extractUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, errorResponse("unauthorized", err.Error()))
+		h.errorService.RespondWithError(c, err, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 	if ut := extractUserType(c); ut != "" && ut != domainuser.UserTypeOwner {
-		c.JSON(http.StatusForbidden, errorResponse("forbidden", "apenas donos podem criar solicitações"))
+		h.errorService.RespondWithError(c, errors.New("apenas donos podem criar solicitações"), "forbidden", http.StatusForbidden)
 		return
 	}
 
 	var req createRequestPayload
 	if err := BindAndValidateJSON(c, &req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":  "invalid_payload",
-			"fields": ValidationErrorResponse(err),
-		})
+		h.errorService.RespondWithError(c, err, "invalid_payload", http.StatusBadRequest)
 		return
 	}
 
 	providerID, err := uuid.Parse(req.ProviderID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_provider_id", err.Error()))
+		h.errorService.RespondWithError(c, err, "invalid_provider_id", http.StatusBadRequest)
 		return
 	}
 
 	preferredDate, err := time.Parse(time.RFC3339, req.PreferredDate)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_preferred_date", "use formato ISO8601"))
+		h.errorService.RespondWithError(c, errors.New("use formato ISO8601"), "invalid_preferred_date", http.StatusBadRequest)
 		return
 	}
 
@@ -113,11 +111,11 @@ func (h *RequestHandler) Create(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, domainprovider.ErrProviderNotFound):
-			c.JSON(http.StatusNotFound, errorResponse("provider_not_found", err.Error()))
+			h.errorService.RespondWithError(c, err, "provider_not_found", http.StatusNotFound)
 		case errors.Is(err, domainprovider.ErrProviderNotActive), errors.Is(err, domainrequest.ErrInvalidPreferredDate), errors.Is(err, domainrequest.ErrInvalidServiceType):
-			c.JSON(http.StatusBadRequest, errorResponse("invalid_request", err.Error()))
+			h.errorService.RespondWithError(c, err, "invalid_request", http.StatusBadRequest)
 		default:
-			c.JSON(http.StatusInternalServerError, errorResponse("create_request_failed", err.Error()))
+			h.errorService.RespondWithError(c, err, "create_request_failed", http.StatusInternalServerError)
 		}
 		return
 	}
@@ -152,11 +150,11 @@ func (h *RequestHandler) Accept(c *gin.Context) {
 	if err := h.uc.Accept.Execute(c.Request.Context(), request.AcceptRequestInput{RequestID: requestID, ProviderID: providerID}); err != nil {
 		switch {
 		case errors.Is(err, domainprovider.ErrProviderNotFound), errors.Is(err, domainrequest.ErrRequestNotFound):
-			c.JSON(http.StatusNotFound, errorResponse("request_or_provider_not_found", err.Error()))
+			h.errorService.RespondWithError(c, err, "request_or_provider_not_found", http.StatusNotFound)
 		case errors.Is(err, domainprovider.ErrProviderNotActive), errors.Is(err, domainrequest.ErrInvalidStatusTransition):
-			c.JSON(http.StatusBadRequest, errorResponse("cannot_accept", err.Error()))
+			h.errorService.RespondWithError(c, err, "cannot_accept", http.StatusBadRequest)
 		default:
-			c.JSON(http.StatusInternalServerError, errorResponse("accept_request_failed", err.Error()))
+			h.errorService.RespondWithError(c, err, "accept_request_failed", http.StatusInternalServerError)
 		}
 		return
 	}
@@ -187,17 +185,17 @@ func (h *RequestHandler) Reject(c *gin.Context) {
 		Reason string `json:"reason"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_payload", err.Error()))
+		h.errorService.RespondWithError(c, err, "invalid_payload", http.StatusBadRequest)
 		return
 	}
 	if err := h.uc.Reject.Execute(c.Request.Context(), request.RejectRequestInput{RequestID: requestID, ProviderID: providerID, Reason: req.Reason}); err != nil {
 		switch {
 		case errors.Is(err, domainprovider.ErrProviderNotFound), errors.Is(err, domainrequest.ErrRequestNotFound):
-			c.JSON(http.StatusNotFound, errorResponse("request_or_provider_not_found", err.Error()))
+			h.errorService.RespondWithError(c, err, "request_or_provider_not_found", http.StatusNotFound)
 		case errors.Is(err, domainprovider.ErrProviderNotActive), errors.Is(err, domainrequest.ErrInvalidStatusTransition):
-			c.JSON(http.StatusBadRequest, errorResponse("cannot_reject", err.Error()))
+			h.errorService.RespondWithError(c, err, "cannot_reject", http.StatusBadRequest)
 		default:
-			c.JSON(http.StatusInternalServerError, errorResponse("reject_request_failed", err.Error()))
+			h.errorService.RespondWithError(c, err, "reject_request_failed", http.StatusInternalServerError)
 		}
 		return
 	}
@@ -226,11 +224,11 @@ func (h *RequestHandler) Complete(c *gin.Context) {
 	if err := h.uc.Complete.Execute(c.Request.Context(), request.CompleteRequestInput{RequestID: requestID, ProviderID: providerID}); err != nil {
 		switch {
 		case errors.Is(err, domainprovider.ErrProviderNotFound), errors.Is(err, domainrequest.ErrRequestNotFound):
-			c.JSON(http.StatusNotFound, errorResponse("request_or_provider_not_found", err.Error()))
+			h.errorService.RespondWithError(c, err, "request_or_provider_not_found", http.StatusNotFound)
 		case errors.Is(err, domainrequest.ErrInvalidStatusTransition):
-			c.JSON(http.StatusBadRequest, errorResponse("cannot_complete", err.Error()))
+			h.errorService.RespondWithError(c, err, "cannot_complete", http.StatusBadRequest)
 		default:
-			c.JSON(http.StatusInternalServerError, errorResponse("complete_request_failed", err.Error()))
+			h.errorService.RespondWithError(c, err, "complete_request_failed", http.StatusInternalServerError)
 		}
 		return
 	}
@@ -253,22 +251,22 @@ func (h *RequestHandler) Cancel(c *gin.Context) {
 	}
 	ownerID, err := extractUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, errorResponse("unauthorized", err.Error()))
+		h.errorService.RespondWithError(c, err, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 	if ut := extractUserType(c); ut != "" && ut != domainuser.UserTypeOwner {
-		c.JSON(http.StatusForbidden, errorResponse("forbidden", "apenas donos podem cancelar solicitações"))
+		h.errorService.RespondWithError(c, errors.New("apenas donos podem cancelar solicitações"), "forbidden", http.StatusForbidden)
 		return
 	}
 
 	if err := h.uc.Cancel.Execute(c.Request.Context(), request.CancelRequestInput{RequestID: requestID, OwnerID: ownerID}); err != nil {
 		switch {
 		case errors.Is(err, domainrequest.ErrRequestNotFound):
-			c.JSON(http.StatusNotFound, errorResponse("request_not_found", err.Error()))
+			h.errorService.RespondWithError(c, err, "request_not_found", http.StatusNotFound)
 		case errors.Is(err, domainrequest.ErrInvalidStatusTransition):
-			c.JSON(http.StatusBadRequest, errorResponse("cannot_cancel", err.Error()))
+			h.errorService.RespondWithError(c, err, "cannot_cancel", http.StatusBadRequest)
 		default:
-			c.JSON(http.StatusBadRequest, errorResponse("cancel_request_failed", err.Error()))
+			h.errorService.RespondWithError(c, err, "cancel_request_failed", http.StatusBadRequest)
 		}
 		return
 	}
@@ -306,9 +304,9 @@ func (h *RequestHandler) GetStatus(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, domainrequest.ErrRequestNotFound):
-			c.JSON(http.StatusNotFound, errorResponse("request_not_found", err.Error()))
+			h.errorService.RespondWithError(c, err, "request_not_found", http.StatusNotFound)
 		default:
-			c.JSON(http.StatusForbidden, errorResponse("cannot_view_request", err.Error()))
+			h.errorService.RespondWithError(c, err, "cannot_view_request", http.StatusForbidden)
 		}
 		return
 	}
@@ -335,11 +333,11 @@ func (h *RequestHandler) GetStatus(c *gin.Context) {
 func (h *RequestHandler) ListForOwner(c *gin.Context) {
 	ownerID, err := extractUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, errorResponse("unauthorized", err.Error()))
+		h.errorService.RespondWithError(c, err, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 	if ut := extractUserType(c); ut != "" && ut != domainuser.UserTypeOwner {
-		c.JSON(http.StatusForbidden, errorResponse("forbidden", "apenas donos podem listar suas solicitações"))
+		h.errorService.RespondWithError(c, errors.New("apenas donos podem listar suas solicitações"), "forbidden", http.StatusForbidden)
 		return
 	}
 	page := parseIntDefault(c.Query("page"), 1)
@@ -347,7 +345,7 @@ func (h *RequestHandler) ListForOwner(c *gin.Context) {
 
 	items, total, err := h.uc.ListForOwner.Execute(c.Request.Context(), request.ListRequestsForOwnerInput{OwnerID: ownerID, Page: page, Limit: limit})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, errorResponse("list_requests_failed", err.Error()))
+		h.errorService.RespondWithError(c, err, "list_requests_failed", http.StatusInternalServerError)
 		return
 	}
 
@@ -374,7 +372,7 @@ func (h *RequestHandler) ListForProvider(c *gin.Context) {
 
 	items, total, err := h.uc.ListForProvider.Execute(c.Request.Context(), request.ListRequestsForProviderInput{ProviderID: providerID, Page: page, Limit: limit})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, errorResponse("list_requests_failed", err.Error()))
+		h.errorService.RespondWithError(c, err, "list_requests_failed", http.StatusInternalServerError)
 		return
 	}
 
@@ -395,7 +393,7 @@ func (h *RequestHandler) ListForProvider(c *gin.Context) {
 func (h *RequestHandler) ListByStatus(c *gin.Context) {
 	status := domainrequest.Status(c.Query("status"))
 	if status == "" {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_status", "status é obrigatório"))
+		h.errorService.RespondWithError(c, errors.New("status é obrigatório"), "invalid_status", http.StatusBadRequest)
 		return
 	}
 	page := parseIntDefault(c.Query("page"), 1)
@@ -403,7 +401,7 @@ func (h *RequestHandler) ListByStatus(c *gin.Context) {
 
 	items, total, err := h.uc.ListByStatus.Execute(c.Request.Context(), request.ListRequestsByStatusInput{Status: status, Page: page, Limit: limit})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, errorResponse("list_requests_failed", err.Error()))
+		h.errorService.RespondWithError(c, err, "list_requests_failed", http.StatusInternalServerError)
 		return
 	}
 	resp := mapRequests(items)

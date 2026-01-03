@@ -33,35 +33,35 @@ func NewRouter(uc factory.UseCases, tokenService domainauth.TokenService) *gin.E
 	// Swagger UI (static spec placeholder)
 	v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	errorService := NewErrorService()
+
 	// Auth (stricter rate limiting for security)
 	authGroup := v1.Group("/auth")
 	authGroup.Use(CriticalEndpointRateLimiter())
-	RegisterAuthRoutes(authGroup, NewAuthHandler(uc.Auth))
+	RegisterAuthRoutes(authGroup, NewAuthHandler(uc.Auth, errorService))
 
 	// Users
 	userGroup := v1.Group("/users")
 	userGroup.Use(AuthMiddleware(tokenService))
-	RegisterUserRoutes(userGroup, NewUserHandler(uc.User))
-
-	// Remover rotas públicas duplicadas (já registradas em RegisterUserRoutes)
+	RegisterUserRoutes(userGroup, NewUserHandler(uc.User, errorService))
 
 	// Providers
 	providerPublic := v1.Group("/providers")
-	RegisterProviderPublicRoutes(providerPublic, NewProviderHandler(uc.Provider))
+	RegisterProviderPublicRoutes(providerPublic, NewProviderHandler(uc.Provider, errorService))
 
 	providerGroup := v1.Group("/providers")
 	providerGroup.Use(AuthMiddleware(tokenService))
-	RegisterProviderRoutes(providerGroup, NewProviderHandler(uc.Provider))
+	RegisterProviderRoutes(providerGroup, NewProviderHandler(uc.Provider, errorService))
 
 	// Requests
 	requestGroup := v1.Group("/requests")
 	requestGroup.Use(AuthMiddleware(tokenService))
-	RegisterRequestRoutes(requestGroup, NewRequestHandler(uc.Request, uc.ProviderRepo))
+	RegisterRequestRoutes(requestGroup, NewRequestHandler(uc.Request, uc.ProviderRepo, errorService))
 
 	// Reviews
 	reviewGroup := v1.Group("/reviews")
 	reviewGroup.Use(AuthMiddleware(tokenService))
-	RegisterReviewRoutes(reviewGroup, NewReviewHandler(uc.Review, uc.ProviderRepo))
+	RegisterReviewRoutes(reviewGroup, NewReviewHandler(uc.Review, uc.ProviderRepo, errorService))
 
 	return r
 }

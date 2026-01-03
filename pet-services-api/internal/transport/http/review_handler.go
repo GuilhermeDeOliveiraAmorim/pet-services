@@ -14,14 +14,42 @@ import (
 	"github.com/guilherme/pet-services-api/internal/infra/factory"
 )
 
+func (s *ErrorService) ListReviewsErrorToDTO(err error) (int, ErrorDTO) {
+	switch {
+	case errors.Is(err, domainreview.ErrReviewNotFound):
+		return http.StatusNotFound, ErrorDTO{Code: "reviews_not_found", Message: err.Error()}
+	default:
+		return http.StatusInternalServerError, ErrorDTO{Code: "list_reviews_failed", Message: err.Error()}
+	}
+}
+
+// ErrorDTO padroniza resposta de erro.
+// ErrorDTO já está definido em error_service.go
+
+func (s *ErrorService) ReviewErrorToDTO(err error) (int, ErrorDTO) {
+	switch {
+	case errors.Is(err, domainreview.ErrInvalidRating):
+		return http.StatusBadRequest, ErrorDTO{Code: "invalid_rating", Message: err.Error()}
+	case errors.Is(err, domainreview.ErrReviewAlreadyExists):
+		return http.StatusConflict, ErrorDTO{Code: "review_exists", Message: err.Error()}
+	case errors.Is(err, domainreview.ErrRequestNotCompleted):
+		return http.StatusBadRequest, ErrorDTO{Code: "request_not_completed", Message: err.Error()}
+	default:
+		return http.StatusBadRequest, ErrorDTO{Code: "submit_review_failed", Message: err.Error()}
+	}
+}
+
+// ...existing code...
+
 // ReviewHandler expõe endpoints de avaliações.
 type ReviewHandler struct {
 	uc           factory.ReviewUseCases
 	providerRepo domainprovider.Repository
+	errorService *ErrorService
 }
 
-func NewReviewHandler(uc factory.ReviewUseCases, providerRepo domainprovider.Repository) *ReviewHandler {
-	return &ReviewHandler{uc: uc, providerRepo: providerRepo}
+func NewReviewHandler(uc factory.ReviewUseCases, providerRepo domainprovider.Repository, errorService *ErrorService) *ReviewHandler {
+	return &ReviewHandler{uc: uc, providerRepo: providerRepo, errorService: errorService}
 }
 
 // RegisterReviewRoutes registra rotas autenticadas para avaliações.
@@ -50,24 +78,21 @@ type submitReviewRequest struct {
 func (h *ReviewHandler) Submit(c *gin.Context) {
 	ownerID, err := extractUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, errorResponse("unauthorized", err.Error()))
+		h.errorService.RespondWithError(c, err, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 	if ut := extractUserType(c); ut != "" && ut != domainuser.UserTypeOwner {
-		c.JSON(http.StatusForbidden, errorResponse("forbidden", "apenas donos podem registrar avaliações"))
+		h.errorService.RespondWithError(c, errors.New("apenas donos podem registrar avaliações"), "forbidden", http.StatusForbidden)
 		return
 	}
 	var req submitReviewRequest
 	if err := BindAndValidateJSON(c, &req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":  "invalid_payload",
-			"fields": ValidationErrorResponse(err),
-		})
+		h.errorService.RespondWithError(c, err, "invalid_payload", http.StatusBadRequest)
 		return
 	}
 	reqID, err := uuid.Parse(req.RequestID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_request_id", err.Error()))
+		h.errorService.RespondWithError(c, err, "invalid_request_id", http.StatusBadRequest)
 		return
 	}
 
@@ -78,16 +103,8 @@ func (h *ReviewHandler) Submit(c *gin.Context) {
 		Comment:   req.Comment,
 	})
 	if err != nil {
-		switch {
-		case errors.Is(err, domainreview.ErrInvalidRating):
-			c.JSON(http.StatusBadRequest, errorResponse("invalid_rating", err.Error()))
-		case errors.Is(err, domainreview.ErrReviewAlreadyExists):
-			c.JSON(http.StatusConflict, errorResponse("review_exists", err.Error()))
-		case errors.Is(err, domainreview.ErrRequestNotCompleted):
-			c.JSON(http.StatusBadRequest, errorResponse("request_not_completed", err.Error()))
-		default:
-			c.JSON(http.StatusBadRequest, errorResponse("submit_review_failed", err.Error()))
-		}
+		status, dto := h.errorService.ReviewErrorToDTO(err)
+		h.errorService.RespondWithError(c, errors.New(dto.Message), dto.Code, status)
 		return
 	}
 
@@ -123,7 +140,7 @@ func (h *ReviewHandler) ListForProvider(c *gin.Context) {
 			return
 		}
 		if authProviderID != providerID {
-			c.JSON(http.StatusForbidden, errorResponse("forbidden", "não autorizado a listar avaliações de outro prestador"))
+			h.errorService.RespondWithError(c, errors.New("não autorizado a listar avaliações de outro prestador"), "forbidden", http.StatusForbidden)
 			return
 		}
 	}
@@ -133,12 +150,8 @@ func (h *ReviewHandler) ListForProvider(c *gin.Context) {
 
 	reviews, total, err := h.uc.ListForProvider.Execute(c.Request.Context(), review.ListReviewsForProviderInput{ProviderID: providerID, Page: page, Limit: limit})
 	if err != nil {
-		switch {
-		case errors.Is(err, domainreview.ErrReviewNotFound):
-			c.JSON(http.StatusNotFound, errorResponse("reviews_not_found", err.Error()))
-		default:
-			c.JSON(http.StatusInternalServerError, errorResponse("list_reviews_failed", err.Error()))
-		}
+		status, dto := h.errorService.ListReviewsErrorToDTO(err)
+		h.errorService.RespondWithError(c, errors.New(dto.Message), dto.Code, status)
 		return
 	}
 

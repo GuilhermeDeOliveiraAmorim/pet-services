@@ -17,11 +17,12 @@ import (
 // UserHandler expõe endpoints relacionados a usuário.
 type UserHandler struct {
 	uc factory.UserUseCases
+	errorService *ErrorService
 }
 
 // NewUserHandler cria handler de usuário.
-func NewUserHandler(uc factory.UserUseCases) *UserHandler {
-	return &UserHandler{uc: uc}
+func NewUserHandler(uc factory.UserUseCases, errorService *ErrorService) *UserHandler {
+	return &UserHandler{uc: uc, errorService: errorService}
 }
 
 // RegisterUserRoutes registra rotas de usuário.
@@ -48,7 +49,7 @@ func RegisterUserRoutes(rg *gin.RouterGroup, h *UserHandler) {
 func (h *UserHandler) GetProfile(c *gin.Context) {
 	userID, err := extractUserID(c)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_user_id", err.Error()))
+		h.errorService.RespondWithError(c, err, "invalid_user_id", http.StatusBadRequest)
 		return
 	}
 
@@ -56,9 +57,9 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, domainuser.ErrUserNotFound):
-			c.JSON(http.StatusNotFound, errorResponse("user_not_found", err.Error()))
+			h.errorService.RespondWithError(c, err, "user_not_found", http.StatusNotFound)
 		default:
-			c.JSON(http.StatusInternalServerError, errorResponse("get_profile_failed", err.Error()))
+			h.errorService.RespondWithError(c, err, "get_profile_failed", http.StatusInternalServerError)
 		}
 		return
 	}
