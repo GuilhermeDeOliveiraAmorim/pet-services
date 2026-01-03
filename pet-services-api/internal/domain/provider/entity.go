@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -14,6 +15,15 @@ const (
 	PriceRangeLow    PriceRange = "$"
 	PriceRangeMedium PriceRange = "$$"
 	PriceRangeHigh   PriceRange = "$$$"
+)
+
+// ApprovalStatus representa o estado de moderação do perfil
+type ApprovalStatus string
+
+const (
+	ApprovalPending  ApprovalStatus = "pending"
+	ApprovalApproved ApprovalStatus = "approved"
+	ApprovalRejected ApprovalStatus = "rejected"
 )
 
 // Provider representa um prestador de serviços
@@ -32,6 +42,8 @@ type Provider struct {
 	AvgRating    float64
 	TotalReviews int
 	IsActive     bool
+	ApprovalStatus ApprovalStatus
+	ModerationNote string
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }
@@ -48,6 +60,7 @@ func NewProvider(userID uuid.UUID, businessName, description string) *Provider {
 		Photos:       []Photo{},
 		WorkingHours: NewDefaultWorkingHours(),
 		IsActive:     false, // Requer aprovação
+		ApprovalStatus: ApprovalPending,
 		CreatedAt:    now,
 		UpdatedAt:    now,
 	}
@@ -214,6 +227,32 @@ func (p *Provider) Activate() {
 func (p *Provider) Deactivate() {
 	p.IsActive = false
 	p.UpdatedAt = time.Now()
+}
+
+// Approve aprova o perfil (ativa e limpa motivo)
+func (p *Provider) Approve(note string) error {
+	if p.ApprovalStatus == ApprovalApproved {
+		return ErrInvalidModerationStatus
+	}
+	p.ApprovalStatus = ApprovalApproved
+	p.ModerationNote = strings.TrimSpace(note)
+	p.IsActive = true
+	p.UpdatedAt = time.Now()
+	return nil
+}
+
+// Reject reprova ou bloqueia o perfil com motivo obrigatório
+func (p *Provider) Reject(note string) error {
+	motive := strings.TrimSpace(note)
+	if motive == "" {
+		return ErrModerationNoteRequired
+	}
+
+	p.ApprovalStatus = ApprovalRejected
+	p.ModerationNote = motive
+	p.IsActive = false
+	p.UpdatedAt = time.Now()
+	return nil
 }
 
 // UpdateRating atualiza a avaliação média

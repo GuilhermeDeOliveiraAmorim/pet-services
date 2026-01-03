@@ -42,6 +42,12 @@ var (
 
 	// ErrInvalidRating indica que a avaliação é inválida
 	ErrInvalidRating = errors.New("avaliação deve estar entre 0 e 5")
+
+	// ErrInvalidModerationStatus indica transição inválida de moderação
+	ErrInvalidModerationStatus = errors.New("status de moderação inválido")
+
+	// ErrModerationNoteRequired indica que a nota/motivo é obrigatória
+	ErrModerationNoteRequired = errors.New("motivo de moderação é obrigatório")
 )
 
 // ValidationError representa um erro de validação com contexto
