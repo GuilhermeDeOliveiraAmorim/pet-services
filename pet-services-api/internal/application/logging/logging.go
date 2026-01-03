@@ -3,36 +3,168 @@ package logging
 import (
 	"context"
 	"log/slog"
-	"time"
+	"os"
+
+	"github.com/guilherme/pet-services-api/internal/application/exceptions"
+	"github.com/lmittmann/tint"
 )
 
-// EnsureLogger garante um logger não-nil.
-func EnsureLogger(logger *slog.Logger) *slog.Logger {
-	if logger != nil {
-		return logger
-	}
-	return slog.Default()
+const TimeFormat = "2006-01-02 15:04:05"
+
+type Layer struct {
+	ENTITY                                     string
+	FACTORIES                                  string
+	INFRASTRUCTURE_REPOSITORIES_IMPLEMENTATION string
+	INTERFACE_HANDLERS                         string
+	USECASES                                   string
+	CONFIGURATION                              string
+	MIDDLEWARES                                string
+	SERVICES                                   string
+	SERVER                                     string
 }
 
-// UseCase registra início e fim de um caso de uso.
-func UseCase(ctx context.Context, logger *slog.Logger, usecase string, attrs ...slog.Attr) func(err *error) {
-	start := time.Now()
-	l := EnsureLogger(logger).With("usecase", usecase)
-	if len(attrs) > 0 {
-		args := make([]any, 0, len(attrs))
-		for _, a := range attrs {
-			args = append(args, a)
-		}
-		l = l.With(args...)
-	}
-	l.InfoContext(ctx, "start")
+type TypeLog struct {
+	ERROR   string
+	INFO    string
+	WARNING string
+}
 
-	return func(err *error) {
-		duration := time.Since(start)
-		if err != nil && *err != nil {
-			l.ErrorContext(ctx, "end", slog.String("status", "error"), slog.Duration("duration", duration), slog.Any("error", *err))
-			return
-		}
-		l.InfoContext(ctx, "end", slog.String("status", "ok"), slog.Duration("duration", duration))
+type DefaultMessages struct {
+	START string
+	END   string
+}
+
+var LoggerLayers = Layer{
+	ENTITY:    "ENTITY",
+	FACTORIES: "FACTORIES",
+	INFRASTRUCTURE_REPOSITORIES_IMPLEMENTATION: "INFRASTRUCTURE_REPOSITORIES_IMPLEMENTATION",
+	INTERFACE_HANDLERS:                         "INTERFACE_HANDLERS",
+	USECASES:                                   "USECASES",
+	CONFIGURATION:                              "CONFIGURATION",
+	MIDDLEWARES:                                "MIDDLEWARES",
+	SERVICES:                                   "SERVICES",
+	SERVER:                                     "SERVER",
+}
+
+var LoggerTypes = TypeLog{
+	ERROR:   "ERROR",
+	INFO:    "INFO",
+	WARNING: "WARNING",
+}
+
+var DEFAULTMESSAGES = DefaultMessages{
+	START: "Iniciando operação",
+	END:   "Operação concluída",
+}
+
+type Logger struct {
+	Context  context.Context             `json:"context"`
+	Code     int                         `json:"code"`
+	Message  string                      `json:"message"`
+	From     string                      `json:"from"`
+	Layer    string                      `json:"layer"`
+	TypeLog  string                      `json:"type_log"`
+	Error    error                       `json:"error"`
+	Problems []exceptions.ProblemDetails `json:"problems"`
+}
+
+type LoggerService interface {
+	Log(log Logger)
+}
+
+type SlogLogger struct {
+	logger *slog.Logger
+}
+
+func NewSlogLogger() *SlogLogger {
+	return &SlogLogger{
+		logger: slog.New(tint.NewHandler(os.Stdout, &tint.Options{
+			Level:      slog.LevelDebug,
+			TimeFormat: TimeFormat,
+		})),
 	}
+}
+
+func (s *SlogLogger) Log(log Logger) {
+	switch log.TypeLog {
+	case "ERROR":
+		s.logger.ErrorContext(
+			log.Context,
+			"ERROR",
+			"code:", log.Code,
+			"message:", log.Message,
+			"from:", log.From,
+			"layer:", log.Layer,
+			"error:", log.Error,
+			"problems:", log.Problems,
+		)
+	case "INFO":
+		s.logger.InfoContext(
+			log.Context,
+			"INFO",
+			"code:", log.Code,
+			"message:", log.Message,
+			"from:", log.From,
+			"layer:", log.Layer,
+			"error:", log.Error,
+			"problems:", log.Problems,
+		)
+	case "WARNING":
+		s.logger.WarnContext(
+			log.Context,
+			"WARNING",
+			"code:", log.Code,
+			"message:", log.Message,
+			"from:", log.From,
+			"layer:", log.Layer,
+			"error:", log.Error,
+			"problems:", log.Problems,
+		)
+	}
+}
+
+func LogWithProblem(logger LoggerService, ctx context.Context, from, layer, title string, err error, code int, errorType exceptions.ErrorType) []exceptions.ProblemDetails {
+	problems := []exceptions.ProblemDetails{
+		exceptions.NewProblemDetails(errorType, exceptions.ErrorMessage{
+			Title:  title,
+			Detail: err.Error(),
+		}),
+	}
+
+	logger.Log(Logger{
+		Context:  ctx,
+		Code:     code,
+		Message:  title,
+		From:     from,
+		Layer:    layer,
+		TypeLog:  LoggerTypes.ERROR,
+		Error:    err,
+		Problems: problems,
+	})
+
+	return problems
+}
+
+func BadRequest(logger LoggerService, ctx context.Context, from, title string, err error) []exceptions.ProblemDetails {
+	return LogWithProblem(logger, ctx, from, LoggerLayers.USECASES, title, err, exceptions.RFC400_CODE, exceptions.BadRequest)
+}
+
+func Unauthorized(logger LoggerService, ctx context.Context, from, title string, err error) []exceptions.ProblemDetails {
+	return LogWithProblem(logger, ctx, from, LoggerLayers.USECASES, title, err, exceptions.RFC401_CODE, exceptions.Unauthorized)
+}
+
+func Forbidden(logger LoggerService, ctx context.Context, from, title string, err error) []exceptions.ProblemDetails {
+	return LogWithProblem(logger, ctx, from, LoggerLayers.USECASES, title, err, exceptions.RFC403_CODE, exceptions.Forbidden)
+}
+
+func NotFound(logger LoggerService, ctx context.Context, from, title string, err error) []exceptions.ProblemDetails {
+	return LogWithProblem(logger, ctx, from, LoggerLayers.USECASES, title, err, exceptions.RFC404_CODE, exceptions.NotFound)
+}
+
+func Conflict(logger LoggerService, ctx context.Context, from, title string, err error) []exceptions.ProblemDetails {
+	return LogWithProblem(logger, ctx, from, LoggerLayers.USECASES, title, err, exceptions.RFC409_CODE, exceptions.Conflict)
+}
+
+func InternalServerError(logger LoggerService, ctx context.Context, from, title string, err error) []exceptions.ProblemDetails {
+	return LogWithProblem(logger, ctx, from, LoggerLayers.USECASES, title, err, exceptions.RFC500_CODE, exceptions.InternalServerError)
 }
