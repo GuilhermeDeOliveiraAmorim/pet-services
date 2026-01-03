@@ -48,13 +48,13 @@ func RegisterProviderPublicRoutes(rg *gin.RouterGroup, h *ProviderHandler) {
 }
 
 type registerProviderRequest struct {
-	BusinessName string                    `json:"business_name"`
-	Description  string                    `json:"description"`
-	Address      domainuser.Address        `json:"address"`
-	Latitude     float64                   `json:"latitude"`
-	Longitude    float64                   `json:"longitude"`
-	Services     []provider.ServiceInput   `json:"services"`
-	PriceRange   domainprovider.PriceRange `json:"price_range"`
+	BusinessName string                    `json:"business_name" validate:"required,min=3,max=150"`
+	Description  string                    `json:"description" validate:"required,min=10,max=1000"`
+	Address      domainuser.Address        `json:"address" validate:"required"`
+	Latitude     float64                   `json:"latitude" validate:"required,min=-90,max=90"`
+	Longitude    float64                   `json:"longitude" validate:"required,min=-180,max=180"`
+	Services     []provider.ServiceInput   `json:"services" validate:"required,min=1"`
+	PriceRange   domainprovider.PriceRange `json:"price_range" validate:"required"`
 }
 
 // Register cria perfil de prestador para o usuário autenticado.
@@ -75,8 +75,11 @@ func (h *ProviderHandler) Register(c *gin.Context) {
 	}
 
 	var req registerProviderRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_payload", err.Error()))
+	if err := BindAndValidateJSON(c, &req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":  "invalid_payload",
+			"fields": ValidationErrorResponse(err),
+		})
 		return
 	}
 
@@ -110,11 +113,11 @@ func (h *ProviderHandler) Register(c *gin.Context) {
 }
 
 type updateProviderProfileRequest struct {
-	BusinessName *string                    `json:"business_name"`
-	Description  *string                    `json:"description"`
+	BusinessName *string                    `json:"business_name" validate:"omitempty,min=3,max=150"`
+	Description  *string                    `json:"description" validate:"omitempty,min=10,max=1000"`
 	Address      *domainuser.Address        `json:"address"`
-	Latitude     *float64                   `json:"latitude"`
-	Longitude    *float64                   `json:"longitude"`
+	Latitude     *float64                   `json:"latitude" validate:"omitempty,min=-90,max=90"`
+	Longitude    *float64                   `json:"longitude" validate:"omitempty,min=-180,max=180"`
 	PriceRange   *domainprovider.PriceRange `json:"price_range"`
 }
 
@@ -139,8 +142,11 @@ func (h *ProviderHandler) UpdateProfile(c *gin.Context) {
 	userID, _ := extractUserID(c) // autorização simples, se presente
 
 	var req updateProviderProfileRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_payload", err.Error()))
+	if err := BindAndValidateJSON(c, &req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":  "invalid_payload",
+			"fields": ValidationErrorResponse(err),
+		})
 		return
 	}
 
@@ -169,10 +175,10 @@ func (h *ProviderHandler) UpdateProfile(c *gin.Context) {
 }
 
 type serviceRequest struct {
-	Category string  `json:"category"`
-	Name     string  `json:"name"`
-	PriceMin float64 `json:"price_min"`
-	PriceMax float64 `json:"price_max"`
+	Category string  `json:"category" validate:"required,min=2,max=50"`
+	Name     string  `json:"name" validate:"required,min=3,max=100"`
+	PriceMin float64 `json:"price_min" validate:"required,min=0"`
+	PriceMax float64 `json:"price_max" validate:"required,gtfield=PriceMin"`
 }
 
 func (h *ProviderHandler) AddService(c *gin.Context) {
@@ -183,8 +189,11 @@ func (h *ProviderHandler) AddService(c *gin.Context) {
 	}
 
 	var req serviceRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_payload", err.Error()))
+	if err := BindAndValidateJSON(c, &req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":  "invalid_payload",
+			"fields": ValidationErrorResponse(err),
+		})
 		return
 	}
 

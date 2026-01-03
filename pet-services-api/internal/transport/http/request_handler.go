@@ -39,17 +39,17 @@ func RegisterRequestRoutes(rg *gin.RouterGroup, h *RequestHandler) {
 }
 
 type createRequestPayload struct {
-	ProviderID    string                `json:"provider_id"`
-	ServiceType   string                `json:"service_type"`
-	PetName       string                `json:"pet_name"`
-	PetType       domainrequest.PetType `json:"pet_type"`
-	PetBreed      string                `json:"pet_breed"`
-	PetAge        int                   `json:"pet_age"`
-	PetWeight     float64               `json:"pet_weight"`
-	PetNotes      string                `json:"pet_notes"`
-	PreferredDate string                `json:"preferred_date"` // ISO date
-	PreferredTime string                `json:"preferred_time"` // HH:MM
-	Notes         string                `json:"notes"`
+	ProviderID    string                `json:"provider_id" validate:"required,uuid"`
+	ServiceType   string                `json:"service_type" validate:"required,min=2,max=50"`
+	PetName       string                `json:"pet_name" validate:"required,min=1,max=100"`
+	PetType       domainrequest.PetType `json:"pet_type" validate:"required"`
+	PetBreed      string                `json:"pet_breed" validate:"omitempty,max=100"`
+	PetAge        int                   `json:"pet_age" validate:"required,min=0,max=50"`
+	PetWeight     float64               `json:"pet_weight" validate:"required,min=0.1,max=100"`
+	PetNotes      string                `json:"pet_notes" validate:"omitempty,max=500"`
+	PreferredDate string                `json:"preferred_date" validate:"required,datetime=2006-01-02"`
+	PreferredTime string                `json:"preferred_time" validate:"required,datetime=15:04"`
+	Notes         string                `json:"notes" validate:"omitempty,max=1000"`
 }
 
 // Create cria uma solicitação de serviço.
@@ -74,8 +74,11 @@ func (h *RequestHandler) Create(c *gin.Context) {
 	}
 
 	var req createRequestPayload
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_payload", err.Error()))
+	if err := BindAndValidateJSON(c, &req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":  "invalid_payload",
+			"fields": ValidationErrorResponse(err),
+		})
 		return
 	}
 

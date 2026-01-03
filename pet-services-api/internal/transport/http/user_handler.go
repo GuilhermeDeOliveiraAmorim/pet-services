@@ -78,11 +78,11 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 // @Failure 400 {object} map[string]interface{}
 // @Router /users/me [put]
 type updateProfileRequest struct {
-	Name      *string             `json:"name"`
-	Phone     *string             `json:"phone"`
+	Name      *string             `json:"name" validate:"omitempty,min=3,max=100"`
+	Phone     *string             `json:"phone" validate:"omitempty,min=10,max=20"`
 	Address   *domainuser.Address `json:"address"`
-	Latitude  *float64            `json:"latitude"`
-	Longitude *float64            `json:"longitude"`
+	Latitude  *float64            `json:"latitude" validate:"omitempty,min=-90,max=90"`
+	Longitude *float64            `json:"longitude" validate:"omitempty,min=-180,max=180"`
 }
 
 // UpdateProfile atualiza dados do usuário autenticado.
@@ -94,8 +94,11 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 	}
 
 	var req updateProfileRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_payload", err.Error()))
+	if err := BindAndValidateJSON(c, &req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":  "invalid_payload",
+			"fields": ValidationErrorResponse(err),
+		})
 		return
 	}
 
@@ -133,8 +136,8 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 
 // changePasswordRequest payload.
 type changePasswordRequest struct {
-	CurrentPassword string `json:"current_password"`
-	NewPassword     string `json:"new_password"`
+	CurrentPassword string `json:"current_password" validate:"required,min=1"`
+	NewPassword     string `json:"new_password" validate:"required,min=8,max=128"`
 }
 
 // ChangePassword troca a senha do usuário autenticado.
@@ -146,8 +149,11 @@ func (h *UserHandler) ChangePassword(c *gin.Context) {
 	}
 
 	var req changePasswordRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_payload", err.Error()))
+	if err := BindAndValidateJSON(c, &req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":  "invalid_payload",
+			"fields": ValidationErrorResponse(err),
+		})
 		return
 	}
 
@@ -181,23 +187,17 @@ func (h *UserHandler) ChangePassword(c *gin.Context) {
 
 // requestPasswordResetRequest payload.
 type requestPasswordResetRequest struct {
-	Email string `json:"email"`
+	Email string `json:"email" validate:"required,email"`
 }
 
 // RequestPasswordReset inicia fluxo de reset por email.
 func (h *UserHandler) RequestPasswordReset(c *gin.Context) {
 	var req requestPasswordResetRequest
-	// ConfirmPasswordReset redefine a senha.
-	// @Summary Confirm password reset
-	// @Tags users
-	// @Accept json
-	// @Produce json
-	// @Param request body confirmPasswordResetRequest true "Reset confirm"
-	// @Success 200 {object} map[string]interface{}
-	// @Failure 400 {object} map[string]interface{}
-	// @Router /users/password-reset/confirm [post]
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_payload", err.Error()))
+	if err := BindAndValidateJSON(c, &req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":  "invalid_payload",
+			"fields": ValidationErrorResponse(err),
+		})
 		return
 	}
 
@@ -217,8 +217,8 @@ func (h *UserHandler) RequestPasswordReset(c *gin.Context) {
 
 // confirmPasswordResetRequest payload.
 type confirmPasswordResetRequest struct {
-	Token       string `json:"token"`
-	NewPassword string `json:"new_password"`
+	Token       string `json:"token" validate:"required,min=10"`
+	NewPassword string `json:"new_password" validate:"required,min=8,max=128"`
 }
 
 // RequestEmailVerification envia email com link de verificação.
@@ -234,8 +234,11 @@ type confirmPasswordResetRequest struct {
 // ConfirmPasswordReset aplica o reset de senha.
 func (h *UserHandler) ConfirmPasswordReset(c *gin.Context) {
 	var req confirmPasswordResetRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_payload", err.Error()))
+	if err := BindAndValidateJSON(c, &req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":  "invalid_payload",
+			"fields": ValidationErrorResponse(err),
+		})
 		return
 	}
 
@@ -298,14 +301,17 @@ func (h *UserHandler) RequestEmailVerification(c *gin.Context) {
 
 // confirmEmailVerificationRequest payload.
 type confirmEmailVerificationRequest struct {
-	Token string `json:"token"`
+	Token string `json:"token" validate:"required,min=10"`
 }
 
 // ConfirmEmailVerification confirma email.
 func (h *UserHandler) ConfirmEmailVerification(c *gin.Context) {
 	var req confirmEmailVerificationRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_payload", err.Error()))
+	if err := BindAndValidateJSON(c, &req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":  "invalid_payload",
+			"fields": ValidationErrorResponse(err),
+		})
 		return
 	}
 

@@ -32,11 +32,11 @@ func RegisterAuthRoutes(rg *gin.RouterGroup, handler *AuthHandler) {
 
 // signupRequest representa a entrada do endpoint de cadastro.
 type signupRequest struct {
-	Email    string `json:"email"`
-	Name     string `json:"name"`
-	Phone    string `json:"phone"`
-	Password string `json:"password"`
-	Type     string `json:"type"`
+	Email    string `json:"email" validate:"required,email"`
+	Name     string `json:"name" validate:"required,min=3,max=100"`
+	Phone    string `json:"phone" validate:"required,min=10,max=20"`
+	Password string `json:"password" validate:"required,min=8,max=128"`
+	Type     string `json:"type" validate:"required,oneof=owner provider"`
 }
 
 // Signup cadastra um usuário e retorna tokens.
@@ -50,8 +50,11 @@ type signupRequest struct {
 // @Router /auth/signup [post]
 func (h *AuthHandler) Signup(c *gin.Context) {
 	var req signupRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_payload", err.Error()))
+	if err := BindAndValidateJSON(c, &req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":  "invalid_payload",
+			"fields": ValidationErrorResponse(err),
+		})
 		return
 	}
 
@@ -92,8 +95,8 @@ func (h *AuthHandler) Signup(c *gin.Context) {
 
 // loginRequest representa a entrada de login.
 type loginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=1"`
 }
 
 // Login autentica e retorna tokens.
@@ -107,8 +110,11 @@ type loginRequest struct {
 // @Router /auth/login [post]
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req loginRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_payload", err.Error()))
+	if err := BindAndValidateJSON(c, &req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":  "invalid_payload",
+			"fields": ValidationErrorResponse(err),
+		})
 		return
 	}
 
@@ -138,7 +144,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 // refreshRequest representa a entrada de refresh token.
 type refreshRequest struct {
-	RefreshToken string `json:"refresh_token"`
+	RefreshToken string `json:"refresh_token" validate:"required"`
 }
 
 // Refresh troca o refresh token por um novo par.
@@ -152,8 +158,11 @@ type refreshRequest struct {
 // @Router /auth/refresh [post]
 func (h *AuthHandler) Refresh(c *gin.Context) {
 	var req refreshRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_payload", err.Error()))
+	if err := BindAndValidateJSON(c, &req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":  "invalid_payload",
+			"fields": ValidationErrorResponse(err),
+		})
 		return
 	}
 
@@ -183,7 +192,7 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 
 // logoutRequest representa a entrada de logout.
 type logoutRequest struct {
-	RefreshToken string `json:"refresh_token"`
+	RefreshToken string `json:"refresh_token" validate:"required"`
 }
 
 // Logout revoga o refresh token atual.
@@ -197,8 +206,11 @@ type logoutRequest struct {
 // @Router /auth/logout [post]
 func (h *AuthHandler) Logout(c *gin.Context) {
 	var req logoutRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_payload", err.Error()))
+	if err := BindAndValidateJSON(c, &req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":  "invalid_payload",
+			"fields": ValidationErrorResponse(err),
+		})
 		return
 	}
 

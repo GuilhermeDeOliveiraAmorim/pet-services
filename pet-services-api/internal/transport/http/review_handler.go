@@ -30,6 +30,13 @@ func RegisterReviewRoutes(rg *gin.RouterGroup, h *ReviewHandler) {
 	rg.GET("/provider/:provider_id", h.ListForProvider)
 }
 
+// submitReviewRequest estrutura de requisição para submeter avaliação.
+type submitReviewRequest struct {
+	RequestID string `json:"request_id" validate:"required,uuid"`
+	Rating    int    `json:"rating" validate:"required,min=1,max=5"`
+	Comment   string `json:"comment" validate:"omitempty,max=1000"`
+}
+
 // Submit cria avaliação para solicitação concluída.
 // @Summary Submit review
 // @Tags reviews
@@ -50,13 +57,12 @@ func (h *ReviewHandler) Submit(c *gin.Context) {
 		c.JSON(http.StatusForbidden, errorResponse("forbidden", "apenas donos podem registrar avaliações"))
 		return
 	}
-	var req struct {
-		RequestID string `json:"request_id"`
-		Rating    int    `json:"rating"`
-		Comment   string `json:"comment"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse("invalid_payload", err.Error()))
+	var req submitReviewRequest
+	if err := BindAndValidateJSON(c, &req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":  "invalid_payload",
+			"fields": ValidationErrorResponse(err),
+		})
 		return
 	}
 	reqID, err := uuid.Parse(req.RequestID)
