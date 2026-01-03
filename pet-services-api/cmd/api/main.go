@@ -2,11 +2,12 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -15,10 +16,11 @@ import (
 	"github.com/joho/godotenv"
 	"gorm.io/gorm"
 
-	"github.com/guilherme/pet-services-api/internal/domain/auth"
-	"github.com/guilherme/pet-services-api/internal/domain/user"
+	infrabcrypt "github.com/guilherme/pet-services-api/internal/infra/bcrypt"
 	infradatabase "github.com/guilherme/pet-services-api/internal/infra/database"
+	infraemail "github.com/guilherme/pet-services-api/internal/infra/email"
 	"github.com/guilherme/pet-services-api/internal/infra/factory"
+	infrajwt "github.com/guilherme/pet-services-api/internal/infra/jwt"
 	httpapi "github.com/guilherme/pet-services-api/internal/transport/http"
 )
 
@@ -50,13 +52,60 @@ func main() {
 	logger.Info("database connected")
 
 	// ─────────────────────────────────────────────────────────────────────────
-	// 3. Infrastructure Providers (placeholder implementations)
+	// 3. Infrastructure Providers (real implementations)
 	// ─────────────────────────────────────────────────────────────────────────
 
-	// TODO: Replace with real implementations (bcrypt, JWT, email service, etc.)
-	tokenService := &stubTokenService{}
-	passwordHasher := &stubPasswordHasher{}
-	emailService := &stubEmailService{}
+	// JWT Token Service
+	accessSecret := os.Getenv("JWT_ACCESS_SECRET")
+	refreshSecret := os.Getenv("JWT_REFRESH_SECRET")
+	if accessSecret == "" || refreshSecret == "" {
+		logger.Error("JWT_ACCESS_SECRET and JWT_REFRESH_SECRET must be set")
+		os.Exit(1)
+	}
+
+	accessDuration := parseDuration(os.Getenv("JWT_ACCESS_DURATION"), 15*time.Minute)
+	refreshDuration := parseDuration(os.Getenv("JWT_REFRESH_DURATION"), 7*24*time.Hour)
+
+	tokenService := infrajwt.NewTokenService(infrajwt.Config{
+		AccessSecret:    accessSecret,
+		RefreshSecret:   refreshSecret,
+		AccessDuration:  accessDuration,
+		RefreshDuration: refreshDuration,
+	})
+	logger.Info("jwt token service initialized")
+
+	// Password Hasher (Bcrypt)
+	passwordHasher := infrabcrypt.NewPasswordHasher()
+	logger.Info("bcrypt password hasher initialized")
+
+	// Email Service (SMTP or Stub)
+	emailHost := os.Getenv("SMTP_HOST")
+	emailPort := os.Getenv("SMTP_PORT")
+	emailUser := os.Getenv("SMTP_USER")
+	emailPass := os.Getenv("SMTP_PASS")
+	emailFrom := os.Getenv("SMTP_FROM")
+
+	var emailService infraemail.EmailServiceInterface
+	if strings.TrimSpace(emailHost) == "" || strings.TrimSpace(emailHost) == "localhost" {
+		logger.Info("using stub email service (no SMTP configured)")
+		emailService = infraemail.NewStubEmailService(logger)
+	} else {
+		port := 587
+		if emailPort != "" {
+			if p, err := strconv.Atoi(emailPort); err == nil {
+				port = p
+			}
+		}
+		emailService = infraemail.NewSMTPService(infraemail.Config{
+			Host:     emailHost,
+			Port:     port,
+			User:     emailUser,
+			Password: emailPass,
+			FromAddr: emailFrom,
+			Logger:   logger,
+		})
+		logger.Info("smtp email service initialized", "host", emailHost, "port", port)
+	}
 
 	// ─────────────────────────────────────────────────────────────────────────
 	// 4. Factory: Use Cases + Repositories
@@ -246,51 +295,16 @@ func readinessHandler(db *gorm.DB) gin.HandlerFunc {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Stub Implementations (TODO: Replace with real implementations)
+// Helpers
 // ─────────────────────────────────────────────────────────────────────────
 
-type stubTokenService struct{}
-
-func (s *stubTokenService) GenerateTokens(userID uuid.UUID, userType user.UserType) (auth.TokenPair, error) {
-	return auth.TokenPair{
-		AccessToken:      fmt.Sprintf("access_%s_%d", userID.String()[:8], time.Now().Unix()),
-		AccessExpiresAt:  time.Now().Add(15 * time.Minute),
-		RefreshToken:     fmt.Sprintf("refresh_%s_%d", userID.String()[:8], time.Now().Unix()),
-		RefreshExpiresAt: time.Now().Add(7 * 24 * time.Hour),
-		RefreshID:        uuid.New(),
-	}, nil
-}
-
-func (s *stubTokenService) ParseRefreshToken(token string) (auth.RefreshClaims, error) {
-	return auth.RefreshClaims{
-		TokenID:   uuid.New(),
-		UserID:    uuid.New(),
-		UserType:  user.UserTypeOwner,
-		ExpiresAt: time.Now().Add(7 * 24 * time.Hour),
-	}, nil
-}
-
-type stubPasswordHasher struct{}
-
-func (s *stubPasswordHasher) Hash(password string) (string, error) {
-	return "hashed_" + password, nil
-}
-
-func (s *stubPasswordHasher) Compare(hash, password string) error {
-	if hash != "hashed_"+password {
-		return fmt.Errorf("password mismatch")
+func parseDuration(s string, defaultDuration time.Duration) time.Duration {
+	if s == "" {
+		return defaultDuration
 	}
-	return nil
-}
-
-type stubEmailService struct{}
-
-func (s *stubEmailService) SendPasswordResetEmail(to, resetLink string) error {
-	fmt.Printf("📧 Password reset email sent to %s: %s\n", to, resetLink)
-	return nil
-}
-
-func (s *stubEmailService) SendEmailVerification(to, verificationLink string) error {
-	fmt.Printf("📧 Email verification sent to %s: %s\n", to, verificationLink)
-	return nil
+	d, err := time.ParseDuration(s)
+	if err != nil {
+		return defaultDuration
+	}
+	return d
 }
