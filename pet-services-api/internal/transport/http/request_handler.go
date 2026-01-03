@@ -11,16 +11,18 @@ import (
 	"github.com/guilherme/pet-services-api/internal/application/request"
 	domainprovider "github.com/guilherme/pet-services-api/internal/domain/provider"
 	domainrequest "github.com/guilherme/pet-services-api/internal/domain/request"
+	domainuser "github.com/guilherme/pet-services-api/internal/domain/user"
 	"github.com/guilherme/pet-services-api/internal/infra/factory"
 )
 
 // RequestHandler expõe endpoints de solicitações de serviço.
 type RequestHandler struct {
-	uc factory.RequestUseCases
+	uc           factory.RequestUseCases
+	providerRepo domainprovider.Repository
 }
 
-func NewRequestHandler(uc factory.RequestUseCases) *RequestHandler {
-	return &RequestHandler{uc: uc}
+func NewRequestHandler(uc factory.RequestUseCases, providerRepo domainprovider.Repository) *RequestHandler {
+	return &RequestHandler{uc: uc, providerRepo: providerRepo}
 }
 
 // RegisterRequestRoutes registra rotas autenticadas de solicitações.
@@ -54,6 +56,10 @@ func (h *RequestHandler) Create(c *gin.Context) {
 	ownerID, err := extractUserID(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, errorResponse("unauthorized", err.Error()))
+		return
+	}
+	if ut := extractUserType(c); ut != "" && ut != domainuser.UserTypeOwner {
+		c.JSON(http.StatusForbidden, errorResponse("forbidden", "apenas donos podem criar solicitações"))
 		return
 	}
 
@@ -116,9 +122,8 @@ func (h *RequestHandler) Accept(c *gin.Context) {
 	if !ok {
 		return
 	}
-	providerID, err := extractUserID(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, errorResponse("unauthorized", err.Error()))
+	providerID, ok := providerIDFromContext(c, h.providerRepo, true)
+	if !ok {
 		return
 	}
 
@@ -141,9 +146,8 @@ func (h *RequestHandler) Reject(c *gin.Context) {
 	if !ok {
 		return
 	}
-	providerID, err := extractUserID(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, errorResponse("unauthorized", err.Error()))
+	providerID, ok := providerIDFromContext(c, h.providerRepo, true)
+	if !ok {
 		return
 	}
 	var req struct {
@@ -172,9 +176,8 @@ func (h *RequestHandler) Complete(c *gin.Context) {
 	if !ok {
 		return
 	}
-	providerID, err := extractUserID(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, errorResponse("unauthorized", err.Error()))
+	providerID, ok := providerIDFromContext(c, h.providerRepo, true)
+	if !ok {
 		return
 	}
 
@@ -202,6 +205,10 @@ func (h *RequestHandler) Cancel(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, errorResponse("unauthorized", err.Error()))
 		return
 	}
+	if ut := extractUserType(c); ut != "" && ut != domainuser.UserTypeOwner {
+		c.JSON(http.StatusForbidden, errorResponse("forbidden", "apenas donos podem cancelar solicitações"))
+		return
+	}
 
 	if err := h.uc.Cancel.Execute(c.Request.Context(), request.CancelRequestInput{RequestID: requestID, OwnerID: ownerID}); err != nil {
 		switch {
@@ -222,9 +229,20 @@ func (h *RequestHandler) GetStatus(c *gin.Context) {
 	if !ok {
 		return
 	}
-	userID, _ := extractUserID(c)
 
-	result, err := h.uc.GetStatus.Execute(c.Request.Context(), request.GetRequestStatusInput{RequestID: requestID, OwnerID: userID, ProviderID: userID})
+	userID, _ := extractUserID(c)
+	userType := extractUserType(c)
+	providerID := uuid.Nil
+	if userType == domainuser.UserTypeProvider {
+		resolvedID, ok := providerIDFromContext(c, h.providerRepo, true)
+		if !ok {
+			return
+		}
+		providerID = resolvedID
+		userID = uuid.Nil // evita conflitar owner vs provider
+	}
+
+	result, err := h.uc.GetStatus.Execute(c.Request.Context(), request.GetRequestStatusInput{RequestID: requestID, OwnerID: userID, ProviderID: providerID})
 	if err != nil {
 		switch {
 		case errors.Is(err, domainrequest.ErrRequestNotFound):
@@ -251,6 +269,10 @@ func (h *RequestHandler) ListForOwner(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, errorResponse("unauthorized", err.Error()))
 		return
 	}
+	if ut := extractUserType(c); ut != "" && ut != domainuser.UserTypeOwner {
+		c.JSON(http.StatusForbidden, errorResponse("forbidden", "apenas donos podem listar suas solicitações"))
+		return
+	}
 	page := parseIntDefault(c.Query("page"), 1)
 	limit := parseIntDefault(c.Query("limit"), 20)
 
@@ -265,9 +287,8 @@ func (h *RequestHandler) ListForOwner(c *gin.Context) {
 }
 
 func (h *RequestHandler) ListForProvider(c *gin.Context) {
-	providerID, err := extractUserID(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, errorResponse("unauthorized", err.Error()))
+	providerID, ok := providerIDFromContext(c, h.providerRepo, true)
+	if !ok {
 		return
 	}
 	page := parseIntDefault(c.Query("page"), 1)

@@ -8,17 +8,20 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/guilherme/pet-services-api/internal/application/review"
+	domainprovider "github.com/guilherme/pet-services-api/internal/domain/provider"
 	domainreview "github.com/guilherme/pet-services-api/internal/domain/review"
+	domainuser "github.com/guilherme/pet-services-api/internal/domain/user"
 	"github.com/guilherme/pet-services-api/internal/infra/factory"
 )
 
 // ReviewHandler expõe endpoints de avaliações.
 type ReviewHandler struct {
-	uc factory.ReviewUseCases
+	uc           factory.ReviewUseCases
+	providerRepo domainprovider.Repository
 }
 
-func NewReviewHandler(uc factory.ReviewUseCases) *ReviewHandler {
-	return &ReviewHandler{uc: uc}
+func NewReviewHandler(uc factory.ReviewUseCases, providerRepo domainprovider.Repository) *ReviewHandler {
+	return &ReviewHandler{uc: uc, providerRepo: providerRepo}
 }
 
 // RegisterReviewRoutes registra rotas autenticadas para avaliações.
@@ -31,6 +34,10 @@ func (h *ReviewHandler) Submit(c *gin.Context) {
 	ownerID, err := extractUserID(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, errorResponse("unauthorized", err.Error()))
+		return
+	}
+	if ut := extractUserType(c); ut != "" && ut != domainuser.UserTypeOwner {
+		c.JSON(http.StatusForbidden, errorResponse("forbidden", "apenas donos podem registrar avaliações"))
 		return
 	}
 	var req struct {
@@ -81,6 +88,19 @@ func (h *ReviewHandler) ListForProvider(c *gin.Context) {
 	if !ok {
 		return
 	}
+
+	// Se o usuário autenticado for prestador, ele só pode listar o próprio perfil.
+	if extractUserType(c) == domainuser.UserTypeProvider {
+		authProviderID, ok := providerIDFromContext(c, h.providerRepo, true)
+		if !ok {
+			return
+		}
+		if authProviderID != providerID {
+			c.JSON(http.StatusForbidden, errorResponse("forbidden", "não autorizado a listar avaliações de outro prestador"))
+			return
+		}
+	}
+
 	page := parseIntDefault(c.Query("page"), 1)
 	limit := parseIntDefault(c.Query("limit"), 20)
 

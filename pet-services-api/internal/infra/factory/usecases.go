@@ -11,6 +11,7 @@ import (
 	"github.com/guilherme/pet-services-api/internal/application/review"
 	"github.com/guilherme/pet-services-api/internal/application/user"
 	domainAuth "github.com/guilherme/pet-services-api/internal/domain/auth"
+	providerdom "github.com/guilherme/pet-services-api/internal/domain/provider"
 	domainUser "github.com/guilherme/pet-services-api/internal/domain/user"
 	gormrepo "github.com/guilherme/pet-services-api/internal/infra/repository/gorm"
 )
@@ -28,11 +29,12 @@ type Config struct {
 
 // UseCases agrupa fábricas de casos de uso por contexto.
 type UseCases struct {
-	Auth     AuthUseCases
-	User     UserUseCases
-	Provider ProviderUseCases
-	Request  RequestUseCases
-	Review   ReviewUseCases
+	Auth         AuthUseCases
+	User         UserUseCases
+	Provider     ProviderUseCases
+	Request      RequestUseCases
+	Review       ReviewUseCases
+	ProviderRepo providerdom.Repository
 }
 
 // AuthUseCases contém os casos de uso do contexto de autenticação.
@@ -102,6 +104,7 @@ func NewUseCases(cfg Config) UseCases {
 	refreshRepo := gormrepo.NewRefreshTokenRepository(cfg.DB)
 
 	return UseCases{
+		ProviderRepo: providerRepo,
 		Auth: AuthUseCases{
 			Login:   auth.NewLoginUseCase(userRepo, refreshRepo, cfg.TokenService, cfg.PasswordHasher, cfg.Logger),
 			Signup:  auth.NewSignupUseCase(userRepo, refreshRepo, cfg.TokenService, cfg.PasswordHasher, cfg.Logger),
