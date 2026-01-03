@@ -22,5 +22,23 @@ func NewRouter(uc factory.UseCases, tokenService domainauth.TokenService) *gin.E
 	userGroup.Use(AuthMiddleware(tokenService))
 	RegisterUserRoutes(userGroup, NewUserHandler(uc.User))
 
+	// Providers
+	providerPublic := v1.Group("/providers")
+	RegisterProviderPublicRoutes(providerPublic, NewProviderHandler(uc.Provider))
+
+	providerGroup := v1.Group("/providers")
+	providerGroup.Use(AuthMiddleware(tokenService))
+	RegisterProviderRoutes(providerGroup, NewProviderHandler(uc.Provider))
+
+	// Requests
+	requestGroup := v1.Group("/requests")
+	requestGroup.Use(AuthMiddleware(tokenService))
+	RegisterRequestRoutes(requestGroup, NewRequestHandler(uc.Request))
+
+	// Reviews
+	reviewGroup := v1.Group("/reviews")
+	reviewGroup.Use(AuthMiddleware(tokenService))
+	RegisterReviewRoutes(reviewGroup, NewReviewHandler(uc.Review))
+
 	return r
 }
