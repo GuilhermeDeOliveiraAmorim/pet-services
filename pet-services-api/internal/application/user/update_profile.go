@@ -3,20 +3,23 @@ package user
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/guilherme/pet-services-api/internal/application/logging"
 	domainUser "github.com/guilherme/pet-services-api/internal/domain/user"
 )
 
 // UpdateProfileUseCase atualiza informações do perfil do usuário.
 type UpdateProfileUseCase struct {
 	userRepo domainUser.Repository
+	logger   *slog.Logger
 }
 
-func NewUpdateProfileUseCase(userRepo domainUser.Repository) *UpdateProfileUseCase {
-	return &UpdateProfileUseCase{userRepo: userRepo}
+func NewUpdateProfileUseCase(userRepo domainUser.Repository, logger *slog.Logger) *UpdateProfileUseCase {
+	return &UpdateProfileUseCase{userRepo: userRepo, logger: logging.EnsureLogger(logger)}
 }
 
 // UpdateProfileInput campos opcionais para atualização.
@@ -31,8 +34,12 @@ type UpdateProfileInput struct {
 
 // Execute valida e atualiza o perfil do usuário.
 func (uc *UpdateProfileUseCase) Execute(ctx context.Context, input UpdateProfileInput) error {
+	var err error
+	defer logging.UseCase(ctx, uc.logger, "UpdateProfileUseCase", slog.String("user_id", input.UserID.String()))(&err)
+
 	if input.UserID == uuid.Nil {
-		return domainUser.ErrUserNotFound
+		err = domainUser.ErrUserNotFound
+		return err
 	}
 
 	user, err := uc.userRepo.FindByID(ctx, input.UserID)
@@ -79,7 +86,8 @@ func (uc *UpdateProfileUseCase) Execute(ctx context.Context, input UpdateProfile
 	user.UpdatedAt = time.Now()
 
 	if err := uc.userRepo.Update(ctx, user); err != nil {
-		return fmt.Errorf("falha ao atualizar perfil: %w", err)
+		err = fmt.Errorf("falha ao atualizar perfil: %w", err)
+		return err
 	}
 
 	return nil

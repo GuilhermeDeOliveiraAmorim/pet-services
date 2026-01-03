@@ -3,9 +3,11 @@ package provider
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/guilherme/pet-services-api/internal/application/logging"
 	"github.com/guilherme/pet-services-api/internal/domain/provider"
 	"github.com/guilherme/pet-services-api/internal/domain/user"
 )
@@ -13,11 +15,12 @@ import (
 // UpdateProviderProfileUseCase atualiza dados básicos do prestador.
 type UpdateProviderProfileUseCase struct {
 	providerRepo provider.Repository
+	logger       *slog.Logger
 }
 
 // NewUpdateProviderProfileUseCase cria nova instância.
-func NewUpdateProviderProfileUseCase(providerRepo provider.Repository) *UpdateProviderProfileUseCase {
-	return &UpdateProviderProfileUseCase{providerRepo: providerRepo}
+func NewUpdateProviderProfileUseCase(providerRepo provider.Repository, logger *slog.Logger) *UpdateProviderProfileUseCase {
+	return &UpdateProviderProfileUseCase{providerRepo: providerRepo, logger: logging.EnsureLogger(logger)}
 }
 
 // UpdateProviderProfileInput campos opcionais para atualização.
@@ -35,19 +38,25 @@ type UpdateProviderProfileInput struct {
 
 // Execute aplica alterações parciais e persiste.
 func (uc *UpdateProviderProfileUseCase) Execute(ctx context.Context, input UpdateProviderProfileInput) error {
+	var err error
+	defer logging.UseCase(ctx, uc.logger, "UpdateProviderProfileUseCase", slog.String("provider_id", input.ProviderID.String()), slog.String("user_id", input.UserID.String()))(&err)
+
 	p, err := uc.providerRepo.FindByID(ctx, input.ProviderID)
 	if err != nil {
-		return provider.ErrProviderNotFound
+		err = provider.ErrProviderNotFound
+		return err
 	}
 
 	if input.UserID != uuid.Nil && p.UserID != input.UserID {
-		return fmt.Errorf("não autorizado a atualizar este perfil")
+		err = fmt.Errorf("não autorizado a atualizar este perfil")
+		return err
 	}
 
 	if input.BusinessName != nil {
 		name := strings.TrimSpace(*input.BusinessName)
 		if name == "" {
-			return provider.NewValidationError("business_name", "nome do negócio é obrigatório")
+			err = provider.NewValidationError("business_name", "nome do negócio é obrigatório")
+			return err
 		}
 		p.BusinessName = name
 	}
@@ -62,19 +71,22 @@ func (uc *UpdateProviderProfileUseCase) Execute(ctx context.Context, input Updat
 		case provider.PriceRangeLow, provider.PriceRangeMedium, provider.PriceRangeHigh:
 			p.PriceRange = *input.PriceRange
 		default:
-			return provider.ErrInvalidPriceRange
+			err = provider.ErrInvalidPriceRange
+			return err
 		}
 	}
 
 	locationUpdate := input.Latitude != nil || input.Longitude != nil || input.Address != nil
 	if locationUpdate {
 		if input.Latitude == nil || input.Longitude == nil {
-			return provider.ErrInvalidLocation
+			err = provider.ErrInvalidLocation
+			return err
 		}
 		lat := *input.Latitude
 		lon := *input.Longitude
 		if lat < -90 || lat > 90 || lon < -180 || lon > 180 {
-			return provider.ErrInvalidLocation
+			err = provider.ErrInvalidLocation
+			return err
 		}
 
 		addr := p.Address
@@ -86,7 +98,8 @@ func (uc *UpdateProviderProfileUseCase) Execute(ctx context.Context, input Updat
 	}
 
 	if err := uc.providerRepo.Update(ctx, p); err != nil {
-		return fmt.Errorf("falha ao atualizar perfil: %w", err)
+		err = fmt.Errorf("falha ao atualizar perfil: %w", err)
+		return err
 	}
 
 	return nil

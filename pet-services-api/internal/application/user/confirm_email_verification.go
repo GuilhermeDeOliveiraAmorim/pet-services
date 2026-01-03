@@ -2,19 +2,23 @@ package user
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
+	"github.com/guilherme/pet-services-api/internal/application/logging"
 	domainUser "github.com/guilherme/pet-services-api/internal/domain/user"
 )
 
 // ConfirmEmailVerificationUseCase confirma a verificação de email.
 type ConfirmEmailVerificationUseCase struct {
 	userRepo domainUser.Repository
+	logger   *slog.Logger
 }
 
-func NewConfirmEmailVerificationUseCase(userRepo domainUser.Repository) *ConfirmEmailVerificationUseCase {
+func NewConfirmEmailVerificationUseCase(userRepo domainUser.Repository, logger *slog.Logger) *ConfirmEmailVerificationUseCase {
 	return &ConfirmEmailVerificationUseCase{
 		userRepo: userRepo,
+		logger:   logging.EnsureLogger(logger),
 	}
 }
 
@@ -25,19 +29,28 @@ type ConfirmEmailVerificationInput struct {
 
 // Execute valida o token e marca o email como verificado.
 func (uc *ConfirmEmailVerificationUseCase) Execute(ctx context.Context, input ConfirmEmailVerificationInput) error {
+	var (
+		err    error
+		userID string
+	)
+	defer logging.UseCase(ctx, uc.logger, "ConfirmEmailVerificationUseCase", slog.String("user_id", userID))(&err)
+
 	if input.Token == "" {
-		return domainUser.ErrEmailVerificationTokenInvalid
+		err = domainUser.ErrEmailVerificationTokenInvalid
+		return err
 	}
 
 	// Busca o token de verificação
 	verificationToken, err := uc.userRepo.FindEmailVerificationToken(ctx, input.Token)
 	if err != nil {
-		return domainUser.ErrEmailVerificationTokenInvalid
+		err = domainUser.ErrEmailVerificationTokenInvalid
+		return err
 	}
 
 	// Verifica se o token expirou
 	if time.Now().After(verificationToken.ExpiresAt) {
-		return domainUser.ErrEmailVerificationTokenInvalid
+		err = domainUser.ErrEmailVerificationTokenInvalid
+		return err
 	}
 
 	// Busca o usuário
@@ -45,10 +58,12 @@ func (uc *ConfirmEmailVerificationUseCase) Execute(ctx context.Context, input Co
 	if err != nil {
 		return err
 	}
+	userID = user.ID.String()
 
 	// Verifica se já está verificado
 	if user.EmailVerified {
-		return domainUser.ErrEmailAlreadyVerified
+		err = domainUser.ErrEmailAlreadyVerified
+		return err
 	}
 
 	// Marca o email como verificado

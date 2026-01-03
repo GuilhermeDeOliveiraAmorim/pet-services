@@ -3,8 +3,10 @@ package auth
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
+	"github.com/guilherme/pet-services-api/internal/application/logging"
 	domainAuth "github.com/guilherme/pet-services-api/internal/domain/auth"
 )
 
@@ -12,12 +14,14 @@ import (
 type RefreshTokenUseCase struct {
 	refreshRepo  domainAuth.RefreshTokenRepository
 	tokenService domainAuth.TokenService
+	logger       *slog.Logger
 }
 
-func NewRefreshTokenUseCase(refreshRepo domainAuth.RefreshTokenRepository, tokenService domainAuth.TokenService) *RefreshTokenUseCase {
+func NewRefreshTokenUseCase(refreshRepo domainAuth.RefreshTokenRepository, tokenService domainAuth.TokenService, logger *slog.Logger) *RefreshTokenUseCase {
 	return &RefreshTokenUseCase{
 		refreshRepo:  refreshRepo,
 		tokenService: tokenService,
+		logger:       logging.EnsureLogger(logger),
 	}
 }
 
@@ -38,22 +42,32 @@ type RefreshOutput struct {
 
 // Execute valida o refresh token, revoga o antigo e cria um novo.
 func (uc *RefreshTokenUseCase) Execute(ctx context.Context, input RefreshInput) (*RefreshOutput, error) {
+	var (
+		result *RefreshOutput
+		err    error
+	)
+	defer logging.UseCase(ctx, uc.logger, "RefreshTokenUseCase")(&err)
+
 	claims, err := uc.tokenService.ParseRefreshToken(input.RefreshToken)
 	if err != nil {
-		return nil, domainAuth.ErrInvalidCredentials
+		err = domainAuth.ErrInvalidCredentials
+		return nil, err
 	}
 
 	stored, err := uc.refreshRepo.FindByID(ctx, claims.TokenID)
 	if err != nil {
-		return nil, domainAuth.ErrRefreshTokenNotFound
+		err = domainAuth.ErrRefreshTokenNotFound
+		return nil, err
 	}
 
 	now := time.Now()
 	if stored.Revoked {
-		return nil, domainAuth.ErrRefreshTokenRevoked
+		err = domainAuth.ErrRefreshTokenRevoked
+		return nil, err
 	}
 	if now.After(stored.ExpiresAt) || now.After(claims.ExpiresAt) {
-		return nil, domainAuth.ErrRefreshTokenExpired
+		err = domainAuth.ErrRefreshTokenExpired
+		return nil, err
 	}
 
 	// Revoga o token anterior
@@ -72,15 +86,18 @@ func (uc *RefreshTokenUseCase) Execute(ctx context.Context, input RefreshInput) 
 	}
 
 	if err := uc.refreshRepo.Create(ctx, rt); err != nil {
-		return nil, fmt.Errorf("falha ao salvar refresh token: %w", err)
+		err = fmt.Errorf("falha ao salvar refresh token: %w", err)
+		return nil, err
 	}
 
-	return &RefreshOutput{
+	result = &RefreshOutput{
 		AccessToken:      tokens.AccessToken,
 		RefreshToken:     tokens.RefreshToken,
 		AccessExpiresAt:  tokens.AccessExpiresAt.Unix(),
 		RefreshExpiresAt: tokens.RefreshExpiresAt.Unix(),
 		UserID:           claims.UserID.String(),
 		UserType:         string(claims.UserType),
-	}, nil
+	}
+
+	return result, nil
 }

@@ -3,18 +3,21 @@ package provider
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
+	"github.com/guilherme/pet-services-api/internal/application/logging"
 	"github.com/guilherme/pet-services-api/internal/domain/provider"
 )
 
 // ListProvidersByLocationUseCase busca prestadores ativos por localização/raio.
 type ListProvidersByLocationUseCase struct {
 	providerRepo provider.Repository
+	logger       *slog.Logger
 }
 
 // NewListProvidersByLocationUseCase cria instância do caso de uso.
-func NewListProvidersByLocationUseCase(providerRepo provider.Repository) *ListProvidersByLocationUseCase {
-	return &ListProvidersByLocationUseCase{providerRepo: providerRepo}
+func NewListProvidersByLocationUseCase(providerRepo provider.Repository, logger *slog.Logger) *ListProvidersByLocationUseCase {
+	return &ListProvidersByLocationUseCase{providerRepo: providerRepo, logger: logging.EnsureLogger(logger)}
 }
 
 // ListProvidersByLocationInput filtros de busca.
@@ -28,16 +31,25 @@ type ListProvidersByLocationInput struct {
 
 // Execute retorna prestadores ativos próximos com paginação.
 func (uc *ListProvidersByLocationUseCase) Execute(ctx context.Context, input ListProvidersByLocationInput) ([]*provider.Provider, int64, error) {
+	var (
+		results []*provider.Provider
+		total   int64
+		err     error
+	)
+	defer logging.UseCase(ctx, uc.logger, "ListProvidersByLocationUseCase", slog.Float64("lat", input.Latitude), slog.Float64("lon", input.Longitude), slog.Float64("radius_km", input.RadiusKM))(&err)
+
 	if input.Latitude < -90 || input.Latitude > 90 || input.Longitude < -180 || input.Longitude > 180 {
-		return nil, 0, provider.ErrInvalidLocation
+		err = provider.ErrInvalidLocation
+		return nil, 0, err
 	}
 	if input.RadiusKM <= 0 {
-		return nil, 0, fmt.Errorf("raio deve ser maior que zero")
+		err = fmt.Errorf("raio deve ser maior que zero")
+		return nil, 0, err
 	}
 
 	page, limit := normalizePagination(input.Page, input.Limit)
 
-	results, total, err := uc.providerRepo.FindActiveByLocation(ctx, input.Latitude, input.Longitude, input.RadiusKM, page, limit)
+	results, total, err = uc.providerRepo.FindActiveByLocation(ctx, input.Latitude, input.Longitude, input.RadiusKM, page, limit)
 	if err != nil {
 		return nil, 0, err
 	}

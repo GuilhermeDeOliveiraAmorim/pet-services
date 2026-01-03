@@ -3,8 +3,10 @@ package user
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 
+	"github.com/guilherme/pet-services-api/internal/application/logging"
 	domainAuth "github.com/guilherme/pet-services-api/internal/domain/auth"
 	domainUser "github.com/guilherme/pet-services-api/internal/domain/user"
 )
@@ -14,13 +16,15 @@ type ConfirmPasswordResetUseCase struct {
 	userRepo       domainUser.Repository
 	refreshRepo    domainAuth.RefreshTokenRepository
 	passwordHasher domainAuth.PasswordHasher
+	logger         *slog.Logger
 }
 
-func NewConfirmPasswordResetUseCase(userRepo domainUser.Repository, refreshRepo domainAuth.RefreshTokenRepository, passwordHasher domainAuth.PasswordHasher) *ConfirmPasswordResetUseCase {
+func NewConfirmPasswordResetUseCase(userRepo domainUser.Repository, refreshRepo domainAuth.RefreshTokenRepository, passwordHasher domainAuth.PasswordHasher, logger *slog.Logger) *ConfirmPasswordResetUseCase {
 	return &ConfirmPasswordResetUseCase{
 		userRepo:       userRepo,
 		refreshRepo:    refreshRepo,
 		passwordHasher: passwordHasher,
+		logger:         logging.EnsureLogger(logger),
 	}
 }
 
@@ -32,25 +36,32 @@ type ConfirmPasswordResetInput struct {
 
 // Execute valida token, atualiza senha e revoga tokens existentes.
 func (uc *ConfirmPasswordResetUseCase) Execute(ctx context.Context, input ConfirmPasswordResetInput) error {
+	var err error
+	defer logging.UseCase(ctx, uc.logger, "ConfirmPasswordResetUseCase")(&err)
+
 	token := strings.TrimSpace(input.Token)
 	newPassword := strings.TrimSpace(input.NewPassword)
 
 	if token == "" {
-		return domainUser.ErrPasswordResetTokenInvalid
+		err = domainUser.ErrPasswordResetTokenInvalid
+		return err
 	}
 
 	if newPassword == "" || len(newPassword) < 6 {
-		return domainUser.ErrInvalidPassword
+		err = domainUser.ErrInvalidPassword
+		return err
 	}
 
 	// Busca token
 	resetToken, err := uc.userRepo.FindPasswordResetToken(ctx, token)
 	if err != nil {
-		return domainUser.ErrPasswordResetTokenInvalid
+		err = domainUser.ErrPasswordResetTokenInvalid
+		return err
 	}
 
 	if !resetToken.IsValid() {
-		return domainUser.ErrPasswordResetTokenInvalid
+		err = domainUser.ErrPasswordResetTokenInvalid
+		return err
 	}
 
 	// Busca usuário
@@ -73,7 +84,8 @@ func (uc *ConfirmPasswordResetUseCase) Execute(ctx context.Context, input Confir
 
 	// Marca token como usado
 	if err := uc.userRepo.MarkPasswordResetTokenAsUsed(ctx, resetToken.ID); err != nil {
-		return fmt.Errorf("falha ao marcar token como usado: %w", err)
+		err = fmt.Errorf("falha ao marcar token como usado: %w", err)
+		return err
 	}
 
 	// Revoga todos os refresh tokens

@@ -3,11 +3,13 @@ package request
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
 
+	"github.com/guilherme/pet-services-api/internal/application/logging"
 	domainProvider "github.com/guilherme/pet-services-api/internal/domain/provider"
 	domainRequest "github.com/guilherme/pet-services-api/internal/domain/request"
 )
@@ -16,16 +18,19 @@ import (
 type CreateRequestUseCase struct {
 	requestRepo  domainRequest.Repository
 	providerRepo domainProvider.Repository
+	logger       *slog.Logger
 }
 
 // NewCreateRequestUseCase cria uma nova instância.
 func NewCreateRequestUseCase(
 	requestRepo domainRequest.Repository,
 	providerRepo domainProvider.Repository,
+	logger *slog.Logger,
 ) *CreateRequestUseCase {
 	return &CreateRequestUseCase{
 		requestRepo:  requestRepo,
 		providerRepo: providerRepo,
+		logger:       logging.EnsureLogger(logger),
 	}
 }
 
@@ -47,28 +52,40 @@ type CreateRequestInput struct {
 
 // Execute valida os dados, cria a entidade e persiste.
 func (uc *CreateRequestUseCase) Execute(ctx context.Context, input CreateRequestInput) (*domainRequest.ServiceRequest, error) {
+	var (
+		result *domainRequest.ServiceRequest
+		err    error
+	)
+	defer logging.UseCase(ctx, uc.logger, "CreateRequestUseCase", slog.String("owner_id", input.OwnerID.String()), slog.String("provider_id", input.ProviderID.String()), slog.String("service_type", input.ServiceType))(&err)
+
 	if input.OwnerID == uuid.Nil {
-		return nil, fmt.Errorf("ownerID é obrigatório")
+		err = fmt.Errorf("ownerID é obrigatório")
+		return nil, err
 	}
 	if input.ProviderID == uuid.Nil {
-		return nil, domainProvider.ErrProviderNotFound
+		err = domainProvider.ErrProviderNotFound
+		return nil, err
 	}
 	if strings.TrimSpace(input.ServiceType) == "" {
-		return nil, domainRequest.ErrInvalidServiceType
+		err = domainRequest.ErrInvalidServiceType
+		return nil, err
 	}
 
 	// Validar data preferencial: não pode ser no passado
 	today := time.Now()
 	if input.PreferredDate.IsZero() || input.PreferredDate.Before(today.Truncate(24*time.Hour)) {
-		return nil, domainRequest.ErrInvalidPreferredDate
+		err = domainRequest.ErrInvalidPreferredDate
+		return nil, err
 	}
 
 	// Validar horário
 	if strings.TrimSpace(input.PreferredTime) == "" {
-		return nil, fmt.Errorf("horário preferencial é obrigatório")
+		err = fmt.Errorf("horário preferencial é obrigatório")
+		return nil, err
 	}
 	if _, err := time.Parse("15:04", input.PreferredTime); err != nil {
-		return nil, fmt.Errorf("horário preferencial inválido, use HH:MM")
+		err = fmt.Errorf("horário preferencial inválido, use HH:MM")
+		return nil, err
 	}
 
 	petInfo, err := domainRequest.NewPetInfo(
@@ -85,10 +102,12 @@ func (uc *CreateRequestUseCase) Execute(ctx context.Context, input CreateRequest
 
 	provider, err := uc.providerRepo.FindByID(ctx, input.ProviderID)
 	if err != nil {
-		return nil, domainProvider.ErrProviderNotFound
+		err = domainProvider.ErrProviderNotFound
+		return nil, err
 	}
 	if !provider.IsActive {
-		return nil, domainProvider.ErrProviderNotActive
+		err = domainProvider.ErrProviderNotActive
+		return nil, err
 	}
 
 	req := domainRequest.NewServiceRequest(
@@ -102,8 +121,11 @@ func (uc *CreateRequestUseCase) Execute(ctx context.Context, input CreateRequest
 	)
 
 	if err := uc.requestRepo.Create(ctx, req); err != nil {
-		return nil, fmt.Errorf("falha ao salvar solicitação: %w", err)
+		err = fmt.Errorf("falha ao salvar solicitação: %w", err)
+		return nil, err
 	}
 
-	return req, nil
+	result = req
+
+	return result, nil
 }

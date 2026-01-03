@@ -3,10 +3,12 @@ package auth
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/google/uuid"
 
+	"github.com/guilherme/pet-services-api/internal/application/logging"
 	domainAuth "github.com/guilherme/pet-services-api/internal/domain/auth"
 	domainUser "github.com/guilherme/pet-services-api/internal/domain/user"
 )
@@ -17,14 +19,16 @@ type SignupUseCase struct {
 	refreshRepo    domainAuth.RefreshTokenRepository
 	tokenService   domainAuth.TokenService
 	passwordHasher domainAuth.PasswordHasher
+	logger         *slog.Logger
 }
 
-func NewSignupUseCase(userRepo domainUser.Repository, refreshRepo domainAuth.RefreshTokenRepository, tokenService domainAuth.TokenService, passwordHasher domainAuth.PasswordHasher) *SignupUseCase {
+func NewSignupUseCase(userRepo domainUser.Repository, refreshRepo domainAuth.RefreshTokenRepository, tokenService domainAuth.TokenService, passwordHasher domainAuth.PasswordHasher, logger *slog.Logger) *SignupUseCase {
 	return &SignupUseCase{
 		userRepo:       userRepo,
 		refreshRepo:    refreshRepo,
 		tokenService:   tokenService,
 		passwordHasher: passwordHasher,
+		logger:         logging.EnsureLogger(logger),
 	}
 }
 
@@ -49,12 +53,18 @@ type SignupOutput struct {
 
 // Execute cria usuário, hash de senha, tokens e registra refresh.
 func (uc *SignupUseCase) Execute(ctx context.Context, input SignupInput) (*SignupOutput, error) {
+	var (
+		result *SignupOutput
+		err    error
+	)
 	email := strings.TrimSpace(strings.ToLower(input.Email))
 	name := strings.TrimSpace(input.Name)
 	password := strings.TrimSpace(input.Password)
+	defer logging.UseCase(ctx, uc.logger, "SignupUseCase", slog.String("email", email), slog.String("type", string(input.Type)))(&err)
 
 	if password == "" || len(password) < 6 {
-		return nil, domainUser.ErrInvalidPassword
+		err = domainUser.ErrInvalidPassword
+		return nil, err
 	}
 
 	exists, err := uc.userRepo.ExistsByEmail(ctx, email)
@@ -91,15 +101,18 @@ func (uc *SignupUseCase) Execute(ctx context.Context, input SignupInput) (*Signu
 		rt.ID = tokens.RefreshID
 	}
 	if err := uc.refreshRepo.Create(ctx, rt); err != nil {
-		return nil, fmt.Errorf("falha ao salvar refresh token: %w", err)
+		err = fmt.Errorf("falha ao salvar refresh token: %w", err)
+		return nil, err
 	}
 
-	return &SignupOutput{
+	result = &SignupOutput{
 		UserID:           user.ID,
 		AccessToken:      tokens.AccessToken,
 		RefreshToken:     tokens.RefreshToken,
 		AccessExpiresAt:  tokens.AccessExpiresAt.Unix(),
 		RefreshExpiresAt: tokens.RefreshExpiresAt.Unix(),
 		UserType:         user.Type,
-	}, nil
+	}
+
+	return result, nil
 }

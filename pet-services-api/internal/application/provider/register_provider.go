@@ -3,8 +3,10 @@ package provider
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/google/uuid"
+	"github.com/guilherme/pet-services-api/internal/application/logging"
 	"github.com/guilherme/pet-services-api/internal/domain/provider"
 	"github.com/guilherme/pet-services-api/internal/domain/user"
 )
@@ -13,13 +15,15 @@ import (
 type RegisterProviderUseCase struct {
 	providerRepo provider.Repository
 	userRepo     user.Repository
+	logger       *slog.Logger
 }
 
 // NewRegisterProviderUseCase cria um novo caso de uso.
-func NewRegisterProviderUseCase(providerRepo provider.Repository, userRepo user.Repository) *RegisterProviderUseCase {
+func NewRegisterProviderUseCase(providerRepo provider.Repository, userRepo user.Repository, logger *slog.Logger) *RegisterProviderUseCase {
 	return &RegisterProviderUseCase{
 		providerRepo: providerRepo,
 		userRepo:     userRepo,
+		logger:       logging.EnsureLogger(logger),
 	}
 }
 
@@ -52,33 +56,46 @@ type RegisterProviderOutput struct {
 
 // Execute cria um perfil de prestador validando regras básicas de domínio.
 func (uc *RegisterProviderUseCase) Execute(ctx context.Context, input RegisterProviderInput) (*RegisterProviderOutput, error) {
+	var (
+		result *RegisterProviderOutput
+		err    error
+	)
+	defer logging.UseCase(ctx, uc.logger, "RegisterProviderUseCase", slog.String("user_id", input.UserID.String()), slog.String("business_name", input.BusinessName))(&err)
+
 	if input.BusinessName == "" {
-		return nil, provider.NewValidationError("business_name", "nome do negócio é obrigatório")
+		err = provider.NewValidationError("business_name", "nome do negócio é obrigatório")
+		return nil, err
 	}
 
 	if len(input.Services) == 0 {
-		return nil, provider.ErrNoServicesProvided
+		err = provider.ErrNoServicesProvided
+		return nil, err
 	}
 
 	for _, svc := range input.Services {
 		if svc.Name == "" {
-			return nil, provider.NewValidationError("service.name", "nome do serviço é obrigatório")
+			err = provider.NewValidationError("service.name", "nome do serviço é obrigatório")
+			return nil, err
 		}
 		if svc.PriceMin < 0 || svc.PriceMax < 0 {
-			return nil, provider.NewValidationError("service.price", "preço não pode ser negativo")
+			err = provider.NewValidationError("service.price", "preço não pode ser negativo")
+			return nil, err
 		}
 		if svc.PriceMax > 0 && svc.PriceMin > svc.PriceMax {
-			return nil, provider.NewValidationError("service.price", "preço máximo deve ser maior ou igual ao mínimo")
+			err = provider.NewValidationError("service.price", "preço máximo deve ser maior ou igual ao mínimo")
+			return nil, err
 		}
 	}
 
 	// Verifica se o usuário existe e é do tipo provider
 	u, err := uc.userRepo.FindByID(ctx, input.UserID)
 	if err != nil {
-		return nil, user.ErrUserNotFound
+		err = user.ErrUserNotFound
+		return nil, err
 	}
 	if u.Type != user.UserTypeProvider {
-		return nil, fmt.Errorf("usuário não é do tipo provider")
+		err = fmt.Errorf("usuário não é do tipo provider")
+		return nil, err
 	}
 
 	// Cria entidade Provider
@@ -102,9 +119,11 @@ func (uc *RegisterProviderUseCase) Execute(ctx context.Context, input RegisterPr
 		return nil, err
 	}
 
-	return &RegisterProviderOutput{
+	result = &RegisterProviderOutput{
 		ProviderID:   p.ID,
 		BusinessName: p.BusinessName,
 		IsActive:     p.IsActive,
-	}, nil
+	}
+
+	return result, nil
 }

@@ -5,9 +5,11 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
+	"github.com/guilherme/pet-services-api/internal/application/logging"
 	domainUser "github.com/guilherme/pet-services-api/internal/domain/user"
 )
 
@@ -16,13 +18,15 @@ type RequestPasswordResetUseCase struct {
 	userRepo     domainUser.Repository
 	emailService domainUser.EmailService
 	resetBaseURL string
+	logger       *slog.Logger
 }
 
-func NewRequestPasswordResetUseCase(userRepo domainUser.Repository, emailService domainUser.EmailService, resetBaseURL string) *RequestPasswordResetUseCase {
+func NewRequestPasswordResetUseCase(userRepo domainUser.Repository, emailService domainUser.EmailService, resetBaseURL string, logger *slog.Logger) *RequestPasswordResetUseCase {
 	return &RequestPasswordResetUseCase{
 		userRepo:     userRepo,
 		emailService: emailService,
 		resetBaseURL: resetBaseURL,
+		logger:       logging.EnsureLogger(logger),
 	}
 }
 
@@ -33,9 +37,12 @@ type RequestPasswordResetInput struct {
 
 // Execute gera token, persiste e envia email.
 func (uc *RequestPasswordResetUseCase) Execute(ctx context.Context, input RequestPasswordResetInput) error {
+	var err error
 	email := strings.TrimSpace(strings.ToLower(input.Email))
+	defer logging.UseCase(ctx, uc.logger, "RequestPasswordResetUseCase", slog.String("email", email))(&err)
 	if email == "" {
-		return domainUser.ErrInvalidEmail
+		err = domainUser.ErrInvalidEmail
+		return err
 	}
 
 	user, err := uc.userRepo.FindByEmail(ctx, email)
@@ -47,7 +54,8 @@ func (uc *RequestPasswordResetUseCase) Execute(ctx context.Context, input Reques
 	// Gera token seguro
 	token, err := generateSecureToken(32)
 	if err != nil {
-		return fmt.Errorf("falha ao gerar token: %w", err)
+		err = fmt.Errorf("falha ao gerar token: %w", err)
+		return err
 	}
 
 	// Token válido por 1 hora
@@ -55,13 +63,15 @@ func (uc *RequestPasswordResetUseCase) Execute(ctx context.Context, input Reques
 
 	resetToken := domainUser.NewPasswordResetToken(user.ID, token, expiresAt)
 	if err := uc.userRepo.CreatePasswordResetToken(ctx, resetToken); err != nil {
-		return fmt.Errorf("falha ao salvar token de reset: %w", err)
+		err = fmt.Errorf("falha ao salvar token de reset: %w", err)
+		return err
 	}
 
 	// Envia email com link de reset
 	resetLink := fmt.Sprintf("%s?token=%s", uc.resetBaseURL, token)
 	if err := uc.emailService.SendPasswordResetEmail(user.Email.String(), resetLink); err != nil {
-		return fmt.Errorf("falha ao enviar email: %w", err)
+		err = fmt.Errorf("falha ao enviar email: %w", err)
+		return err
 	}
 
 	return nil
