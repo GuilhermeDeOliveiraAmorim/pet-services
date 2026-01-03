@@ -2,10 +2,10 @@ package user
 
 import (
 	"context"
-	"fmt"
-	"log/slog"
+	"errors"
 
 	"github.com/google/uuid"
+	"github.com/guilherme/pet-services-api/internal/application/exceptions"
 	"github.com/guilherme/pet-services-api/internal/application/logging"
 	domainAuth "github.com/guilherme/pet-services-api/internal/domain/auth"
 	domainUser "github.com/guilherme/pet-services-api/internal/domain/user"
@@ -15,14 +15,14 @@ import (
 type DeleteAccountUseCase struct {
 	userRepo    domainUser.Repository
 	refreshRepo domainAuth.RefreshTokenRepository
-	logger      *slog.Logger
+	logger      logging.LoggerService
 }
 
-func NewDeleteAccountUseCase(userRepo domainUser.Repository, refreshRepo domainAuth.RefreshTokenRepository, logger *slog.Logger) *DeleteAccountUseCase {
+func NewDeleteAccountUseCase(userRepo domainUser.Repository, refreshRepo domainAuth.RefreshTokenRepository, logger logging.LoggerService) *DeleteAccountUseCase {
 	return &DeleteAccountUseCase{
 		userRepo:    userRepo,
 		refreshRepo: refreshRepo,
-		logger:      logging.EnsureLogger(logger),
+		logger:      logger,
 	}
 }
 
@@ -33,42 +33,122 @@ type DeleteAccountInput struct {
 }
 
 // Execute marca usuário como deletado (soft) ou remove permanentemente (hard).
-func (uc *DeleteAccountUseCase) Execute(ctx context.Context, input DeleteAccountInput) error {
-	var err error
-	defer logging.UseCase(ctx, uc.logger, "DeleteAccountUseCase", slog.String("user_id", input.UserID.String()))(&err)
+const DELETE_ACCOUNT_USECASE = "DELETE_ACCOUNT_USECASE"
+
+func (uc *DeleteAccountUseCase) Execute(ctx context.Context, input DeleteAccountInput) []exceptions.ProblemDetails {
+	uc.logger.Log(logging.Logger{
+		Context: ctx,
+		TypeLog: logging.LoggerTypes.INFO,
+		Layer:   logging.LoggerLayers.USECASES,
+		Code:    exceptions.RFC200_CODE,
+		From:    DELETE_ACCOUNT_USECASE,
+		Message: logging.DEFAULTMESSAGES.START,
+	})
 
 	if input.UserID == uuid.Nil {
-		err = domainUser.ErrUserNotFound
-		return err
+		uc.logger.Log(logging.Logger{
+			Context: ctx,
+			TypeLog: logging.LoggerTypes.ERROR,
+			Layer:   logging.LoggerLayers.USECASES,
+			Code:    exceptions.RFC404_CODE,
+			From:    DELETE_ACCOUNT_USECASE,
+			Message: "Usuário não encontrado",
+			Error:   domainUser.ErrUserNotFound,
+		})
+		return []exceptions.ProblemDetails{{
+			Type:   exceptions.RFC404,
+			Title:  "Usuário não encontrado",
+			Status: exceptions.RFC404_CODE,
+			Detail: "O usuário informado não foi encontrado.",
+		}}
 	}
 
 	user, err := uc.userRepo.FindByID(ctx, input.UserID)
 	if err != nil {
-		return err
+		uc.logger.Log(logging.Logger{
+			Context: ctx,
+			TypeLog: logging.LoggerTypes.ERROR,
+			Layer:   logging.LoggerLayers.USECASES,
+			Code:    exceptions.RFC404_CODE,
+			From:    DELETE_ACCOUNT_USECASE,
+			Message: "Usuário não encontrado",
+			Error:   err,
+		})
+		return []exceptions.ProblemDetails{{
+			Type:   exceptions.RFC404,
+			Title:  "Usuário não encontrado",
+			Status: exceptions.RFC404_CODE,
+			Detail: "O usuário informado não foi encontrado.",
+		}}
 	}
 
 	if user.IsDeleted() {
-		err = fmt.Errorf("conta já foi deletada")
-		return err
+		uc.logger.Log(logging.Logger{
+			Context: ctx,
+			TypeLog: logging.LoggerTypes.ERROR,
+			Layer:   logging.LoggerLayers.USECASES,
+			Code:    exceptions.RFC409_CODE,
+			From:    DELETE_ACCOUNT_USECASE,
+			Message: "Conta já foi deletada",
+			Error:   errors.New("conta já foi deletada"),
+		})
+		return []exceptions.ProblemDetails{{
+			Type:   exceptions.RFC409,
+			Title:  "Conta já deletada",
+			Status: exceptions.RFC409_CODE,
+			Detail: "A conta já foi deletada anteriormente.",
+		}}
 	}
 
-	// Revoga todos os refresh tokens
 	_ = uc.refreshRepo.RevokeAllByUserID(ctx, user.ID)
 
 	if input.HardDelete {
-		// Hard delete: remove permanentemente do banco
 		if err := uc.userRepo.Delete(ctx, user.ID); err != nil {
-			err = fmt.Errorf("falha ao deletar conta: %w", err)
-			return err
+			uc.logger.Log(logging.Logger{
+				Context: ctx,
+				TypeLog: logging.LoggerTypes.ERROR,
+				Layer:   logging.LoggerLayers.USECASES,
+				Code:    exceptions.RFC500_CODE,
+				From:    DELETE_ACCOUNT_USECASE,
+				Message: "Falha ao deletar conta",
+				Error:   err,
+			})
+			return []exceptions.ProblemDetails{{
+				Type:   exceptions.RFC500,
+				Title:  "Falha ao deletar conta",
+				Status: exceptions.RFC500_CODE,
+				Detail: err.Error(),
+			}}
 		}
 	} else {
-		// Soft delete: marca DeletedAt
 		user.SoftDelete()
 		if err := uc.userRepo.Update(ctx, user); err != nil {
-			err = fmt.Errorf("falha ao desativar conta: %w", err)
-			return err
+			uc.logger.Log(logging.Logger{
+				Context: ctx,
+				TypeLog: logging.LoggerTypes.ERROR,
+				Layer:   logging.LoggerLayers.USECASES,
+				Code:    exceptions.RFC500_CODE,
+				From:    DELETE_ACCOUNT_USECASE,
+				Message: "Falha ao desativar conta",
+				Error:   err,
+			})
+			return []exceptions.ProblemDetails{{
+				Type:   exceptions.RFC500,
+				Title:  "Falha ao desativar conta",
+				Status: exceptions.RFC500_CODE,
+				Detail: err.Error(),
+			}}
 		}
 	}
+
+	uc.logger.Log(logging.Logger{
+		Context: ctx,
+		TypeLog: logging.LoggerTypes.INFO,
+		Layer:   logging.LoggerLayers.USECASES,
+		Code:    exceptions.RFC200_CODE,
+		From:    DELETE_ACCOUNT_USECASE,
+		Message: logging.DEFAULTMESSAGES.END,
+	})
 
 	return nil
 }

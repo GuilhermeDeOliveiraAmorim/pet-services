@@ -2,9 +2,9 @@ package user
 
 import (
 	"context"
-	"log/slog"
 	"time"
 
+	"github.com/guilherme/pet-services-api/internal/application/exceptions"
 	"github.com/guilherme/pet-services-api/internal/application/logging"
 	domainUser "github.com/guilherme/pet-services-api/internal/domain/user"
 )
@@ -12,13 +12,13 @@ import (
 // ConfirmEmailVerificationUseCase confirma a verificação de email.
 type ConfirmEmailVerificationUseCase struct {
 	userRepo domainUser.Repository
-	logger   *slog.Logger
+	logger   logging.LoggerService
 }
 
-func NewConfirmEmailVerificationUseCase(userRepo domainUser.Repository, logger *slog.Logger) *ConfirmEmailVerificationUseCase {
+func NewConfirmEmailVerificationUseCase(userRepo domainUser.Repository, logger logging.LoggerService) *ConfirmEmailVerificationUseCase {
 	return &ConfirmEmailVerificationUseCase{
 		userRepo: userRepo,
-		logger:   logging.EnsureLogger(logger),
+		logger:   logger,
 	}
 }
 
@@ -28,57 +28,140 @@ type ConfirmEmailVerificationInput struct {
 }
 
 // Execute valida o token e marca o email como verificado.
-func (uc *ConfirmEmailVerificationUseCase) Execute(ctx context.Context, input ConfirmEmailVerificationInput) error {
-	var (
-		err    error
-		userID string
-	)
-	defer logging.UseCase(ctx, uc.logger, "ConfirmEmailVerificationUseCase", slog.String("user_id", userID))(&err)
+const CONFIRM_EMAIL_VERIFICATION_USECASE = "CONFIRM_EMAIL_VERIFICATION_USECASE"
+
+func (uc *ConfirmEmailVerificationUseCase) Execute(ctx context.Context, input ConfirmEmailVerificationInput) []exceptions.ProblemDetails {
+	uc.logger.Log(logging.Logger{
+		Context: ctx,
+		TypeLog: logging.LoggerTypes.INFO,
+		Layer:   logging.LoggerLayers.USECASES,
+		Code:    exceptions.RFC200_CODE,
+		From:    CONFIRM_EMAIL_VERIFICATION_USECASE,
+		Message: logging.DEFAULTMESSAGES.START,
+	})
 
 	if input.Token == "" {
-		err = domainUser.ErrEmailVerificationTokenInvalid
-		return err
+		uc.logger.Log(logging.Logger{
+			Context: ctx,
+			TypeLog: logging.LoggerTypes.ERROR,
+			Layer:   logging.LoggerLayers.USECASES,
+			Code:    exceptions.RFC400_CODE,
+			From:    CONFIRM_EMAIL_VERIFICATION_USECASE,
+			Message: "Token de verificação é obrigatório",
+			Error:   domainUser.ErrEmailVerificationTokenInvalid,
+		})
+		return []exceptions.ProblemDetails{{
+			Type:   exceptions.RFC400,
+			Title:  "Token de verificação é obrigatório",
+			Status: exceptions.RFC400_CODE,
+			Detail: "O token de verificação é obrigatório.",
+		}}
 	}
 
-	// Busca o token de verificação
 	verificationToken, err := uc.userRepo.FindEmailVerificationToken(ctx, input.Token)
 	if err != nil {
-		err = domainUser.ErrEmailVerificationTokenInvalid
-		return err
+		uc.logger.Log(logging.Logger{
+			Context: ctx,
+			TypeLog: logging.LoggerTypes.ERROR,
+			Layer:   logging.LoggerLayers.USECASES,
+			Code:    exceptions.RFC400_CODE,
+			From:    CONFIRM_EMAIL_VERIFICATION_USECASE,
+			Message: "Token de verificação inválido",
+			Error:   domainUser.ErrEmailVerificationTokenInvalid,
+		})
+		return []exceptions.ProblemDetails{{
+			Type:   exceptions.RFC400,
+			Title:  "Token de verificação inválido",
+			Status: exceptions.RFC400_CODE,
+			Detail: "O token de verificação é inválido ou expirou.",
+		}}
 	}
 
-	// Verifica se o token expirou
 	if time.Now().After(verificationToken.ExpiresAt) {
-		err = domainUser.ErrEmailVerificationTokenInvalid
-		return err
+		uc.logger.Log(logging.Logger{
+			Context: ctx,
+			TypeLog: logging.LoggerTypes.ERROR,
+			Layer:   logging.LoggerLayers.USECASES,
+			Code:    exceptions.RFC400_CODE,
+			From:    CONFIRM_EMAIL_VERIFICATION_USECASE,
+			Message: "Token de verificação expirado",
+			Error:   domainUser.ErrEmailVerificationTokenInvalid,
+		})
+		return []exceptions.ProblemDetails{{
+			Type:   exceptions.RFC400,
+			Title:  "Token de verificação expirado",
+			Status: exceptions.RFC400_CODE,
+			Detail: "O token de verificação expirou.",
+		}}
 	}
 
-	// Busca o usuário
 	user, err := uc.userRepo.FindByID(ctx, verificationToken.UserID)
 	if err != nil {
-		return err
+		uc.logger.Log(logging.Logger{
+			Context: ctx,
+			TypeLog: logging.LoggerTypes.ERROR,
+			Layer:   logging.LoggerLayers.USECASES,
+			Code:    exceptions.RFC404_CODE,
+			From:    CONFIRM_EMAIL_VERIFICATION_USECASE,
+			Message: "Usuário não encontrado",
+			Error:   err,
+		})
+		return []exceptions.ProblemDetails{{
+			Type:   exceptions.RFC404,
+			Title:  "Usuário não encontrado",
+			Status: exceptions.RFC404_CODE,
+			Detail: "O usuário informado não foi encontrado.",
+		}}
 	}
-	userID = user.ID.String()
 
-	// Verifica se já está verificado
 	if user.EmailVerified {
-		err = domainUser.ErrEmailAlreadyVerified
-		return err
+		uc.logger.Log(logging.Logger{
+			Context: ctx,
+			TypeLog: logging.LoggerTypes.ERROR,
+			Layer:   logging.LoggerLayers.USECASES,
+			Code:    exceptions.RFC409_CODE,
+			From:    CONFIRM_EMAIL_VERIFICATION_USECASE,
+			Message: "Email já verificado",
+			Error:   domainUser.ErrEmailAlreadyVerified,
+		})
+		return []exceptions.ProblemDetails{{
+			Type:   exceptions.RFC409,
+			Title:  "Email já verificado",
+			Status: exceptions.RFC409_CODE,
+			Detail: "O email já foi verificado anteriormente.",
+		}}
 	}
 
-	// Marca o email como verificado
 	user.VerifyEmail()
 
-	// Atualiza o usuário
 	if err := uc.userRepo.Update(ctx, user); err != nil {
-		return err
+		uc.logger.Log(logging.Logger{
+			Context: ctx,
+			TypeLog: logging.LoggerTypes.ERROR,
+			Layer:   logging.LoggerLayers.USECASES,
+			Code:    exceptions.RFC500_CODE,
+			From:    CONFIRM_EMAIL_VERIFICATION_USECASE,
+			Message: "Falha ao atualizar usuário",
+			Error:   err,
+		})
+		return []exceptions.ProblemDetails{{
+			Type:   exceptions.RFC500,
+			Title:  "Falha ao atualizar usuário",
+			Status: exceptions.RFC500_CODE,
+			Detail: err.Error(),
+		}}
 	}
 
-	// Remove o token de verificação usado
-	if err := uc.userRepo.MarkEmailVerificationTokenAsUsed(ctx, verificationToken.ID); err != nil {
-		// Log error mas não falha a operação, pois a verificação já foi feita
-		return nil
-	}
+	_ = uc.userRepo.MarkEmailVerificationTokenAsUsed(ctx, verificationToken.ID)
+
+	uc.logger.Log(logging.Logger{
+		Context: ctx,
+		TypeLog: logging.LoggerTypes.INFO,
+		Layer:   logging.LoggerLayers.USECASES,
+		Code:    exceptions.RFC200_CODE,
+		From:    CONFIRM_EMAIL_VERIFICATION_USECASE,
+		Message: logging.DEFAULTMESSAGES.END,
+	})
 
 	return nil
 }
