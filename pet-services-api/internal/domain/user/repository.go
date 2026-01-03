@@ -26,4 +26,13 @@ type Repository interface {
 
 	// ExistsByEmail verifica se já existe usuário com o email.
 	ExistsByEmail(ctx context.Context, email string) (bool, error)
+
+	// CreatePasswordResetToken cria um token de reset de senha.
+	CreatePasswordResetToken(ctx context.Context, token *PasswordResetToken) error
+
+	// FindPasswordResetToken busca token de reset por valor.
+	FindPasswordResetToken(ctx context.Context, token string) (*PasswordResetToken, error)
+
+	// MarkPasswordResetTokenAsUsed marca o token como utilizado.
+	MarkPasswordResetTokenAsUsed(ctx context.Context, tokenID uuid.UUID) error
 }
