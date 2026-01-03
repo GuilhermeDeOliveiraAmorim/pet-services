@@ -16,16 +16,17 @@ const (
 
 // User representa um usuário no sistema
 type User struct {
-	ID        uuid.UUID
-	Email     Email
-	Password  string // hash bcrypt
-	Name      string
-	Phone     Phone
-	Type      UserType
-	Location  *Location
-	DeletedAt *time.Time
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID            uuid.UUID
+	Email         Email
+	EmailVerified bool
+	Password      string // hash bcrypt
+	Name          string
+	Phone         Phone
+	Type          UserType
+	Location      *Location
+	DeletedAt     *time.Time
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }
 
 // NewUser cria um novo usuário
@@ -96,4 +97,10 @@ func (u *User) SoftDelete() {
 // IsDeleted verifica se o usuário foi deletado.
 func (u *User) IsDeleted() bool {
 	return u.DeletedAt != nil
+}
+
+// VerifyEmail marca o email como verificado.
+func (u *User) VerifyEmail() {
+	u.EmailVerified = true
+	u.UpdatedAt = time.Now()
 }

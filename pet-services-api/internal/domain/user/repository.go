@@ -35,4 +35,13 @@ type Repository interface {
 
 	// MarkPasswordResetTokenAsUsed marca o token como utilizado.
 	MarkPasswordResetTokenAsUsed(ctx context.Context, tokenID uuid.UUID) error
+
+	// CreateEmailVerificationToken cria um token de verificação de email.
+	CreateEmailVerificationToken(ctx context.Context, token *EmailVerificationToken) error
+
+	// FindEmailVerificationToken busca token de verificação por valor.
+	FindEmailVerificationToken(ctx context.Context, token string) (*EmailVerificationToken, error)
+
+	// MarkEmailVerificationTokenAsUsed marca o token como utilizado.
+	MarkEmailVerificationTokenAsUsed(ctx context.Context, tokenID uuid.UUID) error
 }
