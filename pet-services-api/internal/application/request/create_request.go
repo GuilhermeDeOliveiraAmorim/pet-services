@@ -2,13 +2,13 @@ package request
 
 import (
 	"context"
-	"fmt"
-	"log/slog"
+	"errors"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
 
+	"github.com/guilherme/pet-services-api/internal/application/exceptions"
 	"github.com/guilherme/pet-services-api/internal/application/logging"
 	domainProvider "github.com/guilherme/pet-services-api/internal/domain/provider"
 	domainRequest "github.com/guilherme/pet-services-api/internal/domain/request"
@@ -18,19 +18,19 @@ import (
 type CreateRequestUseCase struct {
 	requestRepo  domainRequest.Repository
 	providerRepo domainProvider.Repository
-	logger       *slog.Logger
+	logger       logging.LoggerService
 }
 
 // NewCreateRequestUseCase cria uma nova instância.
 func NewCreateRequestUseCase(
 	requestRepo domainRequest.Repository,
 	providerRepo domainProvider.Repository,
-	logger *slog.Logger,
+	logger logging.LoggerService,
 ) *CreateRequestUseCase {
 	return &CreateRequestUseCase{
 		requestRepo:  requestRepo,
 		providerRepo: providerRepo,
-		logger:       logging.EnsureLogger(logger),
+		logger:       logger,
 	}
 }
 
@@ -50,42 +50,123 @@ type CreateRequestInput struct {
 	Notes         string
 }
 
-// Execute valida os dados, cria a entidade e persiste.
-func (uc *CreateRequestUseCase) Execute(ctx context.Context, input CreateRequestInput) (*domainRequest.ServiceRequest, error) {
-	var (
-		result *domainRequest.ServiceRequest
-		err    error
-	)
-	defer logging.UseCase(ctx, uc.logger, "CreateRequestUseCase", slog.String("owner_id", input.OwnerID.String()), slog.String("provider_id", input.ProviderID.String()), slog.String("service_type", input.ServiceType))(&err)
+const CREATE_REQUEST_USECASE = "CREATE_REQUEST_USECASE"
+
+// Execute valida os dados, cria a entidade e persiste, seguindo padrão de erros e logging.
+func (uc *CreateRequestUseCase) Execute(ctx context.Context, input CreateRequestInput) (*domainRequest.ServiceRequest, []exceptions.ProblemDetails) {
+	uc.logger.Log(logging.Logger{
+		Context: ctx,
+		TypeLog: logging.LoggerTypes.INFO,
+		Layer:   logging.LoggerLayers.USECASES,
+		Code:    exceptions.RFC200_CODE,
+		From:    CREATE_REQUEST_USECASE,
+		Message: logging.DEFAULTMESSAGES.START,
+	})
 
 	if input.OwnerID == uuid.Nil {
-		err = fmt.Errorf("ownerID é obrigatório")
-		return nil, err
+		uc.logger.Log(logging.Logger{
+			Context: ctx,
+			TypeLog: logging.LoggerTypes.ERROR,
+			Layer:   logging.LoggerLayers.USECASES,
+			Code:    exceptions.RFC400_CODE,
+			From:    CREATE_REQUEST_USECASE,
+			Message: "OwnerID é obrigatório",
+			Error:   errors.New("ownerID é obrigatório"),
+		})
+		return nil, []exceptions.ProblemDetails{{
+			Type:   exceptions.RFC400,
+			Title:  "OwnerID é obrigatório",
+			Status: exceptions.RFC400_CODE,
+			Detail: "O ID do dono é obrigatório.",
+		}}
 	}
 	if input.ProviderID == uuid.Nil {
-		err = domainProvider.ErrProviderNotFound
-		return nil, err
+		uc.logger.Log(logging.Logger{
+			Context: ctx,
+			TypeLog: logging.LoggerTypes.ERROR,
+			Layer:   logging.LoggerLayers.USECASES,
+			Code:    exceptions.RFC404_CODE,
+			From:    CREATE_REQUEST_USECASE,
+			Message: "Provider não encontrado",
+			Error:   domainProvider.ErrProviderNotFound,
+		})
+		return nil, []exceptions.ProblemDetails{{
+			Type:   exceptions.RFC404,
+			Title:  "Provider não encontrado",
+			Status: exceptions.RFC404_CODE,
+			Detail: "O prestador informado não foi encontrado.",
+		}}
 	}
 	if strings.TrimSpace(input.ServiceType) == "" {
-		err = domainRequest.ErrInvalidServiceType
-		return nil, err
+		uc.logger.Log(logging.Logger{
+			Context: ctx,
+			TypeLog: logging.LoggerTypes.ERROR,
+			Layer:   logging.LoggerLayers.USECASES,
+			Code:    exceptions.RFC400_CODE,
+			From:    CREATE_REQUEST_USECASE,
+			Message: "Tipo de serviço inválido",
+			Error:   domainRequest.ErrInvalidServiceType,
+		})
+		return nil, []exceptions.ProblemDetails{{
+			Type:   exceptions.RFC400,
+			Title:  "Tipo de serviço inválido",
+			Status: exceptions.RFC400_CODE,
+			Detail: "O tipo de serviço é obrigatório.",
+		}}
 	}
 
-	// Validar data preferencial: não pode ser no passado
 	today := time.Now()
 	if input.PreferredDate.IsZero() || input.PreferredDate.Before(today.Truncate(24*time.Hour)) {
-		err = domainRequest.ErrInvalidPreferredDate
-		return nil, err
+		uc.logger.Log(logging.Logger{
+			Context: ctx,
+			TypeLog: logging.LoggerTypes.ERROR,
+			Layer:   logging.LoggerLayers.USECASES,
+			Code:    exceptions.RFC400_CODE,
+			From:    CREATE_REQUEST_USECASE,
+			Message: "Data preferencial inválida",
+			Error:   domainRequest.ErrInvalidPreferredDate,
+		})
+		return nil, []exceptions.ProblemDetails{{
+			Type:   exceptions.RFC400,
+			Title:  "Data preferencial inválida",
+			Status: exceptions.RFC400_CODE,
+			Detail: "A data preferencial não pode ser no passado.",
+		}}
 	}
 
-	// Validar horário
 	if strings.TrimSpace(input.PreferredTime) == "" {
-		err = fmt.Errorf("horário preferencial é obrigatório")
-		return nil, err
+		uc.logger.Log(logging.Logger{
+			Context: ctx,
+			TypeLog: logging.LoggerTypes.ERROR,
+			Layer:   logging.LoggerLayers.USECASES,
+			Code:    exceptions.RFC400_CODE,
+			From:    CREATE_REQUEST_USECASE,
+			Message: "Horário preferencial é obrigatório",
+			Error:   errors.New("horário preferencial é obrigatório"),
+		})
+		return nil, []exceptions.ProblemDetails{{
+			Type:   exceptions.RFC400,
+			Title:  "Horário preferencial é obrigatório",
+			Status: exceptions.RFC400_CODE,
+			Detail: "O horário preferencial é obrigatório.",
+		}}
 	}
 	if _, err := time.Parse("15:04", input.PreferredTime); err != nil {
-		err = fmt.Errorf("horário preferencial inválido, use HH:MM")
-		return nil, err
+		uc.logger.Log(logging.Logger{
+			Context: ctx,
+			TypeLog: logging.LoggerTypes.ERROR,
+			Layer:   logging.LoggerLayers.USECASES,
+			Code:    exceptions.RFC400_CODE,
+			From:    CREATE_REQUEST_USECASE,
+			Message: "Horário preferencial inválido",
+			Error:   err,
+		})
+		return nil, []exceptions.ProblemDetails{{
+			Type:   exceptions.RFC400,
+			Title:  "Horário preferencial inválido",
+			Status: exceptions.RFC400_CODE,
+			Detail: "O horário deve estar no formato HH:MM.",
+		}}
 	}
 
 	petInfo, err := domainRequest.NewPetInfo(
@@ -97,17 +178,57 @@ func (uc *CreateRequestUseCase) Execute(ctx context.Context, input CreateRequest
 		input.PetNotes,
 	)
 	if err != nil {
-		return nil, err
+		uc.logger.Log(logging.Logger{
+			Context: ctx,
+			TypeLog: logging.LoggerTypes.ERROR,
+			Layer:   logging.LoggerLayers.USECASES,
+			Code:    exceptions.RFC400_CODE,
+			From:    CREATE_REQUEST_USECASE,
+			Message: "Dados do pet inválidos",
+			Error:   err,
+		})
+		return nil, []exceptions.ProblemDetails{{
+			Type:   exceptions.RFC400,
+			Title:  "Dados do pet inválidos",
+			Status: exceptions.RFC400_CODE,
+			Detail: err.Error(),
+		}}
 	}
 
 	provider, err := uc.providerRepo.FindByID(ctx, input.ProviderID)
 	if err != nil {
-		err = domainProvider.ErrProviderNotFound
-		return nil, err
+		uc.logger.Log(logging.Logger{
+			Context: ctx,
+			TypeLog: logging.LoggerTypes.ERROR,
+			Layer:   logging.LoggerLayers.USECASES,
+			Code:    exceptions.RFC404_CODE,
+			From:    CREATE_REQUEST_USECASE,
+			Message: "Provider não encontrado",
+			Error:   domainProvider.ErrProviderNotFound,
+		})
+		return nil, []exceptions.ProblemDetails{{
+			Type:   exceptions.RFC404,
+			Title:  "Provider não encontrado",
+			Status: exceptions.RFC404_CODE,
+			Detail: "O prestador informado não foi encontrado.",
+		}}
 	}
 	if !provider.IsActive {
-		err = domainProvider.ErrProviderNotActive
-		return nil, err
+		uc.logger.Log(logging.Logger{
+			Context: ctx,
+			TypeLog: logging.LoggerTypes.ERROR,
+			Layer:   logging.LoggerLayers.USECASES,
+			Code:    exceptions.RFC409_CODE,
+			From:    CREATE_REQUEST_USECASE,
+			Message: "Provider não está ativo",
+			Error:   domainProvider.ErrProviderNotActive,
+		})
+		return nil, []exceptions.ProblemDetails{{
+			Type:   exceptions.RFC409,
+			Title:  "Provider não está ativo",
+			Status: exceptions.RFC409_CODE,
+			Detail: "O prestador informado não está ativo.",
+		}}
 	}
 
 	req := domainRequest.NewServiceRequest(
@@ -121,11 +242,31 @@ func (uc *CreateRequestUseCase) Execute(ctx context.Context, input CreateRequest
 	)
 
 	if err := uc.requestRepo.Create(ctx, req); err != nil {
-		err = fmt.Errorf("falha ao salvar solicitação: %w", err)
-		return nil, err
+		uc.logger.Log(logging.Logger{
+			Context: ctx,
+			TypeLog: logging.LoggerTypes.ERROR,
+			Layer:   logging.LoggerLayers.USECASES,
+			Code:    exceptions.RFC500_CODE,
+			From:    CREATE_REQUEST_USECASE,
+			Message: "Falha ao salvar solicitação",
+			Error:   err,
+		})
+		return nil, []exceptions.ProblemDetails{{
+			Type:   exceptions.RFC500,
+			Title:  "Falha ao salvar solicitação",
+			Status: exceptions.RFC500_CODE,
+			Detail: err.Error(),
+		}}
 	}
 
-	result = req
+	uc.logger.Log(logging.Logger{
+		Context: ctx,
+		TypeLog: logging.LoggerTypes.INFO,
+		Layer:   logging.LoggerLayers.USECASES,
+		Code:    exceptions.RFC200_CODE,
+		From:    CREATE_REQUEST_USECASE,
+		Message: logging.DEFAULTMESSAGES.END,
+	})
 
-	return result, nil
+	return req, nil
 }
