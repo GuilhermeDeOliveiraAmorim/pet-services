@@ -29,12 +29,44 @@ Backend Go (DDD) para marketplace de serviços pet, com autenticação JWT, gest
 
 1. Instale Go 1.25.5
 2. `go mod tidy`
-3. (Opcional) Crie `.env` para credenciais de infra quando implementar camada externa
+3. Copie `.env.example` para `.env` e configure credenciais:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your local DB credentials
+   ```
+4. (Opcional) Use Docker para PostgreSQL:
+   ```bash
+   docker-compose up -d postgres
+   ```
 
 ## Build e Testes
 
-- Build: `go build ./...`
-- (Quando houver testes) `go test ./...`
+- Build: `make build` ou `go build ./cmd/api`
+- Run API: `make run` (compila e executa cmd/api/main.go)
+- Testes: `make test` ou `go test ./...`
+- Migrations: `make migrate`
+
+## Quick Start
+
+1. **Setup DB**:
+
+   ```bash
+   make setup  # Instala deps, sobe PostgreSQL, roda migrações
+   ```
+
+2. **Run API**:
+
+   ```bash
+   make run
+   # Ou manualmente:
+   export DATABASE_URL="postgres://postgres:postgres@localhost:5432/pet_services?sslmode=disable"
+   go run ./cmd/api/main.go
+   ```
+
+3. **Verify**:
+   - Health check: `curl http://localhost:8080/health`
+   - Readiness: `curl http://localhost:8080/ready`
+   - Swagger UI: `http://localhost:8080/api/v1/swagger/index.html`
 
 ## Logging
 
@@ -47,3 +79,49 @@ Backend Go (DDD) para marketplace de serviços pet, com autenticação JWT, gest
 - Expor HTTP/REST ou gRPC com middlewares de autenticação
 - Criar migrações e seeds iniciais
 - Adicionar testes unitários e integração
+
+## API Server (`cmd/api/main.go`)
+
+Startup sequence:
+
+1. Load environment (`.env`)
+2. Connect to Postgres via `infra/database.Open()`
+3. Run migrations
+4. Build use case factory with real/stub implementations
+5. Register HTTP routes + middlewares (CORS, request ID, logging)
+6. Start Gin server with graceful shutdown on SIGINT/SIGTERM
+
+**Endpoints**:
+
+- `GET /health` - Liveness check
+- `GET /ready` - Readiness check (DB connectivity)
+- `GET /api/v1/swagger/*any` - Swagger UI
+- `POST /api/v1/auth/signup` - User signup
+- `POST /api/v1/auth/login` - User login
+- `POST /api/v1/auth/refresh` - Refresh token
+- `POST /api/v1/auth/logout` - Logout
+- (Protected) `/api/v1/users/*` - User profile/settings
+- (Protected) `/api/v1/providers/*` - Provider operations
+- (Protected) `/api/v1/requests/*` - Service requests
+- (Protected) `/api/v1/reviews/*` - Reviews
+
+**Middleware Stack**:
+
+- Recovery (panic handler)
+- Request ID (generated or from header)
+- Structured logging (slog with request context)
+- CORS (configurable origins)
+- Auth (Bearer token on protected routes)
+
+**Configuration** (via environment):
+
+- `DATABASE_URL` or `DB_USER/DB_PASS/DB_NAME/DB_HOST/DB_PORT/DB_SSLMODE`
+- `PORT` (default: 8080)
+- `CORS_ORIGINS` (default: \*)
+- `PASSWORD_RESET_BASE_URL`, `EMAIL_VERIFY_BASE_URL`
+
+**Stub Implementations** (TODO: replace):
+
+- `TokenService` - Returns dummy tokens
+- `PasswordHasher` - Naive hashing (use bcrypt in prod)
+- `EmailService` - Prints to console (use SMTP/SendGrid in prod)
