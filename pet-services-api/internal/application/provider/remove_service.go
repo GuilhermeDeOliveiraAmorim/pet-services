@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"log/slog"
 
 	"github.com/google/uuid"
 	"github.com/guilherme/pet-services-api/internal/application/exceptions"
@@ -18,7 +17,7 @@ type RemoveServiceUseCase struct {
 }
 
 // NewRemoveServiceUseCase cria nova instância do caso de uso.
-func NewRemoveServiceUseCase(providerRepo provider.Repository, logger *slog.Logger) *RemoveServiceUseCase {
+func NewRemoveServiceUseCase(providerRepo provider.Repository, logger logging.LoggerService) *RemoveServiceUseCase {
 	return &RemoveServiceUseCase{providerRepo: providerRepo, logger: logging.NewSlogLogger()}
 }
 

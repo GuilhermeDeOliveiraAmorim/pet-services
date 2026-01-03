@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,7 +18,7 @@ type UpdateWorkingHoursUseCase struct {
 }
 
 // NewUpdateWorkingHoursUseCase cria uma nova instância do caso de uso.
-func NewUpdateWorkingHoursUseCase(providerRepo provider.Repository, logger *slog.Logger) *UpdateWorkingHoursUseCase {
+func NewUpdateWorkingHoursUseCase(providerRepo provider.Repository, logger logging.LoggerService) *UpdateWorkingHoursUseCase {
 	return &UpdateWorkingHoursUseCase{providerRepo: providerRepo, logger: logging.NewSlogLogger()}
 }
 
@@ -132,7 +131,7 @@ type UpdateDayScheduleUseCase struct {
 }
 
 // NewUpdateDayScheduleUseCase cria uma nova instância do caso de uso.
-func NewUpdateDayScheduleUseCase(providerRepo provider.Repository, logger *slog.Logger) *UpdateDayScheduleUseCase {
+func NewUpdateDayScheduleUseCase(providerRepo provider.Repository, logger logging.LoggerService) *UpdateDayScheduleUseCase {
 	return &UpdateDayScheduleUseCase{providerRepo: providerRepo, logger: logging.NewSlogLogger()}
 }
 

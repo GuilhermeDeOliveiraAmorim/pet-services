@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"log/slog"
 
 	"github.com/google/uuid"
 	"github.com/guilherme/pet-services-api/internal/application/exceptions"
@@ -17,7 +16,7 @@ type ActivateProviderUseCase struct {
 	logger       logging.LoggerService
 }
 
-func NewActivateProviderUseCase(providerRepo provider.Repository, logger *slog.Logger) *ActivateProviderUseCase {
+func NewActivateProviderUseCase(providerRepo provider.Repository, logger logging.LoggerService) *ActivateProviderUseCase {
 	return &ActivateProviderUseCase{providerRepo: providerRepo, logger: logging.NewSlogLogger()}
 }
 
@@ -122,7 +121,7 @@ type DeactivateProviderUseCase struct {
 	logger       logging.LoggerService
 }
 
-func NewDeactivateProviderUseCase(providerRepo provider.Repository, logger *slog.Logger) *DeactivateProviderUseCase {
+func NewDeactivateProviderUseCase(providerRepo provider.Repository, logger logging.LoggerService) *DeactivateProviderUseCase {
 	return &DeactivateProviderUseCase{providerRepo: providerRepo, logger: logging.NewSlogLogger()}
 }
 

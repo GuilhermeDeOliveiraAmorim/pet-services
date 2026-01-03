@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"log/slog"
 
 	"github.com/google/uuid"
 	"github.com/guilherme/pet-services-api/internal/application/exceptions"
@@ -18,7 +17,7 @@ type ApproveProviderUseCase struct {
 }
 
 // NewApproveProviderUseCase cria instância.
-func NewApproveProviderUseCase(providerRepo provider.Repository, logger *slog.Logger) *ApproveProviderUseCase {
+func NewApproveProviderUseCase(providerRepo provider.Repository, logger logging.LoggerService) *ApproveProviderUseCase {
 	return &ApproveProviderUseCase{providerRepo: providerRepo, logger: logging.NewSlogLogger()}
 }
 
@@ -131,7 +130,7 @@ type RejectProviderUseCase struct {
 }
 
 // NewRejectProviderUseCase cria instância.
-func NewRejectProviderUseCase(providerRepo provider.Repository, logger *slog.Logger) *RejectProviderUseCase {
+func NewRejectProviderUseCase(providerRepo provider.Repository, logger logging.LoggerService) *RejectProviderUseCase {
 	return &RejectProviderUseCase{providerRepo: providerRepo, logger: logging.NewSlogLogger()}
 }
 

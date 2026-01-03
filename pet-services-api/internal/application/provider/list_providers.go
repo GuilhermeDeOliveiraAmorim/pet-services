@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"log/slog"
 
 	"github.com/guilherme/pet-services-api/internal/application/exceptions"
 	"github.com/guilherme/pet-services-api/internal/application/logging"
@@ -17,7 +16,7 @@ type ListProvidersByLocationUseCase struct {
 }
 
 // NewListProvidersByLocationUseCase cria instância do caso de uso.
-func NewListProvidersByLocationUseCase(providerRepo provider.Repository, logger *slog.Logger) *ListProvidersByLocationUseCase {
+func NewListProvidersByLocationUseCase(providerRepo provider.Repository, logger logging.LoggerService) *ListProvidersByLocationUseCase {
 	return &ListProvidersByLocationUseCase{providerRepo: providerRepo, logger: logging.NewSlogLogger()}
 }
 

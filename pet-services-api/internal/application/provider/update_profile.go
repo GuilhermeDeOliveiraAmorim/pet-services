@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"strings"
 
 	"github.com/google/uuid"
@@ -20,7 +19,7 @@ type UpdateProviderProfileUseCase struct {
 }
 
 // NewUpdateProviderProfileUseCase cria nova instância.
-func NewUpdateProviderProfileUseCase(providerRepo provider.Repository, logger *slog.Logger) *UpdateProviderProfileUseCase {
+func NewUpdateProviderProfileUseCase(providerRepo provider.Repository, logger logging.LoggerService) *UpdateProviderProfileUseCase {
 	return &UpdateProviderProfileUseCase{providerRepo: providerRepo, logger: logging.NewSlogLogger()}
 }
 

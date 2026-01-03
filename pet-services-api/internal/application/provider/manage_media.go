@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"log/slog"
 
 	"github.com/google/uuid"
 	"github.com/guilherme/pet-services-api/internal/application/exceptions"
@@ -17,7 +16,7 @@ type AddPhotoUseCase struct {
 	logger       logging.LoggerService
 }
 
-func NewAddPhotoUseCase(providerRepo provider.Repository, logger *slog.Logger) *AddPhotoUseCase {
+func NewAddPhotoUseCase(providerRepo provider.Repository, logger logging.LoggerService) *AddPhotoUseCase {
 	return &AddPhotoUseCase{providerRepo: providerRepo, logger: logging.NewSlogLogger()}
 }
 
@@ -127,7 +126,7 @@ type RemovePhotoUseCase struct {
 	logger       logging.LoggerService
 }
 
-func NewRemovePhotoUseCase(providerRepo provider.Repository, logger *slog.Logger) *RemovePhotoUseCase {
+func NewRemovePhotoUseCase(providerRepo provider.Repository, logger logging.LoggerService) *RemovePhotoUseCase {
 	return &RemovePhotoUseCase{providerRepo: providerRepo, logger: logging.NewSlogLogger()}
 }
 
@@ -237,7 +236,7 @@ type ReorderPhotosUseCase struct {
 	logger       logging.LoggerService
 }
 
-func NewReorderPhotosUseCase(providerRepo provider.Repository, logger *slog.Logger) *ReorderPhotosUseCase {
+func NewReorderPhotosUseCase(providerRepo provider.Repository, logger logging.LoggerService) *ReorderPhotosUseCase {
 	return &ReorderPhotosUseCase{providerRepo: providerRepo, logger: logging.NewSlogLogger()}
 }
 

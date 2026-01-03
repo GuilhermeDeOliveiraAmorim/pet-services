@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"log/slog"
 
 	"github.com/google/uuid"
 	"github.com/guilherme/pet-services-api/internal/application/exceptions"
@@ -18,7 +17,7 @@ type UpdateServiceUseCase struct {
 }
 
 // NewUpdateServiceUseCase cria nova instância do caso de uso.
-func NewUpdateServiceUseCase(providerRepo provider.Repository, logger *slog.Logger) *UpdateServiceUseCase {
+func NewUpdateServiceUseCase(providerRepo provider.Repository, logger logging.LoggerService) *UpdateServiceUseCase {
 	return &UpdateServiceUseCase{providerRepo: providerRepo, logger: logging.NewSlogLogger()}
 }
 
