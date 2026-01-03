@@ -30,6 +30,16 @@ func RegisterReviewRoutes(rg *gin.RouterGroup, h *ReviewHandler) {
 	rg.GET("/provider/:provider_id", h.ListForProvider)
 }
 
+// Submit cria avaliação para solicitação concluída.
+// @Summary Submit review
+// @Tags reviews
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param request body object true "Review payload"
+// @Success 201 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Router /reviews [post]
 func (h *ReviewHandler) Submit(c *gin.Context) {
 	ownerID, err := extractUserID(c)
 	if err != nil {
@@ -83,6 +93,17 @@ func (h *ReviewHandler) Submit(c *gin.Context) {
 	})
 }
 
+// ListForProvider lista avaliações de um prestador.
+// @Summary List provider reviews
+// @Tags reviews
+// @Security BearerAuth
+// @Produce json
+// @Param provider_id path string true "Provider ID"
+// @Param page query int false "Página"
+// @Param limit query int false "Limite"
+// @Success 200 {object} map[string]interface{}
+// @Failure 403 {object} map[string]interface{}
+// @Router /reviews/provider/{provider_id} [get]
 func (h *ReviewHandler) ListForProvider(c *gin.Context) {
 	providerID, ok := parseUUIDParam(c, "provider_id", "invalid_provider_id")
 	if !ok {

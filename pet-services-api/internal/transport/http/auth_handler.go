@@ -40,6 +40,14 @@ type signupRequest struct {
 }
 
 // Signup cadastra um usuário e retorna tokens.
+// @Summary Signup
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body signupRequest true "Signup payload"
+// @Success 201 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Router /auth/signup [post]
 func (h *AuthHandler) Signup(c *gin.Context) {
 	var req signupRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -89,6 +97,14 @@ type loginRequest struct {
 }
 
 // Login autentica e retorna tokens.
+// @Summary Login
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body loginRequest true "Login payload"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Router /auth/login [post]
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req loginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -126,6 +142,14 @@ type refreshRequest struct {
 }
 
 // Refresh troca o refresh token por um novo par.
+// @Summary Refresh tokens
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body refreshRequest true "Refresh payload"
+// @Success 200 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Router /auth/refresh [post]
 func (h *AuthHandler) Refresh(c *gin.Context) {
 	var req refreshRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -163,6 +187,14 @@ type logoutRequest struct {
 }
 
 // Logout revoga o refresh token atual.
+// @Summary Logout
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "Bearer <refresh_token>"
+// @Success 200 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Router /auth/logout [post]
 func (h *AuthHandler) Logout(c *gin.Context) {
 	var req logoutRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

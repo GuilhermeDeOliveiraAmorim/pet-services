@@ -57,6 +57,16 @@ type registerProviderRequest struct {
 	PriceRange   domainprovider.PriceRange `json:"price_range"`
 }
 
+// Register cria perfil de prestador para o usuário autenticado.
+// @Summary Create provider profile
+// @Tags providers
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param request body object true "Provider payload"
+// @Success 201 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Router /providers [post]
 func (h *ProviderHandler) Register(c *gin.Context) {
 	userID, err := extractUserID(c)
 	if err != nil {
@@ -108,6 +118,17 @@ type updateProviderProfileRequest struct {
 	PriceRange   *domainprovider.PriceRange `json:"price_range"`
 }
 
+// UpdateProfile atualiza dados do prestador.
+// @Summary Update provider profile
+// @Tags providers
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param provider_id path string true "Provider ID"
+// @Param request body object true "Profile payload"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Router /providers/{provider_id} [put]
 func (h *ProviderHandler) UpdateProfile(c *gin.Context) {
 	providerID, err := uuid.Parse(c.Param("provider_id"))
 	if err != nil {
@@ -481,6 +502,18 @@ func (h *ProviderHandler) Reject(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
+// ListByLocation retorna prestadores ativos próximos à localização.
+// @Summary List providers by location
+// @Tags providers
+// @Produce json
+// @Param lat query number true "Latitude"
+// @Param lon query number true "Longitude"
+// @Param radius_km query number true "Raio em km"
+// @Param page query int false "Página"
+// @Param limit query int false "Limite"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Router /providers/search/location [get]
 func (h *ProviderHandler) ListByLocation(c *gin.Context) {
 	lat, lon, radius := c.Query("lat"), c.Query("lon"), c.Query("radius_km")
 	page := parseIntDefault(c.Query("page"), 1)

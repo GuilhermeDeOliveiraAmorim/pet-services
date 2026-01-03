@@ -37,6 +37,14 @@ func RegisterUserRoutes(rg *gin.RouterGroup, h *UserHandler) {
 }
 
 // GetProfile retorna o perfil do usuário autenticado.
+// GetProfile retorna o perfil do usuário autenticado.
+// @Summary Get current user profile
+// @Tags users
+// @Security BearerAuth
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Router /users/me [get]
 func (h *UserHandler) GetProfile(c *gin.Context) {
 	userID, err := extractUserID(c)
 	if err != nil {
@@ -59,6 +67,16 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 }
 
 // updateProfileRequest payload para atualização parcial.
+// UpdateProfile atualiza dados do usuário autenticado.
+// @Summary Update current user profile
+// @Tags users
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param request body updateProfileRequest true "Profile payload"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Router /users/me [put]
 type updateProfileRequest struct {
 	Name      *string             `json:"name"`
 	Phone     *string             `json:"phone"`
@@ -95,6 +113,16 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 		case errors.Is(err, domainuser.ErrInvalidPhone), strings.Contains(err.Error(), "coordenadas inválidas"):
 			c.JSON(http.StatusBadRequest, errorResponse("invalid_data", err.Error()))
 		default:
+			// ChangePassword troca a senha do usuário autenticado.
+			// @Summary Change password
+			// @Tags users
+			// @Security BearerAuth
+			// @Accept json
+			// @Produce json
+			// @Param request body changePasswordRequest true "Password payload"
+			// @Success 200 {object} map[string]interface{}
+			// @Failure 400 {object} map[string]interface{}
+			// @Router /users/change-password [post]
 			c.JSON(http.StatusInternalServerError, errorResponse("update_profile_failed", err.Error()))
 		}
 		return
@@ -128,6 +156,15 @@ func (h *UserHandler) ChangePassword(c *gin.Context) {
 		CurrentPassword: req.CurrentPassword,
 		NewPassword:     req.NewPassword,
 	}); err != nil {
+		// RequestPasswordReset envia email de redefinição.
+		// @Summary Request password reset
+		// @Tags users
+		// @Accept json
+		// @Produce json
+		// @Param request body requestPasswordResetRequest true "Reset request"
+		// @Success 200 {object} map[string]interface{}
+		// @Failure 400 {object} map[string]interface{}
+		// @Router /users/password-reset/request [post]
 		switch {
 		case errors.Is(err, domainuser.ErrUserNotFound):
 			c.JSON(http.StatusNotFound, errorResponse("user_not_found", err.Error()))
@@ -150,6 +187,15 @@ type requestPasswordResetRequest struct {
 // RequestPasswordReset inicia fluxo de reset por email.
 func (h *UserHandler) RequestPasswordReset(c *gin.Context) {
 	var req requestPasswordResetRequest
+	// ConfirmPasswordReset redefine a senha.
+	// @Summary Confirm password reset
+	// @Tags users
+	// @Accept json
+	// @Produce json
+	// @Param request body confirmPasswordResetRequest true "Reset confirm"
+	// @Success 200 {object} map[string]interface{}
+	// @Failure 400 {object} map[string]interface{}
+	// @Router /users/password-reset/confirm [post]
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, errorResponse("invalid_payload", err.Error()))
 		return
@@ -175,6 +221,16 @@ type confirmPasswordResetRequest struct {
 	NewPassword string `json:"new_password"`
 }
 
+// RequestEmailVerification envia email com link de verificação.
+// @Summary Request email verification
+// @Tags users
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Router /users/email/verification/request [post]
+
 // ConfirmPasswordReset aplica o reset de senha.
 func (h *UserHandler) ConfirmPasswordReset(c *gin.Context) {
 	var req confirmPasswordResetRequest
@@ -197,6 +253,15 @@ func (h *UserHandler) ConfirmPasswordReset(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	// ConfirmEmailVerification confirma email com código/token.
+	// @Summary Confirm email verification
+	// @Tags users
+	// @Accept json
+	// @Produce json
+	// @Param request body confirmEmailVerificationRequest true "Verification confirm"
+	// @Success 200 {object} map[string]interface{}
+	// @Failure 400 {object} map[string]interface{}
+	// @Router /users/email/verification/confirm [post]
 }
 
 // RequestEmailVerification dispara email de verificação.
@@ -220,6 +285,15 @@ func (h *UserHandler) RequestEmailVerification(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	// DeleteAccount deleta (soft ou hard) a conta do usuário autenticado.
+	// @Summary Delete account
+	// @Tags users
+	// @Security BearerAuth
+	// @Produce json
+	// @Param hard query bool false "Hard delete"
+	// @Success 200 {object} map[string]interface{}
+	// @Failure 400 {object} map[string]interface{}
+	// @Router /users/me [delete]
 }
 
 // confirmEmailVerificationRequest payload.

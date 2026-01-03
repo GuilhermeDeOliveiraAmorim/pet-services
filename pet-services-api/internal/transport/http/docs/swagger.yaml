@@ -1,0 +1,580 @@
+basePath: /api/v1
+definitions:
+  http.loginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  http.refreshRequest:
+    properties:
+      refresh_token:
+        type: string
+    type: object
+  http.signupRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      type:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: API para autenticação, usuários, prestadores, solicitações e avaliações.
+  title: Pet Services API
+  version: 1.0.0
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Login payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.loginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Login
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Bearer <refresh_token>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Logout
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Refresh payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.refreshRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Refresh tokens
+      tags:
+      - auth
+  /auth/signup:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Signup payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.signupRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Signup
+      tags:
+      - auth
+  /providers:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Provider payload
+        in: body
+        name: request
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create provider profile
+      tags:
+      - providers
+  /providers/{provider_id}:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Provider ID
+        in: path
+        name: provider_id
+        required: true
+        type: string
+      - description: Profile payload
+        in: body
+        name: request
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update provider profile
+      tags:
+      - providers
+  /providers/search/location:
+    get:
+      parameters:
+      - description: Latitude
+        in: query
+        name: lat
+        required: true
+        type: number
+      - description: Longitude
+        in: query
+        name: lon
+        required: true
+        type: number
+      - description: Raio em km
+        in: query
+        name: radius_km
+        required: true
+        type: number
+      - description: Página
+        in: query
+        name: page
+        type: integer
+      - description: Limite
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List providers by location
+      tags:
+      - providers
+  /requests:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Request payload
+        in: body
+        name: request
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create service request
+      tags:
+      - requests
+  /requests/{request_id}/accept:
+    post:
+      parameters:
+      - description: Request ID
+        in: path
+        name: request_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Accept request
+      tags:
+      - requests
+  /requests/{request_id}/cancel:
+    post:
+      parameters:
+      - description: Request ID
+        in: path
+        name: request_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Cancel request
+      tags:
+      - requests
+  /requests/{request_id}/complete:
+    post:
+      parameters:
+      - description: Request ID
+        in: path
+        name: request_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Complete request
+      tags:
+      - requests
+  /requests/{request_id}/reject:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Request ID
+        in: path
+        name: request_id
+        required: true
+        type: string
+      - description: Rejection reason
+        in: body
+        name: request
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Reject request
+      tags:
+      - requests
+  /requests/{request_id}/status:
+    get:
+      parameters:
+      - description: Request ID
+        in: path
+        name: request_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get request status
+      tags:
+      - requests
+  /requests/owner:
+    get:
+      parameters:
+      - description: Página
+        in: query
+        name: page
+        type: integer
+      - description: Limite
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List requests for owner
+      tags:
+      - requests
+  /requests/provider:
+    get:
+      parameters:
+      - description: Página
+        in: query
+        name: page
+        type: integer
+      - description: Limite
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List requests for provider
+      tags:
+      - requests
+  /requests/status:
+    get:
+      parameters:
+      - description: Status
+        in: query
+        name: status
+        required: true
+        type: string
+      - description: Página
+        in: query
+        name: page
+        type: integer
+      - description: Limite
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List requests by status
+      tags:
+      - requests
+  /reviews:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Review payload
+        in: body
+        name: request
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Submit review
+      tags:
+      - reviews
+  /reviews/provider/{provider_id}:
+    get:
+      parameters:
+      - description: Provider ID
+        in: path
+        name: provider_id
+        required: true
+        type: string
+      - description: Página
+        in: query
+        name: page
+        type: integer
+      - description: Limite
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List provider reviews
+      tags:
+      - reviews
+  /users/me:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get current user profile
+      tags:
+      - users
+schemes:
+- http
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

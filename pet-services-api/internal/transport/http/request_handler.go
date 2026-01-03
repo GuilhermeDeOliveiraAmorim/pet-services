@@ -52,6 +52,16 @@ type createRequestPayload struct {
 	Notes         string                `json:"notes"`
 }
 
+// Create cria uma solicitação de serviço.
+// @Summary Create service request
+// @Tags requests
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param request body object true "Request payload"
+// @Success 201 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Router /requests [post]
 func (h *RequestHandler) Create(c *gin.Context) {
 	ownerID, err := extractUserID(c)
 	if err != nil {
@@ -117,6 +127,15 @@ func (h *RequestHandler) Create(c *gin.Context) {
 	})
 }
 
+// Accept permite ao prestador aceitar uma solicitação.
+// @Summary Accept request
+// @Tags requests
+// @Security BearerAuth
+// @Produce json
+// @Param request_id path string true "Request ID"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Router /requests/{request_id}/accept [post]
 func (h *RequestHandler) Accept(c *gin.Context) {
 	requestID, ok := parseUUIDParam(c, "request_id", "invalid_request_id")
 	if !ok {
@@ -141,6 +160,17 @@ func (h *RequestHandler) Accept(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "accepted"})
 }
 
+// Reject permite ao prestador rejeitar uma solicitação.
+// @Summary Reject request
+// @Tags requests
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param request_id path string true "Request ID"
+// @Param request body object true "Rejection reason"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Router /requests/{request_id}/reject [post]
 func (h *RequestHandler) Reject(c *gin.Context) {
 	requestID, ok := parseUUIDParam(c, "request_id", "invalid_request_id")
 	if !ok {
@@ -171,6 +201,15 @@ func (h *RequestHandler) Reject(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "rejected"})
 }
 
+// Complete marca a solicitação como concluída.
+// @Summary Complete request
+// @Tags requests
+// @Security BearerAuth
+// @Produce json
+// @Param request_id path string true "Request ID"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Router /requests/{request_id}/complete [post]
 func (h *RequestHandler) Complete(c *gin.Context) {
 	requestID, ok := parseUUIDParam(c, "request_id", "invalid_request_id")
 	if !ok {
@@ -195,6 +234,15 @@ func (h *RequestHandler) Complete(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "completed"})
 }
 
+// Cancel permite ao dono cancelar a solicitação.
+// @Summary Cancel request
+// @Tags requests
+// @Security BearerAuth
+// @Produce json
+// @Param request_id path string true "Request ID"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Router /requests/{request_id}/cancel [post]
 func (h *RequestHandler) Cancel(c *gin.Context) {
 	requestID, ok := parseUUIDParam(c, "request_id", "invalid_request_id")
 	if !ok {
@@ -224,6 +272,15 @@ func (h *RequestHandler) Cancel(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "cancelled"})
 }
 
+// GetStatus retorna detalhes da solicitação para dono ou prestador vinculado.
+// @Summary Get request status
+// @Tags requests
+// @Security BearerAuth
+// @Produce json
+// @Param request_id path string true "Request ID"
+// @Success 200 {object} map[string]interface{}
+// @Failure 403 {object} map[string]interface{}
+// @Router /requests/{request_id}/status [get]
 func (h *RequestHandler) GetStatus(c *gin.Context) {
 	requestID, ok := parseUUIDParam(c, "request_id", "invalid_request_id")
 	if !ok {
@@ -263,6 +320,15 @@ func (h *RequestHandler) GetStatus(c *gin.Context) {
 	})
 }
 
+// ListForOwner lista solicitações do dono autenticado.
+// @Summary List requests for owner
+// @Tags requests
+// @Security BearerAuth
+// @Produce json
+// @Param page query int false "Página"
+// @Param limit query int false "Limite"
+// @Success 200 {object} map[string]interface{}
+// @Router /requests/owner [get]
 func (h *RequestHandler) ListForOwner(c *gin.Context) {
 	ownerID, err := extractUserID(c)
 	if err != nil {
@@ -286,6 +352,15 @@ func (h *RequestHandler) ListForOwner(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"items": resp, "total": total})
 }
 
+// ListForProvider lista solicitações do prestador autenticado.
+// @Summary List requests for provider
+// @Tags requests
+// @Security BearerAuth
+// @Produce json
+// @Param page query int false "Página"
+// @Param limit query int false "Limite"
+// @Success 200 {object} map[string]interface{}
+// @Router /requests/provider [get]
 func (h *RequestHandler) ListForProvider(c *gin.Context) {
 	providerID, ok := providerIDFromContext(c, h.providerRepo, true)
 	if !ok {
@@ -304,6 +379,16 @@ func (h *RequestHandler) ListForProvider(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"items": resp, "total": total})
 }
 
+// ListByStatus lista solicitações por status.
+// @Summary List requests by status
+// @Tags requests
+// @Security BearerAuth
+// @Produce json
+// @Param status query string true "Status"
+// @Param page query int false "Página"
+// @Param limit query int false "Limite"
+// @Success 200 {object} map[string]interface{}
+// @Router /requests/status [get]
 func (h *RequestHandler) ListByStatus(c *gin.Context) {
 	status := domainrequest.Status(c.Query("status"))
 	if status == "" {
