@@ -273,14 +273,20 @@ func (h *UserHandler) DeleteAccount(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
-// extractUserID obtém user_id do header X-User-ID ou query user_id.
+// extractUserID obtém user_id do contexto (middleware) ou fallback para header/query.
 func extractUserID(c *gin.Context) (uuid.UUID, error) {
+	if val, ok := c.Get(ctxUserIDKey); ok {
+		if id, ok := val.(uuid.UUID); ok {
+			return id, nil
+		}
+	}
+
 	uid := c.GetHeader("X-User-ID")
 	if uid == "" {
 		uid = c.Query("user_id")
 	}
 	if uid == "" {
-		return uuid.Nil, errors.New("user_id é obrigatório (X-User-ID ou query)")
+		return uuid.Nil, errors.New("user_id é obrigatório (Authorization Bearer, X-User-ID ou query)")
 	}
 	return uuid.Parse(uid)
 }
