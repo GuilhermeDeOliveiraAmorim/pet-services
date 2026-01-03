@@ -23,6 +23,7 @@ type User struct {
 	Phone     Phone
 	Type      UserType
 	Location  *Location
+	DeletedAt *time.Time
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
@@ -83,4 +84,16 @@ func (u *User) UpdateProfile(name, phone string) error {
 
 	u.UpdatedAt = time.Now()
 	return nil
+}
+
+// SoftDelete marca o usuário como deletado.
+func (u *User) SoftDelete() {
+	now := time.Now()
+	u.DeletedAt = &now
+	u.UpdatedAt = now
+}
+
+// IsDeleted verifica se o usuário foi deletado.
+func (u *User) IsDeleted() bool {
+	return u.DeletedAt != nil
 }
