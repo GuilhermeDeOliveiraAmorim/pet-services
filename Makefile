@@ -1,6 +1,16 @@
 # Makefile raiz - Pet Services
 
-.PHONY: up down logs build api infra
+.PHONY: help up down logs build api infra clean
+
+help:
+	@echo "Comandos disponíveis:"
+	@echo "  make up         - Sobe toda a stack (infra: API, banco, MinIO)"
+	@echo "  make down       - Para e remove os containers da stack"
+	@echo "  make logs       - Mostra os logs dos serviços da stack"
+	@echo "  make build      - Builda a imagem da API"
+	@echo "  make api        - Executa make na pasta da API"
+	@echo "  make infra      - Entra na pasta de infraestrutura"
+	@echo "  make clean      - Limpa artefatos de build da API"
 
 up:
 	cd pet-services-infra && docker compose up --build
@@ -19,3 +29,6 @@ api:
 
 infra:
 	cd pet-services-infra
+
+clean:
+	cd pet-services-api && make clean
