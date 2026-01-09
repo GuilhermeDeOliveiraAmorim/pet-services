@@ -13,6 +13,31 @@ type Service struct {
 	Name     string
 	PriceMin float64
 	PriceMax float64
+	Photos   []ServicePhoto
+}
+
+// ServicePhoto representa uma foto vinculada ao serviço
+// (pode ser mapeada para o modelo ProviderServicePhoto)
+type ServicePhoto struct {
+	ID        uuid.UUID
+	URL       string
+	Order     int
+	CreatedAt time.Time
+}
+
+// AddPhoto adiciona uma foto ao serviço
+func (s *Service) AddPhoto(url string) error {
+	if url == "" {
+		return NewValidationError("service.photo.url", "url da foto é obrigatória")
+	}
+	photo := ServicePhoto{
+		ID:        uuid.New(),
+		URL:       url,
+		Order:     len(s.Photos),
+		CreatedAt: time.Now(),
+	}
+	s.Photos = append(s.Photos, photo)
+	return nil
 }
 
 // Photo representa uma foto do prestador
