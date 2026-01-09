@@ -133,6 +133,8 @@ func resolveDSN(cfg Config) (string, error) {
 	port := os.Getenv("DB_PORT")
 	sslMode := os.Getenv("DB_SSLMODE")
 
+	slog.Info("Variáveis", user, pass, name, host, port, sslMode)
+
 	if sslMode == "" {
 		sslMode = "disable"
 	}
