@@ -2,6 +2,7 @@ package database
 
 import (
 	"pet-services-api/internal/models"
+
 	"gorm.io/gorm"
 )
 
@@ -10,6 +11,8 @@ const (
 	versionV2      = "20260103000001"
 	versionV3      = "20260103000002"
 	versionV4      = "20260103000003"
+	versionV5      = "20260109000001"
+	versionV6      = "20260109000002"
 )
 
 func getMigrations() []Migration {
@@ -33,6 +36,16 @@ func getMigrations() []Migration {
 			Version:     versionV4,
 			Description: "Add performance indexes for faster queries",
 			Up:          migrationAddIndexesV4,
+		},
+		{
+			Version:     versionV5,
+			Description: "Add provider_service_photos table for multiple service images",
+			Up:          migrationAddProviderServicePhotosV5,
+		},
+		{
+			Version:     versionV6,
+			Description: "Add foreign key and relation between provider_services and provider_service_photos",
+			Up:          migrationAddServicePhotoRelationV6,
 		},
 	}
 }
@@ -92,4 +105,14 @@ func migrationAddIndexesV4(db *gorm.DB) error {
 		&models.EmailVerificationToken{},
 		&models.PasswordResetToken{},
 	)
+}
+
+// migrationAddProviderServicePhotosV5 cria a tabela provider_service_photos.
+func migrationAddProviderServicePhotosV5(db *gorm.DB) error {
+	return db.AutoMigrate(&models.ProviderServicePhoto{})
+}
+
+// migrationAddServicePhotoRelationV6 garante a relação entre provider_services e provider_service_photos.
+func migrationAddServicePhotoRelationV6(db *gorm.DB) error {
+	return db.AutoMigrate(&models.ProviderServicePhoto{}, &models.ProviderService{})
 }

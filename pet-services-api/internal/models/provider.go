@@ -62,14 +62,29 @@ func (Provider) TableName() string {
 
 // ProviderService representa um serviço ofertado pelo prestador.
 type ProviderService struct {
-	ID         uuid.UUID `gorm:"type:uuid;primaryKey"`
-	ProviderID uuid.UUID `gorm:"type:uuid;not null;index:idx_provider_service_provider,priority:1;uniqueIndex:idx_provider_service_unique,priority:1"`
-	Category   string    `gorm:"size:100;not null;uniqueIndex:idx_provider_service_unique,priority:2"`
-	Name       string    `gorm:"size:120;not null;uniqueIndex:idx_provider_service_unique,priority:3"`
-	PriceMin   float64   `gorm:"type:numeric(10,2)"`
-	PriceMax   float64   `gorm:"type:numeric(10,2)"`
-	CreatedAt  time.Time `gorm:"autoCreateTime"`
-	UpdatedAt  time.Time `gorm:"autoUpdateTime"`
+	ID         uuid.UUID              `gorm:"type:uuid;primaryKey"`
+	ProviderID uuid.UUID              `gorm:"type:uuid;not null;index:idx_provider_service_provider,priority:1;uniqueIndex:idx_provider_service_unique,priority:1"`
+	Category   string                 `gorm:"size:100;not null;uniqueIndex:idx_provider_service_unique,priority:2"`
+	Name       string                 `gorm:"size:120;not null;uniqueIndex:idx_provider_service_unique,priority:3"`
+	PriceMin   float64                `gorm:"type:numeric(10,2)"`
+	PriceMax   float64                `gorm:"type:numeric(10,2)"`
+	CreatedAt  time.Time              `gorm:"autoCreateTime"`
+	UpdatedAt  time.Time              `gorm:"autoUpdateTime"`
+	Photos     []ProviderServicePhoto `gorm:"foreignKey:ProviderServiceID;constraint:OnDelete:CASCADE"`
+}
+
+// ProviderServicePhoto representa fotos associadas a um serviço do prestador.
+type ProviderServicePhoto struct {
+	ID                uuid.UUID        `gorm:"type:uuid;primaryKey"`
+	ProviderServiceID uuid.UUID        `gorm:"type:uuid;not null;index:idx_service_photo_service,priority:1"`
+	URL               string           `gorm:"size:500;not null"`
+	SortOrder         int              `gorm:"not null;default:0;index:idx_service_photo_service,priority:2"`
+	CreatedAt         time.Time        `gorm:"autoCreateTime"`
+	ProviderService   *ProviderService `gorm:"foreignKey:ProviderServiceID;references:ID;constraint:OnDelete:CASCADE"`
+}
+
+func (ProviderServicePhoto) TableName() string {
+	return "provider_service_photos"
 }
 
 // TableName define o nome da tabela no banco.
