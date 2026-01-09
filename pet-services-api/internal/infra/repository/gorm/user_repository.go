@@ -24,7 +24,9 @@ func (r *UserRepository) Create(ctx context.Context, u *userdom.User) error {
 	if err != nil {
 		return err
 	}
-	return r.db.WithContext(ctx).Create(mu).Error
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		return tx.Create(mu).Error
+	})
 }
 
 func (r *UserRepository) FindByID(ctx context.Context, id uuid.UUID) (*userdom.User, error) {
@@ -48,11 +50,15 @@ func (r *UserRepository) Update(ctx context.Context, u *userdom.User) error {
 	if err != nil {
 		return err
 	}
-	return r.db.WithContext(ctx).Save(mu).Error
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		return tx.Save(mu).Error
+	})
 }
 
 func (r *UserRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return r.db.WithContext(ctx).Delete(&models.User{}, "id = ?", id).Error
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		return tx.Delete(&models.User{}, "id = ?", id).Error
+	})
 }
 
 func (r *UserRepository) ExistsByEmail(ctx context.Context, email string) (bool, error) {

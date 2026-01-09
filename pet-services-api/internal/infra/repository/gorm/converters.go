@@ -258,6 +258,7 @@ func toModelProvider(p *providerdom.Provider) (*models.Provider, error) {
 		5: p.WorkingHours.Friday,
 		6: p.WorkingHours.Saturday,
 	}
+
 	for dow, sch := range schedules {
 		m.WorkingHours = append(m.WorkingHours, models.ProviderWorkingHour{
 			ID:         uuid.New(),

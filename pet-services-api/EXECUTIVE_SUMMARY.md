@@ -1,22 +1,23 @@
 # 📊 RESUMO EXECUTIVO - MVP PRODUCTION READINESS
 
 ## Status Geral
+
 **70% pronto para production** ✅ (com ajustes em 2 semanas)
 
 ---
 
 ## 🟢 O QUE ESTÁ EXCELENTE
 
-| Aspecto | Status | Notas |
-|---------|--------|-------|
-| **Arquitetura** | ✅ | DDD + Clean Architecture robusta |
-| **Autenticação** | ✅ | JWT com access/refresh tokens, bcrypt |
-| **Modelos** | ✅ | 7 tabelas, relações, índices estratégicos |
-| **API HTTP** | ✅ | 40+ endpoints, Swagger/OpenAPI |
-| **Database** | ✅ | PostgreSQL com migrations versionadas |
-| **Logging** | ✅ | Structured logging com slog |
-| **Use Cases** | ✅ | 25+ casos de uso implementados |
-| **Deployment** | ✅ | Docker Compose, Makefile, graceful shutdown |
+| Aspecto          | Status | Notas                                       |
+| ---------------- | ------ | ------------------------------------------- |
+| **Arquitetura**  | ✅     | DDD + Clean Architecture robusta            |
+| **Autenticação** | ✅     | JWT com access/refresh tokens, bcrypt       |
+| **Modelos**      | ✅     | 7 tabelas, relações, índices estratégicos   |
+| **API HTTP**     | ✅     | 40+ endpoints, Swagger/OpenAPI              |
+| **Database**     | ✅     | PostgreSQL com migrations versionadas       |
+| **Logging**      | ✅     | Structured logging com slog                 |
+| **Use Cases**    | ✅     | 25+ casos de uso implementados              |
+| **Deployment**   | ✅     | Docker Compose, Makefile, graceful shutdown |
 
 ---
 
@@ -25,44 +26,50 @@
 ### **CRÍTICO** (fazer antes de deploy)
 
 1. **Rate Limiting** ❌
+
    - Brute force no login desprotegido
    - API sem proteção contra abuse
    - **Tempo:** 1h
    - **Impacto:** Alto (segurança)
 
 2. **Input Validation** ⚠️
+
    - Sem validação estrutural forte
    - Sem limits de payload
    - **Tempo:** 1h
    - **Impacto:** Alto (segurança)
 
 3. **HTTPS/TLS** ❌
+
    - Sem suporte a HTTPS
    - Sem redirect HTTP→HTTPS
    - **Tempo:** 2h
    - **Impacto:** Crítico (segurança)
 
-4. **Transações de BD** ⚠️
-   - Operações multi-tabela não atômicas
-   - Sem rollback em cascata
-   - **Tempo:** 2h
+4. **Transações de BD** ✅
+   - Todas operações críticas (Create, Update, Delete) agora usam transações atômicas via GORM
+   - Rollback garantido em falhas
+   - **Tempo:** 2h (concluído)
    - **Impacto:** Alto (data integrity)
 
 ### **IMPORTANTE** (antes da segunda semana)
 
 5. **File Uploads** ❌
+
    - Provider photos sem implementação real
    - Sem storage backend (S3/Azure)
    - **Tempo:** 3h
    - **Impacto:** Médio (feature essencial)
 
 6. **Security Headers** ❌
+
    - Sem X-Frame-Options, CSP, etc
    - Sem HSTS
    - **Tempo:** 30m
    - **Impacto:** Médio (best practices)
 
 7. **Testing** ❌
+
    - Zero testes automatizados
    - Sem test coverage
    - **Tempo:** 4h
@@ -87,19 +94,19 @@
 
 ## 📊 EFFORT ESTIMATION
 
-| Prioridade | Tarefa | Horas | Dev-Days |
-|-----------|--------|-------|----------|
-| 🔴 CRÍTICO | Rate limiting | 1 | 0.1 |
-| 🔴 CRÍTICO | Input validation | 1 | 0.1 |
-| 🔴 CRÍTICO | HTTPS/TLS setup | 2 | 0.25 |
-| 🔴 CRÍTICO | Transações | 2 | 0.25 |
-| 🟡 IMPORTANTE | Security headers | 0.5 | 0.06 |
-| 🟡 IMPORTANTE | File uploads | 3 | 0.4 |
-| 🟡 IMPORTANTE | Unit tests | 4 | 0.5 |
-| 🟡 IMPORTANTE | Soft delete fix | 1 | 0.1 |
-| 🟡 IMPORTANTE | Audit trail | 2 | 0.25 |
-| 🟢 NICE | Admin API | 2 | 0.25 |
-| | **TOTAL** | **18.5h** | **2.2 dev-days** |
+| Prioridade    | Tarefa                                 | Horas     | Dev-Days         |
+| ------------- | -------------------------------------- | --------- | ---------------- |
+| 🔴 CRÍTICO    | HTTPS/TLS setup                        | 2         | 0.25             |
+| 🟡 PARCIAL    | Input validation (falta payload limit) | 1         | 0.1              |
+| 🟡 IMPORTANTE | Security headers                       | 0.5       | 0.06             |
+| 🟡 IMPORTANTE | File uploads                           | 3         | 0.4              |
+| 🟡 IMPORTANTE | Unit tests                             | 4         | 0.5              |
+| 🟡 IMPORTANTE | Soft delete fix                        | 1         | 0.1              |
+| 🟡 IMPORTANTE | Audit trail                            | 2         | 0.25             |
+| 🟢 CONCLUÍDO  | Transações                             | 2         | 0.25             |
+| 🟢 CONCLUÍDO  | Rate limiting                          | 1         | 0.1              |
+| 🟢 NICE       | Admin API                              | 2         | 0.25             |
+|               | **TOTAL**                              | **18.5h** | **2.2 dev-days** |
 
 ---
 
@@ -139,6 +146,7 @@ DEPLOY: Terça próxima
 ## 🎯 RECOMENDAÇÕES
 
 ### **IMEDIATO** (antes do final do dia)
+
 ```
 1. Criar branch: feature/production-readiness
 2. Implementar: Rate limiting + Input validation
@@ -148,6 +156,7 @@ DEPLOY: Terça próxima
 ```
 
 ### **CURTO PRAZO** (próximos 3 dias)
+
 ```
 1. Implementar transações nas operações críticas
 2. Adicionar file upload handler
@@ -157,6 +166,7 @@ DEPLOY: Terça próxima
 ```
 
 ### **PRÉ-DEPLOY** (1 dia antes)
+
 ```
 1. Load testing com 1000 concurrent users
 2. Security audit (OWASP Top 10)
@@ -169,25 +179,26 @@ DEPLOY: Terça próxima
 
 ## 💰 RISCO ASSESSMENT
 
-| Risco | Severidade | Mitigação | Prazo |
-|-------|-----------|-----------|-------|
-| Brute force attack | 🔴 ALTA | Rate limiting + WAF | 1h |
-| SQL Injection | 🟡 MÉDIA | GORM + prepared statements ✅ | Já feito |
-| Soft delete bypass | 🟡 MÉDIA | Adicionar scope automático | 1h |
-| Request explosion | 🟡 MÉDIA | Rate limiting + DDoS protection | 1h |
-| Data loss | 🔴 ALTA | Backup automated | 1h |
-| Unauthorized access | 🟡 MÉDIA | HTTPS + CORS ✅ | 2h |
+| Risco               | Severidade | Mitigação                       | Prazo    |
+| ------------------- | ---------- | ------------------------------- | -------- |
+| Brute force attack  | 🔴 ALTA    | Rate limiting + WAF             | 1h       |
+| SQL Injection       | 🟡 MÉDIA   | GORM + prepared statements ✅   | Já feito |
+| Soft delete bypass  | 🟡 MÉDIA   | Adicionar scope automático      | 1h       |
+| Request explosion   | 🟡 MÉDIA   | Rate limiting + DDoS protection | 1h       |
+| Data loss           | 🔴 ALTA    | Backup automated                | 1h       |
+| Unauthorized access | 🟡 MÉDIA   | HTTPS + CORS ✅                 | 2h       |
 
 ---
 
 ## 🚀 GO/NO-GO CRITERIA
 
 ### ✅ GO para produção quando:
+
 - [ ] Rate limiting ativado
 - [ ] Input validation 100%
 - [ ] HTTPS/TLS funcionando
 - [ ] Security headers implementados
-- [ ] Transações testadas
+- [x] Transações testadas
 - [ ] Backup automático rodando
 - [ ] Tests com >70% coverage
 - [ ] Load testing passou
@@ -195,6 +206,7 @@ DEPLOY: Terça próxima
 - [ ] Monitoring ativo
 
 ### ❌ NO-GO indicadores:
+
 - Performance <100 req/s
 - Error rate >0.5%
 - Security findings críticos
@@ -211,6 +223,7 @@ DEPLOY: Terça próxima
 **Bloqueadores conhecidos:** Nenhum no momento
 
 **Dependências externas:**
+
 - AWS S3 para file upload (ou Azure Blob)
 - SendGrid/Mailgun para SMTP (opcional, pode usar stub)
 - Database em prod (RDS/Azure Database)

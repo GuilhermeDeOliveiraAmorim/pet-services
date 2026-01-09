@@ -21,7 +21,9 @@ func NewRefreshTokenRepository(db *gorm.DB) *RefreshTokenRepository {
 
 func (r *RefreshTokenRepository) Create(ctx context.Context, token *authdom.RefreshToken) error {
 	mt := toModelRefreshToken(token)
-	return r.db.WithContext(ctx).Create(mt).Error
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		return tx.Create(mt).Error
+	})
 }
 
 func (r *RefreshTokenRepository) FindByID(ctx context.Context, id uuid.UUID) (*authdom.RefreshToken, error) {
@@ -33,15 +35,17 @@ func (r *RefreshTokenRepository) FindByID(ctx context.Context, id uuid.UUID) (*a
 }
 
 func (r *RefreshTokenRepository) Revoke(ctx context.Context, id uuid.UUID) error {
-	return r.db.WithContext(ctx).
-		Model(&models.RefreshToken{}).
-		Where("id = ?", id).
-		Update("revoked", true).Error
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		return tx.Model(&models.RefreshToken{}).
+			Where("id = ?", id).
+			Update("revoked", true).Error
+	})
 }
 
 func (r *RefreshTokenRepository) RevokeAllByUserID(ctx context.Context, userID uuid.UUID) error {
-	return r.db.WithContext(ctx).
-		Model(&models.RefreshToken{}).
-		Where("user_id = ?", userID).
-		Update("revoked", true).Error
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		return tx.Model(&models.RefreshToken{}).
+			Where("user_id = ?", userID).
+			Update("revoked", true).Error
+	})
 }

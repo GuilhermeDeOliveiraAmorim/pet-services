@@ -21,7 +21,9 @@ func NewRequestRepository(db *gorm.DB) *RequestRepository {
 
 func (r *RequestRepository) Create(ctx context.Context, req *requestdom.ServiceRequest) error {
 	mr := toModelServiceRequest(req)
-	return r.db.WithContext(ctx).Create(mr).Error
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		return tx.Create(mr).Error
+	})
 }
 
 func (r *RequestRepository) FindByID(ctx context.Context, id uuid.UUID) (*requestdom.ServiceRequest, error) {
@@ -34,11 +36,15 @@ func (r *RequestRepository) FindByID(ctx context.Context, id uuid.UUID) (*reques
 
 func (r *RequestRepository) Update(ctx context.Context, req *requestdom.ServiceRequest) error {
 	mr := toModelServiceRequest(req)
-	return r.db.WithContext(ctx).Save(mr).Error
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		return tx.Save(mr).Error
+	})
 }
 
 func (r *RequestRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return r.db.WithContext(ctx).Delete(&models.ServiceRequest{}, "id = ?", id).Error
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		return tx.Delete(&models.ServiceRequest{}, "id = ?", id).Error
+	})
 }
 
 func (r *RequestRepository) FindByOwnerID(ctx context.Context, ownerID uuid.UUID, page, limit int) ([]*requestdom.ServiceRequest, int64, error) {

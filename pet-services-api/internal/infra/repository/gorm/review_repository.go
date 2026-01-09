@@ -21,7 +21,9 @@ func NewReviewRepository(db *gorm.DB) *ReviewRepository {
 
 func (r *ReviewRepository) Create(ctx context.Context, rev *reviewdom.Review) error {
 	mr := toModelReview(rev)
-	return r.db.WithContext(ctx).Create(mr).Error
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		return tx.Create(mr).Error
+	})
 }
 
 func (r *ReviewRepository) FindByID(ctx context.Context, id uuid.UUID) (*reviewdom.Review, error) {
@@ -67,5 +69,7 @@ func (r *ReviewRepository) ListByProvider(ctx context.Context, providerID uuid.U
 }
 
 func (r *ReviewRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return r.db.WithContext(ctx).Delete(&models.Review{}, "id = ?", id).Error
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		return tx.Delete(&models.Review{}, "id = ?", id).Error
+	})
 }
