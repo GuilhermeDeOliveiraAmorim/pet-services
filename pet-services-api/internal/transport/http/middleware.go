@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	domainauth "github.com/guilherme/pet-services-api/internal/domain/auth"
+	domainauth "pet-services-api/internal/domain/auth"
 )
 
 const (

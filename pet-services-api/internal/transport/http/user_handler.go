@@ -7,9 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"github.com/guilherme/pet-services-api/internal/application/user"
-	domainuser "github.com/guilherme/pet-services-api/internal/domain/user"
-	"github.com/guilherme/pet-services-api/internal/infra/factory"
+	"pet-services-api/internal/application/user"
+	domainuser "pet-services-api/internal/domain/user"
+	"pet-services-api/internal/infra/factory"
 )
 
 // UserHandler expõe endpoints relacionados a usuário.

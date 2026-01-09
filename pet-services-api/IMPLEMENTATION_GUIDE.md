@@ -324,8 +324,8 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/guilherme/pet-services-api/internal/domain/auth"
-	"github.com/guilherme/pet-services-api/internal/domain/user"
+	"pet-services-api/internal/domain/auth"
+	"pet-services-api/internal/domain/user"
 )
 
 // MockUserRepository para testes

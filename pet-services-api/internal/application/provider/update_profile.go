@@ -6,10 +6,10 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/guilherme/pet-services-api/internal/application/exceptions"
-	"github.com/guilherme/pet-services-api/internal/application/logging"
-	"github.com/guilherme/pet-services-api/internal/domain/provider"
-	"github.com/guilherme/pet-services-api/internal/domain/user"
+	"pet-services-api/internal/application/exceptions"
+	"pet-services-api/internal/application/logging"
+	"pet-services-api/internal/domain/provider"
+	"pet-services-api/internal/domain/user"
 )
 
 // UpdateProviderProfileUseCase atualiza dados básicos do prestador.

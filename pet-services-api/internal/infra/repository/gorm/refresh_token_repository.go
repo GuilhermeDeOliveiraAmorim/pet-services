@@ -6,8 +6,8 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
-	authdom "github.com/guilherme/pet-services-api/internal/domain/auth"
-	"github.com/guilherme/pet-services-api/internal/models"
+	authdom "pet-services-api/internal/domain/auth"
+	"pet-services-api/internal/models"
 )
 
 // RefreshTokenRepository implementa RefreshTokenRepository com GORM.

@@ -8,12 +8,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"github.com/guilherme/pet-services-api/internal/application/exceptions"
-	"github.com/guilherme/pet-services-api/internal/application/request"
-	domainprovider "github.com/guilherme/pet-services-api/internal/domain/provider"
-	domainrequest "github.com/guilherme/pet-services-api/internal/domain/request"
-	domainuser "github.com/guilherme/pet-services-api/internal/domain/user"
-	"github.com/guilherme/pet-services-api/internal/infra/factory"
+	"pet-services-api/internal/application/exceptions"
+	"pet-services-api/internal/application/request"
+	domainprovider "pet-services-api/internal/domain/provider"
+	domainrequest "pet-services-api/internal/domain/request"
+	domainuser "pet-services-api/internal/domain/user"
+	"pet-services-api/internal/infra/factory"
 )
 
 // parseUUIDParamProblems converte parâmetro de rota para UUID, retornando problemas padronizados.

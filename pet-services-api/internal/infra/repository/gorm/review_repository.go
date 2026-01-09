@@ -6,8 +6,8 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
-	reviewdom "github.com/guilherme/pet-services-api/internal/domain/review"
-	"github.com/guilherme/pet-services-api/internal/models"
+	reviewdom "pet-services-api/internal/domain/review"
+	"pet-services-api/internal/models"
 )
 
 // ReviewRepository implementa review.Repository com GORM.

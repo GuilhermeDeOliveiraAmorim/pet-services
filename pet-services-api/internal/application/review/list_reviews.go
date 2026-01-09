@@ -6,9 +6,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/guilherme/pet-services-api/internal/application/exceptions"
-	"github.com/guilherme/pet-services-api/internal/application/logging"
-	domainReview "github.com/guilherme/pet-services-api/internal/domain/review"
+	"pet-services-api/internal/application/exceptions"
+	"pet-services-api/internal/application/logging"
+	domainReview "pet-services-api/internal/domain/review"
 )
 
 // ListReviewsForProviderUseCase lista avaliações de um prestador.

@@ -4,10 +4,10 @@ import (
 	"context"
 	"strings"
 
-	"github.com/guilherme/pet-services-api/internal/application/exceptions"
-	"github.com/guilherme/pet-services-api/internal/application/logging"
-	domainAuth "github.com/guilherme/pet-services-api/internal/domain/auth"
-	domainUser "github.com/guilherme/pet-services-api/internal/domain/user"
+	"pet-services-api/internal/application/exceptions"
+	"pet-services-api/internal/application/logging"
+	domainAuth "pet-services-api/internal/domain/auth"
+	domainUser "pet-services-api/internal/domain/user"
 )
 
 // ConfirmPasswordResetUseCase confirma e aplica o reset de senha.

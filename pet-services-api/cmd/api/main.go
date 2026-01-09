@@ -11,19 +11,19 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/guilherme/pet-services-api/internal/application/logging"
+	"pet-services-api/internal/application/logging"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"gorm.io/gorm"
 
-	infrabcrypt "github.com/guilherme/pet-services-api/internal/infra/bcrypt"
-	infradatabase "github.com/guilherme/pet-services-api/internal/infra/database"
-	infraemail "github.com/guilherme/pet-services-api/internal/infra/email"
-	"github.com/guilherme/pet-services-api/internal/infra/factory"
-	infrajwt "github.com/guilherme/pet-services-api/internal/infra/jwt"
-	httpapi "github.com/guilherme/pet-services-api/internal/transport/http"
+	infrabcrypt "pet-services-api/internal/infra/bcrypt"
+	infradatabase "pet-services-api/internal/infra/database"
+	infraemail "pet-services-api/internal/infra/email"
+	"pet-services-api/internal/infra/factory"
+	infrajwt "pet-services-api/internal/infra/jwt"
+	httpapi "pet-services-api/internal/transport/http"
 )
 
 func main() {

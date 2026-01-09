@@ -6,9 +6,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/guilherme/pet-services-api/internal/application/exceptions"
-	"github.com/guilherme/pet-services-api/internal/application/logging"
-	domainRequest "github.com/guilherme/pet-services-api/internal/domain/request"
+	"pet-services-api/internal/application/exceptions"
+	"pet-services-api/internal/application/logging"
+	domainRequest "pet-services-api/internal/domain/request"
 )
 
 // GetRequestStatusUseCase retorna uma solicitação garantindo vínculo com dono ou prestador.

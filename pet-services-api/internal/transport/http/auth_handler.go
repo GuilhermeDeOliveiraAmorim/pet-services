@@ -5,10 +5,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/guilherme/pet-services-api/internal/application/auth"
-	"github.com/guilherme/pet-services-api/internal/application/exceptions"
-	"github.com/guilherme/pet-services-api/internal/domain/user"
-	"github.com/guilherme/pet-services-api/internal/infra/factory"
+	"pet-services-api/internal/application/auth"
+	"pet-services-api/internal/application/exceptions"
+	"pet-services-api/internal/domain/user"
+	"pet-services-api/internal/infra/factory"
 )
 
 // AuthHandler expõe endpoints de autenticação.

@@ -7,11 +7,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/guilherme/pet-services-api/internal/application/exceptions"
-	"github.com/guilherme/pet-services-api/internal/application/provider"
-	domainprovider "github.com/guilherme/pet-services-api/internal/domain/provider"
-	domainuser "github.com/guilherme/pet-services-api/internal/domain/user"
-	"github.com/guilherme/pet-services-api/internal/infra/factory"
+	"pet-services-api/internal/application/exceptions"
+	"pet-services-api/internal/application/provider"
+	domainprovider "pet-services-api/internal/domain/provider"
+	domainuser "pet-services-api/internal/domain/user"
+	"pet-services-api/internal/infra/factory"
 )
 
 // ProviderHandler expõe endpoints de prestadores.

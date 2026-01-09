@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/guilherme/pet-services-api/internal/application/exceptions"
-	"github.com/guilherme/pet-services-api/internal/application/logging"
-	"github.com/guilherme/pet-services-api/internal/domain/provider"
+	"pet-services-api/internal/application/exceptions"
+	"pet-services-api/internal/application/logging"
+	"pet-services-api/internal/domain/provider"
 )
 
 // UpdateWorkingHoursUseCase ajusta a disponibilidade semanal do prestador.

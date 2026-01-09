@@ -3,16 +3,16 @@ package factory
 import (
 	"gorm.io/gorm"
 
-	"github.com/guilherme/pet-services-api/internal/application/auth"
-	"github.com/guilherme/pet-services-api/internal/application/logging"
-	"github.com/guilherme/pet-services-api/internal/application/provider"
-	"github.com/guilherme/pet-services-api/internal/application/request"
-	"github.com/guilherme/pet-services-api/internal/application/review"
-	"github.com/guilherme/pet-services-api/internal/application/user"
-	domainAuth "github.com/guilherme/pet-services-api/internal/domain/auth"
-	providerdom "github.com/guilherme/pet-services-api/internal/domain/provider"
-	domainUser "github.com/guilherme/pet-services-api/internal/domain/user"
-	gormrepo "github.com/guilherme/pet-services-api/internal/infra/repository/gorm"
+	"pet-services-api/internal/application/auth"
+	"pet-services-api/internal/application/logging"
+	"pet-services-api/internal/application/provider"
+	"pet-services-api/internal/application/request"
+	"pet-services-api/internal/application/review"
+	"pet-services-api/internal/application/user"
+	domainAuth "pet-services-api/internal/domain/auth"
+	providerdom "pet-services-api/internal/domain/provider"
+	domainUser "pet-services-api/internal/domain/user"
+	gormrepo "pet-services-api/internal/infra/repository/gorm"
 )
 
 // Config encapsula dependências externas necessárias para criar os casos de uso.

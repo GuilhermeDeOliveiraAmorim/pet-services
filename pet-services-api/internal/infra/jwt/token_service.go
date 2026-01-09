@@ -8,8 +8,8 @@ import (
 	jwtlib "github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 
-	"github.com/guilherme/pet-services-api/internal/domain/auth"
-	"github.com/guilherme/pet-services-api/internal/domain/user"
+	"pet-services-api/internal/domain/auth"
+	"pet-services-api/internal/domain/user"
 )
 
 // Config holds JWT configuration.

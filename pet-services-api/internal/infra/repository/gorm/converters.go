@@ -6,12 +6,12 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
-	authdom "github.com/guilherme/pet-services-api/internal/domain/auth"
-	providerdom "github.com/guilherme/pet-services-api/internal/domain/provider"
-	requestdom "github.com/guilherme/pet-services-api/internal/domain/request"
-	reviewdom "github.com/guilherme/pet-services-api/internal/domain/review"
-	userdom "github.com/guilherme/pet-services-api/internal/domain/user"
-	"github.com/guilherme/pet-services-api/internal/models"
+	authdom "pet-services-api/internal/domain/auth"
+	providerdom "pet-services-api/internal/domain/provider"
+	requestdom "pet-services-api/internal/domain/request"
+	reviewdom "pet-services-api/internal/domain/review"
+	userdom "pet-services-api/internal/domain/user"
+	"pet-services-api/internal/models"
 )
 
 // toModelUser converte domínio para model.

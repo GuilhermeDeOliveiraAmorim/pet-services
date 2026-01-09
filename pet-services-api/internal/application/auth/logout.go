@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
-	"github.com/guilherme/pet-services-api/internal/application/exceptions"
-	"github.com/guilherme/pet-services-api/internal/application/logging"
-	domainAuth "github.com/guilherme/pet-services-api/internal/domain/auth"
+	"pet-services-api/internal/application/exceptions"
+	"pet-services-api/internal/application/logging"
+	domainAuth "pet-services-api/internal/domain/auth"
 )
 
 // LogoutUseCase revoga um refresh token específico.

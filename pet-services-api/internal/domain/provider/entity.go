@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/guilherme/pet-services-api/internal/domain/user"
+	"pet-services-api/internal/domain/user"
 )
 
 // PriceRange representa a faixa de preço dos serviços

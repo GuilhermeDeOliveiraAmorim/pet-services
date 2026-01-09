@@ -9,7 +9,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	"github.com/guilherme/pet-services-api/internal/database"
+	"pet-services-api/internal/database"
 )
 
 func main() {

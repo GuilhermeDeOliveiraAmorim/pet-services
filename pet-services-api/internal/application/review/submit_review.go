@@ -7,11 +7,11 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/guilherme/pet-services-api/internal/application/exceptions"
-	"github.com/guilherme/pet-services-api/internal/application/logging"
-	domainProvider "github.com/guilherme/pet-services-api/internal/domain/provider"
-	domainRequest "github.com/guilherme/pet-services-api/internal/domain/request"
-	domainReview "github.com/guilherme/pet-services-api/internal/domain/review"
+	"pet-services-api/internal/application/exceptions"
+	"pet-services-api/internal/application/logging"
+	domainProvider "pet-services-api/internal/domain/provider"
+	domainRequest "pet-services-api/internal/domain/request"
+	domainReview "pet-services-api/internal/domain/review"
 )
 
 // SubmitReviewUseCase cria uma avaliação para uma solicitação concluída.

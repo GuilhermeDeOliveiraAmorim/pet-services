@@ -8,8 +8,8 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
-	providerdom "github.com/guilherme/pet-services-api/internal/domain/provider"
-	"github.com/guilherme/pet-services-api/internal/models"
+	providerdom "pet-services-api/internal/domain/provider"
+	"pet-services-api/internal/models"
 )
 
 // ProviderRepository implementa provider.Repository com GORM.

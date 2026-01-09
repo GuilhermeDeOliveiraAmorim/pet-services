@@ -1,7 +1,7 @@
 package database
 
 import (
-	"github.com/guilherme/pet-services-api/internal/models"
+	"pet-services-api/internal/models"
 	"gorm.io/gorm"
 )
 

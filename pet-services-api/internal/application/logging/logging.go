@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/guilherme/pet-services-api/internal/application/exceptions"
+	"pet-services-api/internal/application/exceptions"
 	"github.com/lmittmann/tint"
 )
 

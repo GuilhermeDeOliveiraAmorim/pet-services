@@ -7,10 +7,10 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/guilherme/pet-services-api/internal/application/exceptions"
-	"github.com/guilherme/pet-services-api/internal/application/logging"
-	domainProvider "github.com/guilherme/pet-services-api/internal/domain/provider"
-	domainRequest "github.com/guilherme/pet-services-api/internal/domain/request"
+	"pet-services-api/internal/application/exceptions"
+	"pet-services-api/internal/application/logging"
+	domainProvider "pet-services-api/internal/domain/provider"
+	domainRequest "pet-services-api/internal/domain/request"
 )
 
 // AcceptRequestUseCase permite ao prestador aceitar uma solicitação.

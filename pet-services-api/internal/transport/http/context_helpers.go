@@ -8,9 +8,9 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
-	"github.com/guilherme/pet-services-api/internal/application/exceptions"
-	domainprovider "github.com/guilherme/pet-services-api/internal/domain/provider"
-	domainuser "github.com/guilherme/pet-services-api/internal/domain/user"
+	"pet-services-api/internal/application/exceptions"
+	domainprovider "pet-services-api/internal/domain/provider"
+	domainuser "pet-services-api/internal/domain/user"
 )
 
 // extractUserIDProblems extrai o user_id do contexto, retornando problemas padronizados.

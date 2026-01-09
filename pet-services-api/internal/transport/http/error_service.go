@@ -2,7 +2,7 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/guilherme/pet-services-api/internal/application/exceptions"
+	"pet-services-api/internal/application/exceptions"
 )
 
 // ProblemDetailsDTO representa um erro detalhado para resposta HTTP.

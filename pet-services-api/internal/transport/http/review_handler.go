@@ -7,12 +7,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"github.com/guilherme/pet-services-api/internal/application/exceptions"
-	"github.com/guilherme/pet-services-api/internal/application/review"
-	domainprovider "github.com/guilherme/pet-services-api/internal/domain/provider"
-	domainreview "github.com/guilherme/pet-services-api/internal/domain/review"
-	domainuser "github.com/guilherme/pet-services-api/internal/domain/user"
-	"github.com/guilherme/pet-services-api/internal/infra/factory"
+	"pet-services-api/internal/application/exceptions"
+	"pet-services-api/internal/application/review"
+	domainprovider "pet-services-api/internal/domain/provider"
+	domainreview "pet-services-api/internal/domain/review"
+	domainuser "pet-services-api/internal/domain/user"
+	"pet-services-api/internal/infra/factory"
 )
 
 // ListReviewsResponseDTO representa a resposta da listagem de avaliações de um prestador.

@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/guilherme/pet-services-api/internal/application/exceptions"
-	"github.com/guilherme/pet-services-api/internal/application/logging"
-	"github.com/guilherme/pet-services-api/internal/domain/provider"
+	"pet-services-api/internal/application/exceptions"
+	"pet-services-api/internal/application/logging"
+	"pet-services-api/internal/domain/provider"
 )
 
 // RemoveServiceUseCase remove um serviço existente do prestador.

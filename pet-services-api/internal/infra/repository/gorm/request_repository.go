@@ -6,8 +6,8 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
-	requestdom "github.com/guilherme/pet-services-api/internal/domain/request"
-	"github.com/guilherme/pet-services-api/internal/models"
+	requestdom "pet-services-api/internal/domain/request"
+	"pet-services-api/internal/models"
 )
 
 // RequestRepository implementa request.Repository com GORM.

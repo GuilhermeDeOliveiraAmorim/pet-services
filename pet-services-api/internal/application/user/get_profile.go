@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/guilherme/pet-services-api/internal/application/exceptions"
-	"github.com/guilherme/pet-services-api/internal/application/logging"
-	domainUser "github.com/guilherme/pet-services-api/internal/domain/user"
+	"pet-services-api/internal/application/exceptions"
+	"pet-services-api/internal/application/logging"
+	domainUser "pet-services-api/internal/domain/user"
 )
 
 // GetProfileUseCase retorna o perfil do usuário autenticado.

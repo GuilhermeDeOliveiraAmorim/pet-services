@@ -15,9 +15,9 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
-	domainauth "github.com/guilherme/pet-services-api/internal/domain/auth"
-	"github.com/guilherme/pet-services-api/internal/infra/factory"
-	_ "github.com/guilherme/pet-services-api/internal/transport/http/docs"
+	domainauth "pet-services-api/internal/domain/auth"
+	"pet-services-api/internal/infra/factory"
+	_ "pet-services-api/internal/transport/http/docs"
 )
 
 // NewRouter cria um router Gin com as rotas registradas.

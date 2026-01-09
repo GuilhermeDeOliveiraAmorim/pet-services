@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/guilherme/pet-services-api/internal/application/exceptions"
-	"github.com/guilherme/pet-services-api/internal/application/logging"
-	domainUser "github.com/guilherme/pet-services-api/internal/domain/user"
+	"pet-services-api/internal/application/exceptions"
+	"pet-services-api/internal/application/logging"
+	domainUser "pet-services-api/internal/domain/user"
 )
 
 // RequestPasswordResetUseCase inicia o fluxo de reset de senha.

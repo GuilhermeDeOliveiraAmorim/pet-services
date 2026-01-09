@@ -6,8 +6,8 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
-	userdom "github.com/guilherme/pet-services-api/internal/domain/user"
-	"github.com/guilherme/pet-services-api/internal/models"
+	userdom "pet-services-api/internal/domain/user"
+	"pet-services-api/internal/models"
 )
 
 // UserRepository implementa user.Repository com GORM.

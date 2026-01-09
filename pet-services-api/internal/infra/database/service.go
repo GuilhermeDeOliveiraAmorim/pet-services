@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	migrations "github.com/guilherme/pet-services-api/internal/database"
+	migrations "pet-services-api/internal/database"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
