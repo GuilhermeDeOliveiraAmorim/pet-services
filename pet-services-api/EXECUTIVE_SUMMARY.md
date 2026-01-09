@@ -41,8 +41,10 @@
 
 3. **HTTPS/TLS** ❌
 
-   - Sem suporte a HTTPS
-   - Sem redirect HTTP→HTTPS
+   - Será implementado via Nginx como proxy reverso
+   - Certificados automáticos com Let's Encrypt
+   - Redirect HTTP→HTTPS garantido
+   - API Go exposta apenas internamente (localhost ou rede docker)
    - **Tempo:** 2h
    - **Impacto:** Crítico (segurança)
 
@@ -94,19 +96,19 @@
 
 ## 📊 EFFORT ESTIMATION
 
-| Prioridade    | Tarefa                                 | Horas     | Dev-Days         |
-| ------------- | -------------------------------------- | --------- | ---------------- |
-| 🔴 CRÍTICO    | HTTPS/TLS setup                        | 2         | 0.25             |
-| 🟡 PARCIAL    | Input validation (falta payload limit) | 1         | 0.1              |
-| 🟡 IMPORTANTE | Security headers                       | 0.5       | 0.06             |
-| 🟡 IMPORTANTE | File uploads                           | 3         | 0.4              |
-| 🟡 IMPORTANTE | Unit tests                             | 4         | 0.5              |
-| 🟡 IMPORTANTE | Soft delete fix                        | 1         | 0.1              |
-| 🟡 IMPORTANTE | Audit trail                            | 2         | 0.25             |
-| 🟢 CONCLUÍDO  | Transações                             | 2         | 0.25             |
-| 🟢 CONCLUÍDO  | Rate limiting                          | 1         | 0.1              |
-| 🟢 NICE       | Admin API                              | 2         | 0.25             |
-|               | **TOTAL**                              | **18.5h** | **2.2 dev-days** |
+| Prioridade    | Tarefa                                  | Horas     | Dev-Days         |
+| ------------- | --------------------------------------- | --------- | ---------------- |
+| 🔴 CRÍTICO    | HTTPS/TLS setup (Nginx + Let's Encrypt) | 2         | 0.25             |
+| 🟡 PARCIAL    | Input validation (falta payload limit)  | 1         | 0.1              |
+| 🟡 IMPORTANTE | Security headers                        | 0.5       | 0.06             |
+| 🟡 IMPORTANTE | File uploads                            | 3         | 0.4              |
+| 🟡 IMPORTANTE | Unit tests                              | 4         | 0.5              |
+| 🟡 IMPORTANTE | Soft delete fix                         | 1         | 0.1              |
+| 🟡 IMPORTANTE | Audit trail                             | 2         | 0.25             |
+| 🟢 CONCLUÍDO  | Transações                              | 2         | 0.25             |
+| 🟢 CONCLUÍDO  | Rate limiting                           | 1         | 0.1              |
+| 🟢 NICE       | Admin API                               | 2         | 0.25             |
+|               | **TOTAL**                               | **18.5h** | **2.2 dev-days** |
 
 ---
 
