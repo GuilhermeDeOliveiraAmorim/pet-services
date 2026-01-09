@@ -1,7 +1,7 @@
 docs:
 	@echo "Gerando documentação Swagger..."
 	swag init --dir ./cmd/api,./internal/transport/http --parseDependency --parseInternal --output ./internal/transport/http/docs
-.PHONY: help build run test migrate migrate-down clean docker-up docker-down
+.PHONY: help build run test migrate migrate-down clean
 
 help:
 	@echo "Available targets:"
@@ -10,8 +10,6 @@ help:
 	@echo "  make test         - Run all tests"
 	@echo "  make migrate      - Run database migrations"
 	@echo "  make clean        - Clean build artifacts"
-	@echo "  make docker-up    - Start PostgreSQL container"
-	@echo "  make docker-down  - Stop PostgreSQL container"
 	@echo "  make lint         - Run linters (gofmt, go vet)"
 	@echo "  make fmt          - Format all Go files"
 
