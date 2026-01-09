@@ -64,32 +64,6 @@ definitions:
           $ref: '#/definitions/exceptions.ProblemDetails'
         type: array
     type: object
-  github_com_guilherme_pet-services-api_internal_domain_user.User:
-    properties:
-      createdAt:
-        type: string
-      deletedAt:
-        type: string
-      email:
-        $ref: '#/definitions/user.Email'
-      emailVerified:
-        type: boolean
-      id:
-        type: string
-      location:
-        $ref: '#/definitions/user.Location'
-      name:
-        type: string
-      password:
-        description: hash bcrypt
-        type: string
-      phone:
-        $ref: '#/definitions/user.Phone'
-      type:
-        $ref: '#/definitions/user.UserType'
-      updatedAt:
-        type: string
-    type: object
   http.ListProvidersByLocationResponseDTO:
     properties:
       items:
@@ -296,6 +270,32 @@ definitions:
       price_range:
         $ref: '#/definitions/provider.PriceRange'
     type: object
+  pet-services-api_internal_domain_user.User:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      email:
+        $ref: '#/definitions/user.Email'
+      emailVerified:
+        type: boolean
+      id:
+        type: string
+      location:
+        $ref: '#/definitions/user.Location'
+      name:
+        type: string
+      password:
+        description: hash bcrypt
+        type: string
+      phone:
+        $ref: '#/definitions/user.Phone'
+      type:
+        $ref: '#/definitions/user.UserType'
+      updatedAt:
+        type: string
+    type: object
   provider.ApprovalStatus:
     enum:
     - pending
@@ -375,7 +375,7 @@ definitions:
       updatedAt:
         type: string
       user:
-        $ref: '#/definitions/github_com_guilherme_pet-services-api_internal_domain_user.User'
+        $ref: '#/definitions/pet-services-api_internal_domain_user.User'
       userID:
         type: string
       workingHours:
@@ -396,6 +396,10 @@ definitions:
         type: string
       name:
         type: string
+      photos:
+        items:
+          $ref: '#/definitions/provider.ServicePhoto'
+        type: array
       priceMax:
         type: number
       priceMin:
@@ -411,6 +415,17 @@ definitions:
         type: number
       priceMin:
         type: number
+    type: object
+  provider.ServicePhoto:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      order:
+        type: integer
+      url:
+        type: string
     type: object
   provider.WorkingHours:
     properties:
@@ -1078,6 +1093,43 @@ paths:
       summary: List providers by location
       tags:
       - providers
+  /providers/services/{service_id}/photos:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: Service ID
+        in: path
+        name: service_id
+        required: true
+        type: string
+      - description: Service photo file
+        in: formData
+        name: photo
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetailsOutputDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetailsOutputDTO'
+      security:
+      - BearerAuth: []
+      summary: Add photo to provider service
+      tags:
+      - providers
   /requests:
     post:
       consumes:
@@ -1683,7 +1735,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_guilherme_pet-services-api_internal_domain_user.User'
+            $ref: '#/definitions/pet-services-api_internal_domain_user.User'
         "400":
           description: Bad Request
           schema:

@@ -274,6 +274,64 @@ const docTemplate = `{
                 }
             }
         },
+        "/providers/services/{service_id}/photos": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "providers"
+                ],
+                "summary": "Add photo to provider service",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Service ID",
+                        "name": "service_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Service photo file",
+                        "name": "photo",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetailsOutputDTO"
+                        }
+                    }
+                }
+            }
+        },
         "/providers/{provider_id}": {
             "put": {
                 "security": [
@@ -1751,7 +1809,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_guilherme_pet-services-api_internal_domain_user.User"
+                            "$ref": "#/definitions/pet-services-api_internal_domain_user.User"
                         }
                     },
                     "400": {
@@ -2097,45 +2155,6 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_guilherme_pet-services-api_internal_domain_user.User": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "deletedAt": {
-                    "type": "string"
-                },
-                "email": {
-                    "$ref": "#/definitions/user.Email"
-                },
-                "emailVerified": {
-                    "type": "boolean"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "location": {
-                    "$ref": "#/definitions/user.Location"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "password": {
-                    "description": "hash bcrypt",
-                    "type": "string"
-                },
-                "phone": {
-                    "$ref": "#/definitions/user.Phone"
-                },
-                "type": {
-                    "$ref": "#/definitions/user.UserType"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
         "http.ListProvidersByLocationResponseDTO": {
             "type": "object",
             "properties": {
@@ -2421,6 +2440,45 @@ const docTemplate = `{
                 }
             }
         },
+        "pet-services-api_internal_domain_user.User": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "email": {
+                    "$ref": "#/definitions/user.Email"
+                },
+                "emailVerified": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "location": {
+                    "$ref": "#/definitions/user.Location"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "description": "hash bcrypt",
+                    "type": "string"
+                },
+                "phone": {
+                    "$ref": "#/definitions/user.Phone"
+                },
+                "type": {
+                    "$ref": "#/definitions/user.UserType"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "provider.ApprovalStatus": {
             "type": "string",
             "enum": [
@@ -2535,7 +2593,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user": {
-                    "$ref": "#/definitions/github_com_guilherme_pet-services-api_internal_domain_user.User"
+                    "$ref": "#/definitions/pet-services-api_internal_domain_user.User"
                 },
                 "userID": {
                     "type": "string"
@@ -2568,6 +2626,12 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "photos": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/provider.ServicePhoto"
+                    }
+                },
                 "priceMax": {
                     "type": "number"
                 },
@@ -2590,6 +2654,23 @@ const docTemplate = `{
                 },
                 "priceMin": {
                     "type": "number"
+                }
+            }
+        },
+        "provider.ServicePhoto": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "order": {
+                    "type": "integer"
+                },
+                "url": {
+                    "type": "string"
                 }
             }
         },

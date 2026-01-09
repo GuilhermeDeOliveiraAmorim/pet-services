@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
 	"pet-services-api/internal/application/exceptions"
 	"pet-services-api/internal/application/logging"
 	"pet-services-api/internal/domain/provider"
 	"pet-services-api/internal/domain/user"
+
+	"github.com/google/uuid"
 )
 
 // RegisterProviderUseCase orquestra a criaç
@@ -37,6 +38,7 @@ type RegisterProviderInput struct {
 	Longitude    float64
 	Services     []ServiceInput
 	PriceRange   provider.PriceRange
+	Photos       []string // URLs das fotos do prestador
 }
 
 // ServiceInput representa um serviço a ser cadastrado.
@@ -211,9 +213,15 @@ func (uc *RegisterProviderUseCase) Execute(ctx context.Context, input RegisterPr
 	for _, svc := range input.Services {
 		p.AddService(svc.Category, svc.Name, svc.PriceMin, svc.PriceMax)
 	}
+
 	if input.PriceRange != "" {
 		p.PriceRange = input.PriceRange
 	}
+	// Adiciona fotos ao domínio
+	for _, url := range input.Photos {
+		_ = p.AddPhoto(url)
+	}
+
 	if err := uc.providerRepo.Create(ctx, p); err != nil {
 		uc.logger.Log(logging.Logger{
 			Context: ctx,

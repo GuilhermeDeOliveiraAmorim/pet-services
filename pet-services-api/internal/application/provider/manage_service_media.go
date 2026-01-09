@@ -10,14 +10,34 @@ import (
 	"github.com/google/uuid"
 )
 
-type AddServicePhotoInput struct {
-	ServiceID uuid.UUID
-	URL       string
+type MinioUploader interface {
+	Upload(ctx context.Context, objectName string, fileData []byte, contentType string) (string, error)
 }
 
+// Ajusta o caso de uso para receber o serviço Minio
 type AddServicePhotoUseCase struct {
 	logger       logging.LoggerService
 	providerRepo provider.Repository
+	minio        MinioUploader
+}
+
+func NewAddServicePhotoUseCase(logger logging.LoggerService, providerRepo provider.Repository, minio MinioUploader) *AddServicePhotoUseCase {
+	return &AddServicePhotoUseCase{
+		logger:       logger,
+		providerRepo: providerRepo,
+		minio:        minio,
+	}
+}
+
+// Agora o input recebe o arquivo (bytes) e contentType
+// Se quiser manter compatibilidade, pode usar URL como fallback
+// Aqui, prioriza upload de arquivo
+type AddServicePhotoInput struct {
+	ServiceID   uuid.UUID
+	FileName    string // nome do arquivo para Minio
+	FileData    []byte // dados do arquivo
+	ContentType string // tipo do arquivo
+	URL         string // opcional: se já tiver URL, não faz upload
 }
 
 func (uc *AddServicePhotoUseCase) Execute(ctx context.Context, input AddServicePhotoInput) (*provider.Provider, []exceptions.ProblemDetails) {
@@ -71,7 +91,51 @@ func (uc *AddServicePhotoUseCase) Execute(ctx context.Context, input AddServiceP
 		}
 	}
 
-	if err := service.AddPhoto(input.URL); err != nil {
+	var photoURL string
+	if len(input.FileData) > 0 && input.FileName != "" && input.ContentType != "" {
+		photoURL, err = uc.minio.Upload(ctx, input.FileName, input.FileData, input.ContentType)
+		if err != nil {
+			uc.logger.Log(logging.Logger{
+				Context: ctx,
+				TypeLog: logging.LoggerTypes.ERROR,
+				Layer:   logging.LoggerLayers.USECASES,
+				Code:    exceptions.RFC500_CODE,
+				From:    "AddServicePhotoUseCase",
+				Message: "Erro ao fazer upload para Minio",
+				Error:   err,
+			})
+			return nil, []exceptions.ProblemDetails{
+				{
+					Type:   exceptions.RFC500,
+					Title:  "Erro ao fazer upload para Minio",
+					Status: exceptions.RFC500_CODE,
+					Detail: err.Error(),
+				},
+			}
+		}
+	} else if input.URL != "" {
+		photoURL = input.URL
+	} else {
+		uc.logger.Log(logging.Logger{
+			Context: ctx,
+			TypeLog: logging.LoggerTypes.ERROR,
+			Layer:   logging.LoggerLayers.USECASES,
+			Code:    exceptions.RFC400_CODE,
+			From:    "AddServicePhotoUseCase",
+			Message: "Arquivo ou URL da foto obrigatórios",
+			Error:   fmt.Errorf("arquivo ou URL da foto obrigatórios"),
+		})
+		return nil, []exceptions.ProblemDetails{
+			{
+				Type:   exceptions.RFC400,
+				Title:  "Arquivo ou URL da foto obrigatórios",
+				Status: exceptions.RFC400_CODE,
+				Detail: "É necessário enviar o arquivo da foto ou uma URL válida.",
+			},
+		}
+	}
+
+	if err := service.AddPhoto(photoURL); err != nil {
 		uc.logger.Log(logging.Logger{
 			Context: ctx,
 			TypeLog: logging.LoggerTypes.ERROR,

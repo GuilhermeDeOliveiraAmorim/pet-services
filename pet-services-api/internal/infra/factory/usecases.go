@@ -73,6 +73,7 @@ type ProviderUseCases struct {
 	UpdateWorkingHours *provider.UpdateWorkingHoursUseCase
 	UpdateDaySchedule  *provider.UpdateDayScheduleUseCase
 	ListByLocation     *provider.ListProvidersByLocationUseCase
+	AddServicePhoto    *provider.AddServicePhotoUseCase
 }
 
 // RequestUseCases contém os casos de uso do fluxo de solicitações de serviço.

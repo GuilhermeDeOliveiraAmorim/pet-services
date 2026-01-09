@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/google/uuid"
 	"pet-services-api/internal/application/exceptions"
 	"pet-services-api/internal/application/logging"
 	"pet-services-api/internal/domain/provider"
 	"pet-services-api/internal/domain/user"
+
+	"github.com/google/uuid"
 )
 
 // UpdateProviderProfileUseCase atualiza dados básicos do prestador.
@@ -34,6 +35,7 @@ type UpdateProviderProfileInput struct {
 	Latitude     *float64
 	Longitude    *float64
 	PriceRange   *provider.PriceRange
+	Photos       []string // URLs das novas fotos
 }
 
 // Execute aplica alterações parciais e persiste seguindo padrão CreateRequestUseCase.
@@ -199,6 +201,10 @@ func (uc *UpdateProviderProfileUseCase) Execute(ctx context.Context, input Updat
 		p.SetLocation(lat, lon, addr)
 	}
 
+	// Adiciona novas fotos sem remover as antigas
+	for _, url := range input.Photos {
+		_ = p.AddPhoto(url)
+	}
 	if err := uc.providerRepo.Update(ctx, p); err != nil {
 		uc.logger.Log(logging.Logger{
 			Context: ctx,
