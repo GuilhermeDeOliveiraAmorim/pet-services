@@ -8,6 +8,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
+    env_file:
+      - ../pet-services-api/.env
     environment:
       - ENV=development
     depends_on:
