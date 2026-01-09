@@ -1,15 +1,16 @@
-version: '3.8'
+env_file:
+version: "3.8"
 
 services:
   api:
+    env_file:
+      - ../.env
     image: pet-services-api:latest
     build:
       context: ../pet-services-api
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
-    env_file:
-      - ../pet-services-api/.env
     environment:
       - ENV=development
     depends_on:
@@ -22,8 +23,8 @@ services:
       - "9000:9000"
       - "9001:9001"
     environment:
-      MINIO_ROOT_USER: minio
-      MINIO_ROOT_PASSWORD: minio123
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
@@ -32,9 +33,9 @@ services:
     image: postgres:16-alpine
     container_name: pet-services-db
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: pet_services
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
     volumes:
