@@ -1,6 +1,7 @@
 package models
 
 import (
+	"pet-services-api/internal/entities"
 	"time"
 
 	"gorm.io/gorm"
@@ -19,7 +20,7 @@ type Pet struct {
 	CreatedAt     time.Time      `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt     *time.Time     `gorm:"autoUpdateTime" json:"updated_at"`
 	DeactivatedAt *time.Time     `json:"deactivated_at"`
-	DeletedAt     gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
+	DeletedAt     gorm.DeletedAt `gorm:"index" json:"deleted_at"`
 
 	User   User    `gorm:"foreignKey:UserID" json:"user"`
 	Specie Specie  `gorm:"foreignKey:SpecieID" json:"specie"`
@@ -29,4 +30,44 @@ type Pet struct {
 
 func (Pet) TableName() string {
 	return "pets"
+}
+
+func (p *Pet) ToEntity() *entities.Pet {
+	var photos []entities.Photo
+	for _, photo := range p.Photos {
+		photos = append(photos, *photo.ToEntity())
+	}
+
+	return &entities.Pet{
+		Base: entities.Base{
+			ID:            p.ID,
+			Active:        p.Active,
+			CreatedAt:     p.CreatedAt,
+			UpdatedAt:     p.UpdatedAt,
+			DeactivatedAt: p.DeactivatedAt,
+		},
+		UserID: p.UserID,
+		Name:   p.Name,
+		Specie: *p.Specie.ToEntity(),
+		Breed:  *p.Breed.ToEntity(),
+		Age:    p.Age,
+		Weight: p.Weight,
+		Notes:  p.Notes,
+		Photos: photos,
+	}
+}
+
+func (p *Pet) FromEntity(entity *entities.Pet) {
+	p.ID = entity.ID
+	p.UserID = entity.UserID
+	p.Name = entity.Name
+	p.SpecieID = entity.Specie.ID
+	p.BreedID = entity.Breed.ID
+	p.Age = entity.Age
+	p.Weight = entity.Weight
+	p.Notes = entity.Notes
+	p.Active = entity.Active
+	p.CreatedAt = entity.CreatedAt
+	p.UpdatedAt = entity.UpdatedAt
+	p.DeactivatedAt = entity.DeactivatedAt
 }

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"pet-services-api/internal/entities"
 	"time"
 
 	"gorm.io/gorm"
@@ -19,7 +20,7 @@ type Request struct {
 	CreatedAt     time.Time      `gorm:"autoCreateTime;index:idx_status_created,priority:2" json:"created_at"`
 	UpdatedAt     *time.Time     `gorm:"autoUpdateTime" json:"updated_at"`
 	DeactivatedAt *time.Time     `json:"deactivated_at"`
-	DeletedAt     gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
+	DeletedAt     gorm.DeletedAt `gorm:"index" json:"deleted_at"`
 
 	User     User     `gorm:"foreignKey:UserID" json:"user"`
 	Provider Provider `gorm:"foreignKey:ProviderID" json:"provider"`
@@ -29,4 +30,38 @@ type Request struct {
 
 func (Request) TableName() string {
 	return "requests"
+}
+
+func (r *Request) ToEntity() *entities.Request {
+	return &entities.Request{
+		Base: entities.Base{
+			ID:            r.ID,
+			Active:        r.Active,
+			CreatedAt:     r.CreatedAt,
+			UpdatedAt:     r.UpdatedAt,
+			DeactivatedAt: r.DeactivatedAt,
+		},
+		UserID:       r.UserID,
+		ProviderID:   r.ProviderID,
+		ServiceID:    r.ServiceID,
+		Pet:          *r.Pet.ToEntity(),
+		Notes:        r.Notes,
+		Status:       r.Status,
+		RejectReason: r.RejectReason,
+	}
+}
+
+func (r *Request) FromEntity(entity *entities.Request) {
+	r.ID = entity.ID
+	r.UserID = entity.UserID
+	r.ProviderID = entity.ProviderID
+	r.ServiceID = entity.ServiceID
+	r.PetID = entity.Pet.ID
+	r.Notes = entity.Notes
+	r.Status = entity.Status
+	r.RejectReason = entity.RejectReason
+	r.Active = entity.Active
+	r.CreatedAt = entity.CreatedAt
+	r.UpdatedAt = entity.UpdatedAt
+	r.DeactivatedAt = entity.DeactivatedAt
 }

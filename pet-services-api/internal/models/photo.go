@@ -1,6 +1,7 @@
 package models
 
 import (
+	"pet-services-api/internal/entities"
 	"time"
 
 	"gorm.io/gorm"
@@ -13,7 +14,7 @@ type Photo struct {
 	CreatedAt     time.Time      `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt     *time.Time     `gorm:"autoUpdateTime" json:"updated_at"`
 	DeactivatedAt *time.Time     `json:"deactivated_at"`
-	DeletedAt     gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
+	DeletedAt     gorm.DeletedAt `gorm:"index" json:"deleted_at"`
 
 	Users     []User     `gorm:"many2many:user_photos" json:"users,omitempty"`
 	Providers []Provider `gorm:"many2many:provider_photos" json:"providers,omitempty"`
@@ -23,4 +24,26 @@ type Photo struct {
 
 func (Photo) TableName() string {
 	return "photos"
+}
+
+func (p *Photo) ToEntity() *entities.Photo {
+	return &entities.Photo{
+		Base: entities.Base{
+			ID:            p.ID,
+			Active:        p.Active,
+			CreatedAt:     p.CreatedAt,
+			UpdatedAt:     p.UpdatedAt,
+			DeactivatedAt: p.DeactivatedAt,
+		},
+		URL: p.URL,
+	}
+}
+
+func (p *Photo) FromEntity(entity *entities.Photo) {
+	p.ID = entity.ID
+	p.URL = entity.URL
+	p.Active = entity.Active
+	p.CreatedAt = entity.CreatedAt
+	p.UpdatedAt = entity.UpdatedAt
+	p.DeactivatedAt = entity.DeactivatedAt
 }

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"pet-services-api/internal/entities"
 	"time"
 
 	"gorm.io/gorm"
@@ -13,11 +14,33 @@ type Specie struct {
 	CreatedAt     time.Time      `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt     *time.Time     `gorm:"autoUpdateTime" json:"updated_at"`
 	DeactivatedAt *time.Time     `json:"deactivated_at"`
-	DeletedAt     gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
+	DeletedAt     gorm.DeletedAt `gorm:"index" json:"deleted_at"`
 
 	Breeds []Breed `gorm:"foreignKey:SpecieID;constraint:OnDelete:CASCADE" json:"breeds"`
 }
 
 func (Specie) TableName() string {
 	return "species"
+}
+
+func (s *Specie) ToEntity() *entities.Specie {
+	return &entities.Specie{
+		Base: entities.Base{
+			ID:            s.ID,
+			Active:        s.Active,
+			CreatedAt:     s.CreatedAt,
+			UpdatedAt:     s.UpdatedAt,
+			DeactivatedAt: s.DeactivatedAt,
+		},
+		Name: s.Name,
+	}
+}
+
+func (s *Specie) FromEntity(entity *entities.Specie) {
+	s.ID = entity.ID
+	s.Name = entity.Name
+	s.Active = entity.Active
+	s.CreatedAt = entity.CreatedAt
+	s.UpdatedAt = entity.UpdatedAt
+	s.DeactivatedAt = entity.DeactivatedAt
 }

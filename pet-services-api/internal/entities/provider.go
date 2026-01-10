@@ -7,14 +7,15 @@ import (
 
 type Provider struct {
 	Base
-	UserID        string   `json:"user_id"`
-	BusinessName  string   `json:"business_name"`
-	Address       Address  `json:"address"`
-	Description   string   `json:"description"`
-	PriceRange    string   `json:"price_range"`
-	AverageRating float64  `json:"average_rating"`
-	Photos        []Photo  `json:"photos"`
-	Reviews       []Review `json:"reviews"`
+	UserID        string    `json:"user_id"`
+	BusinessName  string    `json:"business_name"`
+	Address       Address   `json:"address"`
+	Description   string    `json:"description"`
+	PriceRange    string    `json:"price_range"`
+	AverageRating float64   `json:"average_rating"`
+	Photos        []Photo   `json:"photos"`
+	Reviews       []Review  `json:"reviews"`
+	Requests      []Request `json:"requests"`
 }
 
 func NewProvider(userID string, businessName string, address Address, description string, priceRange string) (*Provider, []exceptions.ProblemDetails) {
@@ -96,4 +97,10 @@ func (p *Provider) UpdateAverageRating() {
 	}
 
 	p.AverageRating = total / float64(len(p.Reviews))
+}
+
+func (p *Provider) AddRequest(request Request) {
+	timeNow := time.Now()
+	p.Requests = append(p.Requests, request)
+	p.UpdatedAt = &timeNow
 }

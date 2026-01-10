@@ -1,6 +1,7 @@
 package models
 
 import (
+	"pet-services-api/internal/entities"
 	"time"
 
 	"gorm.io/gorm"
@@ -17,7 +18,7 @@ type Provider struct {
 	CreatedAt     time.Time      `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt     *time.Time     `gorm:"autoUpdateTime" json:"updated_at"`
 	DeactivatedAt *time.Time     `json:"deactivated_at"`
-	DeletedAt     gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
+	DeletedAt     gorm.DeletedAt `gorm:"index" json:"deleted_at"`
 
 	Street       string  `gorm:"type:varchar(255);not null" json:"street"`
 	Number       string  `gorm:"type:varchar(20);not null" json:"number"`
@@ -39,4 +40,76 @@ type Provider struct {
 
 func (Provider) TableName() string {
 	return "providers"
+}
+
+func (p *Provider) ToEntity() *entities.Provider {
+	var photos []entities.Photo
+	for _, photo := range p.Photos {
+		photos = append(photos, *photo.ToEntity())
+	}
+
+	var reviews []entities.Review
+	for _, review := range p.Reviews {
+		reviews = append(reviews, *review.ToEntity())
+	}
+
+	var requests []entities.Request
+	for _, request := range p.Requests {
+		requests = append(requests, *request.ToEntity())
+	}
+
+	return &entities.Provider{
+		Base: entities.Base{
+			ID:            p.ID,
+			Active:        p.Active,
+			CreatedAt:     p.CreatedAt,
+			UpdatedAt:     p.UpdatedAt,
+			DeactivatedAt: p.DeactivatedAt,
+		},
+		UserID:       p.UserID,
+		BusinessName: p.BusinessName,
+		Address: entities.Address{
+			Street:       p.Street,
+			Number:       p.Number,
+			Neighborhood: p.Neighborhood,
+			City:         p.City,
+			ZipCode:      p.ZipCode,
+			State:        p.State,
+			Country:      p.Country,
+			Complement:   p.Complement,
+			Location: entities.Location{
+				Latitude:  p.Latitude,
+				Longitude: p.Longitude,
+			},
+		},
+		Description:   p.Description,
+		PriceRange:    p.PriceRange,
+		AverageRating: p.AverageRating,
+		Photos:        photos,
+		Reviews:       reviews,
+		Requests:      requests,
+	}
+}
+
+func (p *Provider) FromEntity(entity *entities.Provider) {
+	p.ID = entity.ID
+	p.UserID = entity.UserID
+	p.BusinessName = entity.BusinessName
+	p.Description = entity.Description
+	p.PriceRange = entity.PriceRange
+	p.AverageRating = entity.AverageRating
+	p.Active = entity.Active
+	p.CreatedAt = entity.CreatedAt
+	p.UpdatedAt = entity.UpdatedAt
+	p.DeactivatedAt = entity.DeactivatedAt
+	p.Street = entity.Address.Street
+	p.Number = entity.Address.Number
+	p.Neighborhood = entity.Address.Neighborhood
+	p.City = entity.Address.City
+	p.ZipCode = entity.Address.ZipCode
+	p.State = entity.Address.State
+	p.Country = entity.Address.Country
+	p.Complement = entity.Address.Complement
+	p.Latitude = entity.Address.Location.Latitude
+	p.Longitude = entity.Address.Location.Longitude
 }

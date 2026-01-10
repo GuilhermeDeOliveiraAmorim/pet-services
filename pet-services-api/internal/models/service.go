@@ -1,6 +1,7 @@
 package models
 
 import (
+	"pet-services-api/internal/entities"
 	"time"
 
 	"gorm.io/gorm"
@@ -19,7 +20,7 @@ type Service struct {
 	CreatedAt     time.Time      `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt     *time.Time     `gorm:"autoUpdateTime" json:"updated_at"`
 	DeactivatedAt *time.Time     `json:"deactivated_at"`
-	DeletedAt     gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
+	DeletedAt     gorm.DeletedAt `gorm:"index" json:"deleted_at"`
 
 	Provider   Provider   `gorm:"foreignKey:ProviderID" json:"provider"`
 	Photos     []Photo    `gorm:"many2many:service_photos;constraint:OnDelete:CASCADE" json:"photos"`
@@ -30,4 +31,56 @@ type Service struct {
 
 func (Service) TableName() string {
 	return "services"
+}
+
+func (s *Service) ToEntity() *entities.Service {
+	var photos []entities.Photo
+	for _, photo := range s.Photos {
+		photos = append(photos, *photo.ToEntity())
+	}
+
+	var categories []entities.Category
+	for _, category := range s.Categories {
+		categories = append(categories, *category.ToEntity())
+	}
+
+	var tags []entities.Tag
+	for _, tag := range s.Tags {
+		tags = append(tags, *tag.ToEntity())
+	}
+
+	return &entities.Service{
+		Base: entities.Base{
+			ID:            s.ID,
+			Active:        s.Active,
+			CreatedAt:     s.CreatedAt,
+			UpdatedAt:     s.UpdatedAt,
+			DeactivatedAt: s.DeactivatedAt,
+		},
+		ProviderID:   s.ProviderID,
+		Name:         s.Name,
+		Description:  s.Description,
+		Price:        s.Price,
+		PriceMinimum: s.PriceMinimum,
+		PriceMaximum: s.PriceMaximum,
+		Duration:     s.Duration,
+		Photos:       photos,
+		Categories:   categories,
+		Tags:         tags,
+	}
+}
+
+func (s *Service) FromEntity(entity *entities.Service) {
+	s.ID = entity.ID
+	s.ProviderID = entity.ProviderID
+	s.Name = entity.Name
+	s.Description = entity.Description
+	s.Price = entity.Price
+	s.PriceMinimum = entity.PriceMinimum
+	s.PriceMaximum = entity.PriceMaximum
+	s.Duration = entity.Duration
+	s.Active = entity.Active
+	s.CreatedAt = entity.CreatedAt
+	s.UpdatedAt = entity.UpdatedAt
+	s.DeactivatedAt = entity.DeactivatedAt
 }
