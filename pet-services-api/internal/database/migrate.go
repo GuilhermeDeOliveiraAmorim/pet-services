@@ -68,5 +68,11 @@ type Migration struct {
 }
 
 func getMigrations() []Migration {
-	return []Migration{}
+	return []Migration{
+		{
+			Version:     "20260110000000",
+			Description: "Create initial schema for pet-services",
+			Up:          Migration20260110000000,
+		},
+	}
 }
