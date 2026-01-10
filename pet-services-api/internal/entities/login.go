@@ -1,10 +1,6 @@
 package entities
 
 import (
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/hex"
-	"pet-services-api/internal/config"
 	"pet-services-api/internal/exceptions"
 	"regexp"
 	"strings"
@@ -98,15 +94,6 @@ func (lo *Login) CompareAndDecrypt(hashedData string, data string) bool {
 	return err == nil
 }
 
-func (lo *Login) EncryptEmail() error {
-	key := []byte(config.SECRETS_VAR.JWT_SECRET)
-	h := hmac.New(sha256.New, key)
-	h.Write([]byte(lo.Email))
-	lo.Email = hex.EncodeToString(h.Sum(nil))
-
-	return nil
-}
-
 func (lo *Login) EncryptPassword() error {
 	hashedPassword, err := hashString(lo.Password)
 	if err != nil {
@@ -122,23 +109,23 @@ func (lo *Login) DecryptPassword(password string) bool {
 	return lo.CompareAndDecrypt(lo.Password, password)
 }
 
-func (lo *Login) ChangeEmail(newEmail string) {
+func (lo *Login) SetEmail(newEmail string) {
 	lo.Email = newEmail
 }
 
-func (lo *Login) ChangePassword(newPassword string) {
-	lo.Password = newPassword
+func (lo *Login) SetPassword(rawPassword string) {
+	lo.Password = rawPassword
+	lo.EncryptPassword()
+}
+
+func (lo *Login) ChangePassword(currentPassword, newPassword string) bool {
+	if !lo.DecryptPassword(currentPassword) {
+		return false
+	}
+	lo.SetPassword(newPassword)
+	return true
 }
 
 func (lo *Login) Equals(other *Login) bool {
 	return lo.Email == other.Email && lo.Password == other.Password
-}
-
-func (lo *Login) UpdateEmail(newEmail string) {
-	lo.Email = newEmail
-}
-
-func (l *Login) SetPassword(raw string) {
-	l.Password = raw
-	l.EncryptPassword()
 }
