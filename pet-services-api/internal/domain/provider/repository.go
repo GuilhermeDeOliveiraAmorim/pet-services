@@ -32,4 +32,7 @@ type Repository interface {
 
 	// ExistsByUserID verifica se já existe prestador para um usuário.
 	ExistsByUserID(ctx context.Context, userID uuid.UUID) (bool, error)
+
+	// FindProviderByServiceID busca um prestador através do ID de um serviço.
+	FindProviderByServiceID(ctx context.Context, serviceID uuid.UUID) (*Provider, error)
 }

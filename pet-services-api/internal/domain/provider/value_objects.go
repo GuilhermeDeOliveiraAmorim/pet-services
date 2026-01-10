@@ -9,6 +9,7 @@ import (
 
 // Service representa um serviço oferecido pelo prestador
 type Service struct {
+	ID       uuid.UUID // ID do serviço no banco de dados
 	Category string
 	Name     string
 	PriceMin float64

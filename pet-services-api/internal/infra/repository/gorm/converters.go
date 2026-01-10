@@ -227,14 +227,29 @@ func toModelProvider(p *providerdom.Provider) (*models.Provider, error) {
 
 	// Services
 	for _, s := range p.Services {
-		m.Services = append(m.Services, models.ProviderService{
-			ID:         uuid.New(),
+		serviceID := s.ID
+		if serviceID == uuid.Nil {
+			serviceID = uuid.New()
+		}
+		ms := models.ProviderService{
+			ID:         serviceID,
 			ProviderID: p.ID,
 			Category:   s.Category,
 			Name:       s.Name,
 			PriceMin:   s.PriceMin,
 			PriceMax:   s.PriceMax,
-		})
+		}
+		// Service photos
+		for _, ph := range s.Photos {
+			ms.Photos = append(ms.Photos, models.ProviderServicePhoto{
+				ID:                ph.ID,
+				ProviderServiceID: serviceID,
+				URL:               ph.URL,
+				SortOrder:         ph.Order,
+				CreatedAt:         ph.CreatedAt,
+			})
+		}
+		m.Services = append(m.Services, ms)
 	}
 
 	// Photos
@@ -304,12 +319,24 @@ func toDomainProvider(m *models.Provider) (*providerdom.Provider, error) {
 
 	// Services
 	for _, s := range m.Services {
-		p.Services = append(p.Services, providerdom.Service{
+		service := providerdom.Service{
+			ID:       s.ID,
 			Category: s.Category,
 			Name:     s.Name,
 			PriceMin: s.PriceMin,
 			PriceMax: s.PriceMax,
-		})
+			Photos:   []providerdom.ServicePhoto{},
+		}
+		// Service photos
+		for _, ph := range s.Photos {
+			service.Photos = append(service.Photos, providerdom.ServicePhoto{
+				ID:        ph.ID,
+				URL:       ph.URL,
+				Order:     ph.SortOrder,
+				CreatedAt: ph.CreatedAt,
+			})
+		}
+		p.Services = append(p.Services, service)
 	}
 
 	// Photos

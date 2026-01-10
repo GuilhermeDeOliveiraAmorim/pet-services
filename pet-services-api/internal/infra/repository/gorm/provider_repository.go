@@ -37,7 +37,7 @@ func (r *ProviderRepository) Create(ctx context.Context, p *providerdom.Provider
 func (r *ProviderRepository) FindByID(ctx context.Context, id uuid.UUID) (*providerdom.Provider, error) {
 	var m models.Provider
 	if err := r.db.WithContext(ctx).
-		Preload("Services").
+		Preload("Services.Photos").
 		Preload("Photos").
 		Preload("WorkingHours").
 		First(&m, "id = ?", id).Error; err != nil {
@@ -49,7 +49,7 @@ func (r *ProviderRepository) FindByID(ctx context.Context, id uuid.UUID) (*provi
 func (r *ProviderRepository) FindByUserID(ctx context.Context, userID uuid.UUID) (*providerdom.Provider, error) {
 	var m models.Provider
 	if err := r.db.WithContext(ctx).
-		Preload("Services").
+		Preload("Services.Photos").
 		Preload("Photos").
 		Preload("WorkingHours").
 		First(&m, "user_id = ?", userID).Error; err != nil {
@@ -188,6 +188,15 @@ func (r *ProviderRepository) ExistsByUserID(ctx context.Context, userID uuid.UUI
 		return false, err
 	}
 	return count > 0, nil
+}
+
+func (r *ProviderRepository) FindProviderByServiceID(ctx context.Context, serviceID uuid.UUID) (*providerdom.Provider, error) {
+	var service models.ProviderService
+	if err := r.db.WithContext(ctx).First(&service, "id = ?", serviceID).Error; err != nil {
+		return nil, err
+	}
+
+	return r.FindByID(ctx, service.ProviderID)
 }
 
 // UpdateRating incrementa rating agregado (uso otimista simples).

@@ -65,10 +65,12 @@ func NewProvider(userID uuid.UUID, businessName, description string) *Provider {
 
 func (p *Provider) AddService(category, name string, priceMin, priceMax float64) {
 	service := Service{
+		ID:       uuid.New(),
 		Category: category,
 		Name:     name,
 		PriceMin: priceMin,
 		PriceMax: priceMax,
+		Photos:   []ServicePhoto{},
 	}
 	p.Services = append(p.Services, service)
 	p.UpdatedAt = time.Now()
@@ -83,6 +85,25 @@ func (p *Provider) RemoveService(category, name string) {
 	}
 	p.Services = filtered
 	p.UpdatedAt = time.Now()
+}
+
+func (p *Provider) AddServicePhoto(serviceID uuid.UUID, url string) error {
+	if url == "" {
+		return NewValidationError("service.photo.url", "url da foto é obrigatória")
+	}
+
+	// Encontrar o serviço pelo ID
+	for i := range p.Services {
+		if p.Services[i].ID == serviceID {
+			if err := p.Services[i].AddPhoto(url); err != nil {
+				return err
+			}
+			p.UpdatedAt = time.Now()
+			return nil
+		}
+	}
+
+	return ErrServiceNotFound
 }
 
 func (p *Provider) AddPhoto(url string) error {

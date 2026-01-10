@@ -23,6 +23,7 @@ import (
 	infraemail "pet-services-api/internal/infra/email"
 	"pet-services-api/internal/infra/factory"
 	infrajwt "pet-services-api/internal/infra/jwt"
+	inframinio "pet-services-api/internal/infra/minio"
 	httpapi "pet-services-api/internal/transport/http"
 )
 
@@ -177,6 +178,68 @@ func main() {
 		})
 	}
 
+	// Minio Service
+	minioEndpoint := os.Getenv("MINIO_ENDPOINT")
+	minioAccessKey := os.Getenv("MINIO_ACCESS_KEY")
+	minioSecretKey := os.Getenv("MINIO_SECRET_KEY")
+	minioBucket := os.Getenv("MINIO_BUCKET")
+	minioUseSSL := os.Getenv("MINIO_USE_SSL") == "true"
+
+	var minioService *inframinio.MinioService
+	if strings.TrimSpace(minioEndpoint) != "" && strings.TrimSpace(minioAccessKey) != "" {
+		minioService, err = inframinio.NewMinioService(
+			minioEndpoint,
+			minioAccessKey,
+			minioSecretKey,
+			minioBucket,
+			minioUseSSL,
+			logger,
+		)
+		if err != nil {
+			logger.Log(logging.Logger{
+				Context: ctx,
+				Code:    500,
+				Message: "failed to initialize minio service",
+				From:    "main",
+				Layer:   logging.LoggerLayers.SERVER,
+				TypeLog: logging.LoggerTypes.ERROR,
+				Error:   err,
+			})
+			// MinIO não é crítico, continua sem ele
+			minioService = nil
+		} else {
+			// Garantir que o bucket existe
+			if err := minioService.EnsureBucketExists(ctx); err != nil {
+				logger.Log(logging.Logger{
+					Context: ctx,
+					Code:    500,
+					Message: "failed to ensure minio bucket exists",
+					From:    "main",
+					Layer:   logging.LoggerLayers.SERVER,
+					TypeLog: logging.LoggerTypes.ERROR,
+					Error:   err,
+				})
+			}
+			logger.Log(logging.Logger{
+				Context: ctx,
+				Code:    200,
+				Message: "minio service initialized",
+				From:    "main",
+				Layer:   logging.LoggerLayers.SERVER,
+				TypeLog: logging.LoggerTypes.INFO,
+			})
+		}
+	} else {
+		logger.Log(logging.Logger{
+			Context: ctx,
+			Code:    200,
+			Message: "minio service not configured (upload de fotos desabilitado)",
+			From:    "main",
+			Layer:   logging.LoggerLayers.SERVER,
+			TypeLog: logging.LoggerTypes.WARNING,
+		})
+	}
+
 	// ─────────────────────────────────────────────────────────────────────────
 	// 4. Factory: Use Cases + Repositories
 	// ─────────────────────────────────────────────────────────────────────────
@@ -189,6 +252,7 @@ func main() {
 		PasswordResetBaseURL: os.Getenv("PASSWORD_RESET_BASE_URL"),
 		EmailVerifyBaseURL:   os.Getenv("EMAIL_VERIFY_BASE_URL"),
 		Logger:               logger,
+		MinioService:         minioService,
 	})
 
 	// ─────────────────────────────────────────────────────────────────────────

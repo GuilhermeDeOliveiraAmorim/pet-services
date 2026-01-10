@@ -70,7 +70,8 @@ func (uc *AddServicePhotoUseCase) Execute(ctx context.Context, input AddServiceP
 		}
 	}
 
-	service, err := uc.providerRepo.FindByID(ctx, input.ServiceID)
+	// Buscar o provider através do ID do serviço
+	providerEntity, err := uc.providerRepo.FindProviderByServiceID(ctx, input.ServiceID)
 	if err != nil {
 		uc.logger.Log(logging.Logger{
 			Context: ctx,
@@ -93,6 +94,27 @@ func (uc *AddServicePhotoUseCase) Execute(ctx context.Context, input AddServiceP
 
 	var photoURL string
 	if len(input.FileData) > 0 && input.FileName != "" && input.ContentType != "" {
+		// Verificar se o serviço Minio está disponível
+		if uc.minio == nil {
+			uc.logger.Log(logging.Logger{
+				Context: ctx,
+				TypeLog: logging.LoggerTypes.ERROR,
+				Layer:   logging.LoggerLayers.USECASES,
+				Code:    exceptions.RFC503_CODE,
+				From:    "AddServicePhotoUseCase",
+				Message: "Serviço de upload não está disponível",
+				Error:   fmt.Errorf("minio service not configured"),
+			})
+			return nil, []exceptions.ProblemDetails{
+				{
+					Type:   exceptions.RFC503,
+					Title:  "Serviço de upload não disponível",
+					Status: exceptions.RFC503_CODE,
+					Detail: "O serviço de upload de arquivos não está configurado. Use uma URL externa ou configure o serviço Minio.",
+				},
+			}
+		}
+
 		photoURL, err = uc.minio.Upload(ctx, input.FileName, input.FileData, input.ContentType)
 		if err != nil {
 			uc.logger.Log(logging.Logger{
@@ -135,7 +157,8 @@ func (uc *AddServicePhotoUseCase) Execute(ctx context.Context, input AddServiceP
 		}
 	}
 
-	if err := service.AddPhoto(photoURL); err != nil {
+	// Adicionar foto ao serviço específico
+	if err := providerEntity.AddServicePhoto(input.ServiceID, photoURL); err != nil {
 		uc.logger.Log(logging.Logger{
 			Context: ctx,
 			TypeLog: logging.LoggerTypes.ERROR,
@@ -155,7 +178,7 @@ func (uc *AddServicePhotoUseCase) Execute(ctx context.Context, input AddServiceP
 		}
 	}
 
-	if err := uc.providerRepo.Update(ctx, service); err != nil {
+	if err := uc.providerRepo.Update(ctx, providerEntity); err != nil {
 		uc.logger.Log(logging.Logger{
 			Context: ctx,
 			TypeLog: logging.LoggerTypes.ERROR,
@@ -175,5 +198,5 @@ func (uc *AddServicePhotoUseCase) Execute(ctx context.Context, input AddServiceP
 		}
 	}
 
-	return service, nil
+	return providerEntity, nil
 }
