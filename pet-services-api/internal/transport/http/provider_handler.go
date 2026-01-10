@@ -69,7 +69,7 @@ type registerProviderRequest struct {
 // @Param request body registerProviderRequest true "Provider payload"
 // @Success 201 {object} provider.RegisterProviderOutput
 // @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /providers [post]
+// @Router /api/v1/providers [post]
 func (h *ProviderHandler) Register(c *gin.Context) {
 	userID, problems := extractUserIDProblems(c)
 	if len(problems) > 0 {
@@ -135,7 +135,7 @@ type updateProviderProfileRequest struct {
 // @Param request body updateProviderProfileRequest true "Profile payload"
 // @Success 200 {object} domainprovider.Provider
 // @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /providers/{provider_id} [put]
+// @Router /api/v1/providers/{provider_id} [put]
 func (h *ProviderHandler) UpdateProfile(c *gin.Context) {
 	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
 	if len(problems) > 0 {
@@ -194,7 +194,7 @@ type serviceRequest struct {
 // @Param request body serviceRequest true "Service payload"
 // @Success 200 {object} domainprovider.Provider
 // @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /providers/{provider_id}/services [post]
+// @Router /api/v1/providers/{provider_id}/services [post]
 func (h *ProviderHandler) AddService(c *gin.Context) {
 	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
 	if len(problems) > 0 {
@@ -233,7 +233,7 @@ func (h *ProviderHandler) AddService(c *gin.Context) {
 // @Param request body serviceRequest true "Service payload"
 // @Success 200 {object} domainprovider.Provider
 // @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /providers/{provider_id}/services [put]
+// @Router /api/v1/providers/{provider_id}/services [put]
 func (h *ProviderHandler) UpdateService(c *gin.Context) {
 	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
 	if len(problems) > 0 {
@@ -271,7 +271,7 @@ func (h *ProviderHandler) UpdateService(c *gin.Context) {
 // @Param request body object true "Service identifier"
 // @Success 200 {object} domainprovider.Provider
 // @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /providers/{provider_id}/services [delete]
+// @Router /api/v1/providers/{provider_id}/services [delete]
 func (h *ProviderHandler) RemoveService(c *gin.Context) {
 	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
 	if len(problems) > 0 {
@@ -310,7 +310,7 @@ func (h *ProviderHandler) RemoveService(c *gin.Context) {
 // @Param request body object true "Photo payload"
 // @Success 200 {object} domainprovider.Provider
 // @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /providers/{provider_id}/photos [post]
+// @Router /api/v1/providers/{provider_id}/photos [post]
 func (h *ProviderHandler) AddPhoto(c *gin.Context) {
 	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
 	if len(problems) > 0 {
@@ -342,7 +342,7 @@ func (h *ProviderHandler) AddPhoto(c *gin.Context) {
 // @Param photo_id path string true "Photo ID"
 // @Success 200 {object} domainprovider.Provider
 // @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /providers/{provider_id}/photos/{photo_id} [delete]
+// @Router /api/v1/providers/{provider_id}/photos/{photo_id} [delete]
 func (h *ProviderHandler) RemovePhoto(c *gin.Context) {
 	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
 	if len(problems) > 0 {
@@ -376,7 +376,7 @@ func (h *ProviderHandler) RemovePhoto(c *gin.Context) {
 // @Param request body object true "Working hours payload"
 // @Success 200 {object} domainprovider.Provider
 // @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /providers/{provider_id}/working-hours [put]
+// @Router /api/v1/providers/{provider_id}/working-hours [put]
 func (h *ProviderHandler) UpdateWorkingHours(c *gin.Context) {
 	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
 	if len(problems) > 0 {
@@ -412,7 +412,7 @@ func (h *ProviderHandler) UpdateWorkingHours(c *gin.Context) {
 // @Param request body object true "Day schedule payload"
 // @Success 200 {object} domainprovider.Provider
 // @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /providers/{provider_id}/working-hours/day [put]
+// @Router /api/v1/providers/{provider_id}/working-hours/day [put]
 func (h *ProviderHandler) UpdateDaySchedule(c *gin.Context) {
 	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
 	if len(problems) > 0 {
@@ -454,7 +454,7 @@ func (h *ProviderHandler) UpdateDaySchedule(c *gin.Context) {
 // @Param provider_id path string true "Provider ID"
 // @Success 200 {object} domainprovider.Provider
 // @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /providers/{provider_id}/activate [post]
+// @Router /api/v1/providers/{provider_id}/activate [post]
 func (h *ProviderHandler) Activate(c *gin.Context) {
 	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
 	if len(problems) > 0 {
@@ -477,7 +477,7 @@ func (h *ProviderHandler) Activate(c *gin.Context) {
 // @Param provider_id path string true "Provider ID"
 // @Success 200 {object} domainprovider.Provider
 // @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /providers/{provider_id}/deactivate [post]
+// @Router /api/v1/providers/{provider_id}/deactivate [post]
 func (h *ProviderHandler) Deactivate(c *gin.Context) {
 	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
 	if len(problems) > 0 {
@@ -502,7 +502,7 @@ func (h *ProviderHandler) Deactivate(c *gin.Context) {
 // @Param request body object true "Approval note"
 // @Success 200 {object} domainprovider.Provider
 // @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /providers/{provider_id}/approve [post]
+// @Router /api/v1/providers/{provider_id}/approve [post]
 func (h *ProviderHandler) Approve(c *gin.Context) {
 	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
 	if len(problems) > 0 {
@@ -534,7 +534,7 @@ func (h *ProviderHandler) Approve(c *gin.Context) {
 // @Param request body object true "Rejection reason"
 // @Success 200 {object} domainprovider.Provider
 // @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /providers/{provider_id}/reject [post]
+// @Router /api/v1/providers/{provider_id}/reject [post]
 func (h *ProviderHandler) Reject(c *gin.Context) {
 	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
 	if len(problems) > 0 {
@@ -573,7 +573,7 @@ type ListProvidersByLocationResponseDTO struct {
 // @Param limit query int false "Limite"
 // @Success 200 {object} http.ListProvidersByLocationResponseDTO
 // @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /providers/search/location [get]
+// @Router /api/v1/providers/search/location [get]
 func (h *ProviderHandler) ListByLocation(c *gin.Context) {
 	lat, lon, radius := c.Query("lat"), c.Query("lon"), c.Query("radius_km")
 	page := parseIntDefault(c.Query("page"), 1)
@@ -639,7 +639,7 @@ func (h *ProviderHandler) ListByLocation(c *gin.Context) {
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /providers/services/{service_id}/photos [post]
+// @Router /api/v1/providers/services/{service_id}/photos [post]
 func (h *ProviderHandler) AddServicePhoto(c *gin.Context) {
 	serviceIDStr := c.Param("service_id")
 	serviceID, err := uuid.Parse(serviceIDStr)

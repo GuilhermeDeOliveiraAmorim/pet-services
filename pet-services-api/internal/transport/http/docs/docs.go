@@ -9,13 +9,22 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {},
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "Pedido Simples",
+            "url": "http://www.pedidosimples.com.br",
+            "email": "contato@pedidosimples.com.br"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/auth/login": {
+        "/api/v1/auth/login": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -54,7 +63,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/logout": {
+        "/api/v1/auth/logout": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -92,7 +101,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/refresh": {
+        "/api/v1/auth/refresh": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -131,7 +140,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/signup": {
+        "/api/v1/auth/signup": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -170,7 +179,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/providers": {
+        "/api/v1/providers": {
             "post": {
                 "security": [
                     {
@@ -214,7 +223,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/providers/search/location": {
+        "/api/v1/providers/search/location": {
             "get": {
                 "produces": [
                     "application/json"
@@ -274,7 +283,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/providers/services/{service_id}/photos": {
+        "/api/v1/providers/services/{service_id}/photos": {
             "post": {
                 "security": [
                     {
@@ -332,7 +341,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/providers/{provider_id}": {
+        "/api/v1/providers/{provider_id}": {
             "put": {
                 "security": [
                     {
@@ -383,7 +392,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/providers/{provider_id}/activate": {
+        "/api/v1/providers/{provider_id}/activate": {
             "post": {
                 "security": [
                     {
@@ -422,7 +431,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/providers/{provider_id}/approve": {
+        "/api/v1/providers/{provider_id}/approve": {
             "post": {
                 "security": [
                     {
@@ -473,7 +482,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/providers/{provider_id}/deactivate": {
+        "/api/v1/providers/{provider_id}/deactivate": {
             "post": {
                 "security": [
                     {
@@ -512,7 +521,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/providers/{provider_id}/photos": {
+        "/api/v1/providers/{provider_id}/photos": {
             "post": {
                 "security": [
                     {
@@ -563,7 +572,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/providers/{provider_id}/photos/{photo_id}": {
+        "/api/v1/providers/{provider_id}/photos/{photo_id}": {
             "delete": {
                 "security": [
                     {
@@ -609,7 +618,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/providers/{provider_id}/reject": {
+        "/api/v1/providers/{provider_id}/reject": {
             "post": {
                 "security": [
                     {
@@ -660,7 +669,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/providers/{provider_id}/services": {
+        "/api/v1/providers/{provider_id}/services": {
             "put": {
                 "security": [
                     {
@@ -809,7 +818,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/providers/{provider_id}/working-hours": {
+        "/api/v1/providers/{provider_id}/working-hours": {
             "put": {
                 "security": [
                     {
@@ -860,7 +869,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/providers/{provider_id}/working-hours/day": {
+        "/api/v1/providers/{provider_id}/working-hours/day": {
             "put": {
                 "security": [
                     {
@@ -911,7 +920,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/requests": {
+        "/api/v1/requests": {
             "post": {
                 "security": [
                     {
@@ -974,7 +983,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/requests/owner": {
+        "/api/v1/requests/owner": {
             "get": {
                 "security": [
                     {
@@ -1037,7 +1046,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/requests/provider": {
+        "/api/v1/requests/provider": {
             "get": {
                 "security": [
                     {
@@ -1100,7 +1109,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/requests/status": {
+        "/api/v1/requests/status": {
             "get": {
                 "security": [
                     {
@@ -1170,7 +1179,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/requests/{request_id}/accept": {
+        "/api/v1/requests/{request_id}/accept": {
             "post": {
                 "security": [
                     {
@@ -1228,7 +1237,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/requests/{request_id}/cancel": {
+        "/api/v1/requests/{request_id}/cancel": {
             "post": {
                 "security": [
                     {
@@ -1286,7 +1295,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/requests/{request_id}/complete": {
+        "/api/v1/requests/{request_id}/complete": {
             "post": {
                 "security": [
                     {
@@ -1344,7 +1353,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/requests/{request_id}/reject": {
+        "/api/v1/requests/{request_id}/reject": {
             "post": {
                 "security": [
                     {
@@ -1414,7 +1423,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/requests/{request_id}/status": {
+        "/api/v1/requests/{request_id}/status": {
             "get": {
                 "security": [
                     {
@@ -1478,7 +1487,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/reviews": {
+        "/api/v1/reviews": {
             "post": {
                 "security": [
                     {
@@ -1546,7 +1555,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/reviews/provider/{provider_id}": {
+        "/api/v1/reviews/provider/{provider_id}": {
             "get": {
                 "security": [
                     {
@@ -1621,7 +1630,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/change-password": {
+        "/api/v1/users/change-password": {
             "post": {
                 "security": [
                     {
@@ -1684,7 +1693,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/email/verification/confirm": {
+        "/api/v1/users/email/verification/confirm": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1742,7 +1751,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/email/verification/request": {
+        "/api/v1/users/email/verification/request": {
             "post": {
                 "security": [
                     {
@@ -1791,7 +1800,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/me": {
+        "/api/v1/users/me": {
             "get": {
                 "security": [
                     {
@@ -1937,7 +1946,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/password-reset/confirm": {
+        "/api/v1/users/password-reset/confirm": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1995,7 +2004,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/password-reset/request": {
+        "/api/v1/users/password-reset/request": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -2293,6 +2302,13 @@ const docTemplate = `{
                     "maximum": 180,
                     "minimum": -180
                 },
+                "photos": {
+                    "description": "URLs das fotos após upload no Minio",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "price_range": {
                     "$ref": "#/definitions/provider.PriceRange"
                 },
@@ -2434,6 +2450,13 @@ const docTemplate = `{
                     "type": "number",
                     "maximum": 180,
                     "minimum": -180
+                },
+                "photos": {
+                    "description": "URLs das novas fotos",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "price_range": {
                     "$ref": "#/definitions/provider.PriceRange"
@@ -2868,17 +2891,24 @@ const docTemplate = `{
                 "UserTypeProvider"
             ]
         }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
+	Version:          "1.0",
 	Host:             "",
-	BasePath:         "",
-	Schemes:          []string{},
-	Title:            "",
-	Description:      "",
+	BasePath:         "/",
+	Schemes:          []string{"http", "https"},
+	Title:            "Pedido Simples API",
+	Description:      "This is an API for managing restaurants.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

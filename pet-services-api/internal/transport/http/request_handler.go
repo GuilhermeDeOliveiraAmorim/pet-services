@@ -81,7 +81,7 @@ type createRequestPayload struct {
 // @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /requests [post]
+// @Router /api/v1/requests [post]
 func (h *RequestHandler) Create(c *gin.Context) {
 	ownerID, err := extractUserID(c)
 	if err != nil {
@@ -161,7 +161,7 @@ func (h *RequestHandler) Create(c *gin.Context) {
 // @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /requests/{request_id}/accept [post]
+// @Router /api/v1/requests/{request_id}/accept [post]
 func (h *RequestHandler) Accept(c *gin.Context) {
 	requestID, problems := parseUUIDParamProblems(c, "request_id", "invalid_request_id")
 	if len(problems) > 0 {
@@ -204,7 +204,7 @@ func (h *RequestHandler) Accept(c *gin.Context) {
 // @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /requests/{request_id}/reject [post]
+// @Router /api/v1/requests/{request_id}/reject [post]
 func (h *RequestHandler) Reject(c *gin.Context) {
 	requestID, problems := parseUUIDParamProblems(c, "request_id", "invalid_request_id")
 	if len(problems) > 0 {
@@ -251,7 +251,7 @@ func (h *RequestHandler) Reject(c *gin.Context) {
 // @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /requests/{request_id}/complete [post]
+// @Router /api/v1/requests/{request_id}/complete [post]
 func (h *RequestHandler) Complete(c *gin.Context) {
 	requestID, problems := parseUUIDParamProblems(c, "request_id", "invalid_request_id")
 	if len(problems) > 0 {
@@ -292,7 +292,7 @@ func (h *RequestHandler) Complete(c *gin.Context) {
 // @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /requests/{request_id}/cancel [post]
+// @Router /api/v1/requests/{request_id}/cancel [post]
 func (h *RequestHandler) Cancel(c *gin.Context) {
 	requestID, ok := parseUUIDParam(c, "request_id", "invalid_request_id")
 	if !ok {
@@ -337,7 +337,7 @@ func (h *RequestHandler) Cancel(c *gin.Context) {
 // @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /requests/{request_id}/status [get]
+// @Router /api/v1/requests/{request_id}/status [get]
 func (h *RequestHandler) GetStatus(c *gin.Context) {
 	requestID, ok := parseUUIDParam(c, "request_id", "invalid_request_id")
 	if !ok {
@@ -394,7 +394,7 @@ func (h *RequestHandler) GetStatus(c *gin.Context) {
 // @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /requests/owner [get]
+// @Router /api/v1/requests/owner [get]
 func (h *RequestHandler) ListForOwner(c *gin.Context) {
 	ownerID, err := extractUserID(c)
 	if err != nil {
@@ -439,7 +439,7 @@ func (h *RequestHandler) ListForOwner(c *gin.Context) {
 // @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /requests/provider [get]
+// @Router /api/v1/requests/provider [get]
 func (h *RequestHandler) ListForProvider(c *gin.Context) {
 	providerID, problems := providerIDFromContextProblems(c, h.providerRepo, true)
 	if len(problems) > 0 {
@@ -481,7 +481,7 @@ func (h *RequestHandler) ListForProvider(c *gin.Context) {
 // @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /requests/status [get]
+// @Router /api/v1/requests/status [get]
 func (h *RequestHandler) ListByStatus(c *gin.Context) {
 	status := domainrequest.Status(c.Query("status"))
 	if status == "" {

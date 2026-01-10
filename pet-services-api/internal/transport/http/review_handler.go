@@ -83,7 +83,7 @@ type submitReviewRequest struct {
 // @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /reviews [post]
+// @Router /api/v1/reviews [post]
 func (h *ReviewHandler) Submit(c *gin.Context) {
 	ownerID, problems := extractUserIDProblems(c)
 	if len(problems) > 0 {
@@ -147,7 +147,7 @@ func (h *ReviewHandler) Submit(c *gin.Context) {
 // @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /reviews/provider/{provider_id} [get]
+// @Router /api/v1/reviews/provider/{provider_id} [get]
 func (h *ReviewHandler) ListForProvider(c *gin.Context) {
 	providerID, problems := parseUUIDParamProblems(c, "provider_id", "invalid_provider_id")
 	if len(problems) > 0 {

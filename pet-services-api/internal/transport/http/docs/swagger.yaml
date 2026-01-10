@@ -1,3 +1,4 @@
+basePath: /
 definitions:
   auth.LoginOutput:
     properties:
@@ -154,6 +155,11 @@ definitions:
         maximum: 180
         minimum: -180
         type: number
+      photos:
+        description: URLs das fotos após upload no Minio
+        items:
+          type: string
+        type: array
       price_range:
         $ref: '#/definitions/provider.PriceRange'
       services:
@@ -267,6 +273,11 @@ definitions:
         maximum: 180
         minimum: -180
         type: number
+      photos:
+        description: URLs das novas fotos
+        items:
+          type: string
+        type: array
       price_range:
         $ref: '#/definitions/provider.PriceRange'
     type: object
@@ -561,9 +572,19 @@ definitions:
     - UserTypeOwner
     - UserTypeProvider
 info:
-  contact: {}
+  contact:
+    email: contato@pedidosimples.com.br
+    name: Pedido Simples
+    url: http://www.pedidosimples.com.br
+  description: This is an API for managing restaurants.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Pedido Simples API
+  version: "1.0"
 paths:
-  /auth/login:
+  /api/v1/auth/login:
     post:
       consumes:
       - application/json
@@ -588,7 +609,7 @@ paths:
       summary: Login
       tags:
       - auth
-  /auth/logout:
+  /api/v1/auth/logout:
     post:
       consumes:
       - application/json
@@ -613,7 +634,7 @@ paths:
       summary: Logout
       tags:
       - auth
-  /auth/refresh:
+  /api/v1/auth/refresh:
     post:
       consumes:
       - application/json
@@ -638,7 +659,7 @@ paths:
       summary: Refresh tokens
       tags:
       - auth
-  /auth/signup:
+  /api/v1/auth/signup:
     post:
       consumes:
       - application/json
@@ -663,7 +684,7 @@ paths:
       summary: Signup
       tags:
       - auth
-  /providers:
+  /api/v1/providers:
     post:
       consumes:
       - application/json
@@ -690,7 +711,7 @@ paths:
       summary: Register provider profile
       tags:
       - providers
-  /providers/{provider_id}:
+  /api/v1/providers/{provider_id}:
     put:
       consumes:
       - application/json
@@ -722,7 +743,7 @@ paths:
       summary: Update provider profile
       tags:
       - providers
-  /providers/{provider_id}/activate:
+  /api/v1/providers/{provider_id}/activate:
     post:
       parameters:
       - description: Provider ID
@@ -746,7 +767,7 @@ paths:
       summary: Activate provider profile
       tags:
       - providers
-  /providers/{provider_id}/approve:
+  /api/v1/providers/{provider_id}/approve:
     post:
       consumes:
       - application/json
@@ -778,7 +799,7 @@ paths:
       summary: Approve provider profile
       tags:
       - providers
-  /providers/{provider_id}/deactivate:
+  /api/v1/providers/{provider_id}/deactivate:
     post:
       parameters:
       - description: Provider ID
@@ -802,7 +823,7 @@ paths:
       summary: Deactivate provider profile
       tags:
       - providers
-  /providers/{provider_id}/photos:
+  /api/v1/providers/{provider_id}/photos:
     post:
       consumes:
       - application/json
@@ -834,7 +855,7 @@ paths:
       summary: Add photo to provider
       tags:
       - providers
-  /providers/{provider_id}/photos/{photo_id}:
+  /api/v1/providers/{provider_id}/photos/{photo_id}:
     delete:
       parameters:
       - description: Provider ID
@@ -863,7 +884,7 @@ paths:
       summary: Remove photo from provider
       tags:
       - providers
-  /providers/{provider_id}/reject:
+  /api/v1/providers/{provider_id}/reject:
     post:
       consumes:
       - application/json
@@ -895,7 +916,7 @@ paths:
       summary: Reject provider profile
       tags:
       - providers
-  /providers/{provider_id}/services:
+  /api/v1/providers/{provider_id}/services:
     delete:
       consumes:
       - application/json
@@ -989,7 +1010,7 @@ paths:
       summary: Update provider service
       tags:
       - providers
-  /providers/{provider_id}/working-hours:
+  /api/v1/providers/{provider_id}/working-hours:
     put:
       consumes:
       - application/json
@@ -1021,7 +1042,7 @@ paths:
       summary: Update provider working hours
       tags:
       - providers
-  /providers/{provider_id}/working-hours/day:
+  /api/v1/providers/{provider_id}/working-hours/day:
     put:
       consumes:
       - application/json
@@ -1053,7 +1074,7 @@ paths:
       summary: Update provider day schedule
       tags:
       - providers
-  /providers/search/location:
+  /api/v1/providers/search/location:
     get:
       parameters:
       - description: Latitude
@@ -1093,7 +1114,7 @@ paths:
       summary: List providers by location
       tags:
       - providers
-  /providers/services/{service_id}/photos:
+  /api/v1/providers/services/{service_id}/photos:
     post:
       consumes:
       - multipart/form-data
@@ -1130,7 +1151,7 @@ paths:
       summary: Add photo to provider service
       tags:
       - providers
-  /requests:
+  /api/v1/requests:
     post:
       consumes:
       - application/json
@@ -1170,7 +1191,7 @@ paths:
       summary: Criar solicitação de serviço
       tags:
       - requests
-  /requests/{request_id}/accept:
+  /api/v1/requests/{request_id}/accept:
     post:
       parameters:
       - description: ID da solicitação
@@ -1207,7 +1228,7 @@ paths:
       summary: Aceitar solicitação
       tags:
       - requests
-  /requests/{request_id}/cancel:
+  /api/v1/requests/{request_id}/cancel:
     post:
       parameters:
       - description: ID da solicitação
@@ -1244,7 +1265,7 @@ paths:
       summary: Cancelar solicitação
       tags:
       - requests
-  /requests/{request_id}/complete:
+  /api/v1/requests/{request_id}/complete:
     post:
       parameters:
       - description: ID da solicitação
@@ -1281,7 +1302,7 @@ paths:
       summary: Concluir solicitação
       tags:
       - requests
-  /requests/{request_id}/reject:
+  /api/v1/requests/{request_id}/reject:
     post:
       consumes:
       - application/json
@@ -1326,7 +1347,7 @@ paths:
       summary: Rejeitar solicitação
       tags:
       - requests
-  /requests/{request_id}/status:
+  /api/v1/requests/{request_id}/status:
     get:
       parameters:
       - description: ID da solicitação
@@ -1367,7 +1388,7 @@ paths:
       summary: Consultar status da solicitação
       tags:
       - requests
-  /requests/owner:
+  /api/v1/requests/owner:
     get:
       parameters:
       - description: Página
@@ -1407,7 +1428,7 @@ paths:
       summary: Listar solicitações do dono
       tags:
       - requests
-  /requests/provider:
+  /api/v1/requests/provider:
     get:
       parameters:
       - description: Página
@@ -1447,7 +1468,7 @@ paths:
       summary: Listar solicitações do prestador
       tags:
       - requests
-  /requests/status:
+  /api/v1/requests/status:
     get:
       parameters:
       - description: Status
@@ -1492,7 +1513,7 @@ paths:
       summary: Listar solicitações por status
       tags:
       - requests
-  /reviews:
+  /api/v1/reviews:
     post:
       consumes:
       - application/json
@@ -1535,7 +1556,7 @@ paths:
       summary: Submeter avaliação
       tags:
       - reviews
-  /reviews/provider/{provider_id}:
+  /api/v1/reviews/provider/{provider_id}:
     get:
       parameters:
       - description: ID do prestador
@@ -1583,7 +1604,7 @@ paths:
       summary: Listar avaliações do prestador
       tags:
       - reviews
-  /users/change-password:
+  /api/v1/users/change-password:
     post:
       consumes:
       - application/json
@@ -1623,7 +1644,7 @@ paths:
       summary: Trocar senha do usuário
       tags:
       - users
-  /users/email/verification/confirm:
+  /api/v1/users/email/verification/confirm:
     post:
       consumes:
       - application/json
@@ -1661,7 +1682,7 @@ paths:
       summary: Confirmar verificação de email
       tags:
       - users
-  /users/email/verification/request:
+  /api/v1/users/email/verification/request:
     post:
       produces:
       - application/json
@@ -1692,7 +1713,7 @@ paths:
       summary: Solicitar verificação de email
       tags:
       - users
-  /users/me:
+  /api/v1/users/me:
     delete:
       parameters:
       - description: Hard delete
@@ -1784,7 +1805,7 @@ paths:
       summary: Atualizar perfil do usuário
       tags:
       - users
-  /users/password-reset/confirm:
+  /api/v1/users/password-reset/confirm:
     post:
       consumes:
       - application/json
@@ -1822,7 +1843,7 @@ paths:
       summary: Confirmar reset de senha
       tags:
       - users
-  /users/password-reset/request:
+  /api/v1/users/password-reset/request:
     post:
       consumes:
       - application/json
@@ -1860,4 +1881,12 @@ paths:
       summary: Solicitar reset de senha
       tags:
       - users
+schemes:
+- http
+- https
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

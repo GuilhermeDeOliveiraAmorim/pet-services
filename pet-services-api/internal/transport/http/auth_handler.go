@@ -47,7 +47,7 @@ type signupRequest struct {
 // @Param request body signupRequest true "Signup payload"
 // @Success 201 {object} auth.SignupOutput
 // @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /auth/signup [post]
+// @Router /api/v1/auth/signup [post]
 func (h *AuthHandler) Signup(c *gin.Context) {
 	var req signupRequest
 	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
@@ -102,7 +102,7 @@ type loginRequest struct {
 // @Param request body loginRequest true "Login payload"
 // @Success 200 {object} auth.LoginOutput
 // @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /auth/login [post]
+// @Router /api/v1/auth/login [post]
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req loginRequest
 	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
@@ -142,7 +142,7 @@ type refreshRequest struct {
 // @Param request body refreshRequest true "Refresh payload"
 // @Success 200 {object} auth.RefreshOutput
 // @Failure 401 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /auth/refresh [post]
+// @Router /api/v1/auth/refresh [post]
 func (h *AuthHandler) Refresh(c *gin.Context) {
 	var req refreshRequest
 	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
@@ -179,7 +179,7 @@ type logoutRequest struct {
 // @Param Authorization header string true "Bearer <refresh_token>"
 // @Success 200 {object} map[string]interface{}  // logout não retorna body customizado
 // @Failure 401 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /auth/logout [post]
+// @Router /api/v1/auth/logout [post]
 func (h *AuthHandler) Logout(c *gin.Context) {
 	var req logoutRequest
 	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {

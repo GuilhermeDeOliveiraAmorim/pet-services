@@ -30,8 +30,14 @@ func NewRouter(uc factory.UseCases, tokenService domainauth.TokenService) *gin.E
 
 	v1 := r.Group("/api/v1")
 
-	// Swagger UI (static spec placeholder)
-	v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	// Swagger UI com suporte a Bearer Token
+	swaggerConfig := &ginSwagger.Config{
+		URL:                  "/api/v1/swagger/doc.json", // Caminho do spec
+		DeepLinking:          true,
+		PersistAuthorization: true, // Mantém o Bearer Token
+	}
+
+	v1.GET("/swagger/*any", ginSwagger.CustomWrapHandler(swaggerConfig, swaggerFiles.Handler))
 
 	errorService := NewErrorService()
 

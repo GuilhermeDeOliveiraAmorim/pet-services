@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 
 	domainauth "pet-services-api/internal/domain/auth"
 )
@@ -42,8 +43,26 @@ func AuthMiddleware(tokenService domainauth.TokenService) gin.HandlerFunc {
 			return
 		}
 
-		// Injeta no contexto Gin para uso dos handlers
-		c.Set(ctxUserIDKey, claims.UserID)
+		
+
+		// Garante que claims.UserID é uuid.UUID
+		var userID uuid.UUID
+		switch v := any(claims.UserID).(type) {
+		case uuid.UUID:
+			userID = v
+		case string:
+			parsed, err := uuid.Parse(v)
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse("invalid_token", "user_id inválido no token"))
+				return
+			}
+			userID = parsed
+		default:
+			c.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse("invalid_token", "user_id ausente ou inválido no token"))
+			return
+		}
+
+		c.Set(ctxUserIDKey, userID)
 		c.Set(ctxUserTypeKey, claims.UserType)
 
 		c.Next()
