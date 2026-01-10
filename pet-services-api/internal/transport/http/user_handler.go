@@ -41,7 +41,7 @@ func RegisterUserRoutes(rg *gin.RouterGroup, h *UserHandler) {
 // @Produce json
 // @Success 200 {object} domainuser.User
 // @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /api/v1/users/me [get]
+// @Router /users/me [get]
 func (h *UserHandler) GetProfile(c *gin.Context) {
 	userID, err := extractUserID(c)
 	if err != nil {
@@ -96,7 +96,7 @@ type confirmEmailVerificationRequest struct {
 // @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /api/v1/users/me [put]
+// @Router /users/me [put]
 func (h *UserHandler) UpdateProfile(c *gin.Context) {
 	userID, err := extractUserID(c)
 	if err != nil {
@@ -137,7 +137,7 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 // @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /api/v1/users/change-password [post]
+// @Router /users/change-password [post]
 func (h *UserHandler) ChangePassword(c *gin.Context) {
 	userID, err := extractUserID(c)
 	if err != nil {
@@ -174,7 +174,7 @@ func (h *UserHandler) ChangePassword(c *gin.Context) {
 // @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /api/v1/users/password-reset/request [post]
+// @Router /users/password-reset/request [post]
 func (h *UserHandler) RequestPasswordReset(c *gin.Context) {
 	var req requestPasswordResetRequest
 	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
@@ -201,7 +201,7 @@ func (h *UserHandler) RequestPasswordReset(c *gin.Context) {
 // @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /api/v1/users/password-reset/confirm [post]
+// @Router /users/password-reset/confirm [post]
 func (h *UserHandler) ConfirmPasswordReset(c *gin.Context) {
 	var req confirmPasswordResetRequest
 	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
@@ -230,7 +230,7 @@ func (h *UserHandler) ConfirmPasswordReset(c *gin.Context) {
 // @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /api/v1/users/email/verification/request [post]
+// @Router /users/email/verification/request [post]
 func (h *UserHandler) RequestEmailVerification(c *gin.Context) {
 	userID, err := extractUserID(c)
 	if err != nil {
@@ -252,7 +252,7 @@ func (h *UserHandler) RequestEmailVerification(c *gin.Context) {
 	// @Param hard query bool false "Hard delete"
 	// @Success 200 {object} map[string]interface{}
 	// @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
-	// @Router /api/v1/users/me [delete]
+	// @Router /users/me [delete]
 }
 
 // ConfirmEmailVerification confirma email.
@@ -266,7 +266,7 @@ func (h *UserHandler) RequestEmailVerification(c *gin.Context) {
 // @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /api/v1/users/email/verification/confirm [post]
+// @Router /users/email/verification/confirm [post]
 func (h *UserHandler) ConfirmEmailVerification(c *gin.Context) {
 	var req confirmEmailVerificationRequest
 	if problems := BindAndValidateJSONProblems(c, &req); len(problems) > 0 {
@@ -293,7 +293,7 @@ func (h *UserHandler) ConfirmEmailVerification(c *gin.Context) {
 // @Failure 404 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 409 {object} exceptions.ProblemDetailsOutputDTO
 // @Failure 500 {object} exceptions.ProblemDetailsOutputDTO
-// @Router /api/v1/users/me [delete]
+// @Router /users/me [delete]
 func (h *UserHandler) DeleteAccount(c *gin.Context) {
 	userID, err := extractUserID(c)
 	if err != nil {

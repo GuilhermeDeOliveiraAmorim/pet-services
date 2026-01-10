@@ -1,7 +1,6 @@
 package http
 
 import (
-	"errors"
 	"log/slog"
 	"net/http"
 	"pet-services-api/internal/application/exceptions"
@@ -10,15 +9,12 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
 
 // Extrai o token Bearer do header Authorization, abortando com 401 se inválido.
 func extractBearerToken(c *gin.Context) string {
 	authHeader := c.GetHeader("Authorization")
-
-	slog.Info("TOKEN", slog.String("auth_header", authHeader))
 
 	if authHeader == "" {
 		c.AbortWithStatusJSON(401, errorResponse("missing_authorization", "Cabeçalho de autorização está vazio"))
@@ -31,15 +27,11 @@ func extractBearerToken(c *gin.Context) string {
 		return ""
 	}
 
-	slog.Info("TOKEN", slog.String("part1", parts[0]), slog.String("part2", parts[1]))
-
 	token := strings.TrimSpace(parts[1])
 	if token == "" {
 		c.AbortWithStatusJSON(401, errorResponse("invalid_authorization", "Token está vazio"))
 		return ""
 	}
-
-	slog.Info("TOKEN", slog.String("token", token))
 
 	return token
 }
@@ -75,30 +67,6 @@ func AuthMiddleware(tokenService domainauth.TokenService) gin.HandlerFunc {
 
 		c.Next()
 	}
-}
-
-// parseToken agora recebe o segredo JWT como argumento.
-func parseToken(c *gin.Context, tokenString string, jwtSecret string) (*jwt.Token, jwt.MapClaims) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			abortUnauthorized(c, "Token inválido", "Método de assinatura inesperado")
-			return nil, errors.New("unexpected signing method")
-		}
-		return []byte(jwtSecret), nil
-	})
-
-	if err != nil || token == nil || !token.Valid {
-		abortUnauthorized(c, "Token inválido", "Erro ao analisar o token")
-		return nil, nil
-	}
-
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		abortUnauthorized(c, "Token inválido", "Não foi possível ler as claims")
-		return nil, nil
-	}
-
-	return token, claims
 }
 
 func abortUnauthorized(c *gin.Context, title, detail string) {

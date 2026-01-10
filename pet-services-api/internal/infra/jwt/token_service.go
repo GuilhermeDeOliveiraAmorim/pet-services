@@ -105,28 +105,21 @@ func (s *TokenService) ParseAccessToken(token string) (auth.AccessClaims, error)
 	claims := &accessClaims{}
 	parsed, err := jwtlib.ParseWithClaims(token, claims, func(token *jwtlib.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwtlib.SigningMethodHMAC); !ok {
-			fmt.Printf("[JWT] ParseAccessToken: método de assinatura inesperado: %v\n", token.Header["alg"])
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return []byte(s.cfg.AccessSecret), nil
 	})
 
 	if err != nil {
-		fmt.Printf("[JWT] ParseAccessToken: erro ao fazer parse do token: %v\n", err)
 		return auth.AccessClaims{}, fmt.Errorf("parse access token: %w", err)
 	}
 
 	if !parsed.Valid {
-		fmt.Printf("[JWT] ParseAccessToken: token inválido\n")
 		return auth.AccessClaims{}, errors.New("invalid access token")
 	}
-
-	fmt.Printf("[JWT] ParseAccessToken: claims extraídas: user_id=%v, user_type=%v, expires_at=%v\n", claims.UserID, claims.UserType, claims.ExpiresAt.Time)
-
 	// Converte user_id string para uuid.UUID
 	userID, err := uuid.Parse(claims.UserID)
 	if err != nil {
-		fmt.Printf("[JWT] ParseAccessToken: user_id inválido: %v\n", err)
 		return auth.AccessClaims{}, fmt.Errorf("user_id inválido: %w", err)
 	}
 

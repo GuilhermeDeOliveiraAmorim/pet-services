@@ -1,15 +1,18 @@
 package http
 
 import (
+	"log/slog"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"pet-services-api/internal/application/exceptions"
+
+	"github.com/gin-gonic/gin"
 )
 
 // BindAndValidateJSONProblems faz bind do JSON e valida, retornando []ProblemDetails.
-func BindAndValidateJSONProblems(c *gin.Context, req interface{}) []exceptions.ProblemDetails {
+func BindAndValidateJSONProblems(c *gin.Context, req any) []exceptions.ProblemDetails {
 	if err := c.ShouldBindJSON(req); err != nil {
+		slog.Warn("BindAndValidateJSONProblems: erro ao fazer bind do JSON", slog.String("error", err.Error()))
 		return []exceptions.ProblemDetails{{
 			Type:   string(exceptions.BadRequest),
 			Title:  "Erro ao decodificar JSON",
@@ -29,7 +32,7 @@ func BindAndValidateJSONProblems(c *gin.Context, req interface{}) []exceptions.P
 }
 
 // BindAndValidateJSON faz bind do JSON e valida em um passo
-func BindAndValidateJSON(c *gin.Context, req interface{}) error {
+func BindAndValidateJSON(c *gin.Context, req any) error {
 	if err := c.ShouldBindJSON(req); err != nil {
 		return err
 	}

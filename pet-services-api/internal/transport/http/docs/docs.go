@@ -11,9 +11,9 @@ const docTemplate = `{
         "title": "{{.Title}}",
         "termsOfService": "http://swagger.io/terms/",
         "contact": {
-            "name": "Pedido Simples",
-            "url": "http://www.pedidosimples.com.br",
-            "email": "contato@pedidosimples.com.br"
+            "name": "API Support",
+            "url": "http://www.petland.com.br",
+            "email": "contato@petland.com.br"
         },
         "license": {
             "name": "Apache 2.0",
@@ -24,7 +24,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/auth/login": {
+        "/auth/login": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -63,7 +63,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/auth/logout": {
+        "/auth/logout": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -101,7 +101,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/auth/refresh": {
+        "/auth/refresh": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -140,7 +140,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/auth/signup": {
+        "/auth/signup": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -179,7 +179,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/providers": {
+        "/providers": {
             "post": {
                 "security": [
                     {
@@ -203,7 +203,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.registerProviderRequest"
+                            "$ref": "#/definitions/provider.RegisterProviderInput"
                         }
                     }
                 ],
@@ -223,7 +223,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/providers/search/location": {
+        "/providers/search/location": {
             "get": {
                 "produces": [
                     "application/json"
@@ -283,7 +283,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/providers/services/{service_id}/photos": {
+        "/providers/services/{service_id}/photos": {
             "post": {
                 "security": [
                     {
@@ -341,7 +341,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/providers/{provider_id}": {
+        "/providers/{provider_id}": {
             "put": {
                 "security": [
                     {
@@ -392,7 +392,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/providers/{provider_id}/activate": {
+        "/providers/{provider_id}/activate": {
             "post": {
                 "security": [
                     {
@@ -431,7 +431,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/providers/{provider_id}/approve": {
+        "/providers/{provider_id}/approve": {
             "post": {
                 "security": [
                     {
@@ -482,7 +482,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/providers/{provider_id}/deactivate": {
+        "/providers/{provider_id}/deactivate": {
             "post": {
                 "security": [
                     {
@@ -521,7 +521,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/providers/{provider_id}/photos": {
+        "/providers/{provider_id}/photos": {
             "post": {
                 "security": [
                     {
@@ -572,7 +572,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/providers/{provider_id}/photos/{photo_id}": {
+        "/providers/{provider_id}/photos/{photo_id}": {
             "delete": {
                 "security": [
                     {
@@ -618,7 +618,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/providers/{provider_id}/reject": {
+        "/providers/{provider_id}/reject": {
             "post": {
                 "security": [
                     {
@@ -669,7 +669,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/providers/{provider_id}/services": {
+        "/providers/{provider_id}/services": {
             "put": {
                 "security": [
                     {
@@ -818,7 +818,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/providers/{provider_id}/working-hours": {
+        "/providers/{provider_id}/working-hours": {
             "put": {
                 "security": [
                     {
@@ -869,7 +869,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/providers/{provider_id}/working-hours/day": {
+        "/providers/{provider_id}/working-hours/day": {
             "put": {
                 "security": [
                     {
@@ -920,7 +920,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/requests": {
+        "/requests": {
             "post": {
                 "security": [
                     {
@@ -983,7 +983,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/requests/owner": {
+        "/requests/owner": {
             "get": {
                 "security": [
                     {
@@ -1046,7 +1046,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/requests/provider": {
+        "/requests/provider": {
             "get": {
                 "security": [
                     {
@@ -1109,7 +1109,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/requests/status": {
+        "/requests/status": {
             "get": {
                 "security": [
                     {
@@ -1179,7 +1179,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/requests/{request_id}/accept": {
+        "/requests/{request_id}/accept": {
             "post": {
                 "security": [
                     {
@@ -1237,7 +1237,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/requests/{request_id}/cancel": {
+        "/requests/{request_id}/cancel": {
             "post": {
                 "security": [
                     {
@@ -1295,7 +1295,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/requests/{request_id}/complete": {
+        "/requests/{request_id}/complete": {
             "post": {
                 "security": [
                     {
@@ -1353,7 +1353,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/requests/{request_id}/reject": {
+        "/requests/{request_id}/reject": {
             "post": {
                 "security": [
                     {
@@ -1423,7 +1423,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/requests/{request_id}/status": {
+        "/requests/{request_id}/status": {
             "get": {
                 "security": [
                     {
@@ -1487,7 +1487,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/reviews": {
+        "/reviews": {
             "post": {
                 "security": [
                     {
@@ -1555,7 +1555,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/reviews/provider/{provider_id}": {
+        "/reviews/provider/{provider_id}": {
             "get": {
                 "security": [
                     {
@@ -1630,7 +1630,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/users/change-password": {
+        "/users/change-password": {
             "post": {
                 "security": [
                     {
@@ -1693,7 +1693,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/users/email/verification/confirm": {
+        "/users/email/verification/confirm": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1751,7 +1751,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/users/email/verification/request": {
+        "/users/email/verification/request": {
             "post": {
                 "security": [
                     {
@@ -1800,7 +1800,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/users/me": {
+        "/users/me": {
             "get": {
                 "security": [
                     {
@@ -1946,7 +1946,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/users/password-reset/confirm": {
+        "/users/password-reset/confirm": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -2004,7 +2004,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/users/password-reset/request": {
+        "/users/password-reset/request": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -2264,60 +2264,6 @@ const docTemplate = `{
             "properties": {
                 "refresh_token": {
                     "type": "string"
-                }
-            }
-        },
-        "http.registerProviderRequest": {
-            "type": "object",
-            "required": [
-                "address",
-                "business_name",
-                "description",
-                "latitude",
-                "longitude",
-                "price_range",
-                "services"
-            ],
-            "properties": {
-                "address": {
-                    "$ref": "#/definitions/user.Address"
-                },
-                "business_name": {
-                    "type": "string",
-                    "maxLength": 150,
-                    "minLength": 3
-                },
-                "description": {
-                    "type": "string",
-                    "maxLength": 1000,
-                    "minLength": 10
-                },
-                "latitude": {
-                    "type": "number",
-                    "maximum": 90,
-                    "minimum": -90
-                },
-                "longitude": {
-                    "type": "number",
-                    "maximum": 180,
-                    "minimum": -180
-                },
-                "photos": {
-                    "description": "URLs das fotos após upload no Minio",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "price_range": {
-                    "$ref": "#/definitions/provider.PriceRange"
-                },
-                "services": {
-                    "type": "array",
-                    "minItems": 1,
-                    "items": {
-                        "$ref": "#/definitions/provider.ServiceInput"
-                    }
                 }
             }
         },
@@ -2626,16 +2572,72 @@ const docTemplate = `{
                 }
             }
         },
+        "provider.RegisterProviderInput": {
+            "type": "object",
+            "required": [
+                "address",
+                "business_name",
+                "description",
+                "latitude",
+                "longitude",
+                "price_range",
+                "services"
+            ],
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/user.Address"
+                },
+                "business_name": {
+                    "type": "string",
+                    "maxLength": 150,
+                    "minLength": 3
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "minLength": 10
+                },
+                "latitude": {
+                    "type": "number",
+                    "maximum": 90,
+                    "minimum": -90
+                },
+                "longitude": {
+                    "type": "number",
+                    "maximum": 180,
+                    "minimum": -180
+                },
+                "photos": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "price_range": {
+                    "$ref": "#/definitions/provider.PriceRange"
+                },
+                "services": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/provider.ServiceInput"
+                    }
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
         "provider.RegisterProviderOutput": {
             "type": "object",
             "properties": {
-                "businessName": {
+                "business_name": {
                     "type": "string"
                 },
-                "isActive": {
+                "is_active": {
                     "type": "boolean"
                 },
-                "providerID": {
+                "provider_id": {
                     "type": "string"
                 }
             }
@@ -2665,18 +2667,29 @@ const docTemplate = `{
         },
         "provider.ServiceInput": {
             "type": "object",
+            "required": [
+                "category",
+                "name",
+                "price_max",
+                "price_min"
+            ],
             "properties": {
                 "category": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 2
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 3
                 },
-                "priceMax": {
+                "price_max": {
                     "type": "number"
                 },
-                "priceMin": {
-                    "type": "number"
+                "price_min": {
+                    "type": "number",
+                    "minimum": 0
                 }
             }
         },
@@ -2905,10 +2918,10 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "",
-	BasePath:         "/",
+	BasePath:         "/api/v1/",
 	Schemes:          []string{"http", "https"},
-	Title:            "Pedido Simples API",
-	Description:      "This is an API for managing restaurants.",
+	Title:            "Pet Services API",
+	Description:      "This is an API for managing pet services.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

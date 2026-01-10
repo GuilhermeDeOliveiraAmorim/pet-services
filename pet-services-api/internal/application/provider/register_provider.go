@@ -30,30 +30,30 @@ func NewRegisterProviderUseCase(providerRepo provider.Repository, userRepo user.
 
 // RegisterProviderInput representa os dados necessários para criar um prestador.
 type RegisterProviderInput struct {
-	UserID       uuid.UUID
-	BusinessName string
-	Description  string
-	Address      user.Address
-	Latitude     float64
-	Longitude    float64
-	Services     []ServiceInput
-	PriceRange   provider.PriceRange
-	Photos       []string // URLs das fotos do prestador
+	UserID       uuid.UUID           `json:"-"`
+	BusinessName string              `json:"business_name" validate:"required,min=3,max=150"`
+	Description  string              `json:"description" validate:"required,min=10,max=1000"`
+	Address      user.Address        `json:"address" validate:"required"`
+	Latitude     float64             `json:"latitude" validate:"required,min=-90,max=90"`
+	Longitude    float64             `json:"longitude" validate:"required,min=-180,max=180"`
+	PriceRange   provider.PriceRange `json:"price_range" validate:"required"`
+	Services     []ServiceInput      `json:"services" validate:"required,min=1,dive"`
+	Photos       []string            `json:"photos"`
 }
 
 // ServiceInput representa um serviço a ser cadastrado.
 type ServiceInput struct {
-	Category string
-	Name     string
-	PriceMin float64
-	PriceMax float64
+	Category string  `json:"category" validate:"required,min=2,max=50"`
+	Name     string  `json:"name" validate:"required,min=3,max=100"`
+	PriceMin float64 `json:"price_min" validate:"required,min=0"`
+	PriceMax float64 `json:"price_max" validate:"required,gtfield=PriceMin"`
 }
 
 // RegisterProviderOutput representa o resultado da criação.
 type RegisterProviderOutput struct {
-	ProviderID   uuid.UUID
-	BusinessName string
-	IsActive     bool
+	ProviderID   uuid.UUID `json:"provider_id"`
+	BusinessName string    `json:"business_name"`
+	IsActive     bool      `json:"is_active"`
 }
 
 // Execute cria um perfil de prestador validando regras básicas de domínio.
