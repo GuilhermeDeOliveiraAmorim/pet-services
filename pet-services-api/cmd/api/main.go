@@ -113,6 +113,7 @@ func main() {
 		AccessDuration:  accessDuration,
 		RefreshDuration: refreshDuration,
 	})
+
 	logger.Log(logging.Logger{
 		Context: ctx,
 		Code:    200,
@@ -208,11 +209,6 @@ func main() {
 	// Register v1 routes
 	routerWithRoutes := httpapi.NewRouter(useCases, tokenService)
 
-	// Copy routes from the new router to our router with middlewares
-	for _, route := range routerWithRoutes.Routes() {
-		router.Handle(route.Method, route.Path, route.HandlerFunc)
-	}
-
 	// ─────────────────────────────────────────────────────────────────────────
 	// 6. HTTP Server
 	// ─────────────────────────────────────────────────────────────────────────
@@ -225,7 +221,7 @@ func main() {
 
 	srv := &http.Server{
 		Addr:         addr,
-		Handler:      router,
+		Handler:      routerWithRoutes,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  60 * time.Second,

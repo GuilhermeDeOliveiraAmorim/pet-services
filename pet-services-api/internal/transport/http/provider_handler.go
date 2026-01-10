@@ -71,9 +71,35 @@ type registerProviderRequest struct {
 // @Failure 400 {object} exceptions.ProblemDetailsOutputDTO
 // @Router /api/v1/providers [post]
 func (h *ProviderHandler) Register(c *gin.Context) {
-	userID, problems := extractUserIDProblems(c)
-	if len(problems) > 0 {
-		h.errorService.RespondWithProblems(c, problems, "unauthorized", http.StatusUnauthorized)
+	userIDRaw, exists := c.Get(ctxUserIDKey)
+	if !exists {
+		h.errorService.RespondWithProblems(c, []exceptions.ProblemDetails{{
+			Type:   string(exceptions.Unauthorized),
+			Title:  "Não autorizado",
+			Status: http.StatusUnauthorized,
+			Detail: "user_id não encontrado no contexto",
+		}}, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+	
+	userIDStr, ok := userIDRaw.(string)
+	if !ok || userIDStr == "" {
+		h.errorService.RespondWithProblems(c, []exceptions.ProblemDetails{{
+			Type:   string(exceptions.Unauthorized),
+			Title:  "Não autorizado",
+			Status: http.StatusUnauthorized,
+			Detail: "user_id inválido no contexto",
+		}}, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		h.errorService.RespondWithProblems(c, []exceptions.ProblemDetails{{
+			Type:   string(exceptions.Unauthorized),
+			Title:  "Não autorizado",
+			Status: http.StatusUnauthorized,
+			Detail: "user_id inválido: " + err.Error(),
+		}}, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 

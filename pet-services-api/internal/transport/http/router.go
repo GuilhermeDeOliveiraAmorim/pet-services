@@ -52,9 +52,9 @@ func NewRouter(uc factory.UseCases, tokenService domainauth.TokenService) *gin.E
 	RegisterUserRoutes(userGroup, NewUserHandler(uc.User, errorService))
 
 	// Providers
-	providerPublic := v1.Group("/providers")
-	RegisterProviderPublicRoutes(providerPublic, NewProviderHandler(uc.Provider, errorService))
+	v1.GET("/providers/search/location", NewProviderHandler(uc.Provider, errorService).ListByLocation)
 
+	// Grupo autenticado: todas rotas protegidas
 	providerGroup := v1.Group("/providers")
 	providerGroup.Use(AuthMiddleware(tokenService))
 	RegisterProviderRoutes(providerGroup, NewProviderHandler(uc.Provider, errorService))
