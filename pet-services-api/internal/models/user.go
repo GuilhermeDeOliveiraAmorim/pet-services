@@ -22,16 +22,17 @@ type User struct {
 	DeactivatedAt *time.Time     `json:"deactivated_at"`
 	DeletedAt     gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
 
+	// Address - embedded
 	Street       string  `gorm:"type:varchar(255);not null" json:"street"`
 	Number       string  `gorm:"type:varchar(20);not null" json:"number"`
 	Neighborhood string  `gorm:"type:varchar(100);not null" json:"neighborhood"`
-	City         string  `gorm:"type:varchar(100);not null;index" json:"city"`
+	City         string  `gorm:"type:varchar(100);not null;index:idx_location" json:"city"`
 	ZipCode      string  `gorm:"type:varchar(20);not null" json:"zip_code"`
-	State        string  `gorm:"type:varchar(2);not null;index" json:"state"`
+	State        string  `gorm:"type:varchar(2);not null;index:idx_location" json:"state"`
 	Country      string  `gorm:"type:varchar(50);not null;default:'BR'" json:"country"`
 	Complement   string  `gorm:"type:varchar(255)" json:"complement"`
-	Latitude     float64 `gorm:"type:decimal(10,7);index" json:"latitude"`
-	Longitude    float64 `gorm:"type:decimal(10,7);index" json:"longitude"`
+	Latitude     float64 `gorm:"type:decimal(10,7);index:idx_geo,priority:1" json:"latitude"`
+	Longitude    float64 `gorm:"type:decimal(10,7);index:idx_geo,priority:2" json:"longitude"`
 
 	Photos   []Photo   `gorm:"many2many:user_photos;constraint:OnDelete:CASCADE" json:"photos"`
 	Pets     []Pet     `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE" json:"pets"`

@@ -8,14 +8,14 @@ import (
 
 type Service struct {
 	ID            string         `gorm:"type:char(26);primaryKey" json:"id"`
-	ProviderID    string         `gorm:"type:char(26);not null;index" json:"provider_id"`
+	ProviderID    string         `gorm:"type:char(26);not null;index:idx_provider_active,priority:1" json:"provider_id"`
 	Name          string         `gorm:"type:varchar(100);not null;index" json:"name"`
 	Description   string         `gorm:"type:text;not null" json:"description"`
 	Price         float64        `gorm:"type:decimal(10,2)" json:"price"`
-	PriceMinimum  float64        `gorm:"type:decimal(10,2);index" json:"price_minimum"`
-	PriceMaximum  float64        `gorm:"type:decimal(10,2);index" json:"price_maximum"`
-	Duration      int            `gorm:"type:int" json:"duration"` // em minutos
-	Active        bool           `gorm:"default:true;index" json:"active"`
+	PriceMinimum  float64        `gorm:"type:decimal(10,2);index:idx_price_range,priority:1" json:"price_minimum"`
+	PriceMaximum  float64        `gorm:"type:decimal(10,2);index:idx_price_range,priority:2" json:"price_maximum"`
+	Duration      int            `gorm:"type:int" json:"duration"`
+	Active        bool           `gorm:"default:true;index;index:idx_provider_active,priority:2" json:"active"`
 	CreatedAt     time.Time      `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt     *time.Time     `gorm:"autoUpdateTime" json:"updated_at"`
 	DeactivatedAt *time.Time     `json:"deactivated_at"`
