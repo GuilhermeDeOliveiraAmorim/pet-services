@@ -12,6 +12,7 @@ import (
 	domainAuth "pet-services-api/internal/domain/auth"
 	providerdom "pet-services-api/internal/domain/provider"
 	domainUser "pet-services-api/internal/domain/user"
+	"pet-services-api/internal/infra/minio"
 	gormrepo "pet-services-api/internal/infra/repository/gorm"
 )
 
@@ -24,6 +25,7 @@ type Config struct {
 	PasswordResetBaseURL string
 	EmailVerifyBaseURL   string
 	Logger               logging.LoggerService
+	MinioService         *minio.MinioService
 }
 
 // UseCases agrupa fábricas de casos de uso por contexto.
@@ -137,6 +139,7 @@ func NewUseCases(cfg Config) UseCases {
 			UpdateWorkingHours: provider.NewUpdateWorkingHoursUseCase(providerRepo, cfg.Logger),
 			UpdateDaySchedule:  provider.NewUpdateDayScheduleUseCase(providerRepo, cfg.Logger),
 			ListByLocation:     provider.NewListProvidersByLocationUseCase(providerRepo, cfg.Logger),
+			AddServicePhoto:    provider.NewAddServicePhotoUseCase(cfg.Logger, providerRepo, cfg.MinioService),
 		},
 		Request: RequestUseCases{
 			Create:          request.NewCreateRequestUseCase(requestRepo, providerRepo, cfg.Logger),
