@@ -71,3 +71,46 @@ func (s *MinioService) Upload(ctx context.Context, objectName string, fileData [
 
 	return url, nil
 }
+
+func (s *MinioService) EnsureBucketExists(ctx context.Context) error {
+	exists, err := s.Client.BucketExists(ctx, s.Bucket)
+	if err != nil {
+		if s.Logger != nil {
+			s.Logger.Log(logging.Logger{
+				Context: ctx,
+				TypeLog: logging.LoggerTypes.ERROR,
+				Layer:   logging.LoggerLayers.SERVICES,
+				From:    "MinioService.EnsureBucketExists",
+				Message: fmt.Sprintf("Erro ao verificar bucket: %v", err),
+				Error:   err,
+			})
+		}
+		return err
+	}
+	if !exists {
+		err = s.Client.MakeBucket(ctx, s.Bucket, minio.MakeBucketOptions{})
+		if err != nil {
+			if s.Logger != nil {
+				s.Logger.Log(logging.Logger{
+					Context: ctx,
+					TypeLog: logging.LoggerTypes.ERROR,
+					Layer:   logging.LoggerLayers.SERVICES,
+					From:    "MinioService.EnsureBucketExists",
+					Message: fmt.Sprintf("Erro ao criar bucket: %v", err),
+					Error:   err,
+				})
+			}
+			return err
+		}
+		if s.Logger != nil {
+			s.Logger.Log(logging.Logger{
+				Context: ctx,
+				TypeLog: logging.LoggerTypes.INFO,
+				Layer:   logging.LoggerLayers.SERVICES,
+				From:    "MinioService.EnsureBucketExists",
+				Message: "Bucket criado com sucesso",
+			})
+		}
+	}
+	return nil
+}
