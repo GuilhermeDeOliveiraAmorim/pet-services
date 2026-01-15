@@ -89,43 +89,43 @@ func hashString(data string) (string, error) {
 	return string(hash), nil
 }
 
-func (lo *Login) CompareAndDecrypt(hashedData string, data string) bool {
+func (l *Login) CompareAndDecrypt(hashedData string, data string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedData), []byte(data))
 	return err == nil
 }
 
-func (lo *Login) EncryptPassword() error {
-	hashedPassword, err := hashString(lo.Password)
+func (l *Login) EncryptPassword() error {
+	hashedPassword, err := hashString(l.Password)
 	if err != nil {
 		return err
 	}
 
-	lo.Password = string(hashedPassword)
+	l.Password = string(hashedPassword)
 
 	return nil
 }
 
-func (lo *Login) DecryptPassword(password string) bool {
-	return lo.CompareAndDecrypt(lo.Password, password)
+func (l *Login) DecryptPassword(password string) bool {
+	return l.CompareAndDecrypt(l.Password, password)
 }
 
-func (lo *Login) SetEmail(newEmail string) {
-	lo.Email = newEmail
+func (l *Login) SetEmail(newEmail string) {
+	l.Email = newEmail
 }
 
-func (lo *Login) SetPassword(rawPassword string) {
-	lo.Password = rawPassword
-	lo.EncryptPassword()
+func (l *Login) SetPassword(rawPassword string) {
+	l.Password = rawPassword
+	l.EncryptPassword()
 }
 
-func (lo *Login) ChangePassword(currentPassword, newPassword string) bool {
-	if !lo.DecryptPassword(currentPassword) {
+func (l *Login) ChangePassword(currentPassword, newPassword string) bool {
+	if !l.DecryptPassword(currentPassword) {
 		return false
 	}
-	lo.SetPassword(newPassword)
+	l.SetPassword(newPassword)
 	return true
 }
 
-func (lo *Login) Equals(other *Login) bool {
-	return lo.Email == other.Email && lo.Password == other.Password
+func (l *Login) Equals(other *Login) bool {
+	return l.Email == other.Email && l.Password == other.Password
 }
