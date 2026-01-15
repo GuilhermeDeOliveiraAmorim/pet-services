@@ -67,15 +67,16 @@ func (p *Provider) AddPhoto(photo Photo) {
 	p.UpdatedAt = &timeNow
 }
 
-func (p *Provider) RemovePhoto(photoID string) {
-	for i, photo := range p.Photos {
-		if photo.ID == photoID {
-			timeNow := time.Now()
-			p.Photos = append(p.Photos[:i], p.Photos[i+1:]...)
-			p.UpdatedAt = &timeNow
-			return
+func (p *Provider) RemovePhoto(photo Photo) {
+	timeNow := time.Now()
+	var updatedPhotos []Photo
+	for _, pht := range p.Photos {
+		if pht.ID != photo.ID {
+			updatedPhotos = append(updatedPhotos, pht)
 		}
 	}
+	p.Photos = updatedPhotos
+	p.UpdatedAt = &timeNow
 }
 
 func (p *Provider) AddReview(review Review) {

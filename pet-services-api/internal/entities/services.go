@@ -137,15 +137,16 @@ func (s *Service) AddTag(tag Tag) {
 	s.UpdatedAt = &timeNow
 }
 
-func (s *Service) RemovePhoto(photoID string) {
-	for i, photo := range s.Photos {
-		if photo.ID == photoID {
-			timeNow := time.Now()
-			s.Photos = append(s.Photos[:i], s.Photos[i+1:]...)
-			s.UpdatedAt = &timeNow
-			return
+func (s *Service) RemovePhoto(photo Photo) {
+	timeNow := time.Now()
+	var updatedPhotos []Photo
+	for _, pht := range s.Photos {
+		if pht.ID != photo.ID {
+			updatedPhotos = append(updatedPhotos, pht)
 		}
 	}
+	s.Photos = updatedPhotos
+	s.UpdatedAt = &timeNow
 }
 
 func (s *Service) RemoveCategory(categoryID string) {

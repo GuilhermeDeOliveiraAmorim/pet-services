@@ -84,15 +84,16 @@ func (u *User) AddPhoto(photo Photo) {
 	u.UpdatedAt = &timeNow
 }
 
-func (u *User) RemovePhoto(photoID string) {
-	for i, photo := range u.Photos {
-		if photo.ID == photoID {
-			timeNow := time.Now()
-			u.Photos = append(u.Photos[:i], u.Photos[i+1:]...)
-			u.UpdatedAt = &timeNow
-			return
+func (u *User) RemovePhoto(photo Photo) {
+	timeNow := time.Now()
+	var updatedPhotos []Photo
+	for _, pht := range u.Photos {
+		if pht.ID != photo.ID {
+			updatedPhotos = append(updatedPhotos, pht)
 		}
 	}
+	u.Photos = updatedPhotos
+	u.UpdatedAt = &timeNow
 }
 
 func (u *User) AddPet(pet Pet) {
