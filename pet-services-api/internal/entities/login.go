@@ -77,7 +77,7 @@ func hasDigit(password string) bool {
 }
 
 func hasSpecialCharacter(password string) bool {
-	specialCharacters := "@#$%&*"
+	specialCharacters := "!@#$%^&*()_+-=[]{}|;:',.<>?/~`"
 	return strings.ContainsAny(password, specialCharacters)
 }
 
@@ -113,19 +113,28 @@ func (l *Login) SetEmail(newEmail string) {
 	l.Email = newEmail
 }
 
-func (l *Login) SetPassword(rawPassword string) {
+func (l *Login) SetPassword(rawPassword string) error {
 	l.Password = rawPassword
-	l.EncryptPassword()
+	return l.EncryptPassword()
 }
 
 func (l *Login) ChangePassword(currentPassword, newPassword string) bool {
+	if !IsValidPassword(newPassword) {
+		return false
+	}
+
 	if !l.DecryptPassword(currentPassword) {
 		return false
 	}
-	l.SetPassword(newPassword)
+
+	l.Password = newPassword
+	if err := l.EncryptPassword(); err != nil {
+		return false
+	}
+
 	return true
 }
 
 func (l *Login) Equals(other *Login) bool {
-	return l.Email == other.Email && l.Password == other.Password
+	return l.Email == other.Email
 }
