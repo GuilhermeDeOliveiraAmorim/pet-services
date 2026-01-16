@@ -74,5 +74,10 @@ func getMigrations() []Migration {
 			Description: "Create initial schema for pet-services",
 			Up:          Migration20260110000000,
 		},
+		{
+			Version:     "20260215000000",
+			Description: "Create refresh_tokens table",
+			Up:          Migration20260215000000,
+		},
 	}
 }
