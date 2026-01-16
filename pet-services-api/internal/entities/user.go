@@ -5,6 +5,16 @@ import (
 	"time"
 )
 
+type UserRepository interface {
+	Create(user *User) error
+	FindByID(id string) (*User, error)
+	FindByEmail(email string) (*User, error)
+	ExistsByEmail(email string) (bool, error)
+	UpdateEmailVerified(userID string, verified bool) error
+	Update(user *User) error
+	Delete(id string) error
+}
+
 type UserTypeENUM struct {
 	Owner    string `json:"owner"`
 	Provider string `json:"provider"`

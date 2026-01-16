@@ -5,6 +5,18 @@ import (
 	"time"
 )
 
+type RefreshTokenRepository interface {
+	Create(token *RefreshToken) error
+	FindByID(id string) (*RefreshToken, error)
+	FindByToken(token string) (*RefreshToken, error)
+	FindActiveByUserID(userID string) ([]*RefreshToken, error)
+	Update(token *RefreshToken) error
+	Revoke(tokenID string) error
+	RevokeAllByUserID(userID string) error
+	DeleteExpired() error
+	IsValid(token string) (bool, error)
+}
+
 type RefreshToken struct {
 	Base
 	UserID    string     `json:"user_id"`
