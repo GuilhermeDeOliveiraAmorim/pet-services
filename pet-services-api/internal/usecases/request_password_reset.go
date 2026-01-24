@@ -7,6 +7,7 @@ import (
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
+	"pet-services-api/internal/mail"
 
 	"github.com/oklog/ulid/v2"
 )
@@ -27,16 +28,18 @@ type RequestPasswordResetOutput struct {
 type RequestPasswordResetUseCase struct {
 	userRepository       entities.UserRepository
 	resetTokenRepository entities.RefreshTokenRepository
+	emailService         mail.EmailService
 	ttl                  time.Duration
 }
 
-func NewRequestPasswordResetUseCase(userRepo entities.UserRepository, resetRepo entities.RefreshTokenRepository, ttl time.Duration) *RequestPasswordResetUseCase {
+func NewRequestPasswordResetUseCase(userRepo entities.UserRepository, resetRepo entities.RefreshTokenRepository, emailService mail.EmailService, ttl time.Duration) *RequestPasswordResetUseCase {
 	if ttl <= 0 {
 		ttl = time.Hour
 	}
 	return &RequestPasswordResetUseCase{
 		userRepository:       userRepo,
 		resetTokenRepository: resetRepo,
+		emailService:         emailService,
 		ttl:                  ttl,
 	}
 }
@@ -75,6 +78,10 @@ func (uc *RequestPasswordResetUseCase) Execute(ctx context.Context, input Reques
 
 	if err := uc.resetTokenRepository.CreatePasswordReset(resetToken); err != nil {
 		return nil, logging.InternalServerError(ctx, from, "Erro ao salvar token de reset", err)
+	}
+
+	if err := uc.emailService.SendPasswordResetEmail(user.Login.Email, tokenStr); err != nil {
+		return nil, logging.InternalServerError(ctx, from, "Erro ao enviar email de reset", err)
 	}
 
 	return &RequestPasswordResetOutput{
