@@ -29,7 +29,6 @@ func main() {
 	defer database.Shutdown(ctx, db)
 	defer sqlDB.Close()
 
-	// Run versioned migrations
 	if err := database.RunMigrations(db); err != nil {
 		slog.Error("[Start] failed to run database migrations", "error", err)
 		os.Exit(1)
@@ -38,7 +37,6 @@ func main() {
 
 	slog.Info("[Start] service is running. Press Ctrl+C to stop.")
 
-	// Wait for interrupt signal
 	<-ctx.Done()
 	slog.Info("[Start] shutting down gracefully...")
 }

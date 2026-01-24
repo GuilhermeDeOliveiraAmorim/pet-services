@@ -11,6 +11,7 @@ type RefreshToken struct {
 	ID            string         `gorm:"type:char(26);primaryKey" json:"id"`
 	UserID        string         `gorm:"type:char(26);not null;index:idx_user_active,priority:1" json:"user_id"`
 	Token         string         `gorm:"type:varchar(500);uniqueIndex;not null" json:"token"`
+	TokenType     string         `gorm:"type:varchar(20);not null;default:'refresh';index" json:"token_type"`
 	ExpiresAt     time.Time      `gorm:"not null;index:idx_expires" json:"expires_at"`
 	RevokedAt     *time.Time     `json:"revoked_at"`
 	DeactivatedAt *time.Time     `json:"deactivated_at"`
@@ -43,6 +44,7 @@ func (rt *RefreshToken) ToEntity() *entities.RefreshToken {
 		RevokedAt: rt.RevokedAt,
 		UserAgent: rt.UserAgent,
 		IpAddress: rt.IpAddress,
+		TokenType: rt.TokenType,
 	}
 }
 
@@ -58,4 +60,5 @@ func (rt *RefreshToken) FromEntity(entity *entities.RefreshToken) {
 	rt.RevokedAt = entity.RevokedAt
 	rt.UserAgent = entity.UserAgent
 	rt.IpAddress = entity.IpAddress
+	rt.TokenType = entity.TokenType
 }

@@ -31,3 +31,8 @@ func Migration20260215000000(db *gorm.DB) error {
 		&models.RefreshToken{},
 	)
 }
+
+// Migration20260124000000 adiciona o campo token_type à tabela refresh_tokens
+func Migration20260124000000(db *gorm.DB) error {
+	return db.Migrator().AddColumn(&models.RefreshToken{}, "token_type")
+}

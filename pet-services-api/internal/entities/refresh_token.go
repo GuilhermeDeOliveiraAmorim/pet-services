@@ -5,6 +5,16 @@ import (
 	"time"
 )
 
+type TokenENUM struct {
+	Refresh string `json:"refresh"`
+	Access  string `json:"access"`
+}
+
+var tokenENUM = TokenENUM{
+	Refresh: "refresh",
+	Access:  "access",
+}
+
 type RefreshTokenRepository interface {
 	Create(token *RefreshToken) error
 	FindByID(id string) (*RefreshToken, error)
@@ -38,6 +48,7 @@ type RefreshToken struct {
 	RevokedAt *time.Time `json:"revoked_at"`
 	UserAgent string     `json:"user_agent"`
 	IpAddress string     `json:"ip_address"`
+	TokenType string     `json:"token_type"`
 }
 
 func NewRefreshToken(userID, token string, expiresAt time.Time, userAgent, ipAddress string) (*RefreshToken, []exceptions.ProblemDetails) {
@@ -75,6 +86,7 @@ func NewRefreshToken(userID, token string, expiresAt time.Time, userAgent, ipAdd
 		ExpiresAt: expiresAt,
 		UserAgent: userAgent,
 		IpAddress: ipAddress,
+		TokenType: tokenENUM.Refresh,
 	}, nil
 }
 
