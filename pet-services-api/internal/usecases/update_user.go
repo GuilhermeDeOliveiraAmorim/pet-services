@@ -3,7 +3,6 @@ package usecases
 import (
 	"context"
 	"errors"
-	"time"
 
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
@@ -36,8 +35,6 @@ func NewUpdateUserUseCase(userRepo entities.UserRepository) *UpdateUserUseCase {
 
 func (uc *UpdateUserUseCase) Execute(ctx context.Context, input UpdateUserInput) (*UpdateUserOutput, []exceptions.ProblemDetails) {
 	const from = "UpdateUserUseCase.Execute"
-
-	timeNow := time.Now().UTC()
 
 	if input.UserID == "" {
 		return nil, []exceptions.ProblemDetails{
@@ -108,7 +105,7 @@ func (uc *UpdateUserUseCase) Execute(ctx context.Context, input UpdateUserInput)
 		user.Address = *addr
 	}
 
-	user.UpdatedAt = &timeNow
+	user.Updated()
 
 	if err := uc.userRepository.Update(user); err != nil {
 		return nil, logging.InternalServerError(ctx, from, "Erro ao atualizar usuário", err)

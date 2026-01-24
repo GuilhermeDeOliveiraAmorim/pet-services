@@ -26,6 +26,11 @@ func NewBase() *Base {
 	}
 }
 
+func (se *Base) Updated() {
+	timeNow := time.Now()
+	se.UpdatedAt = &timeNow
+}
+
 func (se *Base) Activate() {
 	timeNow := time.Now()
 	se.DeactivatedAt = nil

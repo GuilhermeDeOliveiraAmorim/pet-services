@@ -86,6 +86,8 @@ func (uc *ResetPasswordUseCase) Execute(ctx context.Context, input ResetPassword
 		return nil, logging.InternalServerError(ctx, from, "Erro ao criptografar senha", err)
 	}
 
+	user.Updated()
+
 	if err := uc.userRepository.Update(user); err != nil {
 		return nil, logging.InternalServerError(ctx, from, "Erro ao salvar usuário", err)
 	}
