@@ -10,6 +10,7 @@ type UserRepository interface {
 	FindByID(id string) (*User, error)
 	FindByEmail(email string) (*User, error)
 	ExistsByEmail(email string) (bool, error)
+	ExistsByPhone(countryCode, areaCode, number string) (bool, error)
 	UpdateEmailVerified(userID string, verified bool) error
 	Update(user *User) error
 	Delete(id string) error
