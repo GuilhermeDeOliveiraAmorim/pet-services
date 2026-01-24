@@ -13,6 +13,7 @@ type UserRepository interface {
 	UpdateEmailVerified(userID string, verified bool) error
 	Update(user *User) error
 	Delete(id string) error
+	List(page, limit int) ([]*User, int64, error)
 }
 
 type UserTypeENUM struct {
