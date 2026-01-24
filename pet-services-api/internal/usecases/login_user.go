@@ -84,10 +84,7 @@ func (uc *LoginUserUseCase) Execute(ctx context.Context, input LoginUserInput) (
 		return nil, logging.InternalServerError(ctx, from, "Erro ao validar access token", err)
 	}
 
-	expiresIn := int64(time.Until(claims.ExpiresAt.Time).Seconds())
-	if expiresIn < 0 {
-		expiresIn = 0
-	}
+	expiresIn := max(int64(time.Until(claims.ExpiresAt.Time).Seconds()), 0)
 
 	refreshClaims, err := jwtSvc.ValidateRefreshToken(refreshToken)
 	if err != nil {
