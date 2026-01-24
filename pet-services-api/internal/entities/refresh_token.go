@@ -15,6 +15,19 @@ type RefreshTokenRepository interface {
 	RevokeAllByUserID(userID string) error
 	DeleteExpired() error
 	IsValid(token string) (bool, error)
+	CreatePasswordReset(token *PasswordResetToken) error
+	RevokeAllPasswordResetByUserID(userID string) error
+	FindValidPasswordResetByToken(token string) (*PasswordResetToken, error)
+	RevokePasswordResetByToken(token string) error
+}
+
+type PasswordResetToken struct {
+	Token     string
+	UserID    string
+	ExpiresAt time.Time
+	UserAgent string
+	IP        string
+	RevokedAt *time.Time
 }
 
 type RefreshToken struct {
