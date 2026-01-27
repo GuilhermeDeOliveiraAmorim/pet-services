@@ -2,8 +2,9 @@ package repository_impl
 
 import (
 	"pet-services-api/internal/entities"
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type refreshTokenRepository struct {

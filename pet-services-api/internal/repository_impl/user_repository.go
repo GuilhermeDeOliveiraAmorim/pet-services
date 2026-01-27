@@ -2,6 +2,7 @@ package repository_impl
 
 import (
 	"errors"
+	"pet-services-api/internal/consts"
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/models"
 
@@ -26,8 +27,8 @@ func (r *userRepository) FindByID(id string) (*entities.User, error) {
 	var model models.User
 	err := r.db.Preload("Photos").Preload("Pets").First(&model, "id = ?", id).Error
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, errors.New("usuario não encontrado")
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New(consts.UserNotFoundError)
 		}
 		return nil, err
 	}
@@ -38,8 +39,8 @@ func (r *userRepository) FindByEmail(email string) (*entities.User, error) {
 	var model models.User
 	err := r.db.Preload("Photos").Preload("Pets").First(&model, "email = ?", email).Error
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, errors.New("usuario não encontrado")
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New(consts.UserNotFoundError)
 		}
 		return nil, err
 	}

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"pet-services-api/internal/consts"
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
@@ -77,7 +78,7 @@ func (uc *VerifyEmailUseCase) Execute(ctx context.Context, input VerifyEmailInpu
 
 	user, err := uc.userRepository.FindByID(verifyToken.UserID)
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
+		if err.Error() == consts.UserNotFoundError {
 			return nil, uc.logger.LogNotFound(ctx, from, "Usuário não encontrado", errors.New("Não foi possível encontrar um usuário com o ID informado"))
 		}
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar usuário", err)

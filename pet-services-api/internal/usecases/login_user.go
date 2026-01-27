@@ -6,11 +6,10 @@ import (
 	"time"
 
 	"pet-services-api/internal/auth"
+	"pet-services-api/internal/consts"
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
-
-	"gorm.io/gorm"
 )
 
 type LoginUserInput struct {
@@ -51,7 +50,7 @@ func (uc *LoginUserUseCase) Execute(ctx context.Context, input LoginUserInput) (
 
 	user, err := uc.userRepository.FindByEmail(input.Email)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if err.Error() == consts.UserNotFoundError {
 			return nil, uc.logger.LogNotFound(ctx, from, "Usuário não encontrado", errors.New("Não foi possível encontrar um usuário com o email informado"))
 		}
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar usuário", err)

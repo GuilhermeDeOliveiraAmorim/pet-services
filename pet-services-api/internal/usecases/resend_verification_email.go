@@ -5,13 +5,13 @@ import (
 	"errors"
 	"time"
 
+	"pet-services-api/internal/consts"
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
 	"pet-services-api/internal/mail"
 
 	"github.com/oklog/ulid/v2"
-	"gorm.io/gorm"
 )
 
 type ResendVerificationEmailInput struct {
@@ -57,8 +57,8 @@ func (uc *ResendVerificationEmailUseCase) Execute(ctx context.Context, input Res
 
 	user, err := uc.userRepository.FindByEmail(input.Email)
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, uc.logger.LogNotFound(ctx, from, "Usuário não encontrado", errors.New("Não foi possível encontrar um usuário com o ID informado"))
+		if err.Error() == consts.UserNotFoundError {
+			return nil, uc.logger.LogNotFound(ctx, from, "Usuário não encontrado", errors.New("Não foi possível encontrar um usuário com o email informado"))
 		}
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar usuário", err)
 	}
