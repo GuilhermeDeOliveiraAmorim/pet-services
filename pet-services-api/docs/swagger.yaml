@@ -255,6 +255,48 @@ definitions:
           $ref: '#/definitions/entities.User'
         type: array
     type: object
+  usecases.LoginUserInput:
+    properties:
+      email:
+        type: string
+      ip:
+        type: string
+      password:
+        type: string
+      user_agent:
+        type: string
+    type: object
+  usecases.LoginUserOutput:
+    properties:
+      access_token:
+        type: string
+      expires_in:
+        type: integer
+      problems:
+        items:
+          $ref: '#/definitions/exceptions.ProblemDetails'
+        type: array
+      refresh_token:
+        type: string
+      user:
+        $ref: '#/definitions/entities.User'
+    type: object
+  usecases.LogoutInput:
+    properties:
+      revoke_all:
+        type: boolean
+      token_id:
+        type: string
+      user_id:
+        type: string
+    type: object
+  usecases.LogoutOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+    type: object
   usecases.PaginationMetadata:
     properties:
       current_page:
@@ -298,6 +340,60 @@ definitions:
       message:
         type: string
     type: object
+  usecases.RequestPasswordResetInput:
+    properties:
+      email:
+        type: string
+      ip:
+        type: string
+      user_agent:
+        type: string
+    type: object
+  usecases.RequestPasswordResetOutput:
+    properties:
+      detail:
+        type: string
+      expires_at:
+        type: string
+      message:
+        type: string
+      reset_token:
+        type: string
+    type: object
+  usecases.ResendVerificationEmailInput:
+    properties:
+      email:
+        type: string
+      ip:
+        type: string
+      user_agent:
+        type: string
+    type: object
+  usecases.ResendVerificationEmailOutput:
+    properties:
+      detail:
+        type: string
+      expires_at:
+        type: string
+      message:
+        type: string
+      verify_token:
+        type: string
+    type: object
+  usecases.ResetPasswordInput:
+    properties:
+      new_password:
+        type: string
+      token:
+        type: string
+    type: object
+  usecases.ResetPasswordOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+    type: object
   usecases.UpdateEmailVerifiedInput:
     properties:
       user_id:
@@ -334,6 +430,18 @@ definitions:
       user:
         $ref: '#/definitions/entities.User'
     type: object
+  usecases.VerifyEmailInput:
+    properties:
+      token:
+        type: string
+    type: object
+  usecases.VerifyEmailOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -347,6 +455,156 @@ info:
   title: Pet Services API
   version: "1.0"
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados de login
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.LoginUserInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.LoginUserOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Realiza login do usuário
+      tags:
+      - Authentication
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados de logout
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.LogoutInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.LogoutOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Realiza logout do usuário
+      tags:
+      - Authentication
+  /auth/request-password-reset:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados para reset de senha
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.RequestPasswordResetInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.RequestPasswordResetOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Solicita reset de senha
+      tags:
+      - Authentication
+  /auth/resend-verification-email:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados para reenvio de verificação
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.ResendVerificationEmailInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.ResendVerificationEmailOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Reenvia email de verificação
+      tags:
+      - Authentication
+  /auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados para reset de senha
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.ResetPasswordInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.ResetPasswordOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Realiza reset de senha
+      tags:
+      - Authentication
+  /auth/verify-email:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados para verificação de email
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.VerifyEmailInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.VerifyEmailOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Verifica email do usuário
+      tags:
+      - Authentication
   /users:
     delete:
       consumes:
@@ -371,7 +629,7 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       summary: Deleta usuário
       tags:
-      - users
+      - Users
     get:
       parameters:
       - description: Página
@@ -397,7 +655,7 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       summary: Lista usuários
       tags:
-      - users
+      - Users
     put:
       consumes:
       - application/json
@@ -421,7 +679,7 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       summary: Atualiza dados do usuário
       tags:
-      - users
+      - Users
   /users/{user_id}:
     get:
       parameters:
@@ -443,7 +701,7 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       summary: Busca usuário por ID
       tags:
-      - users
+      - Users
   /users/change-password:
     post:
       consumes:
@@ -468,7 +726,7 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       summary: Altera senha do usuário
       tags:
-      - users
+      - Users
   /users/check-email:
     post:
       consumes:
@@ -493,7 +751,7 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       summary: Verifica se email existe
       tags:
-      - users
+      - Users
   /users/check-phone:
     post:
       consumes:
@@ -518,7 +776,7 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       summary: Verifica se telefone existe
       tags:
-      - users
+      - Users
   /users/deactivate:
     post:
       consumes:
@@ -543,7 +801,7 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       summary: Desativa usuário
       tags:
-      - users
+      - Users
   /users/profile:
     get:
       parameters:
@@ -565,7 +823,7 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       summary: Retorna o perfil do usuário
       tags:
-      - users
+      - Users
   /users/reactivate:
     post:
       consumes:
@@ -590,7 +848,7 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       summary: Reativa usuário
       tags:
-      - users
+      - Users
   /users/register:
     post:
       consumes:
@@ -615,7 +873,7 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       summary: Registra um novo usuário
       tags:
-      - users
+      - Users
   /users/update-email-verified:
     post:
       consumes:
@@ -640,5 +898,5 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       summary: Atualiza verificação de email
       tags:
-      - users
+      - Users
 swagger: "2.0"

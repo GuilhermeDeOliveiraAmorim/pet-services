@@ -22,7 +22,7 @@ func NewUserHandler(factory *factories.UserFactory) *UserHandler {
 
 // RegisterUser godoc
 // @Summary Registra um novo usuário
-// @Tags users
+// @Tags Users
 // @Accept json
 // @Produce json
 // @Param input body usecases.RegisterUserInput true "Dados do usuário"
@@ -51,7 +51,7 @@ func (h *UserHandler) RegisterUser(c *gin.Context) {
 
 // GetProfile godoc
 // @Summary Retorna o perfil do usuário
-// @Tags users
+// @Tags Users
 // @Produce json
 // @Param user_id path string true "ID do usuário"
 // @Success 200 {object} usecases.GetProfileOutput
@@ -71,7 +71,7 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 
 // ListUsers godoc
 // @Summary Lista usuários
-// @Tags users
+// @Tags Users
 // @Produce json
 // @Param page query int false "Página"
 // @Param limit query int false "Limite"
@@ -100,7 +100,7 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 
 // UpdateUser godoc
 // @Summary Atualiza dados do usuário
-// @Tags users
+// @Tags Users
 // @Accept json
 // @Produce json
 // @Param input body usecases.UpdateUserInput true "Dados do usuário"
@@ -129,7 +129,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 
 // DeleteUser godoc
 // @Summary Deleta usuário
-// @Tags users
+// @Tags Users
 // @Accept json
 // @Produce json
 // @Param input body usecases.DeleteUserInput true "ID do usuário"
@@ -158,7 +158,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 
 // ReactivateUser godoc
 // @Summary Reativa usuário
-// @Tags users
+// @Tags Users
 // @Accept json
 // @Produce json
 // @Param input body usecases.ReactivateUserInput true "ID do usuário"
@@ -187,7 +187,7 @@ func (h *UserHandler) ReactivateUser(c *gin.Context) {
 
 // DeactivateUser godoc
 // @Summary Desativa usuário
-// @Tags users
+// @Tags Users
 // @Accept json
 // @Produce json
 // @Param input body usecases.DeactivateUserInput true "ID do usuário"
@@ -216,7 +216,7 @@ func (h *UserHandler) DeactivateUser(c *gin.Context) {
 
 // GetUserByID godoc
 // @Summary Busca usuário por ID
-// @Tags users
+// @Tags Users
 // @Produce json
 // @Param user_id path string true "ID do usuário"
 // @Success 200 {object} usecases.GetUserByIDOutput
@@ -236,7 +236,7 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 
 // CheckEmailExists godoc
 // @Summary Verifica se email existe
-// @Tags users
+// @Tags Users
 // @Accept json
 // @Produce json
 // @Param input body usecases.CheckEmailExistsInput true "Email"
@@ -265,7 +265,7 @@ func (h *UserHandler) CheckEmailExists(c *gin.Context) {
 
 // CheckPhoneExists godoc
 // @Summary Verifica se telefone existe
-// @Tags users
+// @Tags Users
 // @Accept json
 // @Produce json
 // @Param input body usecases.CheckPhoneExistsInput true "Telefone"
@@ -294,7 +294,7 @@ func (h *UserHandler) CheckPhoneExists(c *gin.Context) {
 
 // UpdateEmailVerified godoc
 // @Summary Atualiza verificação de email
-// @Tags users
+// @Tags Users
 // @Accept json
 // @Produce json
 // @Param input body usecases.UpdateEmailVerifiedInput true "Dados de verificação"
@@ -323,7 +323,7 @@ func (h *UserHandler) UpdateEmailVerified(c *gin.Context) {
 
 // ChangePassword godoc
 // @Summary Altera senha do usuário
-// @Tags users
+// @Tags Users
 // @Accept json
 // @Produce json
 // @Param input body usecases.ChangePasswordInput true "Dados de senha"

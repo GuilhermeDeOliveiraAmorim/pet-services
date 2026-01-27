@@ -2,10 +2,11 @@ package handlers
 
 import (
 	"net/http"
-	"pet-services-api/internal/factories"
-	"pet-services-api/internal/usecases"
 	"pet-services-api/internal/exceptions"
+	"pet-services-api/internal/factories"
 	"pet-services-api/internal/logging"
+	"pet-services-api/internal/usecases"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,6 +20,15 @@ func NewTokenHandler(factory *factories.TokenFactory) *TokenHandler {
 	}
 }
 
+// LoginUser godoc
+// @Summary Realiza login do usuário
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param input body usecases.LoginUserInput true "Dados de login"
+// @Success 200 {object} usecases.LoginUserOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Router /auth/login [post]
 func (h *TokenHandler) LoginUser(c *gin.Context) {
 	ctx := c.Request.Context()
 	var input usecases.LoginUserInput
@@ -39,6 +49,15 @@ func (h *TokenHandler) LoginUser(c *gin.Context) {
 	c.JSON(http.StatusOK, output)
 }
 
+// Logout godoc
+// @Summary Realiza logout do usuário
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param input body usecases.LogoutInput true "Dados de logout"
+// @Success 200 {object} usecases.LogoutOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Router /auth/logout [post]
 func (h *TokenHandler) Logout(c *gin.Context) {
 	ctx := c.Request.Context()
 	var input usecases.LogoutInput
@@ -59,6 +78,15 @@ func (h *TokenHandler) Logout(c *gin.Context) {
 	c.JSON(http.StatusOK, output)
 }
 
+// RequestPasswordReset godoc
+// @Summary Solicita reset de senha
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param input body usecases.RequestPasswordResetInput true "Dados para reset de senha"
+// @Success 200 {object} usecases.RequestPasswordResetOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Router /auth/request-password-reset [post]
 func (h *TokenHandler) RequestPasswordReset(c *gin.Context) {
 	ctx := c.Request.Context()
 	var input usecases.RequestPasswordResetInput
@@ -79,6 +107,15 @@ func (h *TokenHandler) RequestPasswordReset(c *gin.Context) {
 	c.JSON(http.StatusOK, output)
 }
 
+// ResetPassword godoc
+// @Summary Realiza reset de senha
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param input body usecases.ResetPasswordInput true "Dados para reset de senha"
+// @Success 200 {object} usecases.ResetPasswordOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Router /auth/reset-password [post]
 func (h *TokenHandler) ResetPassword(c *gin.Context) {
 	ctx := c.Request.Context()
 	var input usecases.ResetPasswordInput
@@ -99,6 +136,15 @@ func (h *TokenHandler) ResetPassword(c *gin.Context) {
 	c.JSON(http.StatusOK, output)
 }
 
+// ResendVerificationEmail godoc
+// @Summary Reenvia email de verificação
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param input body usecases.ResendVerificationEmailInput true "Dados para reenvio de verificação"
+// @Success 200 {object} usecases.ResendVerificationEmailOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Router /auth/resend-verification-email [post]
 func (h *TokenHandler) ResendVerificationEmail(c *gin.Context) {
 	ctx := c.Request.Context()
 	var input usecases.ResendVerificationEmailInput
@@ -119,6 +165,15 @@ func (h *TokenHandler) ResendVerificationEmail(c *gin.Context) {
 	c.JSON(http.StatusOK, output)
 }
 
+// VerifyEmail godoc
+// @Summary Verifica email do usuário
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param input body usecases.VerifyEmailInput true "Dados para verificação de email"
+// @Success 200 {object} usecases.VerifyEmailOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Router /auth/verify-email [post]
 func (h *TokenHandler) VerifyEmail(c *gin.Context) {
 	ctx := c.Request.Context()
 	var input usecases.VerifyEmailInput
