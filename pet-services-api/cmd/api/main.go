@@ -1,3 +1,13 @@
+// @title Pet Services API
+// @version 1.0
+// @description API para gerenciamento de serviços pet.
+// @termsOfService http://swagger.io/terms/
+// @contact.name Guilherme Amorim
+// @contact.email guilherme@example.com
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+// @host localhost:8080
+// @BasePath /
 package main
 
 import (

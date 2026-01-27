@@ -1,0 +1,15 @@
+basePath: /
+host: localhost:8080
+info:
+  contact:
+    email: guilherme@example.com
+    name: Guilherme Amorim
+  description: API para gerenciamento de serviços pet.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Pet Services API
+  version: "1.0"
+paths: {}
+swagger: "2.0"

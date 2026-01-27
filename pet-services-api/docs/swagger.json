@@ -1,0 +1,20 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API para gerenciamento de serviços pet.",
+        "title": "Pet Services API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "Guilherme Amorim",
+            "email": "guilherme@example.com"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {}
+}
