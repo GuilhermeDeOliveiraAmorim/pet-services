@@ -20,6 +20,15 @@ func NewUserHandler(factory *factories.UserFactory) *UserHandler {
 	}
 }
 
+// RegisterUser godoc
+// @Summary Registra um novo usuário
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param input body usecases.RegisterUserInput true "Dados do usuário"
+// @Success 201 {object} usecases.RegisterUserOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Router /users/register [post]
 func (h *UserHandler) RegisterUser(c *gin.Context) {
 	ctx := c.Request.Context()
 	var input usecases.RegisterUserInput
@@ -40,6 +49,14 @@ func (h *UserHandler) RegisterUser(c *gin.Context) {
 	c.JSON(http.StatusCreated, output)
 }
 
+// GetProfile godoc
+// @Summary Retorna o perfil do usuário
+// @Tags users
+// @Produce json
+// @Param user_id path string true "ID do usuário"
+// @Success 200 {object} usecases.GetProfileOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Router /users/profile [get]
 func (h *UserHandler) GetProfile(c *gin.Context) {
 	ctx := c.Request.Context()
 	userID := c.Param("user_id")
@@ -52,6 +69,15 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 	c.JSON(http.StatusOK, output)
 }
 
+// ListUsers godoc
+// @Summary Lista usuários
+// @Tags users
+// @Produce json
+// @Param page query int false "Página"
+// @Param limit query int false "Limite"
+// @Success 200 {array} usecases.ListUsersOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Router /users [get]
 func (h *UserHandler) ListUsers(c *gin.Context) {
 	ctx := c.Request.Context()
 	var input usecases.ListUsersInput
@@ -72,6 +98,15 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, output)
 }
 
+// UpdateUser godoc
+// @Summary Atualiza dados do usuário
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param input body usecases.UpdateUserInput true "Dados do usuário"
+// @Success 200 {object} usecases.UpdateUserOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Router /users [put]
 func (h *UserHandler) UpdateUser(c *gin.Context) {
 	ctx := c.Request.Context()
 	var input usecases.UpdateUserInput
@@ -92,6 +127,15 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, output)
 }
 
+// DeleteUser godoc
+// @Summary Deleta usuário
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param input body usecases.DeleteUserInput true "ID do usuário"
+// @Success 200 {object} usecases.DeleteUserOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Router /users [delete]
 func (h *UserHandler) DeleteUser(c *gin.Context) {
 	ctx := c.Request.Context()
 	var input usecases.DeleteUserInput
@@ -112,6 +156,15 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 	c.JSON(http.StatusOK, output)
 }
 
+// ReactivateUser godoc
+// @Summary Reativa usuário
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param input body usecases.ReactivateUserInput true "ID do usuário"
+// @Success 200 {object} usecases.ReactivateUserOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Router /users/reactivate [post]
 func (h *UserHandler) ReactivateUser(c *gin.Context) {
 	ctx := c.Request.Context()
 	var input usecases.ReactivateUserInput
@@ -132,6 +185,15 @@ func (h *UserHandler) ReactivateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, output)
 }
 
+// DeactivateUser godoc
+// @Summary Desativa usuário
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param input body usecases.DeactivateUserInput true "ID do usuário"
+// @Success 200 {object} usecases.DeactivateUserOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Router /users/deactivate [post]
 func (h *UserHandler) DeactivateUser(c *gin.Context) {
 	ctx := c.Request.Context()
 	var input usecases.DeactivateUserInput
@@ -152,6 +214,14 @@ func (h *UserHandler) DeactivateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, output)
 }
 
+// GetUserByID godoc
+// @Summary Busca usuário por ID
+// @Tags users
+// @Produce json
+// @Param user_id path string true "ID do usuário"
+// @Success 200 {object} usecases.GetUserByIDOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Router /users/{user_id} [get]
 func (h *UserHandler) GetUserByID(c *gin.Context) {
 	ctx := c.Request.Context()
 	userID := c.Param("user_id")
@@ -164,6 +234,15 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 	c.JSON(http.StatusOK, output)
 }
 
+// CheckEmailExists godoc
+// @Summary Verifica se email existe
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param input body usecases.CheckEmailExistsInput true "Email"
+// @Success 200 {object} usecases.CheckEmailExistsOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Router /users/check-email [post]
 func (h *UserHandler) CheckEmailExists(c *gin.Context) {
 	ctx := c.Request.Context()
 	var input usecases.CheckEmailExistsInput
@@ -184,6 +263,15 @@ func (h *UserHandler) CheckEmailExists(c *gin.Context) {
 	c.JSON(http.StatusOK, output)
 }
 
+// CheckPhoneExists godoc
+// @Summary Verifica se telefone existe
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param input body usecases.CheckPhoneExistsInput true "Telefone"
+// @Success 200 {object} usecases.CheckPhoneExistsOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Router /users/check-phone [post]
 func (h *UserHandler) CheckPhoneExists(c *gin.Context) {
 	ctx := c.Request.Context()
 	var input usecases.CheckPhoneExistsInput
@@ -204,6 +292,15 @@ func (h *UserHandler) CheckPhoneExists(c *gin.Context) {
 	c.JSON(http.StatusOK, output)
 }
 
+// UpdateEmailVerified godoc
+// @Summary Atualiza verificação de email
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param input body usecases.UpdateEmailVerifiedInput true "Dados de verificação"
+// @Success 200 {object} usecases.UpdateEmailVerifiedOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Router /users/update-email-verified [post]
 func (h *UserHandler) UpdateEmailVerified(c *gin.Context) {
 	ctx := c.Request.Context()
 	var input usecases.UpdateEmailVerifiedInput
@@ -224,6 +321,15 @@ func (h *UserHandler) UpdateEmailVerified(c *gin.Context) {
 	c.JSON(http.StatusOK, output)
 }
 
+// ChangePassword godoc
+// @Summary Altera senha do usuário
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param input body usecases.ChangePasswordInput true "Dados de senha"
+// @Success 200 {object} usecases.ChangePasswordOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Router /users/change-password [post]
 func (h *UserHandler) ChangePassword(c *gin.Context) {
 	ctx := c.Request.Context()
 	var input usecases.ChangePasswordInput
