@@ -349,3 +349,41 @@ func (h *UserHandler) ChangePassword(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, output)
 }
+
+// CreateAdmin godoc
+// @Summary Cria um novo administrador
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Param input body usecases.CreateAdminInput true "Dados do admin"
+// @Success 201 {object} usecases.CreateAdminOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Failure 403 {object} exceptions.ProblemDetails
+// @Router /admin/create [post]
+func (h *UserHandler) CreateAdmin(c *gin.Context) {
+	ctx := c.Request.Context()
+	var input usecases.CreateAdminInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "Erro ao fazer o parser",
+			Detail: "Erro ao fazer o parser dos dados do admin",
+		})
+		logging.BadRequest(ctx, "UserHandler", problem.Detail, err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		return
+	}
+
+	isAdmin := false
+	if claims, ok := c.Get("is_admin"); ok {
+		if v, ok := claims.(bool); ok && v {
+			isAdmin = true
+		}
+	}
+
+	output, errs := h.UserFactory.RegisterAdmin.Execute(ctx, input, isAdmin)
+	if len(errs) > 0 {
+		exceptions.HandleErrors(c, errs)
+		return
+	}
+	c.JSON(http.StatusCreated, output)
+}

@@ -9,6 +9,7 @@ import (
 
 type UserFactory struct {
 	RegisterUser        *usecases.RegisterUserUseCase
+	RegisterAdmin       *usecases.CreateAdminUseCase
 	GetProfile          *usecases.GetProfileUseCase
 	ListUsers           *usecases.ListUsersUseCase
 	UpdateUser          *usecases.UpdateUserUseCase
@@ -28,6 +29,7 @@ func NewUserFactory(db *gorm.DB) *UserFactory {
 
 	return &UserFactory{
 		RegisterUser:        usecases.NewRegisterUserUseCase(userRepo),
+		RegisterAdmin:       usecases.NewCreateAdminUseCase(userRepo),
 		GetProfile:          usecases.NewGetProfileUseCase(userRepo),
 		ListUsers:           usecases.NewListUsersUseCase(userRepo),
 		UpdateUser:          usecases.NewUpdateUserUseCase(userRepo),

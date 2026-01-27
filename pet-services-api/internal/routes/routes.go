@@ -84,6 +84,8 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context) *gin.E
 		authorized.POST("/users/deactivate", handlerFactory.UserHandler.DeactivateUser)
 		authorized.POST("/users/change-password", handlerFactory.UserHandler.ChangePassword)
 		authorized.POST("/users/update-email-verified", handlerFactory.UserHandler.UpdateEmailVerified)
+
+		authorized.POST("/admin/create", middlewareFactory.AdminOnlyMiddleware(), handlerFactory.UserHandler.CreateAdmin)
 	}
 
 	return r
