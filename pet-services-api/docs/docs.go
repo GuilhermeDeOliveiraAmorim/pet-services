@@ -23,7 +23,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/admin/create": {
+        "/admin": {
             "post": {
                 "consumes": [
                     "application/json"

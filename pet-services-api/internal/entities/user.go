@@ -63,6 +63,13 @@ func NewUser(name string, userType string, login Login, phone Phone, address Add
 		}))
 	}
 
+	if userType != UserTypes.Owner && userType != UserTypes.Provider && userType != UserTypes.Admin {
+		problems = append(problems, exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "Tipo de usuário inválido",
+			Detail: "O tipo de usuário deve ser 'owner', 'provider' ou 'admin'",
+		}))
+	}
+
 	if len(problems) > 0 {
 		return nil, problems
 	}

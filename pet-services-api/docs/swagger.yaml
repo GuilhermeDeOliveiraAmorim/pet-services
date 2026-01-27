@@ -473,7 +473,7 @@ info:
   title: Pet Services API
   version: "1.0"
 paths:
-  /admin/create:
+  /admin:
     post:
       consumes:
       - application/json

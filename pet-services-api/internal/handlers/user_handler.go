@@ -359,7 +359,7 @@ func (h *UserHandler) ChangePassword(c *gin.Context) {
 // @Success 201 {object} usecases.CreateAdminOutput
 // @Failure 400 {object} exceptions.ProblemDetails
 // @Failure 403 {object} exceptions.ProblemDetails
-// @Router /admin/create [post]
+// @Router /admin [post]
 func (h *UserHandler) CreateAdmin(c *gin.Context) {
 	ctx := c.Request.Context()
 	var input usecases.CreateAdminInput

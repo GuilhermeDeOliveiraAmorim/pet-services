@@ -72,20 +72,24 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context) *gin.E
 		public.POST("/auth/logout", handlerFactory.TokenHandler.Logout)
 	}
 
-	authorized := r.Group("/")
-	authorized.Use(middlewareFactory.AuthMiddleware())
+	authorizedUser := r.Group("/user/")
+	authorizedUser.Use(middlewareFactory.AuthMiddleware())
 	{
-		authorized.GET("/users/profile", handlerFactory.UserHandler.GetProfile)
-		authorized.GET("/users/:user_id", handlerFactory.UserHandler.GetUserByID)
-		authorized.GET("/users", handlerFactory.UserHandler.ListUsers)
-		authorized.PUT("/users", handlerFactory.UserHandler.UpdateUser)
-		authorized.DELETE("/users", handlerFactory.UserHandler.DeleteUser)
-		authorized.POST("/users/reactivate", handlerFactory.UserHandler.ReactivateUser)
-		authorized.POST("/users/deactivate", handlerFactory.UserHandler.DeactivateUser)
-		authorized.POST("/users/change-password", handlerFactory.UserHandler.ChangePassword)
-		authorized.POST("/users/update-email-verified", handlerFactory.UserHandler.UpdateEmailVerified)
+		authorizedUser.GET("/profile", handlerFactory.UserHandler.GetProfile)
+		authorizedUser.GET("/:user_id", handlerFactory.UserHandler.GetUserByID)
+		authorizedUser.GET("", handlerFactory.UserHandler.ListUsers)
+		authorizedUser.PUT("", handlerFactory.UserHandler.UpdateUser)
+		authorizedUser.DELETE("", handlerFactory.UserHandler.DeleteUser)
+		authorizedUser.POST("/reactivate", handlerFactory.UserHandler.ReactivateUser)
+		authorizedUser.POST("/deactivate", handlerFactory.UserHandler.DeactivateUser)
+		authorizedUser.POST("/change-password", handlerFactory.UserHandler.ChangePassword)
+		authorizedUser.POST("/update-email-verified", handlerFactory.UserHandler.UpdateEmailVerified)
+	}
 
-		authorized.POST("/admin/create", middlewareFactory.AdminOnlyMiddleware(), handlerFactory.UserHandler.CreateAdmin)
+	authorizedAdmin := r.Group("/admin/")
+	authorizedAdmin.Use(middlewareFactory.AuthMiddleware(), middlewareFactory.AdminOnlyMiddleware())
+	{
+		authorizedAdmin.POST("", handlerFactory.UserHandler.CreateAdmin)
 	}
 
 	return r

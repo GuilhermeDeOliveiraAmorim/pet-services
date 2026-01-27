@@ -56,28 +56,28 @@ func (uc *RegisterUserUseCase) Execute(ctx context.Context, input RegisterUserIn
 		}
 	}
 
-	problems := []exceptions.ProblemDetails{}
+	var problems []exceptions.ProblemDetails
 
-	login, problems := entities.NewLogin(input.Login.Email, input.Login.Password)
-	if len(problems) > 0 {
-		problems = append(problems, problems...)
+	login, errs := entities.NewLogin(input.Login.Email, input.Login.Password)
+	if len(errs) > 0 {
+		problems = append(problems, errs...)
 	}
 
 	if err := login.EncryptPassword(); err != nil {
 		return nil, logging.InternalServerError(ctx, from, "Erro ao criptografar senha", err)
 	}
 
-	phone, problems := entities.NewPhone(input.Phone.CountryCode, input.Phone.AreaCode, input.Phone.Number)
-	if len(problems) > 0 {
-		problems = append(problems, problems...)
+	phone, errs := entities.NewPhone(input.Phone.CountryCode, input.Phone.AreaCode, input.Phone.Number)
+	if len(errs) > 0 {
+		problems = append(problems, errs...)
 	}
 
-	location, problems := entities.NewLocation(input.Address.Location.Latitude, input.Address.Location.Longitude)
-	if len(problems) > 0 {
-		problems = append(problems, problems...)
+	location, errs := entities.NewLocation(input.Address.Location.Latitude, input.Address.Location.Longitude)
+	if len(errs) > 0 {
+		problems = append(problems, errs...)
 	}
 
-	address, problems := entities.NewAddress(
+	address, errs := entities.NewAddress(
 		input.Address.Street,
 		input.Address.Number,
 		input.Address.Neighborhood,
@@ -88,21 +88,19 @@ func (uc *RegisterUserUseCase) Execute(ctx context.Context, input RegisterUserIn
 		input.Address.Complement,
 		*location,
 	)
-
-	if len(problems) > 0 {
-		problems = append(problems, problems...)
+	if len(errs) > 0 {
+		problems = append(problems, errs...)
 	}
 
-	user, problems := entities.NewUser(
+	user, errs := entities.NewUser(
 		input.Name,
 		input.UserType,
 		*login,
 		*phone,
 		*address,
 	)
-
-	if len(problems) > 0 {
-		problems = append(problems, problems...)
+	if len(errs) > 0 {
+		problems = append(problems, errs...)
 	}
 
 	if len(problems) > 0 {
