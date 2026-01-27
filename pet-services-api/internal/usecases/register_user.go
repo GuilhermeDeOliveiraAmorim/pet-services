@@ -33,6 +33,15 @@ func NewRegisterUserUseCase(userRepository entities.UserRepository) *RegisterUse
 func (uc *RegisterUserUseCase) Execute(ctx context.Context, input RegisterUserInput) (*RegisterUserOutput, []exceptions.ProblemDetails) {
 	const from = "RegisterUserUseCase.Execute"
 
+	if input.UserType == "admin" {
+		return nil, []exceptions.ProblemDetails{
+			exceptions.NewProblemDetails(exceptions.Forbidden, exceptions.ErrorMessage{
+				Title:  "Tipo de usuário não permitido",
+				Detail: "Não é permitido criar usuários do tipo admin por este endpoint",
+			}),
+		}
+	}
+
 	exists, err := uc.userRepository.ExistsByEmail(input.Login.Email)
 	if err != nil {
 		return nil, logging.InternalServerError(ctx, from, "Erro ao verificar email", err)
