@@ -11,14 +11,17 @@ import (
 )
 
 type HandlerFactory struct {
-	UserHandler *UserHandler
+	UserHandler  *UserHandler
+	TokenHandler *TokenHandler
 }
 
 func NewHandlerFactory(inputFactory database.StorageInput) *HandlerFactory {
 	userFactory := factories.NewUserFactory(inputFactory.DB)
+	tokenFactory := factories.NewTokenFactory(inputFactory.DB, nil, 0)
 
 	return &HandlerFactory{
-		UserHandler: NewUserHandler(userFactory),
+		UserHandler:  NewUserHandler(userFactory),
+		TokenHandler: NewTokenHandler(tokenFactory),
 	}
 }
 
