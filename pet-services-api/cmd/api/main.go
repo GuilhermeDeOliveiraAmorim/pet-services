@@ -2,13 +2,17 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
+	"pet-services-api/internal/config"
 	"pet-services-api/internal/database"
+	"pet-services-api/internal/logging"
+	"pet-services-api/internal/routes"
 
 	"github.com/joho/godotenv"
 )
@@ -18,25 +22,58 @@ func init() {
 }
 
 func main() {
+	logging.InitLogger()
+
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
 	db, sqlDB := database.SetupDatabaseConnection(ctx)
 	if db == nil {
-		fmt.Fprintln(os.Stderr, "warning: database connection not available, exiting")
+		slog.Error("[Start] Banco de dados não disponível, encerrando aplicação")
 		os.Exit(1)
 	}
 	defer database.Shutdown(ctx, db)
 	defer sqlDB.Close()
 
 	if err := database.RunMigrations(db); err != nil {
-		slog.Error("[Start] failed to run database migrations", "error", err)
+		slog.Error("[Start] Falha ao rodar migrações do banco", "error", err)
 		os.Exit(1)
 	}
-	slog.Info("[Start] database migrations completed successfully")
+	slog.Info("[Start] Migrações do banco concluídas com sucesso")
 
-	slog.Info("[Start] service is running. Press Ctrl+C to stop.")
+	storageInput := database.StorageInput{
+		DB:         db,
+		BucketName: "",
+	}
+
+	router := routes.SetupRouter(storageInput, ctx)
+
+	server := &http.Server{
+		Addr:    config.GetServerPort(),
+		Handler: router,
+	}
+
+	go func() {
+		slog.Info("[Start] Servidor HTTP iniciado", "addr", server.Addr)
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			slog.Error("[Start] Falha ao iniciar servidor HTTP", "error", err)
+			os.Exit(1)
+		}
+	}()
+
+	slog.Info("[Start] Serviço rodando. Pressione Ctrl+C para encerrar.")
 
 	<-ctx.Done()
-	slog.Info("[Start] shutting down gracefully...")
+	slog.Info("[Start] Encerrando aplicação com shutdown gracioso...")
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		slog.Error("[Shutdown] Erro ao encerrar servidor HTTP", "error", err)
+	} else {
+		slog.Info("[Shutdown] Servidor HTTP encerrado com sucesso")
+	}
+
+	slog.Info("[Shutdown] Aplicação finalizada")
 }
