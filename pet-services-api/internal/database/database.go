@@ -51,7 +51,6 @@ func NewDatabase(ctx context.Context) *gorm.DB {
 		return nil
 	}
 
-	// Validate DB_PORT format if provided
 	if dbPort != "" {
 		if port, err := strconv.Atoi(dbPort); err != nil || port < 1 || port > 65535 {
 			slog.Error("invalid DB_PORT: must be a number between 1 and 65535", "value", dbPort)
