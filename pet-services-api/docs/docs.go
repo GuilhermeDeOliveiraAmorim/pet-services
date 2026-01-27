@@ -23,6 +23,51 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/admin/create": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Cria um novo administrador",
+                "parameters": [
+                    {
+                        "description": "Dados do admin",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/usecases.CreateAdminInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/usecases.CreateAdminOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "consumes": [
@@ -1036,6 +1081,34 @@ const docTemplate = `{
             "properties": {
                 "exists": {
                     "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "usecases.CreateAdminInput": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/entities.Address"
+                },
+                "login": {
+                    "$ref": "#/definitions/entities.Login"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "$ref": "#/definitions/entities.Phone"
+                }
+            }
+        },
+        "usecases.CreateAdminOutput": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
                 },
                 "message": {
                     "type": "string"

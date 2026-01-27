@@ -212,6 +212,24 @@ definitions:
       message:
         type: string
     type: object
+  usecases.CreateAdminInput:
+    properties:
+      address:
+        $ref: '#/definitions/entities.Address'
+      login:
+        $ref: '#/definitions/entities.Login'
+      name:
+        type: string
+      phone:
+        $ref: '#/definitions/entities.Phone'
+    type: object
+  usecases.CreateAdminOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+    type: object
   usecases.DeactivateUserInput:
     properties:
       user_id:
@@ -455,6 +473,35 @@ info:
   title: Pet Services API
   version: "1.0"
 paths:
+  /admin/create:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados do admin
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.CreateAdminInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/usecases.CreateAdminOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Cria um novo administrador
+      tags:
+      - Admin
   /auth/login:
     post:
       consumes:
