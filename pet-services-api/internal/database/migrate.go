@@ -1,68 +1,88 @@
 package database
 
 import (
-	"errors"
-	"sort"
+	"fmt"
+	"log/slog"
 	"time"
 
 	"gorm.io/gorm"
 )
 
-// SchemaMigration armazena versões já aplicadas.
 type SchemaMigration struct {
-	Version   string    `gorm:"primaryKey;size:14"`
+	Version   string    `gorm:"primaryKey"`
 	AppliedAt time.Time `gorm:"not null"`
 }
 
-// Migration descreve uma alteração de schema.
+func RunMigrations(db *gorm.DB) error {
+	if err := db.AutoMigrate(&SchemaMigration{}); err != nil {
+		return fmt.Errorf("error creating migration table: %w", err)
+	}
+
+	migrations := getMigrations()
+
+	for _, migration := range migrations {
+		var existing SchemaMigration
+		result := db.Where("version = ?", migration.Version).First(&existing)
+
+		if result.Error == nil {
+			continue
+		}
+
+		if result.Error != gorm.ErrRecordNotFound {
+			return fmt.Errorf("error checking migration %s: %w", migration.Version, result.Error)
+		}
+
+		slog.Info("[Migration] applying migration", "version", migration.Version, "description", migration.Description)
+
+		err := db.Transaction(func(tx *gorm.DB) error {
+			if err := migration.Up(tx); err != nil {
+				return fmt.Errorf("error executing migration: %w", err)
+			}
+
+			record := SchemaMigration{
+				Version:   migration.Version,
+				AppliedAt: time.Now(),
+			}
+			if err := tx.Create(&record).Error; err != nil {
+				return fmt.Errorf("error registering migration: %w", err)
+			}
+
+			return nil
+		})
+
+		if err != nil {
+			return fmt.Errorf("migration failed %s: %w", migration.Version, err)
+		}
+
+		slog.Info("[Migration] migration applied successfully", "version", migration.Version)
+	}
+
+	slog.Info("[Migration] all migrations have been applied")
+	return nil
+}
+
 type Migration struct {
 	Version     string
 	Description string
 	Up          func(*gorm.DB) error
 }
 
-// RunMigrations executa migrações pendentes em ordem.
-func RunMigrations(db *gorm.DB) error {
-	if db == nil {
-		return errors.New("db is nil")
+func getMigrations() []Migration {
+	return []Migration{
+		{
+			Version:     "20260110000000",
+			Description: "Create initial schema for pet-services",
+			Up:          Migration20260110000000,
+		},
+		{
+			Version:     "20260215000000",
+			Description: "Create refresh_tokens table",
+			Up:          Migration20260215000000,
+		},
+		{
+			Version:     "20260124000000",
+			Description: "Add token_type column to refresh_tokens table",
+			Up:          Migration20260124000000,
+		},
 	}
-
-	// Garante tabela de controle.
-	if err := db.AutoMigrate(&SchemaMigration{}); err != nil {
-		return err
-	}
-
-	migrations := getMigrations()
-	sort.SliceStable(migrations, func(i, j int) bool {
-		return migrations[i].Version < migrations[j].Version
-	})
-
-	applied := map[string]bool{}
-	var rows []SchemaMigration
-	if err := db.Find(&rows).Error; err != nil {
-		return err
-	}
-	for _, row := range rows {
-		applied[row.Version] = true
-	}
-
-	for _, m := range migrations {
-		if applied[m.Version] {
-			continue
-		}
-
-		if err := db.Transaction(func(tx *gorm.DB) error {
-			if err := m.Up(tx); err != nil {
-				return err
-			}
-			return tx.Create(&SchemaMigration{
-				Version:   m.Version,
-				AppliedAt: time.Now(),
-			}).Error
-		}); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

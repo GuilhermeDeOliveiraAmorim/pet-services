@@ -1,0 +1,949 @@
+basePath: /
+definitions:
+  entities.Address:
+    properties:
+      city:
+        type: string
+      complement:
+        type: string
+      country:
+        type: string
+      location:
+        $ref: '#/definitions/entities.Location'
+      neighborhood:
+        type: string
+      number:
+        type: string
+      state:
+        type: string
+      street:
+        type: string
+      zip_code:
+        type: string
+    type: object
+  entities.Breed:
+    properties:
+      active:
+        type: boolean
+      created_at:
+        type: string
+      deactivated_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      specie_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  entities.Location:
+    properties:
+      latitude:
+        type: number
+      longitude:
+        type: number
+    type: object
+  entities.Login:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  entities.Pet:
+    properties:
+      active:
+        type: boolean
+      age:
+        type: integer
+      breed:
+        $ref: '#/definitions/entities.Breed'
+      created_at:
+        type: string
+      deactivated_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      notes:
+        type: string
+      photos:
+        items:
+          $ref: '#/definitions/entities.Photo'
+        type: array
+      specie:
+        $ref: '#/definitions/entities.Specie'
+      updated_at:
+        type: string
+      user_id:
+        type: string
+      weight:
+        type: number
+    type: object
+  entities.Phone:
+    properties:
+      area_code:
+        type: string
+      country_code:
+        type: string
+      number:
+        type: string
+    type: object
+  entities.Photo:
+    properties:
+      active:
+        type: boolean
+      created_at:
+        type: string
+      deactivated_at:
+        type: string
+      id:
+        type: string
+      updated_at:
+        type: string
+      url:
+        type: string
+    type: object
+  entities.Specie:
+    properties:
+      active:
+        type: boolean
+      created_at:
+        type: string
+      deactivated_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  entities.User:
+    properties:
+      active:
+        type: boolean
+      address:
+        $ref: '#/definitions/entities.Address'
+      created_at:
+        type: string
+      deactivated_at:
+        type: string
+      email_verified:
+        type: boolean
+      id:
+        type: string
+      login:
+        $ref: '#/definitions/entities.Login'
+      name:
+        type: string
+      pets:
+        items:
+          $ref: '#/definitions/entities.Pet'
+        type: array
+      phone:
+        $ref: '#/definitions/entities.Phone'
+      photos:
+        items:
+          $ref: '#/definitions/entities.Photo'
+        type: array
+      updated_at:
+        type: string
+      user_type:
+        type: string
+    type: object
+  exceptions.ProblemDetails:
+    properties:
+      detail:
+        type: string
+      instance:
+        type: string
+      status:
+        type: integer
+      title:
+        type: string
+      type:
+        type: string
+    type: object
+  usecases.ChangePasswordInput:
+    properties:
+      current_password:
+        type: string
+      new_password:
+        type: string
+      user_id:
+        type: string
+    type: object
+  usecases.ChangePasswordOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+    type: object
+  usecases.CheckEmailExistsInput:
+    properties:
+      email:
+        type: string
+    type: object
+  usecases.CheckEmailExistsOutput:
+    properties:
+      exists:
+        type: boolean
+      message:
+        type: string
+    type: object
+  usecases.CheckPhoneExistsInput:
+    properties:
+      area_code:
+        type: string
+      country_code:
+        type: string
+      number:
+        type: string
+    type: object
+  usecases.CheckPhoneExistsOutput:
+    properties:
+      exists:
+        type: boolean
+      message:
+        type: string
+    type: object
+  usecases.CreateAdminInput:
+    properties:
+      address:
+        $ref: '#/definitions/entities.Address'
+      login:
+        $ref: '#/definitions/entities.Login'
+      name:
+        type: string
+      phone:
+        $ref: '#/definitions/entities.Phone'
+    type: object
+  usecases.CreateAdminOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+    type: object
+  usecases.DeactivateUserInput:
+    properties:
+      user_id:
+        type: string
+    type: object
+  usecases.DeactivateUserOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+    type: object
+  usecases.DeleteUserInput:
+    properties:
+      user_id:
+        type: string
+    type: object
+  usecases.DeleteUserOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+    type: object
+  usecases.GetProfileOutput:
+    properties:
+      user:
+        $ref: '#/definitions/entities.User'
+    type: object
+  usecases.GetUserByIDOutput:
+    properties:
+      user:
+        $ref: '#/definitions/entities.User'
+    type: object
+  usecases.ListUsersOutput:
+    properties:
+      pagination:
+        $ref: '#/definitions/usecases.PaginationMetadata'
+      users:
+        items:
+          $ref: '#/definitions/entities.User'
+        type: array
+    type: object
+  usecases.LoginUserInput:
+    properties:
+      email:
+        type: string
+      ip:
+        type: string
+      password:
+        type: string
+      user_agent:
+        type: string
+    type: object
+  usecases.LoginUserOutput:
+    properties:
+      access_token:
+        type: string
+      expires_in:
+        type: integer
+      problems:
+        items:
+          $ref: '#/definitions/exceptions.ProblemDetails'
+        type: array
+      refresh_token:
+        type: string
+      user:
+        $ref: '#/definitions/entities.User'
+    type: object
+  usecases.LogoutInput:
+    properties:
+      revoke_all:
+        type: boolean
+      token_id:
+        type: string
+      user_id:
+        type: string
+    type: object
+  usecases.LogoutOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+    type: object
+  usecases.PaginationMetadata:
+    properties:
+      current_page:
+        type: integer
+      per_page:
+        type: integer
+      total_pages:
+        type: integer
+      total_records:
+        type: integer
+    type: object
+  usecases.ReactivateUserInput:
+    properties:
+      user_id:
+        type: string
+    type: object
+  usecases.ReactivateUserOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+    type: object
+  usecases.RegisterUserInput:
+    properties:
+      address:
+        $ref: '#/definitions/entities.Address'
+      login:
+        $ref: '#/definitions/entities.Login'
+      name:
+        type: string
+      phone:
+        $ref: '#/definitions/entities.Phone'
+      user_type:
+        type: string
+    type: object
+  usecases.RegisterUserOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+    type: object
+  usecases.RequestPasswordResetInput:
+    properties:
+      email:
+        type: string
+      ip:
+        type: string
+      user_agent:
+        type: string
+    type: object
+  usecases.RequestPasswordResetOutput:
+    properties:
+      detail:
+        type: string
+      expires_at:
+        type: string
+      message:
+        type: string
+      reset_token:
+        type: string
+    type: object
+  usecases.ResendVerificationEmailInput:
+    properties:
+      email:
+        type: string
+      ip:
+        type: string
+      user_agent:
+        type: string
+    type: object
+  usecases.ResendVerificationEmailOutput:
+    properties:
+      detail:
+        type: string
+      expires_at:
+        type: string
+      message:
+        type: string
+      verify_token:
+        type: string
+    type: object
+  usecases.ResetPasswordInput:
+    properties:
+      new_password:
+        type: string
+      token:
+        type: string
+    type: object
+  usecases.ResetPasswordOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+    type: object
+  usecases.UpdateEmailVerifiedInput:
+    properties:
+      user_id:
+        type: string
+      verified:
+        type: boolean
+    type: object
+  usecases.UpdateEmailVerifiedOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+    type: object
+  usecases.UpdateUserInput:
+    properties:
+      address:
+        $ref: '#/definitions/entities.Address'
+      name:
+        type: string
+      phone:
+        $ref: '#/definitions/entities.Phone'
+      user_id:
+        type: string
+      user_type:
+        type: string
+    type: object
+  usecases.UpdateUserOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+      user:
+        $ref: '#/definitions/entities.User'
+    type: object
+  usecases.VerifyEmailInput:
+    properties:
+      token:
+        type: string
+    type: object
+  usecases.VerifyEmailOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: guilherme@example.com
+    name: Guilherme Amorim
+  description: API para gerenciamento de serviços pet.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Pet Services API
+  version: "1.0"
+paths:
+  /admin:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados do admin
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.CreateAdminInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/usecases.CreateAdminOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Cria um novo administrador
+      tags:
+      - Admin
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados de login
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.LoginUserInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.LoginUserOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Realiza login do usuário
+      tags:
+      - Authentication
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados de logout
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.LogoutInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.LogoutOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Realiza logout do usuário
+      tags:
+      - Authentication
+  /auth/request-password-reset:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados para reset de senha
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.RequestPasswordResetInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.RequestPasswordResetOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Solicita reset de senha
+      tags:
+      - Authentication
+  /auth/resend-verification-email:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados para reenvio de verificação
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.ResendVerificationEmailInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.ResendVerificationEmailOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Reenvia email de verificação
+      tags:
+      - Authentication
+  /auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados para reset de senha
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.ResetPasswordInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.ResetPasswordOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Realiza reset de senha
+      tags:
+      - Authentication
+  /auth/verify-email:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados para verificação de email
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.VerifyEmailInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.VerifyEmailOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Verifica email do usuário
+      tags:
+      - Authentication
+  /users:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID do usuário
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.DeleteUserInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.DeleteUserOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Deleta usuário
+      tags:
+      - Users
+    get:
+      parameters:
+      - description: Página
+        in: query
+        name: page
+        type: integer
+      - description: Limite
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/usecases.ListUsersOutput'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Lista usuários
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados do usuário
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.UpdateUserInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.UpdateUserOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Atualiza dados do usuário
+      tags:
+      - Users
+  /users/{user_id}:
+    get:
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.GetUserByIDOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Busca usuário por ID
+      tags:
+      - Users
+  /users/change-password:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados de senha
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.ChangePasswordInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.ChangePasswordOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Altera senha do usuário
+      tags:
+      - Users
+  /users/check-email:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Email
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.CheckEmailExistsInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.CheckEmailExistsOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Verifica se email existe
+      tags:
+      - Users
+  /users/check-phone:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Telefone
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.CheckPhoneExistsInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.CheckPhoneExistsOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Verifica se telefone existe
+      tags:
+      - Users
+  /users/deactivate:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID do usuário
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.DeactivateUserInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.DeactivateUserOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Desativa usuário
+      tags:
+      - Users
+  /users/profile:
+    get:
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.GetProfileOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Retorna o perfil do usuário
+      tags:
+      - Users
+  /users/reactivate:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID do usuário
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.ReactivateUserInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.ReactivateUserOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Reativa usuário
+      tags:
+      - Users
+  /users/register:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados do usuário
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.RegisterUserInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/usecases.RegisterUserOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Registra um novo usuário
+      tags:
+      - Users
+  /users/update-email-verified:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados de verificação
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.UpdateEmailVerifiedInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.UpdateEmailVerifiedOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Atualiza verificação de email
+      tags:
+      - Users
+swagger: "2.0"

@@ -1,27 +1,56 @@
 package models
 
 import (
+	"pet-services-api/internal/entities"
 	"time"
 
-	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
-// Review representa avaliações persistidas.
 type Review struct {
-	ID         uuid.UUID `gorm:"type:uuid;primaryKey"`
-	RequestID  uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:idx_reviews_request;foreignKey:RequestID;references:ID"`
-	ProviderID uuid.UUID `gorm:"type:uuid;not null;index:idx_reviews_provider;index:idx_reviews_provider_created,composite:idx_reviews_provider_created;foreignKey:ProviderID;references:ID"`
-	OwnerID    uuid.UUID `gorm:"type:uuid;not null;index:idx_reviews_owner;foreignKey:OwnerID;references:ID"`
-	Rating     int       `gorm:"not null;check:rating >= 1 AND rating <= 5"`
-	Comment    string    `gorm:"size:1000"`
-	CreatedAt  time.Time `gorm:"autoCreateTime;index:idx_reviews_created_at;index:idx_reviews_provider_created,composite:idx_reviews_provider_created"`
+	ID            string         `gorm:"type:char(26);primaryKey" json:"id"`
+	UserID        string         `gorm:"type:char(26);not null;index" json:"user_id"`
+	ProviderID    string         `gorm:"type:char(26);not null;index:idx_provider_reviews,priority:1" json:"provider_id"`
+	Rating        float64        `gorm:"type:decimal(3,2);not null;index:idx_provider_reviews,priority:3" json:"rating"`
+	Comment       string         `gorm:"type:varchar(500)" json:"comment"`
+	Active        bool           `gorm:"default:true;index:idx_provider_reviews,priority:2" json:"active"`
+	CreatedAt     time.Time      `gorm:"autoCreateTime;index:idx_provider_reviews,priority:4" json:"created_at"`
+	UpdatedAt     *time.Time     `gorm:"autoUpdateTime" json:"updated_at"`
+	DeactivatedAt *time.Time     `json:"deactivated_at"`
+	DeletedAt     gorm.DeletedAt `gorm:"index" json:"deleted_at"`
 
-	Request  *ServiceRequest `gorm:"foreignKey:RequestID;references:ID;constraint:OnDelete:RESTRICT"`
-	Provider *User           `gorm:"foreignKey:ProviderID;references:ID;constraint:OnDelete:RESTRICT"`
-	Owner    *User           `gorm:"foreignKey:OwnerID;references:ID;constraint:OnDelete:RESTRICT"`
+	User     User     `gorm:"foreignKey:UserID" json:"user"`
+	Provider Provider `gorm:"foreignKey:ProviderID" json:"provider"`
 }
 
-// TableName define o nome da tabela no banco.
 func (Review) TableName() string {
 	return "reviews"
+}
+
+func (r *Review) ToEntity() *entities.Review {
+	return &entities.Review{
+		Base: entities.Base{
+			ID:            r.ID,
+			Active:        r.Active,
+			CreatedAt:     r.CreatedAt,
+			UpdatedAt:     r.UpdatedAt,
+			DeactivatedAt: r.DeactivatedAt,
+		},
+		UserID:     r.UserID,
+		ProviderID: r.ProviderID,
+		Rating:     r.Rating,
+		Comment:    r.Comment,
+	}
+}
+
+func (r *Review) FromEntity(entity *entities.Review) {
+	r.ID = entity.ID
+	r.UserID = entity.UserID
+	r.ProviderID = entity.ProviderID
+	r.Rating = entity.Rating
+	r.Comment = entity.Comment
+	r.Active = entity.Active
+	r.CreatedAt = entity.CreatedAt
+	r.UpdatedAt = entity.UpdatedAt
+	r.DeactivatedAt = entity.DeactivatedAt
 }

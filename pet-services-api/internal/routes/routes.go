@@ -1,0 +1,99 @@
+package routes
+
+import (
+	"context"
+	"pet-services-api/internal/config"
+	"pet-services-api/internal/database"
+	"pet-services-api/internal/handlers"
+	"pet-services-api/internal/middlewares"
+	"time"
+
+	"pet-services-api/docs"
+
+	"pet-services-api/internal/logging"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+)
+
+func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger logging.LoggerInterface) *gin.Engine {
+	docs.SwaggerInfo.Title = "Pet Services API"
+	docs.SwaggerInfo.Description = "API para gerenciamento de serviços pet."
+	docs.SwaggerInfo.Version = "1.0"
+	docs.SwaggerInfo.Host = "localhost:8080"
+	docs.SwaggerInfo.BasePath = "/"
+
+	handlerFactory := handlers.NewHandlerFactory(storageInput, logger)
+	middlewareFactory := middlewares.NewMiddlewareFactory(logger)
+
+	r := gin.Default()
+
+	devURL, prodURL := config.GetFrontendURLs()
+
+	allowOrigins := []string{}
+	if devURL != "" {
+		allowOrigins = append(allowOrigins, devURL)
+	}
+	if prodURL != "" {
+		allowOrigins = append(allowOrigins, prodURL)
+	}
+	if len(allowOrigins) == 0 {
+		allowOrigins = []string{"*"}
+	}
+
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     allowOrigins,
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "PATCH"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
+
+	r.Use(middlewareFactory.DefaultRateLimitMiddleware())
+
+	public := r.Group("/")
+	{
+		public.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+		// Health check endpoints
+		// public.GET("/health", handlerFactory.HealthHandler.Check)
+		// public.GET("/health/ready", handlerFactory.HealthHandler.Ready)
+		// public.GET("/health/live", handlerFactory.HealthHandler.Live)
+
+		public.POST("/users/register", handlerFactory.UserHandler.RegisterUser)
+		public.POST("/users/check-email", handlerFactory.UserHandler.CheckEmailExists)
+		public.POST("/users/check-phone", handlerFactory.UserHandler.CheckPhoneExists)
+
+		public.POST("/auth/login", handlerFactory.TokenHandler.LoginUser)
+		public.POST("/auth/request-password-reset", handlerFactory.TokenHandler.RequestPasswordReset)
+		public.POST("/auth/reset-password", handlerFactory.TokenHandler.ResetPassword)
+		public.POST("/auth/resend-verification-email", handlerFactory.TokenHandler.ResendVerificationEmail)
+		public.POST("/auth/verify-email", handlerFactory.TokenHandler.VerifyEmail)
+		public.POST("/auth/logout", handlerFactory.TokenHandler.Logout)
+	}
+
+	authorizedUser := r.Group("/user/")
+	authorizedUser.Use(middlewareFactory.AuthMiddleware())
+	{
+		authorizedUser.GET("/profile", handlerFactory.UserHandler.GetProfile)
+		authorizedUser.GET("/:user_id", handlerFactory.UserHandler.GetUserByID)
+		authorizedUser.GET("", handlerFactory.UserHandler.ListUsers)
+		authorizedUser.PUT("", handlerFactory.UserHandler.UpdateUser)
+		authorizedUser.DELETE("", handlerFactory.UserHandler.DeleteUser)
+		authorizedUser.POST("/reactivate", handlerFactory.UserHandler.ReactivateUser)
+		authorizedUser.POST("/deactivate", handlerFactory.UserHandler.DeactivateUser)
+		authorizedUser.POST("/change-password", handlerFactory.UserHandler.ChangePassword)
+		authorizedUser.POST("/update-email-verified", handlerFactory.UserHandler.UpdateEmailVerified)
+	}
+
+	authorizedAdmin := r.Group("/admin/")
+	authorizedAdmin.Use(middlewareFactory.AuthMiddleware(), middlewareFactory.AdminOnlyMiddleware())
+	{
+		authorizedAdmin.POST("", handlerFactory.UserHandler.CreateAdmin)
+	}
+
+	return r
+}

@@ -1,7 +1,10 @@
 docs:
 	@echo "Gerando documentação Swagger..."
 	swag init --dir ./cmd/api,./internal/transport/http --parseDependency --parseInternal --output ./internal/transport/http/docs
-.PHONY: help build run test migrate migrate-down clean
+.PHONY: help build run test migrate migrate-down clean doc
+doc:
+	@echo "Gerando documentação Swagger..."
+	swag init -g cmd/api/main.go
 
 help:
 	@echo "Available targets:"
