@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"pet-services-api/internal/entities"
@@ -10,6 +11,7 @@ import (
 	"pet-services-api/internal/mail"
 
 	"github.com/oklog/ulid/v2"
+	"gorm.io/gorm"
 )
 
 type ResendVerificationEmailInput struct {
@@ -30,9 +32,10 @@ type ResendVerificationEmailUseCase struct {
 	verifyTokenRepository entities.RefreshTokenRepository
 	emailService          mail.EmailService
 	ttl                   time.Duration
+	logger                logging.LoggerInterface
 }
 
-func NewResendVerificationEmailUseCase(userRepo entities.UserRepository, verifyRepo entities.RefreshTokenRepository, emailService mail.EmailService, ttl time.Duration) *ResendVerificationEmailUseCase {
+func NewResendVerificationEmailUseCase(userRepo entities.UserRepository, verifyRepo entities.RefreshTokenRepository, emailService mail.EmailService, ttl time.Duration, logger logging.LoggerInterface) *ResendVerificationEmailUseCase {
 	if ttl <= 0 {
 		ttl = 24 * time.Hour
 	}
@@ -41,6 +44,7 @@ func NewResendVerificationEmailUseCase(userRepo entities.UserRepository, verifyR
 		verifyTokenRepository: verifyRepo,
 		emailService:          emailService,
 		ttl:                   ttl,
+		logger:                logger,
 	}
 }
 
@@ -48,17 +52,15 @@ func (uc *ResendVerificationEmailUseCase) Execute(ctx context.Context, input Res
 	const from = "ResendVerificationEmailUseCase.Execute"
 
 	if input.Email == "" {
-		return nil, []exceptions.ProblemDetails{
-			exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
-				Title:  "Email ausente",
-				Detail: "O email é obrigatório para reenviar verificação",
-			}),
-		}
+		return nil, uc.logger.LogBadRequest(ctx, from, "Email ausente", errors.New("O email é obrigatório para reenviar verificação"))
 	}
 
 	user, err := uc.userRepository.FindByEmail(input.Email)
 	if err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao buscar usuário", err)
+		if err == gorm.ErrRecordNotFound {
+			return nil, uc.logger.LogNotFound(ctx, from, "Usuário não encontrado", errors.New("Não foi possível encontrar um usuário com o ID informado"))
+		}
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar usuário", err)
 	}
 
 	if user.EmailVerified {
@@ -72,7 +74,7 @@ func (uc *ResendVerificationEmailUseCase) Execute(ctx context.Context, input Res
 	expiresAt := time.Now().Add(uc.ttl)
 
 	if err := uc.verifyTokenRepository.RevokeAllPasswordResetByUserID(user.ID); err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao revogar tokens anteriores", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao revogar tokens anteriores", err)
 	}
 
 	verifyToken := &entities.PasswordResetToken{
@@ -84,11 +86,11 @@ func (uc *ResendVerificationEmailUseCase) Execute(ctx context.Context, input Res
 	}
 
 	if err := uc.verifyTokenRepository.CreatePasswordReset(verifyToken); err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao salvar token de verificação", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao salvar token de verificação", err)
 	}
 
 	if err := uc.emailService.SendVerificationEmail(user.Login.Email, tokenStr); err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao enviar email de verificação", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao enviar email de verificação", err)
 	}
 
 	return &ResendVerificationEmailOutput{

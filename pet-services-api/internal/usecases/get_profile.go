@@ -2,10 +2,13 @@ package usecases
 
 import (
 	"context"
+	"errors"
 
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
+
+	"gorm.io/gorm"
 )
 
 type GetProfileInput struct {
@@ -18,11 +21,13 @@ type GetProfileOutput struct {
 
 type GetProfileUseCase struct {
 	userRepository entities.UserRepository
+	logger         logging.LoggerInterface
 }
 
-func NewGetProfileUseCase(userRepo entities.UserRepository) *GetProfileUseCase {
+func NewGetProfileUseCase(userRepo entities.UserRepository, logger logging.LoggerInterface) *GetProfileUseCase {
 	return &GetProfileUseCase{
 		userRepository: userRepo,
+		logger:         logger,
 	}
 }
 
@@ -30,17 +35,15 @@ func (uc *GetProfileUseCase) Execute(ctx context.Context, input GetProfileInput)
 	const from = "GetProfileUseCase.Execute"
 
 	if input.UserID == "" {
-		return nil, []exceptions.ProblemDetails{
-			exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
-				Title:  "ID do usuário ausente",
-				Detail: "O ID do usuário é obrigatório",
-			}),
-		}
+		return nil, uc.logger.LogBadRequest(ctx, from, "ID do usuário ausente", errors.New("O ID do usuário é obrigatório"))
 	}
 
 	user, err := uc.userRepository.FindByID(input.UserID)
 	if err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao buscar perfil do usuário", err)
+		if err == gorm.ErrRecordNotFound {
+			return nil, uc.logger.LogNotFound(ctx, from, "Usuário não encontrado", errors.New("Não foi possível encontrar um usuário com o ID informado"))
+		}
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar usuário", err)
 	}
 
 	return &GetProfileOutput{

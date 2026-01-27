@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"errors"
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
@@ -20,11 +21,13 @@ type DeleteUserOutput struct {
 
 type DeleteUserUseCase struct {
 	userRepository entities.UserRepository
+	logger         logging.LoggerInterface
 }
 
-func NewDeleteUserUseCase(userRepository entities.UserRepository) *DeleteUserUseCase {
+func NewDeleteUserUseCase(userRepository entities.UserRepository, logger logging.LoggerInterface) *DeleteUserUseCase {
 	return &DeleteUserUseCase{
 		userRepository: userRepository,
+		logger:         logger,
 	}
 }
 
@@ -32,40 +35,25 @@ func (uc *DeleteUserUseCase) Execute(ctx context.Context, input DeleteUserInput)
 	const from = "DeleteUserUseCase.Execute"
 
 	if input.UserID == "" {
-		return nil, []exceptions.ProblemDetails{
-			exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
-				Title:  "ID do usuário ausente",
-				Detail: "O ID do usuário é obrigatório para deletar",
-			}),
-		}
+		return nil, uc.logger.LogBadRequest(ctx, from, "ID do usuário ausente", errors.New("O ID do usuário é obrigatório para deletar"))
 	}
 
 	user, err := uc.userRepository.FindByID(input.UserID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, []exceptions.ProblemDetails{
-				exceptions.NewProblemDetails(exceptions.NotFound, exceptions.ErrorMessage{
-					Title:  "Usuário não encontrado",
-					Detail: "Não foi possível encontrar um usuário com o ID informado",
-				}),
-			}
+			return nil, uc.logger.LogNotFound(ctx, from, "Usuário não encontrado", errors.New("Não foi possível encontrar um usuário com o ID informado"))
 		}
-		return nil, logging.InternalServerError(ctx, from, "Erro ao buscar usuário", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar usuário", err)
 	}
 
 	if !user.Active {
-		return nil, []exceptions.ProblemDetails{
-			exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
-				Title:  "Usuário já inativo",
-				Detail: "O usuário já está inativo no sistema",
-			}),
-		}
+		return nil, uc.logger.LogBadRequest(ctx, from, "Usuário já inativo", errors.New("O usuário já está inativo no sistema"))
 	}
 
 	user.Deactivate()
 
 	if err := uc.userRepository.Update(user); err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao deletar usuário", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao deletar usuário", err)
 	}
 
 	return &DeleteUserOutput{

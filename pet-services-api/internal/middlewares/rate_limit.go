@@ -102,7 +102,7 @@ func (rl *RateLimiter) cleanupInactiveClients() {
 	}
 }
 
-func RateLimitMiddleware(config RateLimiterConfig) gin.HandlerFunc {
+func RateLimitMiddleware(config RateLimiterConfig, logger logging.LoggerInterface) gin.HandlerFunc {
 	limiter := NewRateLimiter(config)
 
 	return func(c *gin.Context) {
@@ -116,14 +116,7 @@ func RateLimitMiddleware(config RateLimiterConfig) gin.HandlerFunc {
 				Detail: "Você excedeu o limite de requisições permitidas. Tente novamente em alguns instantes.",
 			})
 
-			logging.NewLogger(logging.Logger{
-				Context: ctx,
-				TypeLog: logging.LoggerTypes.WARNING,
-				Layer:   logging.LoggerLayers.MIDDLEWARES,
-				Code:    exceptions.RFC429_CODE,
-				From:    "RateLimitMiddleware",
-				Message: "Rate limit excedido para IP: " + clientID,
-			})
+			logger.LogWarning(ctx, "RateLimitMiddleware", "Rate limit excedido para IP: "+clientID, nil)
 
 			c.Header("X-RateLimit-Limit", string(rune(config.RequestsPerMinute)))
 			c.Header("X-RateLimit-Remaining", "0")
@@ -137,16 +130,16 @@ func RateLimitMiddleware(config RateLimiterConfig) gin.HandlerFunc {
 	}
 }
 
-func DefaultRateLimitMiddleware() gin.HandlerFunc {
+func DefaultRateLimitMiddleware(logger logging.LoggerInterface) gin.HandlerFunc {
 	return RateLimitMiddleware(RateLimiterConfig{
 		RequestsPerMinute: 60,
 		BurstSize:         10,
-	})
+	}, logger)
 }
 
-func StrictRateLimitMiddleware() gin.HandlerFunc {
+func StrictRateLimitMiddleware(logger logging.LoggerInterface) gin.HandlerFunc {
 	return RateLimitMiddleware(RateLimiterConfig{
 		RequestsPerMinute: 10,
 		BurstSize:         3,
-	})
+	}, logger)
 }

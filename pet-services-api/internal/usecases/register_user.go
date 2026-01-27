@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"errors"
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
@@ -22,11 +23,13 @@ type RegisterUserOutput struct {
 
 type RegisterUserUseCase struct {
 	userRepository entities.UserRepository
+	logger         logging.LoggerInterface
 }
 
-func NewRegisterUserUseCase(userRepository entities.UserRepository) *RegisterUserUseCase {
+func NewRegisterUserUseCase(userRepository entities.UserRepository, logger logging.LoggerInterface) *RegisterUserUseCase {
 	return &RegisterUserUseCase{
 		userRepository: userRepository,
+		logger:         logger,
 	}
 }
 
@@ -34,46 +37,35 @@ func (uc *RegisterUserUseCase) Execute(ctx context.Context, input RegisterUserIn
 	const from = "RegisterUserUseCase.Execute"
 
 	if input.UserType == "admin" {
-		return nil, []exceptions.ProblemDetails{
-			exceptions.NewProblemDetails(exceptions.Forbidden, exceptions.ErrorMessage{
-				Title:  "Tipo de usuário não permitido",
-				Detail: "Não é permitido criar usuários do tipo admin por este endpoint",
-			}),
-		}
+		return nil, uc.logger.LogForbidden(ctx, from, "Tipo de usuário não permitido", errors.New("Não é permitido criar usuários do tipo admin por este endpoint"))
 	}
 
 	exists, err := uc.userRepository.ExistsByEmail(input.Login.Email)
 	if err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao verificar email", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao verificar email", err)
 	}
 
 	if exists {
-		return nil, []exceptions.ProblemDetails{
-			exceptions.NewProblemDetails(exceptions.Conflict, exceptions.ErrorMessage{
-				Title:  "Email já cadastrado",
-				Detail: "O email informado já está em uso por outro usuário",
-			}),
-		}
+		return nil, uc.logger.LogConflict(ctx, from, "Email já cadastrado", errors.New("O email informado já está em uso por outro usuário"))
 	}
 
 	var problems []exceptions.ProblemDetails
 
 	login, errs := entities.NewLogin(input.Login.Email, input.Login.Password)
 	if len(errs) > 0 {
+		uc.logger.LogMultipleBadRequests(ctx, from, "Login inválido", errs)
 		problems = append(problems, errs...)
-	}
-
-	if err := login.EncryptPassword(); err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao criptografar senha", err)
 	}
 
 	phone, errs := entities.NewPhone(input.Phone.CountryCode, input.Phone.AreaCode, input.Phone.Number)
 	if len(errs) > 0 {
+		uc.logger.LogMultipleBadRequests(ctx, from, "Telefone inválido", errs)
 		problems = append(problems, errs...)
 	}
 
 	location, errs := entities.NewLocation(input.Address.Location.Latitude, input.Address.Location.Longitude)
 	if len(errs) > 0 {
+		uc.logger.LogMultipleBadRequests(ctx, from, "Localização inválida", errs)
 		problems = append(problems, errs...)
 	}
 
@@ -89,6 +81,7 @@ func (uc *RegisterUserUseCase) Execute(ctx context.Context, input RegisterUserIn
 		*location,
 	)
 	if len(errs) > 0 {
+		uc.logger.LogMultipleBadRequests(ctx, from, "Endereço inválido", errs)
 		problems = append(problems, errs...)
 	}
 
@@ -100,15 +93,21 @@ func (uc *RegisterUserUseCase) Execute(ctx context.Context, input RegisterUserIn
 		*address,
 	)
 	if len(errs) > 0 {
+		uc.logger.LogMultipleBadRequests(ctx, from, "Usuário inválido", errs)
 		problems = append(problems, errs...)
 	}
 
 	if len(problems) > 0 {
+		uc.logger.LogMultipleBadRequests(ctx, from, "Problemas de validação", problems)
 		return nil, problems
 	}
 
+	if err := user.Login.EncryptPassword(); err != nil {
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao criptografar senha", err)
+	}
+
 	if err := uc.userRepository.Create(user); err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao criar usuário", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao criar usuário", err)
 	}
 
 	return &RegisterUserOutput{

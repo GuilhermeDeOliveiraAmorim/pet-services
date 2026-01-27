@@ -2,6 +2,7 @@ package logging
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"os"
 	"pet-services-api/internal/exceptions"
@@ -10,6 +11,131 @@ import (
 )
 
 const TimeFormat = "2006-01-02 15:04:05"
+
+type DefaultLogger struct{}
+
+type LoggerInterface interface {
+	LogError(ctx context.Context, from, message string, err error)
+	LogInfo(ctx context.Context, from, message string)
+	LogWarning(ctx context.Context, from, message string, err error)
+	LogBadRequest(ctx context.Context, from, title string, err error) []exceptions.ProblemDetails
+	LogMultipleBadRequests(ctx context.Context, from, title string, problems []exceptions.ProblemDetails)
+	LogUnauthorized(ctx context.Context, from, title string, err error) []exceptions.ProblemDetails
+	LogForbidden(ctx context.Context, from, title string, err error) []exceptions.ProblemDetails
+	LogNotFound(ctx context.Context, from, title string, err error) []exceptions.ProblemDetails
+	LogConflict(ctx context.Context, from, title string, err error) []exceptions.ProblemDetails
+	LogInternalServerError(ctx context.Context, from, title string, err error) []exceptions.ProblemDetails
+}
+
+func (l *DefaultLogger) LogMultipleBadRequests(ctx context.Context, from, title string, problems []exceptions.ProblemDetails) {
+	for _, p := range problems {
+		l.LogError(ctx, from, title, errors.New(p.Detail))
+	}
+}
+
+func (l *DefaultLogger) LogBadRequest(ctx context.Context, from, title string, err error) []exceptions.ProblemDetails {
+	problems := []exceptions.ProblemDetails{
+		exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  title,
+			Detail: err.Error(),
+		}),
+	}
+	l.LogError(ctx, from, title, err)
+	return problems
+}
+
+func (l *DefaultLogger) LogUnauthorized(ctx context.Context, from, title string, err error) []exceptions.ProblemDetails {
+	problems := []exceptions.ProblemDetails{
+		exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  title,
+			Detail: err.Error(),
+		}),
+	}
+	l.LogError(ctx, from, title, err)
+	return problems
+}
+
+func (l *DefaultLogger) LogForbidden(ctx context.Context, from, title string, err error) []exceptions.ProblemDetails {
+	problems := []exceptions.ProblemDetails{
+		exceptions.NewProblemDetails(exceptions.Forbidden, exceptions.ErrorMessage{
+			Title:  title,
+			Detail: err.Error(),
+		}),
+	}
+	l.LogError(ctx, from, title, err)
+	return problems
+}
+
+func (l *DefaultLogger) LogNotFound(ctx context.Context, from, title string, err error) []exceptions.ProblemDetails {
+	problems := []exceptions.ProblemDetails{
+		exceptions.NewProblemDetails(exceptions.NotFound, exceptions.ErrorMessage{
+			Title:  title,
+			Detail: err.Error(),
+		}),
+	}
+	l.LogError(ctx, from, title, err)
+	return problems
+}
+
+func (l *DefaultLogger) LogConflict(ctx context.Context, from, title string, err error) []exceptions.ProblemDetails {
+	problems := []exceptions.ProblemDetails{
+		exceptions.NewProblemDetails(exceptions.Conflict, exceptions.ErrorMessage{
+			Title:  title,
+			Detail: err.Error(),
+		}),
+	}
+	l.LogError(ctx, from, title, err)
+	return problems
+}
+
+func (l *DefaultLogger) LogInternalServerError(ctx context.Context, from, title string, err error) []exceptions.ProblemDetails {
+	problems := []exceptions.ProblemDetails{
+		exceptions.NewProblemDetails(exceptions.InternalServerError, exceptions.ErrorMessage{
+			Title:  title,
+			Detail: err.Error(),
+		}),
+	}
+	l.LogError(ctx, from, title, err)
+	return problems
+}
+
+func (l *DefaultLogger) LogError(ctx context.Context, from, message string, err error) {
+	if logger == nil {
+		InitLogger()
+	}
+	logger.ErrorContext(
+		ctx,
+		"ERROR",
+		"message:", message,
+		"from:", from,
+		"error:", err,
+	)
+}
+
+func (l *DefaultLogger) LogInfo(ctx context.Context, from, message string) {
+	if logger == nil {
+		InitLogger()
+	}
+	logger.InfoContext(
+		ctx,
+		"INFO",
+		"message:", message,
+		"from:", from,
+	)
+}
+
+func (l *DefaultLogger) LogWarning(ctx context.Context, from, message string, err error) {
+	if logger == nil {
+		InitLogger()
+	}
+	logger.WarnContext(
+		ctx,
+		"WARNING",
+		"message:", message,
+		"from:", from,
+		"error:", err,
+	)
+}
 
 type Layer struct {
 	ENTITY                                     string
@@ -117,50 +243,4 @@ func NewLogger(log Logger) {
 			"problems:", log.Problems,
 		)
 	}
-}
-
-func LogWithProblem(ctx context.Context, from, layer, title string, err error, code int, errorType exceptions.ErrorType) []exceptions.ProblemDetails {
-	problems := []exceptions.ProblemDetails{
-		exceptions.NewProblemDetails(errorType, exceptions.ErrorMessage{
-			Title:  title,
-			Detail: err.Error(),
-		}),
-	}
-
-	NewLogger(Logger{
-		Context:  ctx,
-		Code:     code,
-		Message:  title,
-		From:     from,
-		Layer:    layer,
-		TypeLog:  LoggerTypes.ERROR,
-		Error:    err,
-		Problems: problems,
-	})
-
-	return problems
-}
-
-func BadRequest(ctx context.Context, from, title string, err error) []exceptions.ProblemDetails {
-	return LogWithProblem(ctx, from, LoggerLayers.USECASES, title, err, exceptions.RFC400_CODE, exceptions.BadRequest)
-}
-
-func Unauthorized(ctx context.Context, from, title string, err error) []exceptions.ProblemDetails {
-	return LogWithProblem(ctx, from, LoggerLayers.USECASES, title, err, exceptions.RFC401_CODE, exceptions.Unauthorized)
-}
-
-func Forbidden(ctx context.Context, from, title string, err error) []exceptions.ProblemDetails {
-	return LogWithProblem(ctx, from, LoggerLayers.USECASES, title, err, exceptions.RFC403_CODE, exceptions.Forbidden)
-}
-
-func NotFound(ctx context.Context, from, title string, err error) []exceptions.ProblemDetails {
-	return LogWithProblem(ctx, from, LoggerLayers.USECASES, title, err, exceptions.RFC404_CODE, exceptions.NotFound)
-}
-
-func Conflict(ctx context.Context, from, title string, err error) []exceptions.ProblemDetails {
-	return LogWithProblem(ctx, from, LoggerLayers.USECASES, title, err, exceptions.RFC409_CODE, exceptions.Conflict)
-}
-
-func InternalServerError(ctx context.Context, from, title string, err error) []exceptions.ProblemDetails {
-	return LogWithProblem(ctx, from, LoggerLayers.USECASES, title, err, exceptions.RFC500_CODE, exceptions.InternalServerError)
 }

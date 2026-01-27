@@ -19,31 +19,32 @@ type UpdateEmailVerifiedOutput struct {
 
 type UpdateEmailVerifiedUseCase struct {
 	userRepository entities.UserRepository
+	logger         logging.LoggerInterface
 }
 
-func NewUpdateEmailVerifiedUseCase(userRepo entities.UserRepository) *UpdateEmailVerifiedUseCase {
-	return &UpdateEmailVerifiedUseCase{userRepository: userRepo}
+func NewUpdateEmailVerifiedUseCase(userRepo entities.UserRepository, logger logging.LoggerInterface) *UpdateEmailVerifiedUseCase {
+	return &UpdateEmailVerifiedUseCase{
+		userRepository: userRepo,
+		logger:         logger,
+	}
 }
 
 func (uc *UpdateEmailVerifiedUseCase) Execute(ctx context.Context, input UpdateEmailVerifiedInput) (*UpdateEmailVerifiedOutput, []exceptions.ProblemDetails) {
 	const from = "UpdateEmailVerifiedUseCase.Execute"
 
 	if input.UserID == "" {
-		return nil, []exceptions.ProblemDetails{
-			exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
-				Title:  "ID do usuário ausente",
-				Detail: "O ID do usuário é obrigatório",
-			}),
-		}
+		return nil, uc.logger.LogBadRequest(ctx, from, "ID do usuário ausente", nil)
 	}
 
 	if _, err := uc.userRepository.FindByID(input.UserID); err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao buscar usuário", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar usuário", err)
 	}
 
 	if err := uc.userRepository.UpdateEmailVerified(input.UserID, input.Verified); err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao atualizar verificação de email", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao atualizar verificação de email", err)
 	}
+
+	uc.logger.LogInfo(ctx, from, "Status de email atualizado: user_id="+input.UserID+", verified=%v")
 
 	return &UpdateEmailVerifiedOutput{
 		Message: "Status de email atualizado",

@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"errors"
 
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
@@ -21,11 +22,13 @@ type CheckPhoneExistsOutput struct {
 
 type CheckPhoneExistsUseCase struct {
 	userRepository entities.UserRepository
+	logger         logging.LoggerInterface
 }
 
-func NewCheckPhoneExistsUseCase(userRepo entities.UserRepository) *CheckPhoneExistsUseCase {
+func NewCheckPhoneExistsUseCase(userRepo entities.UserRepository, logger logging.LoggerInterface) *CheckPhoneExistsUseCase {
 	return &CheckPhoneExistsUseCase{
 		userRepository: userRepo,
+		logger:         logger,
 	}
 }
 
@@ -33,22 +36,21 @@ func (uc *CheckPhoneExistsUseCase) Execute(ctx context.Context, input CheckPhone
 	const from = "CheckPhoneExistsUseCase.Execute"
 
 	if input.CountryCode == "" || input.AreaCode == "" || input.Number == "" {
-		return nil, []exceptions.ProblemDetails{
-			exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
-				Title:  "Dados do telefone incompletos",
-				Detail: "Código do país, código de área e número são obrigatórios",
-			}),
-		}
+		return nil, uc.logger.LogBadRequest(ctx, from, "Dados do telefone incompletos", errors.New("Código do país, código de área e número são obrigatórios"))
 	}
 
 	_, validationErrors := entities.NewPhone(input.CountryCode, input.AreaCode, input.Number)
 	if len(validationErrors) > 0 {
-		return nil, validationErrors
+		var loggedErrors []exceptions.ProblemDetails
+		for _, err := range validationErrors {
+			loggedErrors = append(loggedErrors, uc.logger.LogBadRequest(ctx, from, "Erro de validação de telefone", errors.New(err.Detail))...)
+		}
+		return nil, loggedErrors
 	}
 
 	exists, err := uc.userRepository.ExistsByPhone(input.CountryCode, input.AreaCode, input.Number)
 	if err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao verificar telefone", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao verificar telefone", err)
 	}
 
 	message := "Telefone disponível"

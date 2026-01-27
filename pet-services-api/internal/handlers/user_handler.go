@@ -12,11 +12,13 @@ import (
 
 type UserHandler struct {
 	UserFactory *factories.UserFactory
+	Logger      logging.LoggerInterface
 }
 
-func NewUserHandler(factory *factories.UserFactory) *UserHandler {
+func NewUserHandler(factory *factories.UserFactory, logger logging.LoggerInterface) *UserHandler {
 	return &UserHandler{
 		UserFactory: factory,
+		Logger:      logger,
 	}
 }
 
@@ -37,7 +39,7 @@ func (h *UserHandler) RegisterUser(c *gin.Context) {
 			Title:  "Erro ao fazer o parser",
 			Detail: "Erro ao fazer o parser do usuário",
 		})
-		logging.BadRequest(ctx, "UserHandler", problem.Detail, err)
+		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
 		return
 	}
@@ -86,7 +88,7 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 			Title:  "Erro ao fazer o parser",
 			Detail: "Erro ao fazer o parser dos parâmetros de listagem",
 		})
-		logging.BadRequest(ctx, "UserHandler", problem.Detail, err)
+		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
 		return
 	}
@@ -115,7 +117,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 			Title:  "Erro ao fazer o parser",
 			Detail: "Erro ao fazer o parser dos dados do usuário",
 		})
-		logging.BadRequest(ctx, "UserHandler", problem.Detail, err)
+		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
 		return
 	}
@@ -144,7 +146,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 			Title:  "Erro ao fazer o parser",
 			Detail: "Erro ao fazer o parser do ID do usuário",
 		})
-		logging.BadRequest(ctx, "UserHandler", problem.Detail, err)
+		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
 		return
 	}
@@ -173,7 +175,7 @@ func (h *UserHandler) ReactivateUser(c *gin.Context) {
 			Title:  "Erro ao fazer o parser",
 			Detail: "Erro ao fazer o parser do ID do usuário",
 		})
-		logging.BadRequest(ctx, "UserHandler", problem.Detail, err)
+		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
 		return
 	}
@@ -202,7 +204,7 @@ func (h *UserHandler) DeactivateUser(c *gin.Context) {
 			Title:  "Erro ao fazer o parser",
 			Detail: "Erro ao fazer o parser do ID do usuário",
 		})
-		logging.BadRequest(ctx, "UserHandler", problem.Detail, err)
+		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
 		return
 	}
@@ -251,7 +253,7 @@ func (h *UserHandler) CheckEmailExists(c *gin.Context) {
 			Title:  "Erro ao fazer o parser",
 			Detail: "Erro ao fazer o parser do email",
 		})
-		logging.BadRequest(ctx, "UserHandler", problem.Detail, err)
+		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
 		return
 	}
@@ -280,7 +282,7 @@ func (h *UserHandler) CheckPhoneExists(c *gin.Context) {
 			Title:  "Erro ao fazer o parser",
 			Detail: "Erro ao fazer o parser do telefone",
 		})
-		logging.BadRequest(ctx, "UserHandler", problem.Detail, err)
+		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
 		return
 	}
@@ -309,7 +311,7 @@ func (h *UserHandler) UpdateEmailVerified(c *gin.Context) {
 			Title:  "Erro ao fazer o parser",
 			Detail: "Erro ao fazer o parser dos dados de verificação de email",
 		})
-		logging.BadRequest(ctx, "UserHandler", problem.Detail, err)
+		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
 		return
 	}
@@ -338,7 +340,7 @@ func (h *UserHandler) ChangePassword(c *gin.Context) {
 			Title:  "Erro ao fazer o parser",
 			Detail: "Erro ao fazer o parser dos dados de senha",
 		})
-		logging.BadRequest(ctx, "UserHandler", problem.Detail, err)
+		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
 		return
 	}
@@ -368,7 +370,7 @@ func (h *UserHandler) CreateAdmin(c *gin.Context) {
 			Title:  "Erro ao fazer o parser",
 			Detail: "Erro ao fazer o parser dos dados do admin",
 		})
-		logging.BadRequest(ctx, "UserHandler", problem.Detail, err)
+		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
 		return
 	}

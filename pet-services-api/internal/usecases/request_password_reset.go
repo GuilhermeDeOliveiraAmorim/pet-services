@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"pet-services-api/internal/entities"
@@ -10,6 +11,7 @@ import (
 	"pet-services-api/internal/mail"
 
 	"github.com/oklog/ulid/v2"
+	"gorm.io/gorm"
 )
 
 type RequestPasswordResetInput struct {
@@ -30,9 +32,10 @@ type RequestPasswordResetUseCase struct {
 	resetTokenRepository entities.RefreshTokenRepository
 	emailService         mail.EmailService
 	ttl                  time.Duration
+	logger               logging.LoggerInterface
 }
 
-func NewRequestPasswordResetUseCase(userRepo entities.UserRepository, resetRepo entities.RefreshTokenRepository, emailService mail.EmailService, ttl time.Duration) *RequestPasswordResetUseCase {
+func NewRequestPasswordResetUseCase(userRepo entities.UserRepository, resetRepo entities.RefreshTokenRepository, emailService mail.EmailService, ttl time.Duration, logger logging.LoggerInterface) *RequestPasswordResetUseCase {
 	if ttl <= 0 {
 		ttl = time.Hour
 	}
@@ -41,6 +44,7 @@ func NewRequestPasswordResetUseCase(userRepo entities.UserRepository, resetRepo 
 		resetTokenRepository: resetRepo,
 		emailService:         emailService,
 		ttl:                  ttl,
+		logger:               logger,
 	}
 }
 
@@ -48,24 +52,22 @@ func (uc *RequestPasswordResetUseCase) Execute(ctx context.Context, input Reques
 	const from = "RequestPasswordResetUseCase.Execute"
 
 	if input.Email == "" {
-		return nil, []exceptions.ProblemDetails{
-			exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
-				Title:  "Email ausente",
-				Detail: "O email é obrigatório para reset de senha",
-			}),
-		}
+		return nil, uc.logger.LogBadRequest(ctx, from, "Email ausente", errors.New("O email é obrigatório para reset de senha"))
 	}
 
 	user, err := uc.userRepository.FindByEmail(input.Email)
 	if err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao buscar usuário", err)
+		if err == gorm.ErrRecordNotFound {
+			return nil, uc.logger.LogNotFound(ctx, from, "Usuário não encontrado", errors.New("Não foi possível encontrar um usuário com o ID informado"))
+		}
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar usuário", err)
 	}
 
 	tokenStr := ulid.Make().String()
 	expiresAt := time.Now().Add(uc.ttl)
 
 	if err := uc.resetTokenRepository.RevokeAllPasswordResetByUserID(user.ID); err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao revogar tokens anteriores", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao revogar tokens anteriores", err)
 	}
 
 	resetToken := &entities.PasswordResetToken{
@@ -77,11 +79,11 @@ func (uc *RequestPasswordResetUseCase) Execute(ctx context.Context, input Reques
 	}
 
 	if err := uc.resetTokenRepository.CreatePasswordReset(resetToken); err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao salvar token de reset", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao salvar token de reset", err)
 	}
 
 	if err := uc.emailService.SendPasswordResetEmail(user.Login.Email, tokenStr); err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao enviar email de reset", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao enviar email de reset", err)
 	}
 
 	return &RequestPasswordResetOutput{

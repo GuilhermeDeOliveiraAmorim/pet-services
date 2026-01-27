@@ -32,7 +32,7 @@ func init() {
 }
 
 func main() {
-	logging.InitLogger()
+	logger := &logging.DefaultLogger{}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
@@ -56,7 +56,7 @@ func main() {
 		BucketName: "",
 	}
 
-	router := routes.SetupRouter(storageInput, ctx)
+	router := routes.SetupRouter(storageInput, ctx, logger)
 
 	server := &http.Server{
 		Addr:    config.GetServerPort(),

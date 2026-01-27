@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"errors"
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
@@ -21,11 +22,13 @@ type CreateAdminOutput struct {
 
 type CreateAdminUseCase struct {
 	userRepository entities.UserRepository
+	logger         logging.LoggerInterface
 }
 
-func NewCreateAdminUseCase(userRepository entities.UserRepository) *CreateAdminUseCase {
+func NewCreateAdminUseCase(userRepository entities.UserRepository, logger logging.LoggerInterface) *CreateAdminUseCase {
 	return &CreateAdminUseCase{
 		userRepository: userRepository,
+		logger:         logger,
 	}
 }
 
@@ -33,46 +36,35 @@ func (uc *CreateAdminUseCase) Execute(ctx context.Context, input CreateAdminInpu
 	const from = "CreateAdminUseCase.Execute"
 
 	if !isAdmin {
-		return nil, []exceptions.ProblemDetails{
-			exceptions.NewProblemDetails(exceptions.Forbidden, exceptions.ErrorMessage{
-				Title:  "Acesso negado",
-				Detail: "Apenas administradores podem criar outros administradores.",
-			}),
-		}
+		return nil, uc.logger.LogForbidden(ctx, from, "Acesso negado", errors.New("Apenas administradores podem criar outros administradores."))
 	}
 
 	exists, err := uc.userRepository.ExistsByEmail(input.Login.Email)
 	if err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao verificar email", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao verificar email", err)
 	}
 
 	if exists {
-		return nil, []exceptions.ProblemDetails{
-			exceptions.NewProblemDetails(exceptions.Conflict, exceptions.ErrorMessage{
-				Title:  "Email já cadastrado",
-				Detail: "O email informado já está em uso por outro usuário",
-			}),
-		}
+		return nil, uc.logger.LogConflict(ctx, from, "Email já cadastrado", errors.New("O email informado já está em uso por outro usuário"))
 	}
 
 	var problems []exceptions.ProblemDetails
 
 	login, errs := entities.NewLogin(input.Login.Email, input.Login.Password)
 	if len(errs) > 0 {
+		uc.logger.LogMultipleBadRequests(ctx, from, "Login inválido", errs)
 		problems = append(problems, errs...)
-	}
-
-	if err := login.EncryptPassword(); err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao criptografar senha", err)
 	}
 
 	phone, errs := entities.NewPhone(input.Phone.CountryCode, input.Phone.AreaCode, input.Phone.Number)
 	if len(errs) > 0 {
+		uc.logger.LogMultipleBadRequests(ctx, from, "Telefone inválido", errs)
 		problems = append(problems, errs...)
 	}
 
 	location, errs := entities.NewLocation(input.Address.Location.Latitude, input.Address.Location.Longitude)
 	if len(errs) > 0 {
+		uc.logger.LogMultipleBadRequests(ctx, from, "Localização inválida", errs)
 		problems = append(problems, errs...)
 	}
 
@@ -88,7 +80,13 @@ func (uc *CreateAdminUseCase) Execute(ctx context.Context, input CreateAdminInpu
 		*location,
 	)
 	if len(errs) > 0 {
+		uc.logger.LogMultipleBadRequests(ctx, from, "Endereço inválido", errs)
 		problems = append(problems, errs...)
+	}
+
+	if len(problems) > 0 {
+		uc.logger.LogMultipleBadRequests(ctx, from, "Problemas de validação", problems)
+		return nil, problems
 	}
 
 	user, errs := entities.NewUser(
@@ -99,15 +97,21 @@ func (uc *CreateAdminUseCase) Execute(ctx context.Context, input CreateAdminInpu
 		*address,
 	)
 	if len(errs) > 0 {
+		uc.logger.LogMultipleBadRequests(ctx, from, "Usuário inválido", errs)
 		problems = append(problems, errs...)
 	}
 
 	if len(problems) > 0 {
+		uc.logger.LogMultipleBadRequests(ctx, from, "Problemas de validação", problems)
 		return nil, problems
 	}
 
+	if err := user.Login.EncryptPassword(); err != nil {
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao criptografar senha", err)
+	}
+
 	if err := uc.userRepository.Create(user); err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao criar admin", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao criar admin", err)
 	}
 
 	return &CreateAdminOutput{

@@ -26,11 +26,13 @@ type ListUsersOutput struct {
 
 type ListUsersUseCase struct {
 	userRepository entities.UserRepository
+	logger         logging.LoggerInterface
 }
 
-func NewListUsersUseCase(userRepository entities.UserRepository) *ListUsersUseCase {
+func NewListUsersUseCase(userRepository entities.UserRepository, logger logging.LoggerInterface) *ListUsersUseCase {
 	return &ListUsersUseCase{
 		userRepository: userRepository,
+		logger:         logger,
 	}
 }
 
@@ -51,7 +53,7 @@ func (uc *ListUsersUseCase) Execute(ctx context.Context, input ListUsersInput) (
 
 	users, total, err := uc.userRepository.List(input.Page, input.Limit)
 	if err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao listar usuários", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao listar usuários", err)
 	}
 
 	totalPages := int(total) / input.Limit

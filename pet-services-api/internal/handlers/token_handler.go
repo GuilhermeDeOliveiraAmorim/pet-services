@@ -12,11 +12,13 @@ import (
 
 type TokenHandler struct {
 	TokenFactory *factories.TokenFactory
+	Logger       logging.LoggerInterface
 }
 
-func NewTokenHandler(factory *factories.TokenFactory) *TokenHandler {
+func NewTokenHandler(factory *factories.TokenFactory, logger logging.LoggerInterface) *TokenHandler {
 	return &TokenHandler{
 		TokenFactory: factory,
+		Logger:       logger,
 	}
 }
 
@@ -37,7 +39,7 @@ func (h *TokenHandler) LoginUser(c *gin.Context) {
 			Title:  "Erro ao fazer o parser",
 			Detail: "Erro ao fazer o parser do login",
 		})
-		logging.BadRequest(ctx, "TokenHandler", problem.Detail, err)
+		h.Logger.LogBadRequest(ctx, "TokenHandler", problem.Detail, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
 		return
 	}
@@ -66,7 +68,7 @@ func (h *TokenHandler) Logout(c *gin.Context) {
 			Title:  "Erro ao fazer o parser",
 			Detail: "Erro ao fazer o parser do logout",
 		})
-		logging.BadRequest(ctx, "TokenHandler", problem.Detail, err)
+		h.Logger.LogBadRequest(ctx, "TokenHandler", problem.Detail, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
 		return
 	}
@@ -95,7 +97,7 @@ func (h *TokenHandler) RequestPasswordReset(c *gin.Context) {
 			Title:  "Erro ao fazer o parser",
 			Detail: "Erro ao fazer o parser do request de reset de senha",
 		})
-		logging.BadRequest(ctx, "TokenHandler", problem.Detail, err)
+		h.Logger.LogBadRequest(ctx, "TokenHandler", problem.Detail, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
 		return
 	}
@@ -124,7 +126,7 @@ func (h *TokenHandler) ResetPassword(c *gin.Context) {
 			Title:  "Erro ao fazer o parser",
 			Detail: "Erro ao fazer o parser do reset de senha",
 		})
-		logging.BadRequest(ctx, "TokenHandler", problem.Detail, err)
+		h.Logger.LogBadRequest(ctx, "TokenHandler", problem.Detail, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
 		return
 	}
@@ -153,7 +155,7 @@ func (h *TokenHandler) ResendVerificationEmail(c *gin.Context) {
 			Title:  "Erro ao fazer o parser",
 			Detail: "Erro ao fazer o parser do reenvio de verificação",
 		})
-		logging.BadRequest(ctx, "TokenHandler", problem.Detail, err)
+		h.Logger.LogBadRequest(ctx, "TokenHandler", problem.Detail, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
 		return
 	}
@@ -182,7 +184,7 @@ func (h *TokenHandler) VerifyEmail(c *gin.Context) {
 			Title:  "Erro ao fazer o parser",
 			Detail: "Erro ao fazer o parser da verificação de email",
 		})
-		logging.BadRequest(ctx, "TokenHandler", problem.Detail, err)
+		h.Logger.LogBadRequest(ctx, "TokenHandler", problem.Detail, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
 		return
 	}

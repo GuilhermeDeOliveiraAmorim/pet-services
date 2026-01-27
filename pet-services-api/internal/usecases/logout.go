@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"errors"
 
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
@@ -21,11 +22,13 @@ type LogoutOutput struct {
 
 type LogoutUseCase struct {
 	refreshTokenRepository entities.RefreshTokenRepository
+	logger                 logging.LoggerInterface
 }
 
-func NewLogoutUseCase(refreshTokenRepo entities.RefreshTokenRepository) *LogoutUseCase {
+func NewLogoutUseCase(refreshTokenRepo entities.RefreshTokenRepository, logger logging.LoggerInterface) *LogoutUseCase {
 	return &LogoutUseCase{
 		refreshTokenRepository: refreshTokenRepo,
+		logger:                 logger,
 	}
 }
 
@@ -33,17 +36,12 @@ func (uc *LogoutUseCase) Execute(ctx context.Context, input LogoutInput) (*Logou
 	const from = "LogoutUseCase.Execute"
 
 	if input.UserID == "" {
-		return nil, []exceptions.ProblemDetails{
-			exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
-				Title:  "ID do usuário ausente",
-				Detail: "O ID do usuário é obrigatório",
-			}),
-		}
+		return nil, uc.logger.LogBadRequest(ctx, from, "ID do usuário ausente", errors.New("O ID do usuário é obrigatório"))
 	}
 
 	if input.RevokeAll {
 		if err := uc.refreshTokenRepository.RevokeAllByUserID(input.UserID); err != nil {
-			return nil, logging.InternalServerError(ctx, from, "Erro ao revogar todos os tokens", err)
+			return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao revogar todos os tokens", err)
 		}
 
 		return &LogoutOutput{
@@ -54,7 +52,7 @@ func (uc *LogoutUseCase) Execute(ctx context.Context, input LogoutInput) (*Logou
 
 	if input.TokenID != "" {
 		if err := uc.refreshTokenRepository.Revoke(input.TokenID); err != nil {
-			return nil, logging.InternalServerError(ctx, from, "Erro ao revogar token", err)
+			return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao revogar token", err)
 		}
 
 		return &LogoutOutput{
@@ -63,10 +61,5 @@ func (uc *LogoutUseCase) Execute(ctx context.Context, input LogoutInput) (*Logou
 		}, nil
 	}
 
-	return nil, []exceptions.ProblemDetails{
-		exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
-			Title:  "Token ou opção de revogação ausente",
-			Detail: "Forneça um TokenID ou marque RevokeAll como true",
-		}),
-	}
+	return nil, uc.logger.LogBadRequest(ctx, from, "Token ou opção de revogação ausente", errors.New("Forneça um TokenID ou marque RevokeAll como true"))
 }

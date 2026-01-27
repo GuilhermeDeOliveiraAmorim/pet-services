@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"errors"
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
@@ -19,11 +20,13 @@ type GetUserByIDOutput struct {
 
 type GetUserByIDUseCase struct {
 	userRepository entities.UserRepository
+	logger         logging.LoggerInterface
 }
 
-func NewGetUserByIDUseCase(userRepository entities.UserRepository) *GetUserByIDUseCase {
+func NewGetUserByIDUseCase(userRepository entities.UserRepository, logger logging.LoggerInterface) *GetUserByIDUseCase {
 	return &GetUserByIDUseCase{
 		userRepository: userRepository,
+		logger:         logger,
 	}
 }
 
@@ -31,25 +34,15 @@ func (uc *GetUserByIDUseCase) Execute(ctx context.Context, input GetUserByIDInpu
 	const from = "GetUserByIDUseCase.Execute"
 
 	if input.UserID == "" {
-		return nil, []exceptions.ProblemDetails{
-			exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
-				Title:  "ID do usuário ausente",
-				Detail: "O ID do usuário é obrigatório para buscar",
-			}),
-		}
+		return nil, uc.logger.LogBadRequest(ctx, from, "ID do usuário ausente", errors.New("O ID do usuário é obrigatório para buscar"))
 	}
 
 	user, err := uc.userRepository.FindByID(input.UserID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, []exceptions.ProblemDetails{
-				exceptions.NewProblemDetails(exceptions.NotFound, exceptions.ErrorMessage{
-					Title:  "Usuário não encontrado",
-					Detail: "Não foi possível encontrar um usuário com o ID informado",
-				}),
-			}
+			return nil, uc.logger.LogNotFound(ctx, from, "Usuário não encontrado", errors.New("Não foi possível encontrar um usuário com o ID informado"))
 		}
-		return nil, logging.InternalServerError(ctx, from, "Erro ao buscar usuário", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar usuário", err)
 	}
 
 	return &GetUserByIDOutput{

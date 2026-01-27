@@ -10,20 +10,23 @@ import (
 
 	"pet-services-api/docs"
 
+	"pet-services-api/internal/logging"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func SetupRouter(storageInput database.StorageInput, ctx context.Context) *gin.Engine {
+func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger logging.LoggerInterface) *gin.Engine {
 	docs.SwaggerInfo.Title = "Pet Services API"
 	docs.SwaggerInfo.Description = "API para gerenciamento de serviços pet."
 	docs.SwaggerInfo.Version = "1.0"
 	docs.SwaggerInfo.Host = "localhost:8080"
 	docs.SwaggerInfo.BasePath = "/"
-	handlerFactory := handlers.NewHandlerFactory(storageInput)
-	middlewareFactory := middlewares.NewMiddlewareFactory()
+
+	handlerFactory := handlers.NewHandlerFactory(storageInput, logger)
+	middlewareFactory := middlewares.NewMiddlewareFactory(logger)
 
 	r := gin.Default()
 

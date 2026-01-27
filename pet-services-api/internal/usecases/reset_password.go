@@ -25,12 +25,14 @@ type ResetPasswordOutput struct {
 type ResetPasswordUseCase struct {
 	userRepository       entities.UserRepository
 	resetTokenRepository entities.RefreshTokenRepository
+	logger               logging.LoggerInterface
 }
 
-func NewResetPasswordUseCase(userRepo entities.UserRepository, resetRepo entities.RefreshTokenRepository) *ResetPasswordUseCase {
+func NewResetPasswordUseCase(userRepo entities.UserRepository, resetRepo entities.RefreshTokenRepository, logger logging.LoggerInterface) *ResetPasswordUseCase {
 	return &ResetPasswordUseCase{
 		userRepository:       userRepo,
 		resetTokenRepository: resetRepo,
+		logger:               logger,
 	}
 }
 
@@ -38,62 +40,45 @@ func (uc *ResetPasswordUseCase) Execute(ctx context.Context, input ResetPassword
 	const from = "ResetPasswordUseCase.Execute"
 
 	if input.Token == "" || input.NewPassword == "" {
-		return nil, []exceptions.ProblemDetails{
-			exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
-				Title:  "Dados ausentes",
-				Detail: "Token e nova senha são obrigatórios",
-			}),
-		}
+		return nil, uc.logger.LogBadRequest(ctx, from, "Dados ausentes", errors.New("Token e nova senha são obrigatórios"))
 	}
 
 	if !entities.IsValidPassword(input.NewPassword) {
-		return nil, []exceptions.ProblemDetails{
-			exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
-				Title:  "Senha inválida",
-				Detail: "A senha deve atender aos requisitos mínimos",
-			}),
-		}
+		return nil, uc.logger.LogBadRequest(ctx, from, "Senha inválida", errors.New("A senha deve atender aos requisitos mínimos"))
 	}
 
 	resetToken, err := uc.resetTokenRepository.FindValidPasswordResetByToken(input.Token)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, []exceptions.ProblemDetails{
-				exceptions.NewProblemDetails(exceptions.NotFound, exceptions.ErrorMessage{
-					Title:  "Token inválido",
-					Detail: "Token não encontrado ou inválido",
-				}),
-			}
+			return nil, uc.logger.LogNotFound(ctx, from, "Token inválido", errors.New("Token não encontrado ou inválido"))
 		}
-		return nil, logging.InternalServerError(ctx, from, "Erro ao validar token", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao validar token", err)
 	}
 
 	if resetToken.RevokedAt != nil || time.Now().After(resetToken.ExpiresAt) {
-		return nil, []exceptions.ProblemDetails{
-			exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
-				Title:  "Token expirado ou revogado",
-				Detail: "Solicite um novo reset de senha",
-			}),
-		}
+		return nil, uc.logger.LogBadRequest(ctx, from, "Token expirado ou revogado", errors.New("Solicite um novo reset de senha"))
 	}
 
 	user, err := uc.userRepository.FindByID(resetToken.UserID)
 	if err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao buscar usuário", err)
+		if err == gorm.ErrRecordNotFound {
+			return nil, uc.logger.LogNotFound(ctx, from, "Usuário não encontrado", errors.New("Não foi possível encontrar um usuário com o ID informado"))
+		}
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar usuário", err)
 	}
 
 	if err := user.Login.SetPassword(input.NewPassword); err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao criptografar senha", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao criptografar senha", err)
+	}
+
+	if err := uc.resetTokenRepository.RevokePasswordResetByToken(input.Token); err != nil {
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao revogar token", err)
 	}
 
 	user.Updated()
 
 	if err := uc.userRepository.Update(user); err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao salvar usuário", err)
-	}
-
-	if err := uc.resetTokenRepository.RevokePasswordResetByToken(input.Token); err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao revogar token", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao salvar usuário", err)
 	}
 
 	return &ResetPasswordOutput{

@@ -2,10 +2,13 @@ package usecases
 
 import (
 	"context"
+	"errors"
 
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
+
+	"gorm.io/gorm"
 )
 
 type ReactivateUserInput struct {
@@ -19,11 +22,13 @@ type ReactivateUserOutput struct {
 
 type ReactivateUserUseCase struct {
 	userRepository entities.UserRepository
+	logger         logging.LoggerInterface
 }
 
-func NewReactivateUserUseCase(userRepo entities.UserRepository) *ReactivateUserUseCase {
+func NewReactivateUserUseCase(userRepo entities.UserRepository, logger logging.LoggerInterface) *ReactivateUserUseCase {
 	return &ReactivateUserUseCase{
 		userRepository: userRepo,
+		logger:         logger,
 	}
 }
 
@@ -31,17 +36,15 @@ func (uc *ReactivateUserUseCase) Execute(ctx context.Context, input ReactivateUs
 	const from = "ReactivateUserUseCase.Execute"
 
 	if input.UserID == "" {
-		return nil, []exceptions.ProblemDetails{
-			exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
-				Title:  "ID do usuário ausente",
-				Detail: "O ID do usuário é obrigatório",
-			}),
-		}
+		return nil, uc.logger.LogBadRequest(ctx, from, "ID do usuário ausente", errors.New("O ID do usuário é obrigatório"))
 	}
 
 	user, err := uc.userRepository.FindByID(input.UserID)
 	if err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao buscar usuário", err)
+		if err == gorm.ErrRecordNotFound {
+			return nil, uc.logger.LogNotFound(ctx, from, "Usuário não encontrado", errors.New("Não foi possível encontrar um usuário com o ID informado"))
+		}
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar usuário", err)
 	}
 
 	if user.Active {
@@ -54,7 +57,7 @@ func (uc *ReactivateUserUseCase) Execute(ctx context.Context, input ReactivateUs
 	user.Activate()
 
 	if err := uc.userRepository.Update(user); err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao reativar usuário", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao reativar usuário", err)
 	}
 
 	return &ReactivateUserOutput{

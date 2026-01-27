@@ -1,39 +1,43 @@
 package middlewares
 
-import "github.com/gin-gonic/gin"
+import (
+	"pet-services-api/internal/logging"
 
-// MiddlewareFactory centraliza o acesso aos middlewares customizados
-// Útil para injeção e testes, além de manter padrão de uso.
-type MiddlewareFactory struct{}
+	"github.com/gin-gonic/gin"
+)
 
-func NewMiddlewareFactory() *MiddlewareFactory {
-	return &MiddlewareFactory{}
+type MiddlewareFactory struct {
+	Logger logging.LoggerInterface
+}
+
+func NewMiddlewareFactory(logger logging.LoggerInterface) *MiddlewareFactory {
+	return &MiddlewareFactory{Logger: logger}
 }
 
 func (f *MiddlewareFactory) AuthMiddleware() gin.HandlerFunc {
-	return AuthMiddleware()
+	return AuthMiddleware(f.Logger)
 }
 
 func (f *MiddlewareFactory) OwnerOnlyMiddleware() gin.HandlerFunc {
-	return OwnerOnlyMiddleware()
+	return OwnerOnlyMiddleware(f.Logger)
 }
 
 func (f *MiddlewareFactory) ProviderOnlyMiddleware() gin.HandlerFunc {
-	return ProviderOnlyMiddleware()
+	return ProviderOnlyMiddleware(f.Logger)
 }
 
 func (f *MiddlewareFactory) AdminOnlyMiddleware() gin.HandlerFunc {
-	return AdminOnlyMiddleware()
+	return AdminOnlyMiddleware(f.Logger)
 }
 
 func (f *MiddlewareFactory) DefaultRateLimitMiddleware() gin.HandlerFunc {
-	return DefaultRateLimitMiddleware()
+	return DefaultRateLimitMiddleware(f.Logger)
 }
 
 func (f *MiddlewareFactory) StrictRateLimitMiddleware() gin.HandlerFunc {
-	return StrictRateLimitMiddleware()
+	return StrictRateLimitMiddleware(f.Logger)
 }
 
 func (f *MiddlewareFactory) RateLimitMiddleware(config RateLimiterConfig) gin.HandlerFunc {
-	return RateLimitMiddleware(config)
+	return RateLimitMiddleware(config, f.Logger)
 }

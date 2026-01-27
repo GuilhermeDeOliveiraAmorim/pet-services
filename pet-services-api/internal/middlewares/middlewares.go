@@ -12,14 +12,14 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func AuthMiddleware() gin.HandlerFunc {
+func AuthMiddleware(logger logging.LoggerInterface) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		tokenString := extractBearerToken(c)
+		tokenString := extractBearerToken(c, logger)
 		if tokenString == "" {
 			return
 		}
 
-		token, claims := parseToken(c, tokenString)
+		token, claims := parseToken(c, tokenString, logger)
 		if token == nil || claims == nil {
 			return
 		}
@@ -27,7 +27,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		userType, okType := claims["user_type"].(string)
 		userID, okID := claims["id"].(string)
 		if !okType || !okID {
-			abortUnauthorized(c, "Token inválido", "Claims incompletas")
+			abortUnauthorized(c, "Token inválido", "Claims incompletas", logger)
 			return
 		}
 
@@ -37,66 +37,57 @@ func AuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-func extractBearerToken(c *gin.Context) string {
+func extractBearerToken(c *gin.Context, logger logging.LoggerInterface) string {
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {
-		abortUnauthorized(c, "Autorização não fornecida", "Cabeçalho de autorização está vazio")
+		abortUnauthorized(c, "Autorização não fornecida", "Cabeçalho de autorização está vazio", logger)
 		return ""
 	}
 
 	parts := strings.Split(authHeader, " ")
 	if len(parts) != 2 || parts[0] != "Bearer" {
-		abortUnauthorized(c, "Bearer token inválido", "Cabeçalho de autorização inválido")
+		abortUnauthorized(c, "Bearer token inválido", "Cabeçalho de autorização inválido", logger)
 		return ""
 	}
 
 	return parts[1]
 }
 
-func parseToken(c *gin.Context, tokenString string) (*jwt.Token, jwt.MapClaims) {
+func parseToken(c *gin.Context, tokenString string, logger logging.LoggerInterface) (*jwt.Token, jwt.MapClaims) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			abortUnauthorized(c, "Token inválido", "Método de assinatura inesperado")
+			abortUnauthorized(c, "Token inválido", "Método de assinatura inesperado", logger)
 			return nil, errors.New("unexpected signing method")
 		}
 		return []byte(config.SECRETS_VAR.JWT_SECRET), nil
 	})
 
 	if err != nil || token == nil || !token.Valid {
-		abortUnauthorized(c, "Token inválido", "Erro ao analisar o token")
+		abortUnauthorized(c, "Token inválido", "Erro ao analisar o token", logger)
 		return nil, nil
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		abortUnauthorized(c, "Token inválido", "Não foi possível ler as claims")
+		abortUnauthorized(c, "Token inválido", "Não foi possível ler as claims", logger)
 		return nil, nil
 	}
 
 	return token, claims
 }
 
-func abortUnauthorized(c *gin.Context, title, detail string) {
+func abortUnauthorized(c *gin.Context, title, detail string, logger logging.LoggerInterface) {
 	problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
 		Title:  title,
 		Detail: detail,
 	})
 
-	logging.NewLogger(logging.Logger{
-		Context:  c.Request.Context(),
-		Code:     exceptions.RFC401_CODE,
-		Message:  title,
-		From:     "AuthMiddleware",
-		Layer:    logging.LoggerLayers.MIDDLEWARES,
-		TypeLog:  logging.LoggerTypes.ERROR,
-		Error:    errors.New(detail),
-		Problems: []exceptions.ProblemDetails{problem},
-	})
+	logger.LogError(c.Request.Context(), "AuthMiddleware", title, errors.New(detail))
 
 	c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
 }
 
-func OwnerOnlyMiddleware() gin.HandlerFunc {
+func OwnerOnlyMiddleware(logger logging.LoggerInterface) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userType, exists := c.Get("user_type")
 		if !exists || userType != "owner" {
@@ -104,16 +95,7 @@ func OwnerOnlyMiddleware() gin.HandlerFunc {
 				Title:  "Acesso negado",
 				Detail: "Acesso permitido apenas para usuários do tipo owner",
 			})
-			logging.NewLogger(logging.Logger{
-				Context:  c.Request.Context(),
-				Code:     exceptions.RFC401_CODE,
-				Message:  problem.Title,
-				From:     "AuthMiddleware",
-				Layer:    logging.LoggerLayers.MIDDLEWARES,
-				TypeLog:  logging.LoggerTypes.ERROR,
-				Error:    errors.New(problem.Detail),
-				Problems: []exceptions.ProblemDetails{problem},
-			})
+			logger.LogError(c.Request.Context(), "AuthMiddleware", problem.Title+": "+problem.Detail, errors.New(problem.Detail))
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": problem})
 			return
 		}
@@ -121,7 +103,7 @@ func OwnerOnlyMiddleware() gin.HandlerFunc {
 	}
 }
 
-func ProviderOnlyMiddleware() gin.HandlerFunc {
+func ProviderOnlyMiddleware(logger logging.LoggerInterface) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userType, exists := c.Get("user_type")
 		if !exists || userType != "provider" {
@@ -129,16 +111,7 @@ func ProviderOnlyMiddleware() gin.HandlerFunc {
 				Title:  "Acesso negado",
 				Detail: "Acesso permitido apenas para usuários do tipo provider",
 			})
-			logging.NewLogger(logging.Logger{
-				Context:  c.Request.Context(),
-				Code:     exceptions.RFC401_CODE,
-				Message:  problem.Title,
-				From:     "AuthMiddleware",
-				Layer:    logging.LoggerLayers.MIDDLEWARES,
-				TypeLog:  logging.LoggerTypes.ERROR,
-				Error:    errors.New(problem.Detail),
-				Problems: []exceptions.ProblemDetails{problem},
-			})
+			logger.LogError(c.Request.Context(), "AuthMiddleware", problem.Title+": "+problem.Detail, errors.New(problem.Detail))
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": problem})
 			return
 		}
@@ -146,7 +119,7 @@ func ProviderOnlyMiddleware() gin.HandlerFunc {
 	}
 }
 
-func AdminOnlyMiddleware() gin.HandlerFunc {
+func AdminOnlyMiddleware(logger logging.LoggerInterface) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userType, exists := c.Get("user_type")
 		if !exists || userType != "admin" {
@@ -154,16 +127,7 @@ func AdminOnlyMiddleware() gin.HandlerFunc {
 				Title:  "Acesso negado",
 				Detail: "Acesso permitido apenas para administradores",
 			})
-			logging.NewLogger(logging.Logger{
-				Context:  c.Request.Context(),
-				Code:     exceptions.RFC401_CODE,
-				Message:  problem.Title,
-				From:     "AuthMiddleware",
-				Layer:    logging.LoggerLayers.MIDDLEWARES,
-				TypeLog:  logging.LoggerTypes.ERROR,
-				Error:    errors.New(problem.Detail),
-				Problems: []exceptions.ProblemDetails{problem},
-			})
+			logger.LogError(c.Request.Context(), "AuthMiddleware", problem.Title+": "+problem.Detail, errors.New(problem.Detail))
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": problem})
 			return
 		}

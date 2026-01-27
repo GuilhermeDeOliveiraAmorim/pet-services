@@ -1,6 +1,7 @@
 package factories
 
 import (
+	"pet-services-api/internal/logging"
 	"pet-services-api/internal/repository_impl"
 	"pet-services-api/internal/usecases"
 
@@ -23,23 +24,23 @@ type UserFactory struct {
 	ChangePassword      *usecases.ChangePasswordUseCase
 }
 
-func NewUserFactory(db *gorm.DB) *UserFactory {
+func NewUserFactory(db *gorm.DB, logger logging.LoggerInterface) *UserFactory {
 	userRepo := repository_impl.NewUserRepository(db)
 	tokenRepo := repository_impl.NewRefreshTokenRepository(db)
 
 	return &UserFactory{
-		RegisterUser:        usecases.NewRegisterUserUseCase(userRepo),
-		RegisterAdmin:       usecases.NewCreateAdminUseCase(userRepo),
-		GetProfile:          usecases.NewGetProfileUseCase(userRepo),
-		ListUsers:           usecases.NewListUsersUseCase(userRepo),
-		UpdateUser:          usecases.NewUpdateUserUseCase(userRepo),
-		DeleteUser:          usecases.NewDeleteUserUseCase(userRepo),
-		ReactivateUser:      usecases.NewReactivateUserUseCase(userRepo),
-		DeactivateUser:      usecases.NewDeactivateUserUseCase(userRepo, tokenRepo),
-		GetUserByID:         usecases.NewGetUserByIDUseCase(userRepo),
-		CheckEmailExists:    usecases.NewCheckEmailExistsUseCase(userRepo),
-		CheckPhoneExists:    usecases.NewCheckPhoneExistsUseCase(userRepo),
-		UpdateEmailVerified: usecases.NewUpdateEmailVerifiedUseCase(userRepo),
-		ChangePassword:      usecases.NewChangePasswordUseCase(userRepo),
+		RegisterUser:        usecases.NewRegisterUserUseCase(userRepo, logger),
+		RegisterAdmin:       usecases.NewCreateAdminUseCase(userRepo, logger),
+		GetProfile:          usecases.NewGetProfileUseCase(userRepo, logger),
+		ListUsers:           usecases.NewListUsersUseCase(userRepo, logger),
+		UpdateUser:          usecases.NewUpdateUserUseCase(userRepo, logger),
+		DeleteUser:          usecases.NewDeleteUserUseCase(userRepo, logger),
+		ReactivateUser:      usecases.NewReactivateUserUseCase(userRepo, logger),
+		DeactivateUser:      usecases.NewDeactivateUserUseCase(userRepo, tokenRepo, logger),
+		GetUserByID:         usecases.NewGetUserByIDUseCase(userRepo, logger),
+		CheckEmailExists:    usecases.NewCheckEmailExistsUseCase(userRepo, logger),
+		CheckPhoneExists:    usecases.NewCheckPhoneExistsUseCase(userRepo, logger),
+		UpdateEmailVerified: usecases.NewUpdateEmailVerifiedUseCase(userRepo, logger),
+		ChangePassword:      usecases.NewChangePasswordUseCase(userRepo, logger),
 	}
 }

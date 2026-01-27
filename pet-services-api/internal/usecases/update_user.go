@@ -27,35 +27,29 @@ type UpdateUserOutput struct {
 
 type UpdateUserUseCase struct {
 	userRepository entities.UserRepository
+	logger         logging.LoggerInterface
 }
 
-func NewUpdateUserUseCase(userRepo entities.UserRepository) *UpdateUserUseCase {
-	return &UpdateUserUseCase{userRepository: userRepo}
+func NewUpdateUserUseCase(userRepo entities.UserRepository, logger logging.LoggerInterface) *UpdateUserUseCase {
+	return &UpdateUserUseCase{
+		userRepository: userRepo,
+		logger:         logger,
+	}
 }
 
 func (uc *UpdateUserUseCase) Execute(ctx context.Context, input UpdateUserInput) (*UpdateUserOutput, []exceptions.ProblemDetails) {
 	const from = "UpdateUserUseCase.Execute"
 
 	if input.UserID == "" {
-		return nil, []exceptions.ProblemDetails{
-			exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
-				Title:  "ID do usuário ausente",
-				Detail: "O ID do usuário é obrigatório",
-			}),
-		}
+		return nil, uc.logger.LogBadRequest(ctx, from, "ID do usuário ausente", nil)
 	}
 
 	user, err := uc.userRepository.FindByID(input.UserID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, []exceptions.ProblemDetails{
-				exceptions.NewProblemDetails(exceptions.NotFound, exceptions.ErrorMessage{
-					Title:  "Usuário não encontrado",
-					Detail: "Não foi possível localizar o usuário informado",
-				}),
-			}
+		if err == gorm.ErrRecordNotFound {
+			return nil, uc.logger.LogNotFound(ctx, from, "Usuário não encontrado", errors.New("Não foi possível encontrar um usuário com o ID informado"))
 		}
-		return nil, logging.InternalServerError(ctx, from, "Erro ao buscar usuário", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar usuário", err)
 	}
 
 	if input.Name != "" {
@@ -68,11 +62,10 @@ func (uc *UpdateUserUseCase) Execute(ctx context.Context, input UpdateUserInput)
 
 	if input.Phone.CountryCode != "" || input.Phone.AreaCode != "" || input.Phone.Number != "" {
 		phone, problems := entities.NewPhone(input.Phone.CountryCode, input.Phone.AreaCode, input.Phone.Number)
-
 		if len(problems) > 0 {
+			uc.logger.LogMultipleBadRequests(ctx, from, "Telefone inválido", problems)
 			return nil, problems
 		}
-
 		user.Phone = *phone
 	}
 
@@ -83,6 +76,7 @@ func (uc *UpdateUserUseCase) Execute(ctx context.Context, input UpdateUserInput)
 
 		loc, problems := entities.NewLocation(input.Address.Location.Latitude, input.Address.Location.Longitude)
 		if len(problems) > 0 {
+			uc.logger.LogMultipleBadRequests(ctx, from, "Localização inválida", problems)
 			return nil, problems
 		}
 
@@ -97,18 +91,17 @@ func (uc *UpdateUserUseCase) Execute(ctx context.Context, input UpdateUserInput)
 			input.Address.Complement,
 			*loc,
 		)
-
 		if len(problems) > 0 {
+			uc.logger.LogMultipleBadRequests(ctx, from, "Endereço inválido", problems)
 			return nil, problems
 		}
-
 		user.Address = *addr
 	}
 
 	user.Updated()
 
 	if err := uc.userRepository.Update(user); err != nil {
-		return nil, logging.InternalServerError(ctx, from, "Erro ao atualizar usuário", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao atualizar usuário", err)
 	}
 
 	return &UpdateUserOutput{
