@@ -20,11 +20,13 @@ type UserRepository interface {
 type UserTypeENUM struct {
 	Owner    string `json:"owner"`
 	Provider string `json:"provider"`
+	Admin    string `json:"admin"`
 }
 
 var UserTypes = UserTypeENUM{
 	Owner:    "owner",
 	Provider: "provider",
+	Admin:    "admin",
 }
 
 type User struct {
