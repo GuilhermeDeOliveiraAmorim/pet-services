@@ -58,6 +58,7 @@ func (h *UserHandler) RegisterUser(c *gin.Context) {
 // @Param user_id path string true "ID do usuário"
 // @Success 200 {object} usecases.GetProfileOutput
 // @Failure 400 {object} exceptions.ProblemDetails
+// @Security Bearer
 // @Router /users/profile [get]
 func (h *UserHandler) GetProfile(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -79,6 +80,7 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 // @Param limit query int false "Limite"
 // @Success 200 {array} usecases.ListUsersOutput
 // @Failure 400 {object} exceptions.ProblemDetails
+// @Security Bearer
 // @Router /users [get]
 func (h *UserHandler) ListUsers(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -108,6 +110,7 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 // @Param input body usecases.UpdateUserInput true "Dados do usuário"
 // @Success 200 {object} usecases.UpdateUserOutput
 // @Failure 400 {object} exceptions.ProblemDetails
+// @Security Bearer
 // @Router /users [put]
 func (h *UserHandler) UpdateUser(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -137,6 +140,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 // @Param input body usecases.DeleteUserInput true "ID do usuário"
 // @Success 200 {object} usecases.DeleteUserOutput
 // @Failure 400 {object} exceptions.ProblemDetails
+// @Security Bearer
 // @Router /users [delete]
 func (h *UserHandler) DeleteUser(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -166,6 +170,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 // @Param input body usecases.ReactivateUserInput true "ID do usuário"
 // @Success 200 {object} usecases.ReactivateUserOutput
 // @Failure 400 {object} exceptions.ProblemDetails
+// @Security Bearer
 // @Router /users/reactivate [post]
 func (h *UserHandler) ReactivateUser(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -195,6 +200,7 @@ func (h *UserHandler) ReactivateUser(c *gin.Context) {
 // @Param input body usecases.DeactivateUserInput true "ID do usuário"
 // @Success 200 {object} usecases.DeactivateUserOutput
 // @Failure 400 {object} exceptions.ProblemDetails
+// @Security Bearer
 // @Router /users/deactivate [post]
 func (h *UserHandler) DeactivateUser(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -223,6 +229,7 @@ func (h *UserHandler) DeactivateUser(c *gin.Context) {
 // @Param user_id path string true "ID do usuário"
 // @Success 200 {object} usecases.GetUserByIDOutput
 // @Failure 400 {object} exceptions.ProblemDetails
+// @Security Bearer
 // @Router /users/{user_id} [get]
 func (h *UserHandler) GetUserByID(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -331,6 +338,7 @@ func (h *UserHandler) UpdateEmailVerified(c *gin.Context) {
 // @Param input body usecases.ChangePasswordInput true "Dados de senha"
 // @Success 200 {object} usecases.ChangePasswordOutput
 // @Failure 400 {object} exceptions.ProblemDetails
+// @Security Bearer
 // @Router /users/change-password [post]
 func (h *UserHandler) ChangePassword(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -361,6 +369,7 @@ func (h *UserHandler) ChangePassword(c *gin.Context) {
 // @Success 201 {object} usecases.CreateAdminOutput
 // @Failure 400 {object} exceptions.ProblemDetails
 // @Failure 403 {object} exceptions.ProblemDetails
+// @Security Bearer
 // @Router /admin [post]
 func (h *UserHandler) CreateAdmin(c *gin.Context) {
 	ctx := c.Request.Context()

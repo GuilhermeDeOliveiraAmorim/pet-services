@@ -499,6 +499,8 @@ paths:
           description: Forbidden
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
       summary: Cria um novo administrador
       tags:
       - Admin
@@ -549,6 +551,8 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
       summary: Realiza logout do usuário
       tags:
       - Authentication
@@ -574,6 +578,8 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
       summary: Solicita reset de senha
       tags:
       - Authentication
@@ -624,6 +630,8 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
       summary: Realiza reset de senha
       tags:
       - Authentication
@@ -649,6 +657,8 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
       summary: Verifica email do usuário
       tags:
       - Authentication
@@ -674,6 +684,8 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
       summary: Deleta usuário
       tags:
       - Users
@@ -700,6 +712,8 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
       summary: Lista usuários
       tags:
       - Users
@@ -724,6 +738,8 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
       summary: Atualiza dados do usuário
       tags:
       - Users
@@ -746,6 +762,8 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
       summary: Busca usuário por ID
       tags:
       - Users
@@ -771,6 +789,8 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
       summary: Altera senha do usuário
       tags:
       - Users
@@ -846,6 +866,8 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
       summary: Desativa usuário
       tags:
       - Users
@@ -868,6 +890,8 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
       summary: Retorna o perfil do usuário
       tags:
       - Users
@@ -893,6 +917,8 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
       summary: Reativa usuário
       tags:
       - Users
@@ -946,4 +972,11 @@ paths:
       summary: Atualiza verificação de email
       tags:
       - Users
+securityDefinitions:
+  Bearer:
+    description: 'JWT Authorization header usando o esquema Bearer. Exemplo: ''Authorization:
+      Bearer {token}'''
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

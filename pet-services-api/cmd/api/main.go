@@ -8,6 +8,10 @@
 // @license.url https://opensource.org/licenses/MIT
 // @host localhost:8080
 // @BasePath /
+// @securityDefinitions.apikey Bearer
+// @in header
+// @name Authorization
+// @description JWT Authorization header usando o esquema Bearer. Exemplo: 'Authorization: Bearer {token}'
 package main
 
 import (

@@ -59,6 +59,7 @@ func (h *TokenHandler) LoginUser(c *gin.Context) {
 // @Param input body usecases.LogoutInput true "Dados de logout"
 // @Success 200 {object} usecases.LogoutOutput
 // @Failure 400 {object} exceptions.ProblemDetails
+// @Security Bearer
 // @Router /auth/logout [post]
 func (h *TokenHandler) Logout(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -88,6 +89,7 @@ func (h *TokenHandler) Logout(c *gin.Context) {
 // @Param input body usecases.RequestPasswordResetInput true "Dados para reset de senha"
 // @Success 200 {object} usecases.RequestPasswordResetOutput
 // @Failure 400 {object} exceptions.ProblemDetails
+// @Security Bearer
 // @Router /auth/request-password-reset [post]
 func (h *TokenHandler) RequestPasswordReset(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -117,6 +119,7 @@ func (h *TokenHandler) RequestPasswordReset(c *gin.Context) {
 // @Param input body usecases.ResetPasswordInput true "Dados para reset de senha"
 // @Success 200 {object} usecases.ResetPasswordOutput
 // @Failure 400 {object} exceptions.ProblemDetails
+// @Security Bearer
 // @Router /auth/reset-password [post]
 func (h *TokenHandler) ResetPassword(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -175,6 +178,7 @@ func (h *TokenHandler) ResendVerificationEmail(c *gin.Context) {
 // @Param input body usecases.VerifyEmailInput true "Dados para verificação de email"
 // @Success 200 {object} usecases.VerifyEmailOutput
 // @Failure 400 {object} exceptions.ProblemDetails
+// @Security Bearer
 // @Router /auth/verify-email [post]
 func (h *TokenHandler) VerifyEmail(c *gin.Context) {
 	ctx := c.Request.Context()
