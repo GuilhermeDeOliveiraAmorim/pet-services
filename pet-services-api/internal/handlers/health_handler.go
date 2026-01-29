@@ -40,10 +40,7 @@ func (h *HealthHandler) HealthCheck(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	resultAPI := h.HealthCheckAPIUseCase.Execute(ctx)
-	h.Logger.LogInfo(ctx, "HealthHandler.HealthCheck", "Health check executed successfully")
-
 	resultDB := h.HealthCheckDBUseCase.Execute(ctx)
-	h.Logger.LogInfo(ctx, "HealthHandler.HealthCheck", "Health check for DB executed successfully")
 
 	c.JSON(http.StatusOK, HealthCheckResponse{
 		API: resultAPI,
