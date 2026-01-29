@@ -11,25 +11,42 @@ import (
 )
 
 type HealthHandler struct {
-	HealthCheckUseCase *usecases.HealthCheckAPIUseCase
-	Logger             logging.LoggerInterface
+	HealthCheckAPIUseCase *usecases.HealthCheckAPIUseCase
+	HealthCheckDBUseCase  *usecases.HealthCheckDBUseCase
+	Logger                logging.LoggerInterface
 }
 
 func NewHealthHandler(factory *factories.HealthFactory, logger logging.LoggerInterface) *HealthHandler {
-	return &HealthHandler{HealthCheckUseCase: factory.HealthCheckAPI, Logger: logger}
+	return &HealthHandler{
+		HealthCheckAPIUseCase: factory.HealthCheckAPI,
+		HealthCheckDBUseCase:  factory.HealthCheckDB,
+		Logger:                logger,
+	}
 }
 
-// HealthCheckAPI godoc
+type HealthCheckResponse struct {
+	API usecases.HealthCheckAPIOutput `json:"api"`
+	DB  usecases.HealthCheckDBOutput  `json:"db"`
+}
+
+// HealthCheck godoc
 // @Summary Verifica a saúde da API
 // @Tags Health
 // @Accept json
 // @Produce json
-// @Success 200 {object} usecases.HealthCheckAPIOutput
+// @Success 200 {object} HealthCheckResponse
 // @Router /health [get]
-func (h *HealthHandler) HealthCheckAPI(c *gin.Context) {
+func (h *HealthHandler) HealthCheck(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	result := h.HealthCheckUseCase.Execute(ctx)
+	resultAPI := h.HealthCheckAPIUseCase.Execute(ctx)
+	h.Logger.LogInfo(ctx, "HealthHandler.HealthCheck", "Health check executed successfully")
 
-	c.JSON(http.StatusOK, result)
+	resultDB := h.HealthCheckDBUseCase.Execute(ctx)
+	h.Logger.LogInfo(ctx, "HealthHandler.HealthCheck", "Health check for DB executed successfully")
+
+	c.JSON(http.StatusOK, HealthCheckResponse{
+		API: resultAPI,
+		DB:  resultDB,
+	})
 }

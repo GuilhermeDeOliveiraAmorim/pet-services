@@ -343,7 +343,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/usecases.HealthCheckAPIOutput"
+                            "$ref": "#/definitions/handlers.HealthCheckResponse"
                         }
                     }
                 }
@@ -1105,6 +1105,17 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.HealthCheckResponse": {
+            "type": "object",
+            "properties": {
+                "api": {
+                    "$ref": "#/definitions/usecases.HealthCheckAPIOutput"
+                },
+                "db": {
+                    "$ref": "#/definitions/usecases.HealthCheckDBOutput"
+                }
+            }
+        },
         "usecases.ChangePasswordInput": {
             "type": "object",
             "properties": {
@@ -1257,6 +1268,14 @@ const docTemplate = `{
             }
         },
         "usecases.HealthCheckAPIOutput": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "usecases.HealthCheckDBOutput": {
             "type": "object",
             "properties": {
                 "status": {

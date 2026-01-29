@@ -19,7 +19,7 @@ type HandlerFactory struct {
 func NewHandlerFactory(inputFactory database.StorageInput, logger logging.LoggerInterface) *HandlerFactory {
 	userFactory := factories.NewUserFactory(inputFactory.DB, logger)
 	tokenFactory := factories.NewTokenFactory(inputFactory.DB, nil, 0, logger)
-	healthFactory := factories.NewHealthFactory(logger)
+	healthFactory := factories.NewHealthFactory(inputFactory.DB, logger)
 
 	return &HandlerFactory{
 		UserHandler:   NewUserHandler(userFactory, logger),

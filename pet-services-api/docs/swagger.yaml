@@ -168,6 +168,13 @@ definitions:
       type:
         type: string
     type: object
+  handlers.HealthCheckResponse:
+    properties:
+      api:
+        $ref: '#/definitions/usecases.HealthCheckAPIOutput'
+      db:
+        $ref: '#/definitions/usecases.HealthCheckDBOutput'
+    type: object
   usecases.ChangePasswordInput:
     properties:
       current_password:
@@ -265,6 +272,11 @@ definitions:
         $ref: '#/definitions/entities.User'
     type: object
   usecases.HealthCheckAPIOutput:
+    properties:
+      status:
+        type: string
+    type: object
+  usecases.HealthCheckDBOutput:
     properties:
       status:
         type: string
@@ -677,7 +689,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/usecases.HealthCheckAPIOutput'
+            $ref: '#/definitions/handlers.HealthCheckResponse'
       summary: Verifica a saúde da API
       tags:
       - Health
