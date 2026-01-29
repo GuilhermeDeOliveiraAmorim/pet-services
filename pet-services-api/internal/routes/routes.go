@@ -60,7 +60,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	{
 		public.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-		public.GET("/health", handlerFactory.HealthHandler.HealthCheck)
+		public.GET("/health", handlerFactory.HealthHandler.HealthCheckAPI)
 
 		public.POST("/users/register", handlerFactory.UserHandler.RegisterUser)
 		public.POST("/users/check-email", handlerFactory.UserHandler.CheckEmailExists)

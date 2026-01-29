@@ -6,15 +6,15 @@ import (
 )
 
 type HealthFactory struct {
-	HealthCheck *usecases.HealthCheckUseCase
-	Logger      logging.LoggerInterface
+	HealthCheckAPI *usecases.HealthCheckAPIUseCase
+	Logger         logging.LoggerInterface
 }
 
 func NewHealthFactory(logger logging.LoggerInterface) *HealthFactory {
-	healthCheck := usecases.NewHealthCheckUseCase(logger)
+	healthCheck := usecases.NewHealthCheckAPIUseCase(logger)
 
 	return &HealthFactory{
-		HealthCheck: healthCheck,
-		Logger:      logger,
+		HealthCheckAPI: healthCheck,
+		Logger:         logger,
 	}
 }

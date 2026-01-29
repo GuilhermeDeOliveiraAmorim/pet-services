@@ -343,7 +343,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/usecases.HealthCheckOutput"
+                            "$ref": "#/definitions/usecases.HealthCheckAPIOutput"
                         }
                     }
                 }
@@ -1256,7 +1256,7 @@ const docTemplate = `{
                 }
             }
         },
-        "usecases.HealthCheckOutput": {
+        "usecases.HealthCheckAPIOutput": {
             "type": "object",
             "properties": {
                 "status": {

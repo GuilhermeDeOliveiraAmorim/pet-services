@@ -11,22 +11,22 @@ import (
 )
 
 type HealthHandler struct {
-	HealthCheckUseCase *usecases.HealthCheckUseCase
+	HealthCheckUseCase *usecases.HealthCheckAPIUseCase
 	Logger             logging.LoggerInterface
 }
 
 func NewHealthHandler(factory *factories.HealthFactory, logger logging.LoggerInterface) *HealthHandler {
-	return &HealthHandler{HealthCheckUseCase: factory.HealthCheck, Logger: logger}
+	return &HealthHandler{HealthCheckUseCase: factory.HealthCheckAPI, Logger: logger}
 }
 
-// HealthCheck godoc
+// HealthCheckAPI godoc
 // @Summary Verifica a saúde da API
 // @Tags Health
 // @Accept json
 // @Produce json
-// @Success 200 {object} usecases.HealthCheckOutput
+// @Success 200 {object} usecases.HealthCheckAPIOutput
 // @Router /health [get]
-func (h *HealthHandler) HealthCheck(c *gin.Context) {
+func (h *HealthHandler) HealthCheckAPI(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	result := h.HealthCheckUseCase.Execute(ctx)

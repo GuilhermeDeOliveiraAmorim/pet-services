@@ -5,20 +5,20 @@ import (
 	"pet-services-api/internal/logging"
 )
 
-type HealthCheckOutput struct {
+type HealthCheckAPIOutput struct {
 	Status string `json:"status"`
 }
 
-type HealthCheckUseCase struct {
+type HealthCheckAPIUseCase struct {
 	logger logging.LoggerInterface
 }
 
-func NewHealthCheckUseCase(logger logging.LoggerInterface) *HealthCheckUseCase {
-	return &HealthCheckUseCase{logger: logger}
+func NewHealthCheckAPIUseCase(logger logging.LoggerInterface) *HealthCheckAPIUseCase {
+	return &HealthCheckAPIUseCase{logger: logger}
 }
 
-func (h *HealthCheckUseCase) Execute(ctx context.Context) HealthCheckOutput {
-	h.logger.LogInfo(ctx, "HealthCheckUseCase.Execute", "Health check executed successfully")
+func (h *HealthCheckAPIUseCase) Execute(ctx context.Context) HealthCheckAPIOutput {
+	h.logger.LogInfo(ctx, "HealthCheckAPIUseCase.Execute", "Health check executed successfully")
 
-	return HealthCheckOutput{Status: "ok"}
+	return HealthCheckAPIOutput{Status: "ok"}
 }

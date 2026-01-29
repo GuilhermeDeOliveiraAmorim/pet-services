@@ -337,7 +337,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/usecases.HealthCheckOutput"
+                            "$ref": "#/definitions/usecases.HealthCheckAPIOutput"
                         }
                     }
                 }
@@ -1250,7 +1250,7 @@
                 }
             }
         },
-        "usecases.HealthCheckOutput": {
+        "usecases.HealthCheckAPIOutput": {
             "type": "object",
             "properties": {
                 "status": {

@@ -264,7 +264,7 @@ definitions:
       user:
         $ref: '#/definitions/entities.User'
     type: object
-  usecases.HealthCheckOutput:
+  usecases.HealthCheckAPIOutput:
     properties:
       status:
         type: string
@@ -677,7 +677,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/usecases.HealthCheckOutput'
+            $ref: '#/definitions/usecases.HealthCheckAPIOutput'
       summary: Verifica a saúde da API
       tags:
       - Health
