@@ -327,6 +327,28 @@ const docTemplate = `{
                 }
             }
         },
+        "/health": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Health"
+                ],
+                "summary": "Verifica a saúde da API",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/usecases.HealthCheckOutput"
+                        }
+                    }
+                }
+            }
+        },
         "/users": {
             "get": {
                 "security": [
@@ -1231,6 +1253,14 @@ const docTemplate = `{
             "properties": {
                 "user": {
                     "$ref": "#/definitions/entities.User"
+                }
+            }
+        },
+        "usecases.HealthCheckOutput": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string"
                 }
             }
         },

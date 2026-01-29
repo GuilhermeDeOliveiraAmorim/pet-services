@@ -36,9 +36,11 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	if devURL != "" {
 		allowOrigins = append(allowOrigins, devURL)
 	}
+
 	if prodURL != "" {
 		allowOrigins = append(allowOrigins, prodURL)
 	}
+
 	if len(allowOrigins) == 0 {
 		allowOrigins = []string{"*"}
 	}
@@ -58,10 +60,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	{
 		public.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-		// Health check endpoints
-		// public.GET("/health", handlerFactory.HealthHandler.Check)
-		// public.GET("/health/ready", handlerFactory.HealthHandler.Ready)
-		// public.GET("/health/live", handlerFactory.HealthHandler.Live)
+		public.GET("/health", handlerFactory.HealthHandler.HealthCheck)
 
 		public.POST("/users/register", handlerFactory.UserHandler.RegisterUser)
 		public.POST("/users/check-email", handlerFactory.UserHandler.CheckEmailExists)

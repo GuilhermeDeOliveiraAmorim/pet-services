@@ -10,19 +10,22 @@ import (
 )
 
 type HandlerFactory struct {
-	UserHandler  *UserHandler
-	TokenHandler *TokenHandler
-	Logger       logging.LoggerInterface
+	UserHandler   *UserHandler
+	TokenHandler  *TokenHandler
+	HealthHandler *HealthHandler
+	Logger        logging.LoggerInterface
 }
 
 func NewHandlerFactory(inputFactory database.StorageInput, logger logging.LoggerInterface) *HandlerFactory {
 	userFactory := factories.NewUserFactory(inputFactory.DB, logger)
 	tokenFactory := factories.NewTokenFactory(inputFactory.DB, nil, 0, logger)
+	healthFactory := factories.NewHealthFactory(logger)
 
 	return &HandlerFactory{
-		UserHandler:  NewUserHandler(userFactory, logger),
-		TokenHandler: NewTokenHandler(tokenFactory, logger),
-		Logger:       logger,
+		UserHandler:   NewUserHandler(userFactory, logger),
+		TokenHandler:  NewTokenHandler(tokenFactory, logger),
+		HealthHandler: NewHealthHandler(healthFactory, logger),
+		Logger:        logger,
 	}
 }
 

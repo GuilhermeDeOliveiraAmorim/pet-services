@@ -321,6 +321,28 @@
                 }
             }
         },
+        "/health": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Health"
+                ],
+                "summary": "Verifica a saúde da API",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/usecases.HealthCheckOutput"
+                        }
+                    }
+                }
+            }
+        },
         "/users": {
             "get": {
                 "security": [
@@ -1225,6 +1247,14 @@
             "properties": {
                 "user": {
                     "$ref": "#/definitions/entities.User"
+                }
+            }
+        },
+        "usecases.HealthCheckOutput": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string"
                 }
             }
         },

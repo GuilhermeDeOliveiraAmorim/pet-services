@@ -264,6 +264,11 @@ definitions:
       user:
         $ref: '#/definitions/entities.User'
     type: object
+  usecases.HealthCheckOutput:
+    properties:
+      status:
+        type: string
+    type: object
   usecases.ListUsersOutput:
     properties:
       pagination:
@@ -662,6 +667,20 @@ paths:
       summary: Verifica email do usuário
       tags:
       - Authentication
+  /health:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.HealthCheckOutput'
+      summary: Verifica a saúde da API
+      tags:
+      - Health
   /users:
     delete:
       consumes:
