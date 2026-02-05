@@ -3,13 +3,12 @@ package middlewares
 import (
 	"errors"
 	"net/http"
-	"pet-services-api/internal/config"
+	"pet-services-api/internal/auth"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 )
 
 func AuthMiddleware(logger logging.LoggerInterface) gin.HandlerFunc {
@@ -19,20 +18,20 @@ func AuthMiddleware(logger logging.LoggerInterface) gin.HandlerFunc {
 			return
 		}
 
-		token, claims := parseToken(c, tokenString, logger)
-		if token == nil || claims == nil {
+		jwtService, err := auth.NewJWTServiceFromEnv()
+		if err != nil {
+			abortUnauthorized(c, "Configuração JWT inválida", "Erro ao carregar configuração de autenticação", logger)
 			return
 		}
 
-		userType, okType := claims["user_type"].(string)
-		userID, okID := claims["id"].(string)
-		if !okType || !okID {
-			abortUnauthorized(c, "Token inválido", "Claims incompletas", logger)
+		claims, err := jwtService.ValidateAccessToken(tokenString)
+		if err != nil {
+			abortUnauthorized(c, "Token inválido", err.Error(), logger)
 			return
 		}
 
-		c.Set("user_id", userID)
-		c.Set("user_type", userType)
+		c.Set("user_id", claims.UserID)
+		c.Set("user_type", claims.UserType)
 		c.Next()
 	}
 }
@@ -53,36 +52,13 @@ func extractBearerToken(c *gin.Context, logger logging.LoggerInterface) string {
 	return parts[1]
 }
 
-func parseToken(c *gin.Context, tokenString string, logger logging.LoggerInterface) (*jwt.Token, jwt.MapClaims) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			abortUnauthorized(c, "Token inválido", "Método de assinatura inesperado", logger)
-			return nil, errors.New("unexpected signing method")
-		}
-		return []byte(config.SECRETS_VAR.JWT_SECRET), nil
-	})
-
-	if err != nil || token == nil || !token.Valid {
-		abortUnauthorized(c, "Token inválido", "Erro ao analisar o token", logger)
-		return nil, nil
-	}
-
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		abortUnauthorized(c, "Token inválido", "Não foi possível ler as claims", logger)
-		return nil, nil
-	}
-
-	return token, claims
-}
-
 func abortUnauthorized(c *gin.Context, title, detail string, logger logging.LoggerInterface) {
 	problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
 		Title:  title,
 		Detail: detail,
 	})
 
-	logger.LogError(c.Request.Context(), "AuthMiddleware", title, errors.New(detail))
+	logger.LogError(c.Request.Context(), "AuthMiddleware", title, nil)
 
 	c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
 }

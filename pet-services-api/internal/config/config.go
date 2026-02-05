@@ -16,7 +16,9 @@ type FRONT_END_URL struct {
 }
 
 type SECRETS struct {
-	JWT_SECRET string
+	JWT_SECRET         string
+	JWT_ACCESS_SECRET  string
+	JWT_REFRESH_SECRET string
 }
 
 type GOOGLE struct {
@@ -62,7 +64,9 @@ var DB_POSTGRES = DB{
 }
 
 var SECRETS_VAR = SECRETS{
-	JWT_SECRET: os.Getenv("JWT_SECRET"),
+	JWT_SECRET:         os.Getenv("JWT_SECRET"),
+	JWT_ACCESS_SECRET:  os.Getenv("JWT_ACCESS_SECRET"),
+	JWT_REFRESH_SECRET: os.Getenv("JWT_REFRESH_SECRET"),
 }
 
 var FRONT_END_URL_VAR = FRONT_END_URL{
