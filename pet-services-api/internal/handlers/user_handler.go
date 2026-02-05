@@ -52,18 +52,26 @@ func (h *UserHandler) RegisterUser(c *gin.Context) {
 }
 
 // GetProfile godoc
-// @Summary Retorna o perfil do usuário
+// @Summary Retorna o perfil do usuário autenticado
 // @Tags Users
 // @Produce json
-// @Param user_id path string true "ID do usuário"
 // @Success 200 {object} usecases.GetProfileOutput
 // @Failure 400 {object} exceptions.ProblemDetails
 // @Security Bearer
 // @Router /users/profile [get]
 func (h *UserHandler) GetProfile(c *gin.Context) {
 	ctx := c.Request.Context()
-	userID := c.Param("user_id")
-	input := usecases.GetProfileInput{UserID: userID}
+	userID, exists := c.Get("user_id")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Usuário não autenticado",
+			Detail: "Não foi possível obter o ID do usuário autenticado",
+		})
+		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
+		return
+	}
+	input := usecases.GetProfileInput{UserID: userID.(string)}
 	output, errs := h.UserFactory.GetProfile.Execute(ctx, input)
 	if len(errs) > 0 {
 		exceptions.HandleErrors(c, errs)

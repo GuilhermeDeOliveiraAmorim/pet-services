@@ -904,12 +904,6 @@ paths:
       - Users
   /users/profile:
     get:
-      parameters:
-      - description: ID do usuário
-        in: path
-        name: user_id
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -923,7 +917,7 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       security:
       - Bearer: []
-      summary: Retorna o perfil do usuário
+      summary: Retorna o perfil do usuário autenticado
       tags:
       - Users
   /users/reactivate:

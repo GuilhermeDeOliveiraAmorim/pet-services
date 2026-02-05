@@ -653,16 +653,7 @@
                 "tags": [
                     "Users"
                 ],
-                "summary": "Retorna o perfil do usuário",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID do usuário",
-                        "name": "user_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
+                "summary": "Retorna o perfil do usuário autenticado",
                 "responses": {
                     "200": {
                         "description": "OK",

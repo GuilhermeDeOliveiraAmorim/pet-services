@@ -74,7 +74,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		public.POST("/auth/logout", handlerFactory.TokenHandler.Logout)
 	}
 
-	authorizedUser := r.Group("/user/")
+	authorizedUser := r.Group("/users/")
 	authorizedUser.Use(middlewareFactory.AuthMiddleware())
 	{
 		authorizedUser.GET("/profile", handlerFactory.UserHandler.GetProfile)
