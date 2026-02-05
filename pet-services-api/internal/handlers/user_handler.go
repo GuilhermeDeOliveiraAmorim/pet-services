@@ -270,7 +270,33 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 
 	userID := c.Param("user_id")
 
-	input := usecases.GetUserByIDInput{UserID: userID}
+	authUserID, exists := c.Get("user_id")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Usuário não autenticado",
+			Detail: "Não foi possível obter o ID do usuário autenticado",
+		})
+		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
+		return
+	}
+
+	authUserType, exists := c.Get("user_type")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Usuário não autenticado",
+			Detail: "Não foi possível obter o tipo do usuário autenticado",
+		})
+		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
+		return
+	}
+
+	input := usecases.GetUserByIDInput{
+		UserID:        userID,
+		RequesterID:   authUserID.(string),
+		RequesterType: authUserType.(string),
+	}
 
 	output, errs := h.UserFactory.GetUserByID.Execute(ctx, input)
 	if len(errs) > 0 {
