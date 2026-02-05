@@ -107,6 +107,7 @@ func AdminOnlyMiddleware(logger logging.LoggerInterface) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": problem})
 			return
 		}
+		c.Set("is_admin", true)
 		c.Next()
 	}
 }
