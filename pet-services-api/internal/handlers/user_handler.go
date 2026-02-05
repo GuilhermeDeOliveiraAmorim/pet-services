@@ -146,11 +146,10 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 	}
 
 	input := usecases.UpdateUserInput{
-		UserID:   userID.(string),
-		Name:     inputBody.Name,
-		UserType: inputBody.UserType,
-		Phone:    inputBody.Phone,
-		Address:  inputBody.Address,
+		UserID:  userID.(string),
+		Name:    inputBody.Name,
+		Phone:   inputBody.Phone,
+		Address: inputBody.Address,
 	}
 
 	output, errs := h.UserFactory.UpdateUser.Execute(ctx, input)
@@ -434,7 +433,7 @@ func (h *UserHandler) ChangePassword(c *gin.Context) {
 // @Failure 400 {object} exceptions.ProblemDetails
 // @Failure 403 {object} exceptions.ProblemDetails
 // @Security Bearer
-// @Router /admin [post] 
+// @Router /admin [post]
 func (h *UserHandler) CreateAdmin(c *gin.Context) {
 	ctx := c.Request.Context()
 
