@@ -73,13 +73,17 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		public.POST("/users/register", handlerFactory.UserHandler.RegisterUser)
 		public.POST("/users/check-email", handlerFactory.UserHandler.CheckEmailExists)
 		public.POST("/users/check-phone", handlerFactory.UserHandler.CheckPhoneExists)
+	}
 
-		public.POST("/auth/login", handlerFactory.TokenHandler.LoginUser)
-		public.POST("/auth/refresh", handlerFactory.TokenHandler.RefreshToken)
-		public.POST("/auth/request-password-reset", handlerFactory.TokenHandler.RequestPasswordReset)
-		public.POST("/auth/reset-password", handlerFactory.TokenHandler.ResetPassword)
-		public.POST("/auth/resend-verification-email", handlerFactory.TokenHandler.ResendVerificationEmail)
-		public.POST("/auth/verify-email", handlerFactory.TokenHandler.VerifyEmail)
+	authPublic := r.Group("/auth/")
+	authPublic.Use(middlewareFactory.StrictRateLimitMiddleware())
+	{
+		authPublic.POST("login", handlerFactory.TokenHandler.LoginUser)
+		authPublic.POST("refresh", handlerFactory.TokenHandler.RefreshToken)
+		authPublic.POST("request-password-reset", handlerFactory.TokenHandler.RequestPasswordReset)
+		authPublic.POST("reset-password", handlerFactory.TokenHandler.ResetPassword)
+		authPublic.POST("resend-verification-email", handlerFactory.TokenHandler.ResendVerificationEmail)
+		authPublic.POST("verify-email", handlerFactory.TokenHandler.VerifyEmail)
 	}
 
 	authorizedUser := r.Group("/users/")
