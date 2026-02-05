@@ -2,6 +2,7 @@ package repository_impl
 
 import (
 	"pet-services-api/internal/entities"
+	"pet-services-api/internal/models"
 	"time"
 
 	"gorm.io/gorm"
@@ -71,22 +72,24 @@ func (r *refreshTokenRepository) IsValid(token string) (bool, error) {
 }
 
 func (r *refreshTokenRepository) CreatePasswordReset(token *entities.PasswordResetToken) error {
-	return r.db.Create(token).Error
+	model := &models.PasswordResetToken{}
+	model.FromEntity(token)
+	return r.db.Create(model).Error
 }
 
 func (r *refreshTokenRepository) RevokeAllPasswordResetByUserID(userID string) error {
-	return r.db.Model(&entities.PasswordResetToken{}).Where("user_id = ? AND revoked_at IS NULL", userID).Update("revoked_at", time.Now()).Error
+	return r.db.Model(&models.PasswordResetToken{}).Where("user_id = ? AND revoked_at IS NULL", userID).Update("revoked_at", time.Now()).Error
 }
 
 func (r *refreshTokenRepository) FindValidPasswordResetByToken(token string) (*entities.PasswordResetToken, error) {
-	var prt entities.PasswordResetToken
-	err := r.db.Where("token = ? AND revoked_at IS NULL AND expires_at > ?", token, time.Now()).First(&prt).Error
+	var model models.PasswordResetToken
+	err := r.db.Where("token = ? AND revoked_at IS NULL AND expires_at > ?", token, time.Now()).First(&model).Error
 	if err != nil {
 		return nil, err
 	}
-	return &prt, nil
+	return model.ToEntity(), nil
 }
 
 func (r *refreshTokenRepository) RevokePasswordResetByToken(token string) error {
-	return r.db.Model(&entities.PasswordResetToken{}).Where("token = ? AND revoked_at IS NULL", token).Update("revoked_at", time.Now()).Error
+	return r.db.Model(&models.PasswordResetToken{}).Where("token = ? AND revoked_at IS NULL", token).Update("revoked_at", time.Now()).Error
 }

@@ -80,9 +80,9 @@ func getMigrations() []Migration {
 			Up:          Migration20260215000000,
 		},
 		{
-			Version:     "20260124000000",
-			Description: "Add token_type column to refresh_tokens table",
-			Up:          Migration20260124000000,
+			Version:     "20260204000000",
+			Description: "Create password_reset_tokens table for password reset and email verification",
+			Up:          Migration20260204000000,
 		},
 	}
 }
