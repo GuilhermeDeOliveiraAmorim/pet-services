@@ -11,9 +11,14 @@ import (
 )
 
 type ChangePasswordInput struct {
-	UserID          string `json:"user_id"`
-	CurrentPassword string `json:"current_password"`
-	NewPassword     string `json:"new_password"`
+	UserID      string `json:"user_id"`
+	OldPassword string `json:"old_password"`
+	NewPassword string `json:"new_password"`
+}
+
+type ChangePasswordInputBody struct {
+	OldPassword string `json:"old_password"`
+	NewPassword string `json:"new_password"`
 }
 
 type ChangePasswordOutput struct {
@@ -40,7 +45,7 @@ func (uc *ChangePasswordUseCase) Execute(ctx context.Context, input ChangePasswo
 		return nil, uc.logger.LogBadRequest(ctx, from, "ID do usuário ausente", errors.New("O ID do usuário é obrigatório"))
 	}
 
-	if input.CurrentPassword == "" {
+	if input.OldPassword == "" {
 		return nil, uc.logger.LogBadRequest(ctx, from, "Senha atual ausente", errors.New("A senha atual é obrigatória"))
 	}
 
@@ -60,7 +65,7 @@ func (uc *ChangePasswordUseCase) Execute(ctx context.Context, input ChangePasswo
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar usuário", err)
 	}
 
-	if !user.Login.DecryptPassword(input.CurrentPassword) {
+	if !user.Login.DecryptPassword(input.OldPassword) {
 		return nil, uc.logger.LogUnauthorized(ctx, from, "Senha atual incorreta", errors.New("A senha atual fornecida está incorreta"))
 	}
 

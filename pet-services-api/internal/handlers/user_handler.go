@@ -111,19 +111,31 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 }
 
 // UpdateUser godoc
-// @Summary Atualiza dados do usuário
+// @Summary Atualiza dados do usuário autenticado
 // @Tags Users
 // @Accept json
 // @Produce json
-// @Param input body usecases.UpdateUserInput true "Dados do usuário"
+// @Param input body usecases.UpdateUserInputBody true "Dados do usuário"
 // @Success 200 {object} usecases.UpdateUserOutput
 // @Failure 400 {object} exceptions.ProblemDetails
 // @Security Bearer
 // @Router /users [put]
 func (h *UserHandler) UpdateUser(c *gin.Context) {
 	ctx := c.Request.Context()
-	var input usecases.UpdateUserInput
-	if err := c.ShouldBindJSON(&input); err != nil {
+
+	userID, exists := c.Get("user_id")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Usuário não autenticado",
+			Detail: "Não foi possível obter o ID do usuário autenticado",
+		})
+		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
+		return
+	}
+
+	var inputBody usecases.UpdateUserInputBody
+	if err := c.ShouldBindJSON(&inputBody); err != nil {
 		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
 			Title:  "Erro ao fazer o parser",
 			Detail: "Erro ao fazer o parser dos dados do usuário",
@@ -132,6 +144,15 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
 		return
 	}
+
+	input := usecases.UpdateUserInput{
+		UserID:   userID.(string),
+		Name:     inputBody.Name,
+		UserType: inputBody.UserType,
+		Phone:    inputBody.Phone,
+		Address:  inputBody.Address,
+	}
+
 	output, errs := h.UserFactory.UpdateUser.Execute(ctx, input)
 	if len(errs) > 0 {
 		exceptions.HandleErrors(c, errs)
@@ -141,27 +162,29 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 }
 
 // DeleteUser godoc
-// @Summary Deleta usuário
+// @Summary Deleta a conta do usuário autenticado
 // @Tags Users
-// @Accept json
 // @Produce json
-// @Param input body usecases.DeleteUserInput true "ID do usuário"
 // @Success 200 {object} usecases.DeleteUserOutput
 // @Failure 400 {object} exceptions.ProblemDetails
 // @Security Bearer
 // @Router /users [delete]
 func (h *UserHandler) DeleteUser(c *gin.Context) {
 	ctx := c.Request.Context()
-	var input usecases.DeleteUserInput
-	if err := c.ShouldBindJSON(&input); err != nil {
-		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
-			Title:  "Erro ao fazer o parser",
-			Detail: "Erro ao fazer o parser do ID do usuário",
+
+	userID, exists := c.Get("user_id")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Usuário não autenticado",
+			Detail: "Não foi possível obter o ID do usuário autenticado",
 		})
-		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, err)
-		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
 		return
 	}
+
+	input := usecases.DeleteUserInput{UserID: userID.(string)}
+
 	output, errs := h.UserFactory.DeleteUser.Execute(ctx, input)
 	if len(errs) > 0 {
 		exceptions.HandleErrors(c, errs)
@@ -171,27 +194,29 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 }
 
 // ReactivateUser godoc
-// @Summary Reativa usuário
+// @Summary Reativa a conta do usuário autenticado
 // @Tags Users
-// @Accept json
 // @Produce json
-// @Param input body usecases.ReactivateUserInput true "ID do usuário"
 // @Success 200 {object} usecases.ReactivateUserOutput
 // @Failure 400 {object} exceptions.ProblemDetails
 // @Security Bearer
 // @Router /users/reactivate [post]
 func (h *UserHandler) ReactivateUser(c *gin.Context) {
 	ctx := c.Request.Context()
-	var input usecases.ReactivateUserInput
-	if err := c.ShouldBindJSON(&input); err != nil {
-		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
-			Title:  "Erro ao fazer o parser",
-			Detail: "Erro ao fazer o parser do ID do usuário",
+
+	userID, exists := c.Get("user_id")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Usuário não autenticado",
+			Detail: "Não foi possível obter o ID do usuário autenticado",
 		})
-		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, err)
-		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
 		return
 	}
+
+	input := usecases.ReactivateUserInput{UserID: userID.(string)}
+
 	output, errs := h.UserFactory.ReactivateUser.Execute(ctx, input)
 	if len(errs) > 0 {
 		exceptions.HandleErrors(c, errs)
@@ -201,27 +226,29 @@ func (h *UserHandler) ReactivateUser(c *gin.Context) {
 }
 
 // DeactivateUser godoc
-// @Summary Desativa usuário
+// @Summary Desativa a conta do usuário autenticado
 // @Tags Users
-// @Accept json
 // @Produce json
-// @Param input body usecases.DeactivateUserInput true "ID do usuário"
 // @Success 200 {object} usecases.DeactivateUserOutput
 // @Failure 400 {object} exceptions.ProblemDetails
 // @Security Bearer
 // @Router /users/deactivate [post]
 func (h *UserHandler) DeactivateUser(c *gin.Context) {
 	ctx := c.Request.Context()
-	var input usecases.DeactivateUserInput
-	if err := c.ShouldBindJSON(&input); err != nil {
-		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
-			Title:  "Erro ao fazer o parser",
-			Detail: "Erro ao fazer o parser do ID do usuário",
+
+	userID, exists := c.Get("user_id")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Usuário não autenticado",
+			Detail: "Não foi possível obter o ID do usuário autenticado",
 		})
-		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, err)
-		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
 		return
 	}
+
+	input := usecases.DeactivateUserInput{UserID: userID.(string)}
+
 	output, errs := h.UserFactory.DeactivateUser.Execute(ctx, input)
 	if len(errs) > 0 {
 		exceptions.HandleErrors(c, errs)
@@ -241,8 +268,11 @@ func (h *UserHandler) DeactivateUser(c *gin.Context) {
 // @Router /users/{user_id} [get]
 func (h *UserHandler) GetUserByID(c *gin.Context) {
 	ctx := c.Request.Context()
+
 	userID := c.Param("user_id")
+
 	input := usecases.GetUserByIDInput{UserID: userID}
+
 	output, errs := h.UserFactory.GetUserByID.Execute(ctx, input)
 	if len(errs) > 0 {
 		exceptions.HandleErrors(c, errs)
@@ -262,6 +292,7 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 // @Router /users/check-email [post]
 func (h *UserHandler) CheckEmailExists(c *gin.Context) {
 	ctx := c.Request.Context()
+
 	var input usecases.CheckEmailExistsInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
@@ -272,6 +303,7 @@ func (h *UserHandler) CheckEmailExists(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
 		return
 	}
+
 	output, errs := h.UserFactory.CheckEmailExists.Execute(ctx, input)
 	if len(errs) > 0 {
 		exceptions.HandleErrors(c, errs)
@@ -291,6 +323,7 @@ func (h *UserHandler) CheckEmailExists(c *gin.Context) {
 // @Router /users/check-phone [post]
 func (h *UserHandler) CheckPhoneExists(c *gin.Context) {
 	ctx := c.Request.Context()
+
 	var input usecases.CheckPhoneExistsInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
@@ -301,6 +334,7 @@ func (h *UserHandler) CheckPhoneExists(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
 		return
 	}
+
 	output, errs := h.UserFactory.CheckPhoneExists.Execute(ctx, input)
 	if len(errs) > 0 {
 		exceptions.HandleErrors(c, errs)
@@ -320,6 +354,7 @@ func (h *UserHandler) CheckPhoneExists(c *gin.Context) {
 // @Router /users/update-email-verified [post]
 func (h *UserHandler) UpdateEmailVerified(c *gin.Context) {
 	ctx := c.Request.Context()
+
 	var input usecases.UpdateEmailVerifiedInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
@@ -330,6 +365,7 @@ func (h *UserHandler) UpdateEmailVerified(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
 		return
 	}
+
 	output, errs := h.UserFactory.UpdateEmailVerified.Execute(ctx, input)
 	if len(errs) > 0 {
 		exceptions.HandleErrors(c, errs)
@@ -339,32 +375,52 @@ func (h *UserHandler) UpdateEmailVerified(c *gin.Context) {
 }
 
 // ChangePassword godoc
-// @Summary Altera senha do usuário
+// @Summary Altera a senha do usuário autenticado
 // @Tags Users
 // @Accept json
 // @Produce json
-// @Param input body usecases.ChangePasswordInput true "Dados de senha"
+// @Param input body usecases.ChangePasswordInputBody true "Senhas atual e nova"
 // @Success 200 {object} usecases.ChangePasswordOutput
 // @Failure 400 {object} exceptions.ProblemDetails
 // @Security Bearer
 // @Router /users/change-password [post]
 func (h *UserHandler) ChangePassword(c *gin.Context) {
 	ctx := c.Request.Context()
-	var input usecases.ChangePasswordInput
-	if err := c.ShouldBindJSON(&input); err != nil {
+
+	userID, exists := c.Get("user_id")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Usuário não autenticado",
+			Detail: "Não foi possível obter o ID do usuário autenticado",
+		})
+		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
+		return
+	}
+
+	var body usecases.ChangePasswordInputBody
+	if err := c.ShouldBindJSON(&body); err != nil {
 		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
 			Title:  "Erro ao fazer o parser",
-			Detail: "Erro ao fazer o parser dos dados de senha",
+			Detail: "Erro ao fazer o parser das senhas",
 		})
 		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
 		return
 	}
+
+	input := usecases.ChangePasswordInput{
+		UserID:      userID.(string),
+		OldPassword: body.OldPassword,
+		NewPassword: body.NewPassword,
+	}
+
 	output, errs := h.UserFactory.ChangePassword.Execute(ctx, input)
 	if len(errs) > 0 {
 		exceptions.HandleErrors(c, errs)
 		return
 	}
+
 	c.JSON(http.StatusOK, output)
 }
 
@@ -378,9 +434,10 @@ func (h *UserHandler) ChangePassword(c *gin.Context) {
 // @Failure 400 {object} exceptions.ProblemDetails
 // @Failure 403 {object} exceptions.ProblemDetails
 // @Security Bearer
-// @Router /admin [post]
+// @Router /admin [post] 
 func (h *UserHandler) CreateAdmin(c *gin.Context) {
 	ctx := c.Request.Context()
+
 	var input usecases.CreateAdminInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{

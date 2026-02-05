@@ -175,13 +175,11 @@ definitions:
       db:
         $ref: '#/definitions/usecases.HealthCheckDBOutput'
     type: object
-  usecases.ChangePasswordInput:
+  usecases.ChangePasswordInputBody:
     properties:
-      current_password:
-        type: string
       new_password:
         type: string
-      user_id:
+      old_password:
         type: string
     type: object
   usecases.ChangePasswordOutput:
@@ -237,21 +235,11 @@ definitions:
       message:
         type: string
     type: object
-  usecases.DeactivateUserInput:
-    properties:
-      user_id:
-        type: string
-    type: object
   usecases.DeactivateUserOutput:
     properties:
       detail:
         type: string
       message:
-        type: string
-    type: object
-  usecases.DeleteUserInput:
-    properties:
-      user_id:
         type: string
     type: object
   usecases.DeleteUserOutput:
@@ -342,11 +330,6 @@ definitions:
         type: integer
       total_records:
         type: integer
-    type: object
-  usecases.ReactivateUserInput:
-    properties:
-      user_id:
-        type: string
     type: object
   usecases.ReactivateUserOutput:
     properties:
@@ -443,7 +426,7 @@ definitions:
       message:
         type: string
     type: object
-  usecases.UpdateUserInput:
+  usecases.UpdateUserInputBody:
     properties:
       address:
         $ref: '#/definitions/entities.Address'
@@ -451,8 +434,6 @@ definitions:
         type: string
       phone:
         $ref: '#/definitions/entities.Phone'
-      user_id:
-        type: string
       user_type:
         type: string
     type: object
@@ -695,15 +676,6 @@ paths:
       - Health
   /users:
     delete:
-      consumes:
-      - application/json
-      parameters:
-      - description: ID do usuário
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/usecases.DeleteUserInput'
       produces:
       - application/json
       responses:
@@ -717,7 +689,7 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       security:
       - Bearer: []
-      summary: Deleta usuário
+      summary: Deleta a conta do usuário autenticado
       tags:
       - Users
     get:
@@ -757,7 +729,7 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/usecases.UpdateUserInput'
+          $ref: '#/definitions/usecases.UpdateUserInputBody'
       produces:
       - application/json
       responses:
@@ -771,7 +743,7 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       security:
       - Bearer: []
-      summary: Atualiza dados do usuário
+      summary: Atualiza dados do usuário autenticado
       tags:
       - Users
   /users/{user_id}:
@@ -803,12 +775,12 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Dados de senha
+      - description: Senhas atual e nova
         in: body
         name: input
         required: true
         schema:
-          $ref: '#/definitions/usecases.ChangePasswordInput'
+          $ref: '#/definitions/usecases.ChangePasswordInputBody'
       produces:
       - application/json
       responses:
@@ -822,7 +794,7 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       security:
       - Bearer: []
-      summary: Altera senha do usuário
+      summary: Altera a senha do usuário autenticado
       tags:
       - Users
   /users/check-email:
@@ -877,15 +849,6 @@ paths:
       - Users
   /users/deactivate:
     post:
-      consumes:
-      - application/json
-      parameters:
-      - description: ID do usuário
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/usecases.DeactivateUserInput'
       produces:
       - application/json
       responses:
@@ -899,7 +862,7 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       security:
       - Bearer: []
-      summary: Desativa usuário
+      summary: Desativa a conta do usuário autenticado
       tags:
       - Users
   /users/profile:
@@ -922,15 +885,6 @@ paths:
       - Users
   /users/reactivate:
     post:
-      consumes:
-      - application/json
-      parameters:
-      - description: ID do usuário
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/usecases.ReactivateUserInput'
       produces:
       - application/json
       responses:
@@ -944,7 +898,7 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       security:
       - Bearer: []
-      summary: Reativa usuário
+      summary: Reativa a conta do usuário autenticado
       tags:
       - Users
   /users/register:

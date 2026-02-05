@@ -10,6 +10,13 @@ import (
 	"pet-services-api/internal/logging"
 )
 
+type UpdateUserInputBody struct {
+	Name     string           `json:"name,omitempty"`
+	UserType string           `json:"user_type,omitempty"`
+	Phone    entities.Phone   `json:"phone,omitempty"`
+	Address  entities.Address `json:"address,omitempty"`
+}
+
 type UpdateUserInput struct {
 	UserID   string           `json:"user_id"`
 	Name     string           `json:"name,omitempty"`

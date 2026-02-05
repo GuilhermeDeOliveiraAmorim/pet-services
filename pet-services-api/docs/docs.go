@@ -410,7 +410,7 @@ const docTemplate = `{
                 "tags": [
                     "Users"
                 ],
-                "summary": "Atualiza dados do usuário",
+                "summary": "Atualiza dados do usuário autenticado",
                 "parameters": [
                     {
                         "description": "Dados do usuário",
@@ -418,7 +418,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/usecases.UpdateUserInput"
+                            "$ref": "#/definitions/usecases.UpdateUserInputBody"
                         }
                     }
                 ],
@@ -443,27 +443,13 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Users"
                 ],
-                "summary": "Deleta usuário",
-                "parameters": [
-                    {
-                        "description": "ID do usuário",
-                        "name": "input",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/usecases.DeleteUserInput"
-                        }
-                    }
-                ],
+                "summary": "Deleta a conta do usuário autenticado",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -496,15 +482,15 @@ const docTemplate = `{
                 "tags": [
                     "Users"
                 ],
-                "summary": "Altera senha do usuário",
+                "summary": "Altera a senha do usuário autenticado",
                 "parameters": [
                     {
-                        "description": "Dados de senha",
+                        "description": "Senhas atual e nova",
                         "name": "input",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/usecases.ChangePasswordInput"
+                            "$ref": "#/definitions/usecases.ChangePasswordInputBody"
                         }
                     }
                 ],
@@ -609,27 +595,13 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Users"
                 ],
-                "summary": "Desativa usuário",
-                "parameters": [
-                    {
-                        "description": "ID do usuário",
-                        "name": "input",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/usecases.DeactivateUserInput"
-                        }
-                    }
-                ],
+                "summary": "Desativa a conta do usuário autenticado",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -683,27 +655,13 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Users"
                 ],
-                "summary": "Reativa usuário",
-                "parameters": [
-                    {
-                        "description": "ID do usuário",
-                        "name": "input",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/usecases.ReactivateUserInput"
-                        }
-                    }
-                ],
+                "summary": "Reativa a conta do usuário autenticado",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1107,16 +1065,13 @@ const docTemplate = `{
                 }
             }
         },
-        "usecases.ChangePasswordInput": {
+        "usecases.ChangePasswordInputBody": {
             "type": "object",
             "properties": {
-                "current_password": {
-                    "type": "string"
-                },
                 "new_password": {
                     "type": "string"
                 },
-                "user_id": {
+                "old_password": {
                     "type": "string"
                 }
             }
@@ -1204,14 +1159,6 @@ const docTemplate = `{
                 }
             }
         },
-        "usecases.DeactivateUserInput": {
-            "type": "object",
-            "properties": {
-                "user_id": {
-                    "type": "string"
-                }
-            }
-        },
         "usecases.DeactivateUserOutput": {
             "type": "object",
             "properties": {
@@ -1219,14 +1166,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "usecases.DeleteUserInput": {
-            "type": "object",
-            "properties": {
-                "user_id": {
                     "type": "string"
                 }
             }
@@ -1367,14 +1306,6 @@ const docTemplate = `{
                 },
                 "total_records": {
                     "type": "integer"
-                }
-            }
-        },
-        "usecases.ReactivateUserInput": {
-            "type": "object",
-            "properties": {
-                "user_id": {
-                    "type": "string"
                 }
             }
         },
@@ -1526,7 +1457,7 @@ const docTemplate = `{
                 }
             }
         },
-        "usecases.UpdateUserInput": {
+        "usecases.UpdateUserInputBody": {
             "type": "object",
             "properties": {
                 "address": {
@@ -1537,9 +1468,6 @@ const docTemplate = `{
                 },
                 "phone": {
                     "$ref": "#/definitions/entities.Phone"
-                },
-                "user_id": {
-                    "type": "string"
                 },
                 "user_type": {
                     "type": "string"
