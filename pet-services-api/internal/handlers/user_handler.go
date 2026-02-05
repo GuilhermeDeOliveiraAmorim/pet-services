@@ -51,65 +51,6 @@ func (h *UserHandler) RegisterUser(c *gin.Context) {
 	c.JSON(http.StatusCreated, output)
 }
 
-// GetProfile godoc
-// @Summary Retorna o perfil do usuário autenticado
-// @Tags Usuários
-// @Produce json
-// @Success 200 {object} usecases.GetProfileOutput
-// @Failure 400 {object} exceptions.ProblemDetails
-// @Security Bearer
-// @Router /users/profile [get]
-func (h *UserHandler) GetProfile(c *gin.Context) {
-	ctx := c.Request.Context()
-	userID, exists := c.Get("user_id")
-	if !exists {
-		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
-			Title:  "Usuário não autenticado",
-			Detail: "Não foi possível obter o ID do usuário autenticado",
-		})
-		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, nil)
-		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
-		return
-	}
-	input := usecases.GetProfileInput{UserID: userID.(string)}
-	output, errs := h.UserFactory.GetProfile.Execute(ctx, input)
-	if len(errs) > 0 {
-		exceptions.HandleErrors(c, errs)
-		return
-	}
-	c.JSON(http.StatusOK, output)
-}
-
-// ListUsers godoc
-// @Summary Lista usuários
-// @Tags Usuários
-// @Produce json
-// @Param page query int false "Página"
-// @Param limit query int false "Limite"
-// @Success 200 {array} usecases.ListUsersOutput
-// @Failure 400 {object} exceptions.ProblemDetails
-// @Security Bearer
-// @Router /users [get]
-func (h *UserHandler) ListUsers(c *gin.Context) {
-	ctx := c.Request.Context()
-	var input usecases.ListUsersInput
-	if err := c.ShouldBindQuery(&input); err != nil {
-		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
-			Title:  "Erro ao fazer o parser",
-			Detail: "Erro ao fazer o parser dos parâmetros de listagem",
-		})
-		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, err)
-		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
-		return
-	}
-	output, errs := h.UserFactory.ListUsers.Execute(ctx, input)
-	if len(errs) > 0 {
-		exceptions.HandleErrors(c, errs)
-		return
-	}
-	c.JSON(http.StatusOK, output)
-}
-
 // UpdateUser godoc
 // @Summary Atualiza dados do usuário autenticado
 // @Tags Usuários
@@ -249,57 +190,6 @@ func (h *UserHandler) DeactivateUser(c *gin.Context) {
 	input := usecases.DeactivateUserInput{UserID: userID.(string)}
 
 	output, errs := h.UserFactory.DeactivateUser.Execute(ctx, input)
-	if len(errs) > 0 {
-		exceptions.HandleErrors(c, errs)
-		return
-	}
-	c.JSON(http.StatusOK, output)
-}
-
-// GetUserByID godoc
-// @Summary Busca usuário por ID
-// @Tags Usuários
-// @Produce json
-// @Param user_id path string true "ID do usuário"
-// @Success 200 {object} usecases.GetUserByIDOutput
-// @Failure 400 {object} exceptions.ProblemDetails
-// @Failure 403 {object} exceptions.ProblemDetails
-// @Security Bearer
-// @Router /users/{user_id} [get]
-func (h *UserHandler) GetUserByID(c *gin.Context) {
-	ctx := c.Request.Context()
-
-	userID := c.Param("user_id")
-
-	authUserID, exists := c.Get("user_id")
-	if !exists {
-		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
-			Title:  "Usuário não autenticado",
-			Detail: "Não foi possível obter o ID do usuário autenticado",
-		})
-		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, nil)
-		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
-		return
-	}
-
-	authUserType, exists := c.Get("user_type")
-	if !exists {
-		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
-			Title:  "Usuário não autenticado",
-			Detail: "Não foi possível obter o tipo do usuário autenticado",
-		})
-		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, nil)
-		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
-		return
-	}
-
-	input := usecases.GetUserByIDInput{
-		UserID:        userID,
-		RequesterID:   authUserID.(string),
-		RequesterType: authUserType.(string),
-	}
-
-	output, errs := h.UserFactory.GetUserByID.Execute(ctx, input)
 	if len(errs) > 0 {
 		exceptions.HandleErrors(c, errs)
 		return
@@ -488,4 +378,114 @@ func (h *UserHandler) CreateAdmin(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, output)
+}
+
+// GetProfile godoc
+// @Summary Retorna o perfil do usuário autenticado
+// @Tags Usuários
+// @Produce json
+// @Success 200 {object} usecases.GetProfileOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Security Bearer
+// @Router /users/profile [get]
+func (h *UserHandler) GetProfile(c *gin.Context) {
+	ctx := c.Request.Context()
+	userID, exists := c.Get("user_id")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Usuário não autenticado",
+			Detail: "Não foi possível obter o ID do usuário autenticado",
+		})
+		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
+		return
+	}
+	input := usecases.GetProfileInput{UserID: userID.(string)}
+	output, errs := h.UserFactory.GetProfile.Execute(ctx, input)
+	if len(errs) > 0 {
+		exceptions.HandleErrors(c, errs)
+		return
+	}
+	c.JSON(http.StatusOK, output)
+}
+
+// ListUsers godoc
+// @Summary Lista usuários
+// @Tags Usuários
+// @Produce json
+// @Param page query int false "Página"
+// @Param limit query int false "Limite"
+// @Success 200 {array} usecases.ListUsersOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Security Bearer
+// @Router /users [get]
+func (h *UserHandler) ListUsers(c *gin.Context) {
+	ctx := c.Request.Context()
+	var input usecases.ListUsersInput
+	if err := c.ShouldBindQuery(&input); err != nil {
+		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "Erro ao fazer o parser",
+			Detail: "Erro ao fazer o parser dos parâmetros de listagem",
+		})
+		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		return
+	}
+	output, errs := h.UserFactory.ListUsers.Execute(ctx, input)
+	if len(errs) > 0 {
+		exceptions.HandleErrors(c, errs)
+		return
+	}
+	c.JSON(http.StatusOK, output)
+}
+
+// GetUserByID godoc
+// @Summary Busca usuário por ID
+// @Tags Usuários
+// @Produce json
+// @Param user_id path string true "ID do usuário"
+// @Success 200 {object} usecases.GetUserByIDOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Failure 403 {object} exceptions.ProblemDetails
+// @Security Bearer
+// @Router /users/{user_id} [get]
+func (h *UserHandler) GetUserByID(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	userID := c.Param("user_id")
+
+	authUserID, exists := c.Get("user_id")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Usuário não autenticado",
+			Detail: "Não foi possível obter o ID do usuário autenticado",
+		})
+		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
+		return
+	}
+
+	authUserType, exists := c.Get("user_type")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Usuário não autenticado",
+			Detail: "Não foi possível obter o tipo do usuário autenticado",
+		})
+		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
+		return
+	}
+
+	input := usecases.GetUserByIDInput{
+		UserID:        userID,
+		RequesterID:   authUserID.(string),
+		RequesterType: authUserType.(string),
+	}
+
+	output, errs := h.UserFactory.GetUserByID.Execute(ctx, input)
+	if len(errs) > 0 {
+		exceptions.HandleErrors(c, errs)
+		return
+	}
+	c.JSON(http.StatusOK, output)
 }

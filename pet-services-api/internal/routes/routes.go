@@ -28,7 +28,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	} else {
 		docs.SwaggerInfo.Host = "localhost:8080"
 	}
-	
+
 	docs.SwaggerInfo.BasePath = "/"
 
 	handlerFactory := handlers.NewHandlerFactory(storageInput, logger)
@@ -67,7 +67,6 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	public := r.Group("/")
 	{
 		public.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
 		public.GET("/health", handlerFactory.HealthHandler.HealthCheck)
 
 		public.POST("/users/register", handlerFactory.UserHandler.RegisterUser)
@@ -86,6 +85,12 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		authPublic.POST("verify-email", handlerFactory.TokenHandler.VerifyEmail)
 	}
 
+	authorizedAuth := r.Group("/auth/")
+	authorizedAuth.Use(middlewareFactory.AuthMiddleware())
+	{
+		authorizedAuth.POST("logout", handlerFactory.TokenHandler.Logout)
+	}
+
 	authorizedUser := r.Group("/users/")
 	authorizedUser.Use(middlewareFactory.AuthMiddleware())
 	{
@@ -98,12 +103,6 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		authorizedUser.POST("/deactivate", handlerFactory.UserHandler.DeactivateUser)
 		authorizedUser.POST("/change-password", handlerFactory.UserHandler.ChangePassword)
 		authorizedUser.POST("/update-email-verified", handlerFactory.UserHandler.UpdateEmailVerified)
-	}
-
-	authorizedAuth := r.Group("/auth/")
-	authorizedAuth.Use(middlewareFactory.AuthMiddleware())
-	{
-		authorizedAuth.POST("logout", handlerFactory.TokenHandler.Logout)
 	}
 
 	authorizedAdmin := r.Group("/admin/")
