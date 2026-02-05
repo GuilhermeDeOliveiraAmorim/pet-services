@@ -61,6 +61,14 @@ func (uc *LoginUserUseCase) Execute(ctx context.Context, input LoginUserInput) (
 		return nil, uc.logger.LogUnauthorized(ctx, from, "Credenciais inválidas", errors.New("Email ou senha incorretos"))
 	}
 
+	if !user.Active {
+		return nil, uc.logger.LogForbidden(ctx, from, "Conta desativada", errors.New("Sua conta foi desativada. Entre em contato com o suporte para reativar"))
+	}
+
+	if !user.EmailVerified {
+		return nil, uc.logger.LogForbidden(ctx, from, "Email não verificado", errors.New("Verifique seu email antes de fazer login. Utilize a opção de reenviar email de verificação"))
+	}
+
 	jwtSvc, err := auth.NewJWTServiceFromEnv()
 	if err != nil {
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao carregar configuração JWT", err)
