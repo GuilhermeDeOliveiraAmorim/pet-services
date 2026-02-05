@@ -22,7 +22,13 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	docs.SwaggerInfo.Title = "Pet Services API"
 	docs.SwaggerInfo.Description = "API para gerenciamento de serviços pet."
 	docs.SwaggerInfo.Version = "1.0"
-	docs.SwaggerInfo.Host = "localhost:8080"
+
+	if host := config.GetSwaggerHost(); host != "" {
+		docs.SwaggerInfo.Host = host
+	} else {
+		docs.SwaggerInfo.Host = "localhost:8080"
+	}
+	
 	docs.SwaggerInfo.BasePath = "/"
 
 	handlerFactory := handlers.NewHandlerFactory(storageInput, logger)

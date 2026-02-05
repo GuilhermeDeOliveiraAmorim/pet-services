@@ -137,3 +137,7 @@ func GetServerPort() string {
 	}
 	return port
 }
+
+func GetSwaggerHost() string {
+	return os.Getenv("SWAGGER_HOST")
+}
