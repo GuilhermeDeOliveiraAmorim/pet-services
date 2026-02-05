@@ -82,7 +82,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authentication"
+                    "Autenticação"
                 ],
                 "summary": "Realiza login do usuário",
                 "parameters": [
@@ -126,7 +126,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authentication"
+                    "Autenticação"
                 ],
                 "summary": "Realiza logout do usuário autenticado",
                 "parameters": [
@@ -165,12 +165,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authentication"
+                    "Autenticação"
                 ],
                 "summary": "Renova tokens de autenticação",
                 "parameters": [
                     {
-                        "description": "Refresh token",
+                        "description": "Token de atualização",
                         "name": "input",
                         "in": "body",
                         "required": true,
@@ -210,12 +210,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authentication"
+                    "Autenticação"
                 ],
                 "summary": "Solicita reset de senha",
                 "parameters": [
                     {
-                        "description": "Dados para reset de senha",
+                        "description": "Dados para redefinição de senha",
                         "name": "input",
                         "in": "body",
                         "required": true,
@@ -249,7 +249,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authentication"
+                    "Autenticação"
                 ],
                 "summary": "Reenvia email de verificação",
                 "parameters": [
@@ -288,12 +288,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authentication"
+                    "Autenticação"
                 ],
                 "summary": "Realiza reset de senha",
                 "parameters": [
                     {
-                        "description": "Dados para reset de senha",
+                        "description": "Dados para redefinição de senha",
                         "name": "input",
                         "in": "body",
                         "required": true,
@@ -327,7 +327,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authentication"
+                    "Autenticação"
                 ],
                 "summary": "Verifica email do usuário",
                 "parameters": [
@@ -366,7 +366,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Health"
+                    "Saúde"
                 ],
                 "summary": "Verifica a saúde da API",
                 "responses": {
@@ -390,7 +390,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Users"
+                    "Usuários"
                 ],
                 "summary": "Lista usuários",
                 "parameters": [
@@ -438,7 +438,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Users"
+                    "Usuários"
                 ],
                 "summary": "Atualiza dados do usuário autenticado",
                 "parameters": [
@@ -477,7 +477,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Users"
+                    "Usuários"
                 ],
                 "summary": "Deleta a conta do usuário autenticado",
                 "responses": {
@@ -510,7 +510,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Users"
+                    "Usuários"
                 ],
                 "summary": "Altera a senha do usuário autenticado",
                 "parameters": [
@@ -549,7 +549,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Users"
+                    "Usuários"
                 ],
                 "summary": "Verifica se email existe",
                 "parameters": [
@@ -588,7 +588,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Users"
+                    "Usuários"
                 ],
                 "summary": "Verifica se telefone existe",
                 "parameters": [
@@ -629,7 +629,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Users"
+                    "Usuários"
                 ],
                 "summary": "Desativa a conta do usuário autenticado",
                 "responses": {
@@ -659,7 +659,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Users"
+                    "Usuários"
                 ],
                 "summary": "Retorna o perfil do usuário autenticado",
                 "responses": {
@@ -689,7 +689,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Users"
+                    "Usuários"
                 ],
                 "summary": "Reativa a conta do usuário autenticado",
                 "responses": {
@@ -717,7 +717,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Users"
+                    "Usuários"
                 ],
                 "summary": "Registra um novo usuário",
                 "parameters": [
@@ -756,7 +756,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Users"
+                    "Usuários"
                 ],
                 "summary": "Atualiza verificação de email",
                 "parameters": [
@@ -797,7 +797,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Users"
+                    "Usuários"
                 ],
                 "summary": "Busca usuário por ID",
                 "parameters": [

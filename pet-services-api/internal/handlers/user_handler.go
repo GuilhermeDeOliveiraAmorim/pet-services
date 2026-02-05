@@ -24,7 +24,7 @@ func NewUserHandler(factory *factories.UserFactory, logger logging.LoggerInterfa
 
 // RegisterUser godoc
 // @Summary Registra um novo usuário
-// @Tags Users
+// @Tags Usuários
 // @Accept json
 // @Produce json
 // @Param input body usecases.RegisterUserInput true "Dados do usuário"
@@ -53,7 +53,7 @@ func (h *UserHandler) RegisterUser(c *gin.Context) {
 
 // GetProfile godoc
 // @Summary Retorna o perfil do usuário autenticado
-// @Tags Users
+// @Tags Usuários
 // @Produce json
 // @Success 200 {object} usecases.GetProfileOutput
 // @Failure 400 {object} exceptions.ProblemDetails
@@ -82,7 +82,7 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 
 // ListUsers godoc
 // @Summary Lista usuários
-// @Tags Users
+// @Tags Usuários
 // @Produce json
 // @Param page query int false "Página"
 // @Param limit query int false "Limite"
@@ -112,7 +112,7 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 
 // UpdateUser godoc
 // @Summary Atualiza dados do usuário autenticado
-// @Tags Users
+// @Tags Usuários
 // @Accept json
 // @Produce json
 // @Param input body usecases.UpdateUserInputBody true "Dados do usuário"
@@ -162,7 +162,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 
 // DeleteUser godoc
 // @Summary Deleta a conta do usuário autenticado
-// @Tags Users
+// @Tags Usuários
 // @Produce json
 // @Success 200 {object} usecases.DeleteUserOutput
 // @Failure 400 {object} exceptions.ProblemDetails
@@ -194,7 +194,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 
 // ReactivateUser godoc
 // @Summary Reativa a conta do usuário autenticado
-// @Tags Users
+// @Tags Usuários
 // @Produce json
 // @Success 200 {object} usecases.ReactivateUserOutput
 // @Failure 400 {object} exceptions.ProblemDetails
@@ -226,7 +226,7 @@ func (h *UserHandler) ReactivateUser(c *gin.Context) {
 
 // DeactivateUser godoc
 // @Summary Desativa a conta do usuário autenticado
-// @Tags Users
+// @Tags Usuários
 // @Produce json
 // @Success 200 {object} usecases.DeactivateUserOutput
 // @Failure 400 {object} exceptions.ProblemDetails
@@ -258,7 +258,7 @@ func (h *UserHandler) DeactivateUser(c *gin.Context) {
 
 // GetUserByID godoc
 // @Summary Busca usuário por ID
-// @Tags Users
+// @Tags Usuários
 // @Produce json
 // @Param user_id path string true "ID do usuário"
 // @Success 200 {object} usecases.GetUserByIDOutput
@@ -309,7 +309,7 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 
 // CheckEmailExists godoc
 // @Summary Verifica se email existe
-// @Tags Users
+// @Tags Usuários
 // @Accept json
 // @Produce json
 // @Param input body usecases.CheckEmailExistsInput true "Email"
@@ -340,7 +340,7 @@ func (h *UserHandler) CheckEmailExists(c *gin.Context) {
 
 // CheckPhoneExists godoc
 // @Summary Verifica se telefone existe
-// @Tags Users
+// @Tags Usuários
 // @Accept json
 // @Produce json
 // @Param input body usecases.CheckPhoneExistsInput true "Telefone"
@@ -371,7 +371,7 @@ func (h *UserHandler) CheckPhoneExists(c *gin.Context) {
 
 // UpdateEmailVerified godoc
 // @Summary Atualiza verificação de email
-// @Tags Users
+// @Tags Usuários
 // @Accept json
 // @Produce json
 // @Param input body usecases.UpdateEmailVerifiedInput true "Dados de verificação"
@@ -402,7 +402,7 @@ func (h *UserHandler) UpdateEmailVerified(c *gin.Context) {
 
 // ChangePassword godoc
 // @Summary Altera a senha do usuário autenticado
-// @Tags Users
+// @Tags Usuários
 // @Accept json
 // @Produce json
 // @Param input body usecases.ChangePasswordInputBody true "Senhas atual e nova"

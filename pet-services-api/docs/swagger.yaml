@@ -540,7 +540,7 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       summary: Realiza login do usuário
       tags:
-      - Authentication
+      - Autenticação
   /auth/logout:
     post:
       consumes:
@@ -567,13 +567,13 @@ paths:
       - Bearer: []
       summary: Realiza logout do usuário autenticado
       tags:
-      - Authentication
+      - Autenticação
   /auth/refresh:
     post:
       consumes:
       - application/json
       parameters:
-      - description: Refresh token
+      - description: Token de atualização
         in: body
         name: input
         required: true
@@ -596,13 +596,13 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       summary: Renova tokens de autenticação
       tags:
-      - Authentication
+      - Autenticação
   /auth/request-password-reset:
     post:
       consumes:
       - application/json
       parameters:
-      - description: Dados para reset de senha
+      - description: Dados para redefinição de senha
         in: body
         name: input
         required: true
@@ -621,7 +621,7 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       summary: Solicita reset de senha
       tags:
-      - Authentication
+      - Autenticação
   /auth/resend-verification-email:
     post:
       consumes:
@@ -646,13 +646,13 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       summary: Reenvia email de verificação
       tags:
-      - Authentication
+      - Autenticação
   /auth/reset-password:
     post:
       consumes:
       - application/json
       parameters:
-      - description: Dados para reset de senha
+      - description: Dados para redefinição de senha
         in: body
         name: input
         required: true
@@ -671,7 +671,7 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       summary: Realiza reset de senha
       tags:
-      - Authentication
+      - Autenticação
   /auth/verify-email:
     post:
       consumes:
@@ -696,7 +696,7 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       summary: Verifica email do usuário
       tags:
-      - Authentication
+      - Autenticação
   /health:
     get:
       consumes:
@@ -710,7 +710,7 @@ paths:
             $ref: '#/definitions/handlers.HealthCheckResponse'
       summary: Verifica a saúde da API
       tags:
-      - Health
+      - Saúde
   /users:
     delete:
       produces:
@@ -728,7 +728,7 @@ paths:
       - Bearer: []
       summary: Deleta a conta do usuário autenticado
       tags:
-      - Users
+      - Usuários
     get:
       parameters:
       - description: Página
@@ -756,7 +756,7 @@ paths:
       - Bearer: []
       summary: Lista usuários
       tags:
-      - Users
+      - Usuários
     put:
       consumes:
       - application/json
@@ -782,7 +782,7 @@ paths:
       - Bearer: []
       summary: Atualiza dados do usuário autenticado
       tags:
-      - Users
+      - Usuários
   /users/{user_id}:
     get:
       parameters:
@@ -810,7 +810,7 @@ paths:
       - Bearer: []
       summary: Busca usuário por ID
       tags:
-      - Users
+      - Usuários
   /users/change-password:
     post:
       consumes:
@@ -837,7 +837,7 @@ paths:
       - Bearer: []
       summary: Altera a senha do usuário autenticado
       tags:
-      - Users
+      - Usuários
   /users/check-email:
     post:
       consumes:
@@ -862,7 +862,7 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       summary: Verifica se email existe
       tags:
-      - Users
+      - Usuários
   /users/check-phone:
     post:
       consumes:
@@ -887,7 +887,7 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       summary: Verifica se telefone existe
       tags:
-      - Users
+      - Usuários
   /users/deactivate:
     post:
       produces:
@@ -905,7 +905,7 @@ paths:
       - Bearer: []
       summary: Desativa a conta do usuário autenticado
       tags:
-      - Users
+      - Usuários
   /users/profile:
     get:
       produces:
@@ -923,7 +923,7 @@ paths:
       - Bearer: []
       summary: Retorna o perfil do usuário autenticado
       tags:
-      - Users
+      - Usuários
   /users/reactivate:
     post:
       produces:
@@ -941,7 +941,7 @@ paths:
       - Bearer: []
       summary: Reativa a conta do usuário autenticado
       tags:
-      - Users
+      - Usuários
   /users/register:
     post:
       consumes:
@@ -966,7 +966,7 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       summary: Registra um novo usuário
       tags:
-      - Users
+      - Usuários
   /users/update-email-verified:
     post:
       consumes:
@@ -991,7 +991,7 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       summary: Atualiza verificação de email
       tags:
-      - Users
+      - Usuários
 securityDefinitions:
   Bearer:
     description: 'JWT Authorization header usando o esquema Bearer. Exemplo: ''Authorization:

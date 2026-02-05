@@ -24,7 +24,7 @@ func NewTokenHandler(factory *factories.TokenFactory, logger logging.LoggerInter
 
 // LoginUser godoc
 // @Summary Realiza login do usuário
-// @Tags Authentication
+// @Tags Autenticação
 // @Accept json
 // @Produce json
 // @Param input body usecases.LoginUserInput true "Dados de login"
@@ -53,7 +53,7 @@ func (h *TokenHandler) LoginUser(c *gin.Context) {
 
 // RefreshToken godoc
 // @Summary Renova tokens de autenticação
-// @Tags Authentication
+// @Tags Autenticação
 // @Accept json
 // @Produce json
 // @Param input body usecases.RefreshTokenInput true "Token de atualização"
@@ -85,7 +85,7 @@ func (h *TokenHandler) RefreshToken(c *gin.Context) {
 
 // Logout godoc
 // @Summary Realiza logout do usuário autenticado
-// @Tags Authentication
+// @Tags Autenticação
 // @Accept json
 // @Produce json
 // @Param input body usecases.LogoutInputBody true "Opções de logout"
@@ -134,7 +134,7 @@ func (h *TokenHandler) Logout(c *gin.Context) {
 
 // RequestPasswordReset godoc
 // @Summary Solicita reset de senha
-// @Tags Authentication
+// @Tags Autenticação
 // @Accept json
 // @Produce json
 // @Param input body usecases.RequestPasswordResetInput true "Dados para redefinição de senha"
@@ -163,7 +163,7 @@ func (h *TokenHandler) RequestPasswordReset(c *gin.Context) {
 
 // ResetPassword godoc
 // @Summary Realiza reset de senha
-// @Tags Authentication
+// @Tags Autenticação
 // @Accept json
 // @Produce json
 // @Param input body usecases.ResetPasswordInput true "Dados para redefinição de senha"
@@ -192,7 +192,7 @@ func (h *TokenHandler) ResetPassword(c *gin.Context) {
 
 // ResendVerificationEmail godoc
 // @Summary Reenvia email de verificação
-// @Tags Authentication
+// @Tags Autenticação
 // @Accept json
 // @Produce json
 // @Param input body usecases.ResendVerificationEmailInput true "Dados para reenvio de verificação"
@@ -221,7 +221,7 @@ func (h *TokenHandler) ResendVerificationEmail(c *gin.Context) {
 
 // VerifyEmail godoc
 // @Summary Verifica email do usuário
-// @Tags Authentication
+// @Tags Autenticação
 // @Accept json
 // @Produce json
 // @Param input body usecases.VerifyEmailInput true "Dados para verificação de email"

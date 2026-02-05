@@ -31,7 +31,7 @@ type HealthCheckResponse struct {
 
 // HealthCheck godoc
 // @Summary Verifica a saúde da API
-// @Tags Health
+// @Tags Saúde
 // @Accept json
 // @Produce json
 // @Success 200 {object} HealthCheckResponse
