@@ -3,6 +3,7 @@ package usecases
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"pet-services-api/internal/consts"
@@ -51,10 +52,16 @@ func NewResendVerificationEmailUseCase(userRepo entities.UserRepository, verifyR
 func (uc *ResendVerificationEmailUseCase) Execute(ctx context.Context, input ResendVerificationEmailInput) (*ResendVerificationEmailOutput, []exceptions.ProblemDetails) {
 	const from = "ResendVerificationEmailUseCase.Execute"
 
-	if input.Email == "" {
+	email := strings.TrimSpace(input.Email)
+	if email == "" {
 		return nil, uc.logger.LogBadRequest(ctx, from, "Email ausente", errors.New("O email é obrigatório para reenviar verificação"))
 	}
 
+	if !entities.IsValidEmail(email) {
+		return nil, uc.logger.LogBadRequest(ctx, from, "Email inválido", errors.New("O formato do email é inválido"))
+	}
+
+	input.Email = email
 	user, err := uc.userRepository.FindByEmail(input.Email)
 	if err != nil {
 		if err.Error() == consts.UserNotFoundError {

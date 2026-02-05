@@ -3,6 +3,7 @@ package usecases
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"pet-services-api/internal/consts"
@@ -10,6 +11,7 @@ import (
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
 
+	"github.com/oklog/ulid/v2"
 	"gorm.io/gorm"
 )
 
@@ -39,7 +41,8 @@ func NewVerifyEmailUseCase(userRepo entities.UserRepository, verifyRepo entities
 func (uc *VerifyEmailUseCase) Execute(ctx context.Context, input VerifyEmailInput) (*VerifyEmailOutput, []exceptions.ProblemDetails) {
 	const from = "VerifyEmailUseCase.Execute"
 
-	if input.Token == "" {
+	token := strings.TrimSpace(input.Token)
+	if token == "" {
 		problems := []exceptions.ProblemDetails{
 			exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
 				Title:  "Token ausente",
@@ -49,6 +52,19 @@ func (uc *VerifyEmailUseCase) Execute(ctx context.Context, input VerifyEmailInpu
 		uc.logger.LogMultipleBadRequests(ctx, from, "Token ausente", problems)
 		return nil, problems
 	}
+
+	if _, err := ulid.Parse(token); err != nil {
+		problems := []exceptions.ProblemDetails{
+			exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+				Title:  "Token inválido",
+				Detail: "O token de verificação é inválido",
+			}),
+		}
+		uc.logger.LogMultipleBadRequests(ctx, from, "Token inválido", problems)
+		return nil, problems
+	}
+
+	input.Token = token
 
 	verifyToken, err := uc.verifyTokenRepository.FindValidPasswordResetByToken(input.Token)
 	if err != nil {
