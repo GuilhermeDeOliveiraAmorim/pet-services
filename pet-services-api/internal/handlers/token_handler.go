@@ -52,27 +52,46 @@ func (h *TokenHandler) LoginUser(c *gin.Context) {
 }
 
 // Logout godoc
-// @Summary Realiza logout do usuário
+// @Summary Realiza logout do usuário autenticado
 // @Tags Authentication
 // @Accept json
 // @Produce json
-// @Param input body usecases.LogoutInput true "Dados de logout"
+// @Param input body usecases.LogoutInputBody true "Opções de logout"
 // @Success 200 {object} usecases.LogoutOutput
 // @Failure 400 {object} exceptions.ProblemDetails
 // @Security Bearer
 // @Router /auth/logout [post]
 func (h *TokenHandler) Logout(c *gin.Context) {
 	ctx := c.Request.Context()
-	var input usecases.LogoutInput
-	if err := c.ShouldBindJSON(&input); err != nil {
+
+	userID, exists := c.Get("user_id")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Usuário não autenticado",
+			Detail: "Não foi possível obter o ID do usuário autenticado",
+		})
+		h.Logger.LogBadRequest(ctx, "TokenHandler", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
+		return
+	}
+
+	var inputBody usecases.LogoutInputBody
+	if err := c.ShouldBindJSON(&inputBody); err != nil {
 		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
 			Title:  "Erro ao fazer o parser",
-			Detail: "Erro ao fazer o parser do logout",
+			Detail: "Erro ao fazer o parser das opções de logout",
 		})
 		h.Logger.LogBadRequest(ctx, "TokenHandler", problem.Detail, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
 		return
 	}
+
+	input := usecases.LogoutInput{
+		UserID:    userID.(string),
+		TokenID:   inputBody.TokenID,
+		RevokeAll: inputBody.RevokeAll,
+	}
+
 	output, errs := h.TokenFactory.Logout.Execute(ctx, input)
 	if len(errs) > 0 {
 		exceptions.HandleErrors(c, errs)

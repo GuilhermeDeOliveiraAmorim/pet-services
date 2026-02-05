@@ -73,7 +73,6 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		public.POST("/auth/reset-password", handlerFactory.TokenHandler.ResetPassword)
 		public.POST("/auth/resend-verification-email", handlerFactory.TokenHandler.ResendVerificationEmail)
 		public.POST("/auth/verify-email", handlerFactory.TokenHandler.VerifyEmail)
-		public.POST("/auth/logout", handlerFactory.TokenHandler.Logout)
 	}
 
 	authorizedUser := r.Group("/users/")
@@ -88,6 +87,12 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		authorizedUser.POST("/deactivate", handlerFactory.UserHandler.DeactivateUser)
 		authorizedUser.POST("/change-password", handlerFactory.UserHandler.ChangePassword)
 		authorizedUser.POST("/update-email-verified", handlerFactory.UserHandler.UpdateEmailVerified)
+	}
+
+	authorizedAuth := r.Group("/auth/")
+	authorizedAuth.Use(middlewareFactory.AuthMiddleware())
+	{
+		authorizedAuth.POST("logout", handlerFactory.TokenHandler.Logout)
 	}
 
 	authorizedAdmin := r.Group("/admin/")

@@ -304,13 +304,11 @@ definitions:
       user:
         $ref: '#/definitions/entities.User'
     type: object
-  usecases.LogoutInput:
+  usecases.LogoutInputBody:
     properties:
       revoke_all:
         type: boolean
       token_id:
-        type: string
-      user_id:
         type: string
     type: object
   usecases.LogoutOutput:
@@ -434,8 +432,6 @@ definitions:
         type: string
       phone:
         $ref: '#/definitions/entities.Phone'
-      user_type:
-        type: string
     type: object
   usecases.UpdateUserOutput:
     properties:
@@ -532,12 +528,12 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Dados de logout
+      - description: Opções de logout
         in: body
         name: input
         required: true
         schema:
-          $ref: '#/definitions/usecases.LogoutInput'
+          $ref: '#/definitions/usecases.LogoutInputBody'
       produces:
       - application/json
       responses:
@@ -551,7 +547,7 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       security:
       - Bearer: []
-      summary: Realiza logout do usuário
+      summary: Realiza logout do usuário autenticado
       tags:
       - Authentication
   /auth/request-password-reset:

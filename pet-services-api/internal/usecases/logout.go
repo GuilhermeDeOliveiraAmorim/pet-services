@@ -15,6 +15,11 @@ type LogoutInput struct {
 	RevokeAll bool   `json:"revoke_all"`
 }
 
+type LogoutInputBody struct {
+	TokenID   string `json:"token_id,omitempty"`
+	RevokeAll bool   `json:"revoke_all"`
+}
+
 type LogoutOutput struct {
 	Message string `json:"message,omitempty"`
 	Detail  string `json:"detail,omitempty"`

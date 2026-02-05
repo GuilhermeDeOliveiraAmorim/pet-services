@@ -128,15 +128,15 @@ const docTemplate = `{
                 "tags": [
                     "Authentication"
                 ],
-                "summary": "Realiza logout do usuário",
+                "summary": "Realiza logout do usuário autenticado",
                 "parameters": [
                     {
-                        "description": "Dados de logout",
+                        "description": "Opções de logout",
                         "name": "input",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/usecases.LogoutInput"
+                            "$ref": "#/definitions/usecases.LogoutInputBody"
                         }
                     }
                 ],
@@ -1252,16 +1252,13 @@ const docTemplate = `{
                 }
             }
         },
-        "usecases.LogoutInput": {
+        "usecases.LogoutInputBody": {
             "type": "object",
             "properties": {
                 "revoke_all": {
                     "type": "boolean"
                 },
                 "token_id": {
-                    "type": "string"
-                },
-                "user_id": {
                     "type": "string"
                 }
             }
@@ -1453,9 +1450,6 @@ const docTemplate = `{
                 },
                 "phone": {
                     "$ref": "#/definitions/entities.Phone"
-                },
-                "user_type": {
-                    "type": "string"
                 }
             }
         },
