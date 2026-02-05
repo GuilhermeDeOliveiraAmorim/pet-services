@@ -776,6 +776,12 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/exceptions.ProblemDetails"
                         }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
                     }
                 }
             }

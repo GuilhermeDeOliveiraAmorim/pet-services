@@ -755,6 +755,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
       security:
       - Bearer: []
       summary: Busca usuário por ID

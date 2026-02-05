@@ -263,6 +263,7 @@ func (h *UserHandler) DeactivateUser(c *gin.Context) {
 // @Param user_id path string true "ID do usuário"
 // @Success 200 {object} usecases.GetUserByIDOutput
 // @Failure 400 {object} exceptions.ProblemDetails
+// @Failure 403 {object} exceptions.ProblemDetails
 // @Security Bearer
 // @Router /users/{user_id} [get]
 func (h *UserHandler) GetUserByID(c *gin.Context) {
