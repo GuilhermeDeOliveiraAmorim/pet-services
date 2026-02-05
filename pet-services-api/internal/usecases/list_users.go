@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"errors"
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
@@ -38,6 +39,7 @@ func NewListUsersUseCase(userRepository entities.UserRepository, logger logging.
 
 func (uc *ListUsersUseCase) Execute(ctx context.Context, input ListUsersInput) (*ListUsersOutput, []exceptions.ProblemDetails) {
 	const from = "ListUsersUseCase.Execute"
+	const maxLimit = 100
 
 	if input.Page < 1 {
 		input.Page = 1
@@ -47,8 +49,8 @@ func (uc *ListUsersUseCase) Execute(ctx context.Context, input ListUsersInput) (
 		input.Limit = 10
 	}
 
-	if input.Limit > 100 {
-		input.Limit = 100
+	if input.Limit > maxLimit {
+		return nil, uc.logger.LogBadRequest(ctx, from, "Limite de paginação excedido", errors.New("O limite máximo permitido é 100"))
 	}
 
 	users, total, err := uc.userRepository.List(input.Page, input.Limit)
