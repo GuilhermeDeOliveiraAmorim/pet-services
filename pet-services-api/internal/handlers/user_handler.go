@@ -452,7 +452,7 @@ func (h *UserHandler) ChangePassword(c *gin.Context) {
 
 // CreateAdmin godoc
 // @Summary Cria um novo administrador
-// @Tags Admin
+// @Tags Administração
 // @Accept json
 // @Produce json
 // @Param input body usecases.CreateAdminInput true "Dados do admin"

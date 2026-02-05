@@ -515,7 +515,7 @@ paths:
       - Bearer: []
       summary: Cria um novo administrador
       tags:
-      - Admin
+      - Administração
   /auth/login:
     post:
       consumes:
@@ -710,7 +710,7 @@ paths:
             $ref: '#/definitions/handlers.HealthCheckResponse'
       summary: Verifica a saúde da API
       tags:
-      - Saúde
+      - Verificação
   /users:
     delete:
       produces:
