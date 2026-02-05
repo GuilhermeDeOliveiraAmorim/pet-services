@@ -336,6 +336,24 @@ definitions:
       message:
         type: string
     type: object
+  usecases.RefreshTokenInput:
+    properties:
+      ip:
+        type: string
+      refresh_token:
+        type: string
+      user_agent:
+        type: string
+    type: object
+  usecases.RefreshTokenOutput:
+    properties:
+      access_token:
+        type: string
+      expires_in:
+        type: integer
+      refresh_token:
+        type: string
+    type: object
   usecases.RegisterUserInput:
     properties:
       address:
@@ -548,6 +566,35 @@ paths:
       security:
       - Bearer: []
       summary: Realiza logout do usuário autenticado
+      tags:
+      - Authentication
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Refresh token
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.RefreshTokenInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.RefreshTokenOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Renova tokens de autenticação
       tags:
       - Authentication
   /auth/request-password-reset:

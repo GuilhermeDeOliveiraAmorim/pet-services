@@ -51,6 +51,38 @@ func (h *TokenHandler) LoginUser(c *gin.Context) {
 	c.JSON(http.StatusOK, output)
 }
 
+// RefreshToken godoc
+// @Summary Renova tokens de autenticação
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param input body usecases.RefreshTokenInput true "Refresh token"
+// @Success 200 {object} usecases.RefreshTokenOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Failure 401 {object} exceptions.ProblemDetails
+// @Router /auth/refresh [post]
+func (h *TokenHandler) RefreshToken(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	var input usecases.RefreshTokenInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "Erro ao fazer o parser",
+			Detail: "Erro ao fazer o parser do refresh token",
+		})
+		h.Logger.LogBadRequest(ctx, "TokenHandler", problem.Detail, err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		return
+	}
+
+	output, errs := h.TokenFactory.RefreshToken.Execute(ctx, input)
+	if len(errs) > 0 {
+		exceptions.HandleErrors(c, errs)
+		return
+	}
+	c.JSON(http.StatusOK, output)
+}
+
 // Logout godoc
 // @Summary Realiza logout do usuário autenticado
 // @Tags Authentication

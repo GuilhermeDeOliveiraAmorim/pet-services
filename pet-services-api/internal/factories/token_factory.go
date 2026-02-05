@@ -12,6 +12,7 @@ import (
 
 type TokenFactory struct {
 	LoginUser               *usecases.LoginUserUseCase
+	RefreshToken            *usecases.RefreshTokenUseCase
 	Logout                  *usecases.LogoutUseCase
 	RequestPasswordReset    *usecases.RequestPasswordResetUseCase
 	ResetPassword           *usecases.ResetPasswordUseCase
@@ -26,6 +27,7 @@ func NewTokenFactory(db *gorm.DB, mailService mail.EmailService, ttl time.Durati
 
 	return &TokenFactory{
 		LoginUser:               usecases.NewLoginUserUseCase(userRepo, tokenRepo, logger),
+		RefreshToken:            usecases.NewRefreshTokenUseCase(userRepo, tokenRepo, logger),
 		Logout:                  usecases.NewLogoutUseCase(tokenRepo, logger),
 		RequestPasswordReset:    usecases.NewRequestPasswordResetUseCase(userRepo, tokenRepo, mailService, ttl, logger),
 		ResetPassword:           usecases.NewResetPasswordUseCase(userRepo, tokenRepo, logger),

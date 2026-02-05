@@ -75,6 +75,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		public.POST("/users/check-phone", handlerFactory.UserHandler.CheckPhoneExists)
 
 		public.POST("/auth/login", handlerFactory.TokenHandler.LoginUser)
+		public.POST("/auth/refresh", handlerFactory.TokenHandler.RefreshToken)
 		public.POST("/auth/request-password-reset", handlerFactory.TokenHandler.RequestPasswordReset)
 		public.POST("/auth/reset-password", handlerFactory.TokenHandler.ResetPassword)
 		public.POST("/auth/resend-verification-email", handlerFactory.TokenHandler.ResendVerificationEmail)
