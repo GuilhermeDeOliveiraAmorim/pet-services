@@ -37,7 +37,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Administração"
                 ],
                 "summary": "Cria um novo administrador",
                 "parameters": [
@@ -366,7 +366,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Saúde"
+                    "Verificação"
                 ],
                 "summary": "Verifica a saúde da API",
                 "responses": {
