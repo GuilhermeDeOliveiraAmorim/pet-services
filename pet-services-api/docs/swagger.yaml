@@ -175,6 +175,35 @@ definitions:
       db:
         $ref: '#/definitions/usecases.HealthCheckDBOutput'
     type: object
+  reference.City:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      state_id:
+        type: integer
+    type: object
+  reference.Country:
+    properties:
+      code:
+        type: string
+      dial_code:
+        type: string
+      flag:
+        type: string
+      name:
+        type: string
+    type: object
+  reference.State:
+    properties:
+      code:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
   usecases.ChangePasswordInputBody:
     properties:
       new_password:
@@ -268,6 +297,27 @@ definitions:
     properties:
       status:
         type: string
+    type: object
+  usecases.ListCitiesOutput:
+    properties:
+      cities:
+        items:
+          $ref: '#/definitions/reference.City'
+        type: array
+    type: object
+  usecases.ListCountriesOutput:
+    properties:
+      countries:
+        items:
+          $ref: '#/definitions/reference.Country'
+        type: array
+    type: object
+  usecases.ListStatesOutput:
+    properties:
+      states:
+        items:
+          $ref: '#/definitions/reference.State'
+        type: array
     type: object
   usecases.ListUsersOutput:
     properties:
@@ -711,6 +761,69 @@ paths:
       summary: Verifica a saúde da API
       tags:
       - Verificação
+  /reference/cities:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID do estado (IBGE)
+        in: query
+        name: state_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.ListCitiesOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Lista cidades
+      tags:
+      - Referências
+  /reference/countries:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.ListCountriesOutput'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Lista países
+      tags:
+      - Referências
+  /reference/states:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.ListStatesOutput'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Lista estados
+      tags:
+      - Referências
   /users:
     delete:
       produces:

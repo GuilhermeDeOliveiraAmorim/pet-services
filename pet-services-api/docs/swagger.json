@@ -373,6 +373,104 @@
                 }
             }
         },
+        "/reference/cities": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Referências"
+                ],
+                "summary": "Lista cidades",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID do estado (IBGE)",
+                        "name": "state_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/usecases.ListCitiesOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/reference/countries": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Referências"
+                ],
+                "summary": "Lista países",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/usecases.ListCountriesOutput"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/reference/states": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Referências"
+                ],
+                "summary": "Lista estados",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/usecases.ListStatesOutput"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
         "/users": {
             "get": {
                 "security": [
@@ -1095,6 +1193,51 @@
                 }
             }
         },
+        "reference.City": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "state_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "reference.Country": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "dial_code": {
+                    "type": "string"
+                },
+                "flag": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "reference.State": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "usecases.ChangePasswordInputBody": {
             "type": "object",
             "properties": {
@@ -1240,6 +1383,39 @@
             "properties": {
                 "status": {
                     "type": "string"
+                }
+            }
+        },
+        "usecases.ListCitiesOutput": {
+            "type": "object",
+            "properties": {
+                "cities": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/reference.City"
+                    }
+                }
+            }
+        },
+        "usecases.ListCountriesOutput": {
+            "type": "object",
+            "properties": {
+                "countries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/reference.Country"
+                    }
+                }
+            }
+        },
+        "usecases.ListStatesOutput": {
+            "type": "object",
+            "properties": {
+                "states": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/reference.State"
+                    }
                 }
             }
         },
