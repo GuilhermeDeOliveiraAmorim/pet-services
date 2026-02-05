@@ -56,7 +56,7 @@ func (h *TokenHandler) LoginUser(c *gin.Context) {
 // @Tags Authentication
 // @Accept json
 // @Produce json
-// @Param input body usecases.RefreshTokenInput true "Refresh token"
+// @Param input body usecases.RefreshTokenInput true "Token de atualização"
 // @Success 200 {object} usecases.RefreshTokenOutput
 // @Failure 400 {object} exceptions.ProblemDetails
 // @Failure 401 {object} exceptions.ProblemDetails
@@ -68,7 +68,7 @@ func (h *TokenHandler) RefreshToken(c *gin.Context) {
 	if err := c.ShouldBindJSON(&input); err != nil {
 		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
 			Title:  "Erro ao fazer o parser",
-			Detail: "Erro ao fazer o parser do refresh token",
+			Detail: "Erro ao fazer o parser do token de atualização",
 		})
 		h.Logger.LogBadRequest(ctx, "TokenHandler", problem.Detail, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
@@ -137,7 +137,7 @@ func (h *TokenHandler) Logout(c *gin.Context) {
 // @Tags Authentication
 // @Accept json
 // @Produce json
-// @Param input body usecases.RequestPasswordResetInput true "Dados para reset de senha"
+// @Param input body usecases.RequestPasswordResetInput true "Dados para redefinição de senha"
 // @Success 200 {object} usecases.RequestPasswordResetOutput
 // @Failure 400 {object} exceptions.ProblemDetails
 // @Router /auth/request-password-reset [post]
@@ -147,7 +147,7 @@ func (h *TokenHandler) RequestPasswordReset(c *gin.Context) {
 	if err := c.ShouldBindJSON(&input); err != nil {
 		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
 			Title:  "Erro ao fazer o parser",
-			Detail: "Erro ao fazer o parser do request de reset de senha",
+			Detail: "Erro ao fazer o parser da solicitação de redefinição de senha",
 		})
 		h.Logger.LogBadRequest(ctx, "TokenHandler", problem.Detail, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
@@ -166,7 +166,7 @@ func (h *TokenHandler) RequestPasswordReset(c *gin.Context) {
 // @Tags Authentication
 // @Accept json
 // @Produce json
-// @Param input body usecases.ResetPasswordInput true "Dados para reset de senha"
+// @Param input body usecases.ResetPasswordInput true "Dados para redefinição de senha"
 // @Success 200 {object} usecases.ResetPasswordOutput
 // @Failure 400 {object} exceptions.ProblemDetails
 // @Router /auth/reset-password [post]
@@ -176,7 +176,7 @@ func (h *TokenHandler) ResetPassword(c *gin.Context) {
 	if err := c.ShouldBindJSON(&input); err != nil {
 		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
 			Title:  "Erro ao fazer o parser",
-			Detail: "Erro ao fazer o parser do reset de senha",
+			Detail: "Erro ao fazer o parser da redefinição de senha",
 		})
 		h.Logger.LogBadRequest(ctx, "TokenHandler", problem.Detail, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, problem)

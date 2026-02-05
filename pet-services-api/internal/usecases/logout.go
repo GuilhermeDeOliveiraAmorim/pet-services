@@ -66,5 +66,5 @@ func (uc *LogoutUseCase) Execute(ctx context.Context, input LogoutInput) (*Logou
 		}, nil
 	}
 
-	return nil, uc.logger.LogBadRequest(ctx, from, "Token ou opção de revogação ausente", errors.New("Forneça um TokenID ou marque RevokeAll como true"))
+	return nil, uc.logger.LogBadRequest(ctx, from, "Token ou opção de revogação ausente", errors.New("Informe token_id ou marque revoke_all como true"))
 }

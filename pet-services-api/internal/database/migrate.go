@@ -15,7 +15,7 @@ type SchemaMigration struct {
 
 func RunMigrations(db *gorm.DB) error {
 	if err := db.AutoMigrate(&SchemaMigration{}); err != nil {
-		return fmt.Errorf("error creating migration table: %w", err)
+		return fmt.Errorf("erro ao criar tabela de migrações: %w", err)
 	}
 
 	migrations := getMigrations()
@@ -29,14 +29,14 @@ func RunMigrations(db *gorm.DB) error {
 		}
 
 		if result.Error != gorm.ErrRecordNotFound {
-			return fmt.Errorf("error checking migration %s: %w", migration.Version, result.Error)
+			return fmt.Errorf("erro ao verificar migração %s: %w", migration.Version, result.Error)
 		}
 
-		slog.Info("[Migration] applying migration", "version", migration.Version, "description", migration.Description)
+		slog.Info("[Migration] aplicando migração", "version", migration.Version, "description", migration.Description)
 
 		err := db.Transaction(func(tx *gorm.DB) error {
 			if err := migration.Up(tx); err != nil {
-				return fmt.Errorf("error executing migration: %w", err)
+				return fmt.Errorf("erro ao executar migração: %w", err)
 			}
 
 			record := SchemaMigration{
@@ -44,20 +44,20 @@ func RunMigrations(db *gorm.DB) error {
 				AppliedAt: time.Now(),
 			}
 			if err := tx.Create(&record).Error; err != nil {
-				return fmt.Errorf("error registering migration: %w", err)
+				return fmt.Errorf("erro ao registrar migração: %w", err)
 			}
 
 			return nil
 		})
 
 		if err != nil {
-			return fmt.Errorf("migration failed %s: %w", migration.Version, err)
+			return fmt.Errorf("falha na migração %s: %w", migration.Version, err)
 		}
 
-		slog.Info("[Migration] migration applied successfully", "version", migration.Version)
+		slog.Info("[Migration] migração aplicada com sucesso", "version", migration.Version)
 	}
 
-	slog.Info("[Migration] all migrations have been applied")
+	slog.Info("[Migration] todas as migrações foram aplicadas")
 	return nil
 }
 
@@ -71,17 +71,17 @@ func getMigrations() []Migration {
 	return []Migration{
 		{
 			Version:     "20260110000000",
-			Description: "Create initial schema for pet-services",
+			Description: "Criar esquema inicial para pet-services",
 			Up:          Migration20260110000000,
 		},
 		{
 			Version:     "20260215000000",
-			Description: "Create refresh_tokens table",
+			Description: "Criar tabela refresh_tokens",
 			Up:          Migration20260215000000,
 		},
 		{
 			Version:     "20260204000000",
-			Description: "Create password_reset_tokens table for password reset and email verification",
+			Description: "Criar tabela password_reset_tokens para redefinição de senha e verificação de email",
 			Up:          Migration20260204000000,
 		},
 	}

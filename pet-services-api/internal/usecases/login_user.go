@@ -76,38 +76,38 @@ func (uc *LoginUserUseCase) Execute(ctx context.Context, input LoginUserInput) (
 
 	accessToken, err := jwtSvc.GenerateAccessToken(user.ID, user.Login.Email, user.UserType)
 	if err != nil {
-		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao gerar access token", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao gerar token de acesso", err)
 	}
 
 	refreshToken, err := jwtSvc.GenerateRefreshToken(user.ID, user.Login.Email, user.UserType)
 	if err != nil {
-		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao gerar refresh token", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao gerar token de atualização", err)
 	}
 
 	claims, err := jwtSvc.ValidateAccessToken(accessToken)
 	if err != nil {
-		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao validar access token", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao validar token de acesso", err)
 	}
 
 	expiresIn := max(int64(time.Until(claims.ExpiresAt.Time).Seconds()), 0)
 
 	refreshClaims, err := jwtSvc.ValidateRefreshToken(refreshToken)
 	if err != nil {
-		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao validar refresh token", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao validar token de atualização", err)
 	}
 
 	refreshEntity, problems := entities.NewRefreshToken(user.ID, refreshToken, refreshClaims.ExpiresAt.Time, input.UserAgent, input.IP)
 	if len(problems) > 0 {
-		uc.logger.LogMultipleBadRequests(ctx, from, "Refresh token inválido", problems)
+		uc.logger.LogMultipleBadRequests(ctx, from, "Token de atualização inválido", problems)
 		return nil, problems
 	}
 
 	if err := uc.refreshTokenRepository.RevokeAllByUserID(user.ID); err != nil {
-		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao revogar refresh tokens", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao revogar tokens de atualização", err)
 	}
 
 	if err := uc.refreshTokenRepository.Create(refreshEntity); err != nil {
-		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao salvar refresh token", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao salvar token de atualização", err)
 	}
 
 	return &LoginUserOutput{

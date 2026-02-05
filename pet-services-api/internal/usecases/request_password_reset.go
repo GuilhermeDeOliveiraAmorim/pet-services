@@ -52,7 +52,7 @@ func (uc *RequestPasswordResetUseCase) Execute(ctx context.Context, input Reques
 	const from = "RequestPasswordResetUseCase.Execute"
 
 	if input.Email == "" {
-		return nil, uc.logger.LogBadRequest(ctx, from, "Email ausente", errors.New("O email é obrigatório para reset de senha"))
+		return nil, uc.logger.LogBadRequest(ctx, from, "Email ausente", errors.New("O email é obrigatório para redefinição de senha"))
 	}
 
 	user, err := uc.userRepository.FindByEmail(input.Email)
@@ -79,16 +79,16 @@ func (uc *RequestPasswordResetUseCase) Execute(ctx context.Context, input Reques
 	}
 
 	if err := uc.resetTokenRepository.CreatePasswordReset(resetToken); err != nil {
-		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao salvar token de reset", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao salvar token de redefinição", err)
 	}
 
 	if err := uc.emailService.SendPasswordResetEmail(user.Login.Email, tokenStr); err != nil {
-		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao enviar email de reset", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao enviar email de redefinição", err)
 	}
 
 	return &RequestPasswordResetOutput{
 		Message:    "Instruções enviadas",
-		Detail:     "Se o email existir, um link de reset foi gerado",
+		Detail:     "Se o email existir, um link de redefinição foi gerado",
 		ResetToken: tokenStr,
 		ExpiresAt:  expiresAt,
 	}, nil

@@ -57,7 +57,7 @@ func (uc *ResetPasswordUseCase) Execute(ctx context.Context, input ResetPassword
 	}
 
 	if resetToken.RevokedAt != nil || time.Now().After(resetToken.ExpiresAt) {
-		return nil, uc.logger.LogBadRequest(ctx, from, "Token expirado ou revogado", errors.New("Solicite um novo reset de senha"))
+		return nil, uc.logger.LogBadRequest(ctx, from, "Token expirado ou revogado", errors.New("Solicite uma nova redefinição de senha"))
 	}
 
 	user, err := uc.userRepository.FindByID(resetToken.UserID)

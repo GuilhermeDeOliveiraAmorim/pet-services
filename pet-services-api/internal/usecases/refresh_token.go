@@ -46,7 +46,7 @@ func (uc *RefreshTokenUseCase) Execute(ctx context.Context, input RefreshTokenIn
 
 	refreshToken := strings.TrimSpace(input.RefreshToken)
 	if refreshToken == "" {
-		return nil, uc.logger.LogBadRequest(ctx, from, "Refresh token ausente", errors.New("O refresh token é obrigatório"))
+		return nil, uc.logger.LogBadRequest(ctx, from, "Token de atualização ausente", errors.New("O token de atualização é obrigatório"))
 	}
 	input.RefreshToken = refreshToken
 
@@ -57,19 +57,19 @@ func (uc *RefreshTokenUseCase) Execute(ctx context.Context, input RefreshTokenIn
 
 	claims, err := jwtSvc.ValidateRefreshToken(input.RefreshToken)
 	if err != nil {
-		return nil, uc.logger.LogUnauthorized(ctx, from, "Refresh token inválido", errors.New("Refresh token inválido ou expirado"))
+		return nil, uc.logger.LogUnauthorized(ctx, from, "Token de atualização inválido", errors.New("Token de atualização inválido ou expirado"))
 	}
 
 	storedToken, err := uc.refreshTokenRepository.FindByToken(input.RefreshToken)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, uc.logger.LogUnauthorized(ctx, from, "Refresh token inválido", errors.New("Refresh token não encontrado"))
+			return nil, uc.logger.LogUnauthorized(ctx, from, "Token de atualização inválido", errors.New("Token de atualização não encontrado"))
 		}
-		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar refresh token", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar token de atualização", err)
 	}
 
 	if !storedToken.IsValid() {
-		return nil, uc.logger.LogUnauthorized(ctx, from, "Refresh token inválido", errors.New("Refresh token revogado ou expirado"))
+		return nil, uc.logger.LogUnauthorized(ctx, from, "Token de atualização inválido", errors.New("Token de atualização revogado ou expirado"))
 	}
 
 	user, err := uc.userRepository.FindByID(claims.UserID)
@@ -90,38 +90,38 @@ func (uc *RefreshTokenUseCase) Execute(ctx context.Context, input RefreshTokenIn
 
 	accessToken, err := jwtSvc.GenerateAccessToken(user.ID, user.Login.Email, user.UserType)
 	if err != nil {
-		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao gerar access token", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao gerar token de acesso", err)
 	}
 
 	newRefreshToken, err := jwtSvc.GenerateRefreshToken(user.ID, user.Login.Email, user.UserType)
 	if err != nil {
-		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao gerar refresh token", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao gerar token de atualização", err)
 	}
 
 	accessClaims, err := jwtSvc.ValidateAccessToken(accessToken)
 	if err != nil {
-		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao validar access token", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao validar token de acesso", err)
 	}
 
 	expiresIn := max(int64(time.Until(accessClaims.ExpiresAt.Time).Seconds()), 0)
 
 	refreshClaims, err := jwtSvc.ValidateRefreshToken(newRefreshToken)
 	if err != nil {
-		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao validar refresh token", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao validar token de atualização", err)
 	}
 
 	refreshEntity, problems := entities.NewRefreshToken(user.ID, newRefreshToken, refreshClaims.ExpiresAt.Time, input.UserAgent, input.IP)
 	if len(problems) > 0 {
-		uc.logger.LogMultipleBadRequests(ctx, from, "Refresh token inválido", problems)
+		uc.logger.LogMultipleBadRequests(ctx, from, "Token de atualização inválido", problems)
 		return nil, problems
 	}
 
 	if err := uc.refreshTokenRepository.Revoke(storedToken.ID); err != nil {
-		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao revogar refresh token antigo", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao revogar token de atualização antigo", err)
 	}
 
 	if err := uc.refreshTokenRepository.Create(refreshEntity); err != nil {
-		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao salvar refresh token", err)
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao salvar token de atualização", err)
 	}
 
 	return &RefreshTokenOutput{

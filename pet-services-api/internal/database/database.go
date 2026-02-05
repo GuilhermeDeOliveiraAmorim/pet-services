@@ -47,13 +47,13 @@ func NewDatabase(ctx context.Context) *gorm.DB {
 	dbPort := os.Getenv("DB_PORT")
 
 	if dbUser == "" || dbPass == "" || dbName == "" || dbHost == "" {
-		slog.Error("one or more required database environment variables are not set")
+		slog.Error("uma ou mais variáveis de ambiente do banco não estão definidas")
 		return nil
 	}
 
 	if dbPort != "" {
 		if port, err := strconv.Atoi(dbPort); err != nil || port < 1 || port > 65535 {
-			slog.Error("invalid DB_PORT: must be a number between 1 and 65535", "value", dbPort)
+			slog.Error("DB_PORT inválido: deve ser um número entre 1 e 65535", "value", dbPort)
 			return nil
 		}
 	}
@@ -71,7 +71,7 @@ func NewDatabase(ctx context.Context) *gorm.DB {
 	})
 
 	if err != nil {
-		slog.Error("failed to connect to database", "error", err)
+		slog.Error("falha ao conectar no banco de dados", "error", err)
 		return nil
 	}
 
@@ -81,13 +81,13 @@ func NewDatabase(ctx context.Context) *gorm.DB {
 func SetupDatabaseConnection(ctx context.Context) (*gorm.DB, *sql.DB) {
 	db := NewDatabase(ctx)
 	if db == nil {
-		slog.Error("database connection not available")
+		slog.Error("conexão com banco de dados indisponível")
 		return nil, nil
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		slog.Error("failed to get sql.DB from gorm.DB", "error", err)
+		slog.Error("falha ao obter sql.DB do gorm.DB", "error", err)
 		return nil, nil
 	}
 
@@ -101,12 +101,12 @@ func SetupDatabaseConnection(ctx context.Context) (*gorm.DB, *sql.DB) {
 func CheckConnection(db *gorm.DB) bool {
 	sqlDB, err := db.DB()
 	if err != nil {
-		slog.Error("failed to get sql.DB from gorm.DB", "error", err)
+		slog.Error("falha ao obter sql.DB do gorm.DB", "error", err)
 		return false
 	}
 
 	if err := sqlDB.Ping(); err != nil {
-		slog.Error("database ping failed", "error", err)
+		slog.Error("falha no ping do banco de dados", "error", err)
 		return false
 	}
 
@@ -116,11 +116,11 @@ func CheckConnection(db *gorm.DB) bool {
 func Shutdown(ctx context.Context, db *gorm.DB) {
 	sqlDB, err := db.DB()
 	if err != nil {
-		slog.Error("failed to get sql.DB from gorm.DB", "error", err)
+		slog.Error("falha ao obter sql.DB do gorm.DB", "error", err)
 		return
 	}
 
 	if err := sqlDB.Close(); err != nil {
-		slog.Error("failed to close database connection", "error", err)
+		slog.Error("falha ao fechar conexão com banco de dados", "error", err)
 	}
 }
