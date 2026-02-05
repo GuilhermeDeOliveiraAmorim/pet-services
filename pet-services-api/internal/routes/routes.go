@@ -45,12 +45,14 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		allowOrigins = []string{"*"}
 	}
 
+	allowCredentials := len(allowOrigins) > 0 && allowOrigins[0] != "*"
+
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     allowOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "PATCH"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
+		AllowCredentials: allowCredentials,
 		MaxAge:           12 * time.Hour,
 	}))
 

@@ -576,8 +576,6 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
-      security:
-      - Bearer: []
       summary: Solicita reset de senha
       tags:
       - Authentication
@@ -628,8 +626,6 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
-      security:
-      - Bearer: []
       summary: Realiza reset de senha
       tags:
       - Authentication
@@ -655,8 +651,6 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
-      security:
-      - Bearer: []
       summary: Verifica email do usuário
       tags:
       - Authentication

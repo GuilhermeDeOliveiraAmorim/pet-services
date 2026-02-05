@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
+	"strconv"
 	"sync"
 	"time"
 
@@ -118,7 +119,7 @@ func RateLimitMiddleware(config RateLimiterConfig, logger logging.LoggerInterfac
 
 			logger.LogWarning(ctx, "RateLimitMiddleware", "Rate limit excedido para IP: "+clientID, nil)
 
-			c.Header("X-RateLimit-Limit", string(rune(config.RequestsPerMinute)))
+			c.Header("X-RateLimit-Limit", strconv.Itoa(config.RequestsPerMinute))
 			c.Header("X-RateLimit-Remaining", "0")
 			c.Header("Retry-After", "60")
 

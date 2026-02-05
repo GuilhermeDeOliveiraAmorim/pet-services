@@ -158,11 +158,6 @@ const docTemplate = `{
         },
         "/auth/request-password-reset": {
             "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -241,11 +236,6 @@ const docTemplate = `{
         },
         "/auth/reset-password": {
             "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -285,11 +275,6 @@ const docTemplate = `{
         },
         "/auth/verify-email": {
             "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
