@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/oklog/ulid/v2"
 )
 
 var (
@@ -120,6 +121,7 @@ func (s *JWTService) generateToken(userID, email, userType string, tokenType Tok
 			IssuedAt:  jwt.NewNumericDate(now),
 			NotBefore: jwt.NewNumericDate(now),
 			Issuer:    s.cfg.Issuer,
+			ID:        ulid.Make().String(),
 		},
 	}
 

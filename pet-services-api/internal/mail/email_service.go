@@ -123,7 +123,10 @@ func (s *SMTPEmailService) SendPasswordResetEmail(to, token string) error {
 }
 
 func (s *SMTPEmailService) sendEmail(to, subject, body string) error {
-	auth := smtp.PlainAuth("", s.user, s.password, s.host)
+	var auth smtp.Auth
+	if s.user != "" || s.password != "" {
+		auth = smtp.PlainAuth("", s.user, s.password, s.host)
+	}
 	addr := fmt.Sprintf("%s:%s", s.host, s.port)
 
 	message := fmt.Sprintf(
