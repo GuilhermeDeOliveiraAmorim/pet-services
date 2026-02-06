@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:auth": "tsx scripts/test-auth.ts",
+    "test:verify-email": "tsx scripts/test-verify-email.ts",
+    "test:auth-flow": "tsx scripts/test-auth-flow.ts"
   },
   "dependencies": {
     "axios": "^1.13.4",
@@ -22,6 +25,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }
