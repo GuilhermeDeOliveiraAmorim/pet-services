@@ -18,6 +18,56 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
+## Testes locais (Auth)
+
+Pré-requisitos:
+
+- API rodando em `http://localhost:8080` (ou defina `API_URL`)
+- Mailpit opcional para verificação de email: `http://localhost:8025`
+
+Variáveis usadas pelos scripts:
+
+- `API_URL` (opcional, padrão: `http://localhost:8080`)
+- `TEST_EMAIL` (obrigatório para alguns testes)
+- `TEST_PASSWORD` (opcional; padrão: `123QWEasd@`)
+- `NEW_PASSWORD` (opcional; usado no change-password)
+
+Scripts disponíveis:
+
+```bash
+npm run test:auth
+```
+
+Login → refresh → logout.
+
+```bash
+npm run test:auth-flow
+```
+
+Registro → reenvio de verificação → verificação → login.
+
+```bash
+npm run test:verify-email
+```
+
+Reenvia verificação e valida o token.
+
+```bash
+npm run test:change-password
+```
+
+Login → change-password.
+
+Exemplo:
+
+```bash
+API_URL=http://localhost:8080 \
+TEST_EMAIL=guilherme.o.a.ufal@gmail.com \
+TEST_PASSWORD=123QWEasd@ \
+NEW_PASSWORD=NovaSenha@123 \
+npm run test:change-password
+```
+
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More

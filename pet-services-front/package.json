@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test:auth": "tsx scripts/test-auth.ts",
     "test:verify-email": "tsx scripts/test-verify-email.ts",
-    "test:auth-flow": "tsx scripts/test-auth-flow.ts"
+    "test:auth-flow": "tsx scripts/test-auth-flow.ts",
+    "test:change-password": "tsx scripts/test-change-password.ts"
   },
   "dependencies": {
     "axios": "^1.13.4",
