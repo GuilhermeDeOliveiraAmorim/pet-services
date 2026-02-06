@@ -19,8 +19,12 @@ export interface AuthGateway {
   login(input: LoginInput): Promise<LoginOutput>;
   refreshToken(input: RefreshTokenInput): Promise<RefreshTokenOutput>;
   logout(input: LogoutInput): Promise<LogoutOutput>;
-  requestPasswordReset(input: RequestPasswordResetInput): Promise<RequestPasswordResetOutput>;
+  requestPasswordReset(
+    input: RequestPasswordResetInput,
+  ): Promise<RequestPasswordResetOutput>;
   resetPassword(input: ResetPasswordInput): Promise<ResetPasswordOutput>;
-  resendVerificationEmail(input: ResendVerificationEmailInput): Promise<ResendVerificationEmailOutput>;
+  resendVerificationEmail(
+    input: ResendVerificationEmailInput,
+  ): Promise<ResendVerificationEmailOutput>;
   verifyEmail(input: VerifyEmailInput): Promise<VerifyEmailOutput>;
 }
