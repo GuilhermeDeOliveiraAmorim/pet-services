@@ -1,4 +1,5 @@
 import type { User } from "@/domain";
+import type { AuthGateway } from "@/application/ports";
 
 export interface LoginInput {
   email: string;
@@ -12,4 +13,12 @@ export interface LoginOutput {
   accessToken: string;
   refreshToken: string;
   expiresIn: number;
+}
+
+export class LoginUserUseCase {
+  constructor(private readonly authGateway: AuthGateway) {}
+
+  execute(input: LoginInput): Promise<LoginOutput> {
+    return this.authGateway.login(input);
+  }
 }

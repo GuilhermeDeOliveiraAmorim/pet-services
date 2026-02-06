@@ -1,3 +1,5 @@
+import type { UserGateway } from "@/application/ports";
+
 export interface ChangePasswordInput {
   userId: string;
   oldPassword: string;
@@ -12,4 +14,12 @@ export interface ChangePasswordInputBody {
 export interface ChangePasswordOutput {
   message?: string;
   detail?: string;
+}
+
+export class ChangePasswordUseCase {
+  constructor(private readonly userGateway: UserGateway) {}
+
+  execute(input: ChangePasswordInput): Promise<ChangePasswordOutput> {
+    return this.userGateway.changePassword(input);
+  }
 }
