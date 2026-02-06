@@ -30,40 +30,128 @@ export class AuthGatewayAxios implements AuthGateway {
   }
 
   async login(input: LoginInput): Promise<LoginOutput> {
-    const { data } = await this.http.post<LoginOutput>("/auth/login", input);
-    return data;
+    const payload = {
+      email: input.email,
+      password: input.password,
+      user_agent: input.userAgent,
+      ip: input.ip,
+    };
+
+    const { data } = await this.http.post<{
+      user: LoginOutput["user"];
+      access_token: string;
+      refresh_token: string;
+      expires_in: number;
+    }>("/auth/login", payload);
+
+    return {
+      user: data.user,
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token,
+      expiresIn: data.expires_in,
+    };
   }
 
   async refreshToken(input: RefreshTokenInput): Promise<RefreshTokenOutput> {
-    const { data } = await this.http.post<RefreshTokenOutput>("/auth/refresh", input);
-    return data;
+    const payload = {
+      refresh_token: input.refreshToken,
+      user_agent: input.userAgent,
+      ip: input.ip,
+    };
+
+    const { data } = await this.http.post<{
+      access_token: string;
+      refresh_token: string;
+      expires_in: number;
+    }>("/auth/refresh", payload);
+
+    return {
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token,
+      expiresIn: data.expires_in,
+    };
   }
 
   async logout(input: LogoutInput): Promise<LogoutOutput> {
-    const { data } = await this.http.post<LogoutOutput>("/auth/logout", input);
-    return data;
-  }
+    const payload = {
+      user_id: input.userId,
+      token_id: input.tokenId,
+      revoke_all: input.revokeAll,
+    };
 
-  async requestPasswordReset(input: RequestPasswordResetInput): Promise<RequestPasswordResetOutput> {
-    const { data } = await this.http.post<RequestPasswordResetOutput>("/auth/request-password-reset", input);
-    return data;
-  }
-
-  async resetPassword(input: ResetPasswordInput): Promise<ResetPasswordOutput> {
-    const { data } = await this.http.post<ResetPasswordOutput>("/auth/reset-password", input);
-    return data;
-  }
-
-  async resendVerificationEmail(input: ResendVerificationEmailInput): Promise<ResendVerificationEmailOutput> {
-    const { data } = await this.http.post<ResendVerificationEmailOutput>(
-      "/auth/resend-verification-email",
-      input,
+    const { data } = await this.http.post<LogoutOutput>(
+      "/auth/logout",
+      payload,
     );
     return data;
   }
 
+  async requestPasswordReset(
+    input: RequestPasswordResetInput,
+  ): Promise<RequestPasswordResetOutput> {
+    const payload = {
+      email: input.email,
+      user_agent: input.userAgent,
+      ip: input.ip,
+    };
+
+    const { data } = await this.http.post<{
+      message?: string;
+      detail?: string;
+      reset_token?: string;
+      expires_at?: string;
+    }>("/auth/request-password-reset", payload);
+
+    return {
+      message: data.message,
+      detail: data.detail,
+      resetToken: data.reset_token,
+      expiresAt: data.expires_at,
+    };
+  }
+
+  async resetPassword(input: ResetPasswordInput): Promise<ResetPasswordOutput> {
+    const payload = {
+      token: input.token,
+      new_password: input.newPassword,
+    };
+
+    const { data } = await this.http.post<ResetPasswordOutput>(
+      "/auth/reset-password",
+      payload,
+    );
+    return data;
+  }
+
+  async resendVerificationEmail(
+    input: ResendVerificationEmailInput,
+  ): Promise<ResendVerificationEmailOutput> {
+    const payload = {
+      email: input.email,
+      user_agent: input.userAgent,
+      ip: input.ip,
+    };
+
+    const { data } = await this.http.post<{
+      message?: string;
+      detail?: string;
+      verify_token?: string;
+      expires_at?: string;
+    }>("/auth/resend-verification-email", payload);
+
+    return {
+      message: data.message,
+      detail: data.detail,
+      verifyToken: data.verify_token,
+      expiresAt: data.expires_at,
+    };
+  }
+
   async verifyEmail(input: VerifyEmailInput): Promise<VerifyEmailOutput> {
-    const { data } = await this.http.post<VerifyEmailOutput>("/auth/verify-email", input);
+    const { data } = await this.http.post<VerifyEmailOutput>(
+      "/auth/verify-email",
+      input,
+    );
     return data;
   }
 }
