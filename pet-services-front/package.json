@@ -14,6 +14,7 @@
     "test:reference": "tsx scripts/reference/test-reference.ts"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.90.20",
     "axios": "^1.13.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
