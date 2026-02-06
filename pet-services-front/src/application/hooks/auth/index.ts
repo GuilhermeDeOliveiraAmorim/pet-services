@@ -7,3 +7,4 @@ export {
   useAuthResendVerificationEmail,
   useAuthVerifyEmail,
 } from "./use-auth";
+export { useAuthSession } from "./use-auth-session";
