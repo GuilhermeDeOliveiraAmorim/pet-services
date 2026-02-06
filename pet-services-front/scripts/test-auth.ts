@@ -1,9 +1,5 @@
-import {
-  LoginUserUseCase,
-  LogoutUseCase,
-  RefreshTokenUseCase,
-} from "../src/application";
-import { AuthGatewayAxios, createApiClient } from "../src/infra";
+import { createAuthUseCases } from "../src/application";
+import { createApiContext } from "../src/infra";
 
 const email = process.env.TEST_EMAIL;
 const password = process.env.TEST_PASSWORD ?? "123QWEasd@";
@@ -14,12 +10,9 @@ if (!email) {
 }
 
 const apiBaseUrl = process.env.API_URL;
-const http = createApiClient(apiBaseUrl);
-const authGateway = new AuthGatewayAxios(http);
-
-const loginUseCase = new LoginUserUseCase(authGateway);
-const refreshUseCase = new RefreshTokenUseCase(authGateway);
-const logoutUseCase = new LogoutUseCase(authGateway);
+const { authGateway } = createApiContext(apiBaseUrl);
+const { loginUseCase, refreshTokenUseCase, logoutUseCase } =
+  createAuthUseCases(authGateway);
 
 const run = async () => {
   console.log("→ Login");
@@ -31,7 +24,7 @@ const run = async () => {
   });
 
   console.log("→ Refresh token");
-  const refresh = await refreshUseCase.execute({
+  const refresh = await refreshTokenUseCase.execute({
     refreshToken: login.refreshToken,
   });
   console.log("Refresh ok:", { expiresIn: refresh.expiresIn });

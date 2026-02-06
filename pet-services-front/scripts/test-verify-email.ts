@@ -1,8 +1,5 @@
-import {
-  ResendVerificationEmailUseCase,
-  VerifyEmailUseCase,
-} from "../src/application";
-import { AuthGatewayAxios, createApiClient } from "../src/infra";
+import { createAuthUseCases } from "../src/application";
+import { createApiContext } from "../src/infra";
 
 const email = process.env.TEST_EMAIL;
 
@@ -12,15 +9,13 @@ if (!email) {
 }
 
 const apiBaseUrl = process.env.API_URL;
-const http = createApiClient(apiBaseUrl);
-const authGateway = new AuthGatewayAxios(http);
-
-const resendUseCase = new ResendVerificationEmailUseCase(authGateway);
-const verifyUseCase = new VerifyEmailUseCase(authGateway);
+const { authGateway } = createApiContext(apiBaseUrl);
+const { resendVerificationEmailUseCase, verifyEmailUseCase } =
+  createAuthUseCases(authGateway);
 
 const run = async () => {
   console.log("→ Resend verification email");
-  const resend = await resendUseCase.execute({ email });
+  const resend = await resendVerificationEmailUseCase.execute({ email });
   console.log("Resend ok:", {
     verifyToken: resend.verifyToken,
     expiresAt: resend.expiresAt,
@@ -32,7 +27,9 @@ const run = async () => {
   }
 
   console.log("→ Verify email");
-  const verify = await verifyUseCase.execute({ token: resend.verifyToken });
+  const verify = await verifyEmailUseCase.execute({
+    token: resend.verifyToken,
+  });
   console.log("Verify ok:", verify);
 };
 

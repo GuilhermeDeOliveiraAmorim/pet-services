@@ -1,5 +1,5 @@
-import { ChangePasswordUseCase, LoginUserUseCase } from "../src/application";
-import { AuthGatewayAxios, createApiClient, UserGatewayAxios } from "../src/infra";
+import { createAuthUseCases, createUserUseCases } from "../src/application";
+import { createApiContext } from "../src/infra";
 
 const email = process.env.TEST_EMAIL;
 const oldPassword = process.env.TEST_PASSWORD ?? "123QWEasd@";
@@ -11,12 +11,9 @@ if (!email) {
 }
 
 const apiBaseUrl = process.env.API_URL;
-const http = createApiClient(apiBaseUrl);
-const authGateway = new AuthGatewayAxios(http);
-const userGateway = new UserGatewayAxios(http);
-
-const loginUseCase = new LoginUserUseCase(authGateway);
-const changePasswordUseCase = new ChangePasswordUseCase(userGateway);
+const { authGateway, userGateway } = createApiContext(apiBaseUrl);
+const { loginUseCase } = createAuthUseCases(authGateway);
+const { changePasswordUseCase } = createUserUseCases(userGateway);
 
 const run = async () => {
   console.log("→ Login");

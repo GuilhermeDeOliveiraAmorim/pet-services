@@ -1,31 +1,24 @@
-import {
-  ListCitiesUseCase,
-  ListCountriesUseCase,
-  ListStatesUseCase,
-} from "../../src/application";
-import { createApiClient, ReferenceGatewayAxios } from "../../src/infra";
+import { createReferenceUseCases } from "../../src/application";
+import { createApiContext } from "../../src/infra";
 
 const apiBaseUrl = process.env.API_URL;
-const http = createApiClient(apiBaseUrl);
-const referenceGateway = new ReferenceGatewayAxios(http);
-
-const listCountries = new ListCountriesUseCase(referenceGateway);
-const listStates = new ListStatesUseCase(referenceGateway);
-const listCities = new ListCitiesUseCase(referenceGateway);
+const { referenceGateway } = createApiContext(apiBaseUrl);
+const { listCountriesUseCase, listStatesUseCase, listCitiesUseCase } =
+  createReferenceUseCases(referenceGateway);
 
 const run = async () => {
   console.log("→ List countries");
-  const countries = await listCountries.execute();
+  const countries = await listCountriesUseCase.execute();
   console.log("Countries:", countries.countries.length);
 
   console.log("→ List states");
-  const states = await listStates.execute();
+  const states = await listStatesUseCase.execute();
   console.log("States:", states.states.length);
 
   const firstState = states.states[0];
   if (firstState) {
     console.log("→ List cities (first state)");
-    const cities = await listCities.execute({ stateId: firstState.id });
+    const cities = await listCitiesUseCase.execute({ stateId: firstState.id });
     console.log("Cities:", cities.cities.length);
   } else {
     console.log("Sem estados para listar cidades");
