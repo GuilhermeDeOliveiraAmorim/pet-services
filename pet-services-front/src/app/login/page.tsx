@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { useAuthLogin, useAuthSession } from "@/application";
+import MainNav from "@/components/common/MainNav";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -30,7 +31,8 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#f7f9ff] px-4 text-slate-900">
-      <div className="mx-auto flex min-h-screen w-full max-w-6xl items-center justify-center py-12">
+      <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-10 py-12">
+        <MainNav showLinks={false} showActions={false} />
         <div className="grid w-full gap-10 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="hidden flex-col justify-center gap-6 rounded-4xl bg-white p-10 shadow-[0_30px_80px_rgba(124,139,255,0.2)] lg:flex">
             <div className="flex items-center gap-2">

@@ -1,37 +1,10 @@
-import Link from "next/link";
+import MainNav from "@/components/common/MainNav";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#f7f9ff] text-slate-900">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-6 py-10 lg:px-8">
-        <header className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-linear-to-tr from-teal-400 to-cyan-400 text-white font-semibold">
-              pet
-            </div>
-            <span className="text-lg font-semibold">PetCare</span>
-          </div>
-          <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 lg:flex">
-            <a className="text-slate-900" href="#home">
-              Home
-            </a>
-            <a href="#services">Serviços</a>
-            <a href="#doctors">Veterinários</a>
-            <a href="#testimonials">Depoimentos</a>
-            <a href="#contact">Contato</a>
-          </nav>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="hidden rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 lg:inline-flex"
-            >
-              Login
-            </Link>
-            <button className="rounded-full bg-linear-to-r from-teal-400 to-cyan-400 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-cyan-200">
-              Agendar
-            </button>
-          </div>
-        </header>
+        <MainNav />
 
         <section
           id="home"
