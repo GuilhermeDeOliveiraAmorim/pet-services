@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 import { useAuthLogin, useAuthSession } from "@/application";
 import MainNav from "@/components/common/MainNav";
@@ -140,7 +141,9 @@ export default function LoginPage() {
 
               <p className="text-center text-xs text-slate-500">
                 Ainda não tem conta?{" "}
-                <span className="text-cyan-600">Criar conta</span>
+                <Link href="/register" className="text-cyan-600">
+                  Criar conta
+                </Link>
               </p>
             </form>
           </div>
