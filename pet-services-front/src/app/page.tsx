@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#f7f9ff] text-slate-900">
@@ -19,9 +21,12 @@ export default function Home() {
             <a href="#contact">Contato</a>
           </nav>
           <div className="flex items-center gap-3">
-            <button className="hidden rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 lg:inline-flex">
+            <Link
+              href="/login"
+              className="hidden rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 lg:inline-flex"
+            >
               Login
-            </button>
+            </Link>
             <button className="rounded-full bg-linear-to-r from-teal-400 to-cyan-400 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-cyan-200">
               Agendar
             </button>
