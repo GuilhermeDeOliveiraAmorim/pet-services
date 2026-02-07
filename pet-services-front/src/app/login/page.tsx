@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import * as Checkbox from "@radix-ui/react-checkbox";
+import * as Form from "@radix-ui/react-form";
+import * as Toggle from "@radix-ui/react-toggle";
+import { Check, Eye, EyeOff } from "lucide-react";
 
 import { useAuthLogin, useAuthSession } from "@/application";
 import MainNav from "@/components/common/MainNav";
@@ -15,6 +19,7 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -79,45 +84,85 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <form className="space-y-5" onSubmit={handleSubmit}>
-              <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="email">
-                  Email
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-                  placeholder="voce@email.com"
-                  required
-                  autoComplete="email"
-                />
-              </div>
+            <Form.Root className="space-y-5" onSubmit={handleSubmit}>
+              <Form.Field className="space-y-2" name="email">
+                <div className="flex items-baseline justify-between">
+                  <Form.Label className="text-sm font-medium">Email</Form.Label>
+                  <Form.Message
+                    className="text-xs text-rose-500"
+                    match="valueMissing"
+                  >
+                    Informe o email
+                  </Form.Message>
+                  <Form.Message
+                    className="text-xs text-rose-500"
+                    match="typeMismatch"
+                  >
+                    Email inválido
+                  </Form.Message>
+                </div>
+                <Form.Control asChild>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+                    placeholder="voce@email.com"
+                    required
+                    autoComplete="email"
+                  />
+                </Form.Control>
+              </Form.Field>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="password">
-                  Senha
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-                  placeholder="********"
-                  required
-                  autoComplete="current-password"
-                />
-              </div>
+              <Form.Field className="space-y-2" name="password">
+                <div className="flex items-baseline justify-between">
+                  <Form.Label className="text-sm font-medium">Senha</Form.Label>
+                  <Form.Message
+                    className="text-xs text-rose-500"
+                    match="valueMissing"
+                  >
+                    Informe a senha
+                  </Form.Message>
+                </div>
+                <div className="relative">
+                  <Form.Control asChild>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 pr-12 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+                      placeholder="********"
+                      required
+                      autoComplete="current-password"
+                    />
+                  </Form.Control>
+                  <Toggle.Root
+                    pressed={showPassword}
+                    onPressedChange={setShowPassword}
+                    aria-label={
+                      showPassword ? "Ocultar senha" : "Mostrar senha"
+                    }
+                    className="absolute inset-y-0 right-2 flex h-9 w-9 items-center justify-center rounded-full text-slate-400 transition hover:text-slate-600"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Toggle.Root>
+                </div>
+              </Form.Field>
 
               <div className="flex items-center justify-between text-xs text-slate-500">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-slate-300"
-                  />
+                <label className="flex items-center gap-2" htmlFor="remember">
+                  <Checkbox.Root
+                    id="remember"
+                    className="flex h-4 w-4 items-center justify-center rounded border border-slate-300 bg-white shadow-sm data-[state=checked]:bg-cyan-500 data-[state=checked]:border-cyan-500"
+                  >
+                    <Checkbox.Indicator className="text-white">
+                      <Check className="h-3 w-3" />
+                    </Checkbox.Indicator>
+                  </Checkbox.Root>
                   Lembrar de mim
                 </label>
                 <button type="button" className="text-cyan-600">
@@ -131,13 +176,15 @@ export default function LoginPage() {
                 </p>
               ) : null}
 
-              <button
-                type="submit"
-                disabled={isPending}
-                className="inline-flex h-11 w-full items-center justify-center rounded-full bg-linear-to-r from-teal-400 to-cyan-400 px-4 text-sm font-semibold text-white shadow-lg shadow-cyan-200 transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {isPending ? "Entrando..." : "Entrar"}
-              </button>
+              <Form.Submit asChild>
+                <button
+                  type="submit"
+                  disabled={isPending}
+                  className="inline-flex h-11 w-full items-center justify-center rounded-full bg-linear-to-r from-teal-400 to-cyan-400 px-4 text-sm font-semibold text-white shadow-lg shadow-cyan-200 transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {isPending ? "Entrando..." : "Entrar"}
+                </button>
+              </Form.Submit>
 
               <p className="text-center text-xs text-slate-500">
                 Ainda não tem conta?{" "}
@@ -145,7 +192,7 @@ export default function LoginPage() {
                   Criar conta
                 </Link>
               </p>
-            </form>
+            </Form.Root>
           </div>
         </div>
       </div>
