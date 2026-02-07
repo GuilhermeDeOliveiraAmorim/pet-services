@@ -1,6 +1,7 @@
 import * as Form from "@radix-ui/react-form";
 
 import { type UserType, UserTypes } from "@/domain";
+import RadixSelectField from "@/components/common/RadixSelectField";
 
 type RegisterAccountFieldsProps = {
   name: string;
@@ -50,41 +51,17 @@ export default function RegisterAccountFields({
           </Form.Control>
         </Form.Field>
 
-        <Form.Field className="space-y-2" name="userType">
-          <Form.Label className="text-sm font-medium">
-            Tipo de usuário
-          </Form.Label>
-          <div className="relative">
-            <Form.Control asChild>
-              <select
-                id="userType"
-                value={userType}
-                onChange={(event) =>
-                  onUserTypeChange(event.target.value as UserType)
-                }
-                className="h-11 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50 px-4 pr-10 text-sm text-slate-700 shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-                required
-              >
-                <option value={UserTypes.Owner}>Tutor</option>
-                <option value={UserTypes.Provider}>Prestador</option>
-              </select>
-            </Form.Control>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
-              <svg
-                aria-hidden="true"
-                className="h-4 w-4"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.126l3.71-3.895a.75.75 0 1 1 1.08 1.04l-4.24 4.45a.75.75 0 0 1-1.08 0l-4.24-4.45a.75.75 0 0 1 .02-1.06Z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-          </div>
-        </Form.Field>
+        <RadixSelectField
+          name="userType"
+          label="Tipo de usuário"
+          value={userType}
+          onValueChange={(value) => onUserTypeChange(value as UserType)}
+          options={[
+            { value: UserTypes.Owner, label: "Tutor" },
+            { value: UserTypes.Provider, label: "Prestador" },
+          ]}
+          required
+        />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
