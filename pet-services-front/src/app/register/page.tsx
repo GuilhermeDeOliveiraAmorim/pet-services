@@ -7,7 +7,7 @@ export default function RegisterPage() {
   return (
     <PageWrapper className="gap-16">
       <MainNav showLinks={false} showActions={false} />
-      <div className="grid w-full gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+      <div className="grid w-full gap-10 lg:grid-cols-[0.9fr_1.1fr]">
         <RegisterAside />
         <RegisterForm />
       </div>

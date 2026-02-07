@@ -5,6 +5,7 @@ import RadixSelectField from "@/components/common/RadixSelectField";
 type RegisterPhoneFieldsProps = {
   countryCode: string;
   onCountryCodeChange: (value: string) => void;
+  countryCodeDisplayValue?: string;
   areaCode: string;
   onAreaCodeChange: (value: string) => void;
   phoneNumber: string;
@@ -15,6 +16,7 @@ type RegisterPhoneFieldsProps = {
 export default function RegisterPhoneFields({
   countryCode,
   onCountryCodeChange,
+  countryCodeDisplayValue,
   areaCode,
   onAreaCodeChange,
   phoneNumber,
@@ -29,6 +31,7 @@ export default function RegisterPhoneFields({
         value={countryCode}
         onValueChange={onCountryCodeChange}
         options={dialCodeOptions}
+        displayValue={countryCodeDisplayValue}
         searchable
         searchPlaceholder="Buscar país"
         required

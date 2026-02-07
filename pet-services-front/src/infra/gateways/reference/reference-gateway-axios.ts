@@ -6,10 +6,24 @@ export class ReferenceGatewayAxios implements ReferenceGateway {
   constructor(private readonly http: AxiosInstance) {}
 
   async listCountries() {
-    const { data } = await this.http.get<{ countries: Country[] }>(
-      "/reference/countries",
-    );
-    return { countries: data.countries };
+    const { data } = await this.http.get<{
+      countries: Array<{
+        name: string;
+        dial_code?: string;
+        dialCode?: string;
+        code: string;
+        flag: string;
+      }>;
+    }>("/reference/countries");
+
+    const countries: Country[] = data.countries.map((country) => ({
+      name: country.name,
+      dialCode: country.dialCode ?? country.dial_code ?? "",
+      code: country.code,
+      flag: country.flag,
+    }));
+
+    return { countries };
   }
 
   async listStates() {

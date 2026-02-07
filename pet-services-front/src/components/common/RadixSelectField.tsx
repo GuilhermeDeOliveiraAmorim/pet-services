@@ -21,6 +21,7 @@ type RadixSelectFieldProps = {
   value: string;
   onValueChange: (value: string) => void;
   options: RadixSelectOption[];
+  displayValue?: string;
   placeholder?: string;
   required?: boolean;
   disabled?: boolean;
@@ -35,6 +36,7 @@ export default function RadixSelectField({
   value,
   onValueChange,
   options,
+  displayValue,
   placeholder = "Selecione",
   required = false,
   disabled = false,
@@ -44,6 +46,7 @@ export default function RadixSelectField({
 }: RadixSelectFieldProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const showDisplayValue = Boolean(displayValue && value);
 
   const matches = useMemo(() => {
     if (!searchable || !query.trim()) {
@@ -73,10 +76,15 @@ export default function RadixSelectField({
         ) : null}
       </div>
       <Form.Control asChild>
-        <input type="hidden" name={name} value={value} required={required} />
+        <input
+          type="hidden"
+          name={name}
+          value={value ?? ""}
+          required={required}
+        />
       </Form.Control>
       <Select.Root
-        value={value}
+        value={value ?? ""}
         onValueChange={(nextValue) => {
           onValueChange(nextValue);
           setOpen(false);
@@ -106,7 +114,11 @@ export default function RadixSelectField({
               className="flex h-11 w-full items-center justify-between gap-2 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200 disabled:cursor-not-allowed disabled:opacity-60"
               aria-label={label}
             >
-              <Select.Value placeholder={placeholder} className="truncate" />
+              {showDisplayValue ? (
+                <span className="truncate">{displayValue}</span>
+              ) : (
+                <Select.Value placeholder={placeholder} className="truncate" />
+              )}
               <Select.Icon className="text-slate-400">
                 <ChevronDown className="h-4 w-4" />
               </Select.Icon>
@@ -139,7 +151,7 @@ export default function RadixSelectField({
                   ) : null}
                   {matches.map((option) => (
                     <Select.Item
-                      key={option.value}
+                      key={`${option.value}-${option.label}`}
                       value={option.value}
                       asChild
                     >
@@ -161,7 +173,11 @@ export default function RadixSelectField({
               className="flex h-11 w-full items-center justify-between gap-2 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200 disabled:cursor-not-allowed disabled:opacity-60"
               aria-label={label}
             >
-              <Select.Value placeholder={placeholder} className="truncate" />
+              {showDisplayValue ? (
+                <span className="truncate">{displayValue}</span>
+              ) : (
+                <Select.Value placeholder={placeholder} className="truncate" />
+              )}
               <Select.Icon className="text-slate-400">
                 <ChevronDown className="h-4 w-4" />
               </Select.Icon>
@@ -175,7 +191,7 @@ export default function RadixSelectField({
                 <Select.Viewport className="p-1">
                   {options.map((option) => (
                     <Select.Item
-                      key={option.value}
+                      key={`${option.value}-${option.label}`}
                       value={option.value}
                       className="relative flex cursor-pointer select-none items-center rounded-xl px-3 py-2 text-sm text-slate-700 outline-none data-highlighted:bg-slate-100"
                     >

@@ -17,7 +17,8 @@ type RetryableRequestConfig = InternalAxiosRequestConfig & {
 
 export const createApiClient = (baseURL?: string): AxiosInstance => {
   const client = axios.create({
-    baseURL: baseURL ?? process.env.NEXT_PUBLIC_API_URL,
+    baseURL:
+      baseURL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080",
     headers: {
       "Content-Type": "application/json",
     },

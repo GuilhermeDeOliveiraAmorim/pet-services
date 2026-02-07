@@ -45,7 +45,7 @@ export default function RegisterAddressFields({
 }: RegisterAddressFieldsProps) {
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-[1.3fr_0.7fr]">
         <Form.Field className="space-y-2" name="street">
           <div className="flex items-baseline justify-between">
             <Form.Label className="text-sm font-medium">Rua</Form.Label>
