@@ -1,4 +1,5 @@
 import { type UserType, UserTypes } from "@/domain";
+import SelectField from "@/components/common/SelectField";
 
 type RegisterAccountFieldsProps = {
   name: string;
@@ -37,22 +38,16 @@ export default function RegisterAccountFields({
             required
           />
         </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium" htmlFor="userType">
-            Tipo de usuário
-          </label>
-          <select
-            id="userType"
-            value={userType}
-            onChange={(event) =>
-              onUserTypeChange(event.target.value as UserType)
-            }
-            className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-          >
-            <option value={UserTypes.Owner}>Tutor</option>
-            <option value={UserTypes.Provider}>Prestador</option>
-          </select>
-        </div>
+        <SelectField
+          id="userType"
+          label="Tipo de usuário"
+          value={userType}
+          onChange={(value) => onUserTypeChange(value as UserType)}
+          options={[
+            { value: UserTypes.Owner, label: "Tutor" },
+            { value: UserTypes.Provider, label: "Prestador" },
+          ]}
+        />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
