@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import * as Form from "@radix-ui/react-form";
 import { type UserType, UserTypes } from "@/domain";
 import { useUserRegister } from "@/application";
 import RegisterAccountFields from "./RegisterAccountFields";
@@ -74,7 +75,7 @@ export default function RegisterForm() {
 
   return (
     <RegisterFormCard>
-      <form className="space-y-6" onSubmit={handleSubmit}>
+      <Form.Root className="space-y-6" onSubmit={handleSubmit}>
         <RegisterAccountFields
           name={name}
           onNameChange={setName}
@@ -126,7 +127,7 @@ export default function RegisterForm() {
         />
 
         <RegisterFormFooter error={error} isSuccess={isSuccess} />
-      </form>
+      </Form.Root>
     </RegisterFormCard>
   );
 }

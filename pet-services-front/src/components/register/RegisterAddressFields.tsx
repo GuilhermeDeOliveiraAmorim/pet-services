@@ -1,3 +1,5 @@
+import * as Form from "@radix-ui/react-form";
+
 type RegisterAddressFieldsProps = {
   street: string;
   onStreetChange: (value: string) => void;
@@ -34,103 +36,163 @@ export default function RegisterAddressFields({
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <label className="text-sm font-medium" htmlFor="street">
-            Rua
-          </label>
-          <input
-            id="street"
-            value={street}
-            onChange={(event) => onStreetChange(event.target.value)}
-            className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-            placeholder="Rua Exemplo"
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium" htmlFor="addressNumber">
-            Número
-          </label>
-          <input
-            id="addressNumber"
-            value={addressNumber}
-            onChange={(event) => onAddressNumberChange(event.target.value)}
-            className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-            placeholder="123"
-            required
-          />
-        </div>
+        <Form.Field className="space-y-2" name="street">
+          <div className="flex items-baseline justify-between">
+            <Form.Label className="text-sm font-medium">Rua</Form.Label>
+            <Form.Message
+              className="text-xs text-rose-500"
+              match="valueMissing"
+            >
+              Obrigatório
+            </Form.Message>
+          </div>
+          <Form.Control asChild>
+            <input
+              id="street"
+              value={street}
+              onChange={(event) => onStreetChange(event.target.value)}
+              className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+              placeholder="Rua Exemplo"
+              required
+            />
+          </Form.Control>
+        </Form.Field>
+
+        <Form.Field className="space-y-2" name="addressNumber">
+          <div className="flex items-baseline justify-between">
+            <Form.Label className="text-sm font-medium">Número</Form.Label>
+            <Form.Message
+              className="text-xs text-rose-500"
+              match="valueMissing"
+            >
+              Obrigatório
+            </Form.Message>
+          </div>
+          <Form.Control asChild>
+            <input
+              id="addressNumber"
+              value={addressNumber}
+              onChange={(event) => onAddressNumberChange(event.target.value)}
+              className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+              placeholder="123"
+              required
+            />
+          </Form.Control>
+        </Form.Field>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <label className="text-sm font-medium" htmlFor="neighborhood">
-            Bairro
-          </label>
-          <input
-            id="neighborhood"
-            value={neighborhood}
-            onChange={(event) => onNeighborhoodChange(event.target.value)}
-            className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-            placeholder="Centro"
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium" htmlFor="city">
-            Cidade
-          </label>
-          <input
-            id="city"
-            value={city}
-            onChange={(event) => onCityChange(event.target.value)}
-            className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-            placeholder="São Paulo"
-            required
-          />
-        </div>
+        <Form.Field className="space-y-2" name="neighborhood">
+          <div className="flex items-baseline justify-between">
+            <Form.Label className="text-sm font-medium">Bairro</Form.Label>
+            <Form.Message
+              className="text-xs text-rose-500"
+              match="valueMissing"
+            >
+              Obrigatório
+            </Form.Message>
+          </div>
+          <Form.Control asChild>
+            <input
+              id="neighborhood"
+              value={neighborhood}
+              onChange={(event) => onNeighborhoodChange(event.target.value)}
+              className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+              placeholder="Centro"
+              required
+            />
+          </Form.Control>
+        </Form.Field>
+
+        <Form.Field className="space-y-2" name="city">
+          <div className="flex items-baseline justify-between">
+            <Form.Label className="text-sm font-medium">Cidade</Form.Label>
+            <Form.Message
+              className="text-xs text-rose-500"
+              match="valueMissing"
+            >
+              Obrigatório
+            </Form.Message>
+          </div>
+          <Form.Control asChild>
+            <input
+              id="city"
+              value={city}
+              onChange={(event) => onCityChange(event.target.value)}
+              className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+              placeholder="São Paulo"
+              required
+            />
+          </Form.Control>
+        </Form.Field>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="space-y-2">
-          <label className="text-sm font-medium" htmlFor="state">
-            Estado
-          </label>
-          <input
-            id="state"
-            value={state}
-            onChange={(event) => onStateChange(event.target.value)}
-            className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-            placeholder="SP"
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium" htmlFor="zipCode">
-            CEP
-          </label>
-          <input
-            id="zipCode"
-            value={zipCode}
-            onChange={(event) => onZipCodeChange(event.target.value)}
-            className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-            placeholder="00000-000"
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium" htmlFor="country">
-            País
-          </label>
-          <input
-            id="country"
-            value={country}
-            onChange={(event) => onCountryChange(event.target.value)}
-            className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-            placeholder="Brasil"
-            required
-          />
-        </div>
+        <Form.Field className="space-y-2" name="state">
+          <div className="flex items-baseline justify-between">
+            <Form.Label className="text-sm font-medium">Estado</Form.Label>
+            <Form.Message
+              className="text-xs text-rose-500"
+              match="valueMissing"
+            >
+              Obrigatório
+            </Form.Message>
+          </div>
+          <Form.Control asChild>
+            <input
+              id="state"
+              value={state}
+              onChange={(event) => onStateChange(event.target.value)}
+              className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+              placeholder="SP"
+              required
+            />
+          </Form.Control>
+        </Form.Field>
+
+        <Form.Field className="space-y-2" name="zipCode">
+          <div className="flex items-baseline justify-between">
+            <Form.Label className="text-sm font-medium">CEP</Form.Label>
+            <Form.Message
+              className="text-xs text-rose-500"
+              match="valueMissing"
+            >
+              Obrigatório
+            </Form.Message>
+          </div>
+          <Form.Control asChild>
+            <input
+              id="zipCode"
+              value={zipCode}
+              onChange={(event) => onZipCodeChange(event.target.value)}
+              className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+              placeholder="00000-000"
+              required
+            />
+          </Form.Control>
+        </Form.Field>
+
+        <Form.Field className="space-y-2" name="country">
+          <div className="flex items-baseline justify-between">
+            <Form.Label className="text-sm font-medium">País</Form.Label>
+            <Form.Message
+              className="text-xs text-rose-500"
+              match="valueMissing"
+            >
+              Obrigatório
+            </Form.Message>
+          </div>
+          <Form.Control asChild>
+            <input
+              id="country"
+              value={country}
+              onChange={(event) => onCountryChange(event.target.value)}
+              className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+              placeholder="Brasil"
+              required
+            />
+          </Form.Control>
+        </Form.Field>
       </div>
 
     </>
