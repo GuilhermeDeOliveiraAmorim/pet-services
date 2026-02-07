@@ -1,4 +1,5 @@
 import Link from "next/link";
+import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 
 const navItems = [
   { label: "Home", href: "/" },
@@ -29,17 +30,22 @@ export default function MainNav({
       </Link>
 
       {showLinks ? (
-        <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 lg:flex">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={item.href === "/" ? "text-slate-900" : undefined}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <NavigationMenu.Root className="hidden lg:flex">
+          <NavigationMenu.List className="flex items-center gap-6 text-sm font-medium text-slate-600">
+            {navItems.map((item) => (
+              <NavigationMenu.Item key={item.href}>
+                <NavigationMenu.Link asChild>
+                  <Link
+                    href={item.href}
+                    className={item.href === "/" ? "text-slate-900" : undefined}
+                  >
+                    {item.label}
+                  </Link>
+                </NavigationMenu.Link>
+              </NavigationMenu.Item>
+            ))}
+          </NavigationMenu.List>
+        </NavigationMenu.Root>
       ) : null}
 
       {showActions ? (

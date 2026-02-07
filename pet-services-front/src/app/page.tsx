@@ -1,3 +1,7 @@
+import * as Avatar from "@radix-ui/react-avatar";
+import * as Separator from "@radix-ui/react-separator";
+import * as Tooltip from "@radix-ui/react-tooltip";
+
 import MainNav from "@/components/common/MainNav";
 import PageWrapper from "@/components/common/PageWrapper";
 
@@ -22,14 +26,42 @@ export default function Home() {
             Faça a gestão completa do bem-estar do seu pet com agilidade e
             carinho.
           </p>
-          <div className="flex flex-wrap items-center gap-4">
-            <button className="rounded-full bg-linear-to-r from-teal-400 to-cyan-400 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-cyan-200">
-              Agendar agora
-            </button>
-            <button className="rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700">
-              Ver serviços
-            </button>
-          </div>
+            <Tooltip.Provider delayDuration={200}>
+              <div className="flex flex-wrap items-center gap-4">
+                <Tooltip.Root>
+                  <Tooltip.Trigger asChild>
+                    <button className="rounded-full bg-linear-to-r from-teal-400 to-cyan-400 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-cyan-200">
+                      Agendar agora
+                    </button>
+                  </Tooltip.Trigger>
+                  <Tooltip.Portal>
+                    <Tooltip.Content
+                      sideOffset={8}
+                      className="rounded-full bg-slate-900 px-3 py-1 text-xs text-white shadow-lg"
+                    >
+                      Agende sua consulta
+                      <Tooltip.Arrow className="fill-slate-900" />
+                    </Tooltip.Content>
+                  </Tooltip.Portal>
+                </Tooltip.Root>
+                <Tooltip.Root>
+                  <Tooltip.Trigger asChild>
+                    <button className="rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700">
+                      Ver serviços
+                    </button>
+                  </Tooltip.Trigger>
+                  <Tooltip.Portal>
+                    <Tooltip.Content
+                      sideOffset={8}
+                      className="rounded-full bg-slate-900 px-3 py-1 text-xs text-white shadow-lg"
+                    >
+                      Veja o catálogo completo
+                      <Tooltip.Arrow className="fill-slate-900" />
+                    </Tooltip.Content>
+                  </Tooltip.Portal>
+                </Tooltip.Root>
+              </div>
+            </Tooltip.Provider>
           <div className="grid grid-cols-3 gap-6 pt-6 text-sm">
             <div>
               <p className="text-2xl font-semibold text-slate-900">99%</p>
@@ -103,9 +135,9 @@ export default function Home() {
                 key={name}
                 className="flex flex-col items-center gap-3 rounded-3xl bg-slate-50 px-4 py-6 text-center"
               >
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-linear-to-br from-cyan-200 to-blue-200 text-lg font-semibold text-slate-700">
-                  {index + 1}
-                </div>
+                <Avatar.Root className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-linear-to-br from-cyan-200 to-blue-200 text-lg font-semibold text-slate-700">
+                  <Avatar.Fallback>{index + 1}</Avatar.Fallback>
+                </Avatar.Root>
                 <p className="text-sm font-semibold text-slate-900">{name}</p>
                 <p className="text-xs text-slate-500">Veterinário</p>
               </div>
@@ -169,7 +201,9 @@ export default function Home() {
               Atendimento rápido e equipe cuidadosa.”
             </p>
             <div className="mt-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-linear-to-br from-orange-200 to-pink-200" />
+              <Avatar.Root className="h-10 w-10 overflow-hidden rounded-full bg-linear-to-br from-orange-200 to-pink-200">
+                <Avatar.Fallback>MT</Avatar.Fallback>
+              </Avatar.Root>
               <div>
                 <p className="text-sm font-semibold text-slate-900">
                   Mariana Torres
@@ -229,7 +263,8 @@ export default function Home() {
         </button>
       </section>
 
-      <footer className="flex flex-col items-center justify-between gap-6 border-t border-slate-200 pt-8 text-sm text-slate-500 lg:flex-row">
+      <Separator.Root className="h-px w-full bg-slate-200" />
+      <footer className="flex flex-col items-center justify-between gap-6 pt-8 text-sm text-slate-500 lg:flex-row">
         <div className="flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-linear-to-tr from-teal-400 to-cyan-400 text-white font-semibold">
             pet
