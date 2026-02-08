@@ -47,6 +47,8 @@ export default function RegisterForm() {
   const [latitude, setLatitude] = useState("0");
   const [longitude, setLongitude] = useState("0");
   const [step, setStep] = useState("account");
+  const [isGeocoding, setIsGeocoding] = useState(false);
+  const [geocodeError, setGeocodeError] = useState<string | undefined>();
 
   const { data: countriesData } = useReferenceCountries();
   const { data: statesData } = useReferenceStates();
@@ -154,6 +156,48 @@ export default function RegisterForm() {
     return flag ? `${flag} +${displayDigits}` : `+${displayDigits}`;
   }, [countries, selectedDialCodeValue]);
 
+  const geocodeAddress = useMemo(() => zipCode.trim(), [zipCode]);
+
+  const canGeocode = Boolean(geocodeAddress);
+
+  const handleGeocode = async () => {
+    if (!geocodeAddress) {
+      setGeocodeError("Informe o endereço completo ou o CEP.");
+      return;
+    }
+
+    try {
+      setIsGeocoding(true);
+      setGeocodeError(undefined);
+
+      const params = new URLSearchParams({ address: geocodeAddress });
+      const response = await fetch(`/api/geocode?${params.toString()}`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error || "Não foi possível obter coordenadas");
+      }
+
+      const lat = Number.parseFloat(String(data.latitude ?? ""));
+      const lng = Number.parseFloat(String(data.longitude ?? ""));
+
+      if (!Number.isNaN(lat)) {
+        setLatitude(lat.toFixed(2));
+      }
+      if (!Number.isNaN(lng)) {
+        setLongitude(lng.toFixed(2));
+      }
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Não foi possível obter coordenadas";
+      setGeocodeError(message);
+    } finally {
+      setIsGeocoding(false);
+    }
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -255,6 +299,8 @@ export default function RegisterForm() {
               onNeighborhoodChange={setNeighborhood}
               zipCode={zipCode}
               onZipCodeChange={setZipCode}
+              complement={complement}
+              onComplementChange={setComplement}
               countryCode={countryCode}
               onCountryCodeChange={(value) => {
                 setCountryCode(value);
@@ -275,17 +321,19 @@ export default function RegisterForm() {
             />
 
             <RegisterAdditionalFields
-              complement={complement}
-              onComplementChange={setComplement}
               latitude={latitude}
               onLatitudeChange={setLatitude}
-            />
-
-            <RegisterSubmitRow
               longitude={longitude}
               onLongitudeChange={setLongitude}
-              isPending={isPending}
+              onGeocode={handleGeocode}
+              isGeocoding={isGeocoding}
+              geocodeError={geocodeError}
+              canGeocode={canGeocode}
+              latitudeDisabled
+              longitudeDisabled
             />
+
+            <RegisterSubmitRow isPending={isPending} />
 
             <RegisterFormFooter error={error} isSuccess={isSuccess} />
           </Tabs.Content>

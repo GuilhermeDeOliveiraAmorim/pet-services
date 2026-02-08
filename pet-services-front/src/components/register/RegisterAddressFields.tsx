@@ -11,6 +11,8 @@ type RegisterAddressFieldsProps = {
   onNeighborhoodChange: (value: string) => void;
   zipCode: string;
   onZipCodeChange: (value: string) => void;
+  complement: string;
+  onComplementChange: (value: string) => void;
   countryCode: string;
   onCountryCodeChange: (value: string) => void;
   stateId?: number;
@@ -42,6 +44,8 @@ export default function RegisterAddressFields({
   cityDisabled,
   zipCode,
   onZipCodeChange,
+  complement,
+  onComplementChange,
 }: RegisterAddressFieldsProps) {
   return (
     <>
@@ -166,11 +170,13 @@ export default function RegisterAddressFields({
               id="zipCode"
               value={zipCode}
               onChange={(event) => onZipCodeChange(event.target.value)}
-              className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+              className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
               placeholder="00000-000"
+              inputMode="numeric"
               required
             />
           </Form.Control>
+          <p className="text-xs text-slate-400">Digite somente números.</p>
         </Form.Field>
 
         <RadixSelectField
@@ -184,6 +190,19 @@ export default function RegisterAddressFields({
           required
         />
       </div>
+
+      <Form.Field className="space-y-2" name="complement">
+        <Form.Label className="text-sm font-medium">Complemento</Form.Label>
+        <Form.Control asChild>
+          <input
+            id="complement"
+            value={complement}
+            onChange={(event) => onComplementChange(event.target.value)}
+            className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+            placeholder="Apartamento, bloco, etc"
+          />
+        </Form.Control>
+      </Form.Field>
     </>
   );
 }
