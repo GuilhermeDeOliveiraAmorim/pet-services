@@ -176,7 +176,6 @@ export default function RegisterAddressFields({
               required
             />
           </Form.Control>
-          <p className="text-xs text-slate-400">Digite somente números.</p>
         </Form.Field>
 
         <RadixSelectField
