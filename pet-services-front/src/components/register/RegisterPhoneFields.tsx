@@ -23,6 +23,20 @@ export default function RegisterPhoneFields({
   onPhoneNumberChange,
   dialCodeOptions,
 }: RegisterPhoneFieldsProps) {
+  const formatPhoneNumber = (value: string) => {
+    const digits = value.replace(/\D/g, "");
+    if (!digits) {
+      return "";
+    }
+
+    const isMobile = digits.length > 8;
+    const maxDigits = isMobile ? 9 : 8;
+    const splitAt = isMobile ? 5 : 4;
+    const trimmed = digits.slice(0, maxDigits);
+
+    return `${trimmed.slice(0, splitAt)}-${trimmed.slice(splitAt)}`;
+  };
+
   return (
     <div className="grid gap-4 sm:grid-cols-3">
       <RadixSelectField
@@ -48,9 +62,16 @@ export default function RegisterPhoneFields({
           <input
             id="areaCode"
             value={areaCode}
-            onChange={(event) => onAreaCodeChange(event.target.value)}
+            onChange={(event) => {
+              const digits = event.target.value.replace(/\D/g, "").slice(0, 2);
+              onAreaCodeChange(digits);
+            }}
             className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
             placeholder="11"
+            inputMode="numeric"
+            pattern="\d{2}"
+            minLength={2}
+            maxLength={2}
             required
           />
         </Form.Control>
@@ -67,9 +88,17 @@ export default function RegisterPhoneFields({
           <input
             id="phoneNumber"
             value={phoneNumber}
-            onChange={(event) => onPhoneNumberChange(event.target.value)}
+            onChange={(event) =>
+              onPhoneNumberChange(formatPhoneNumber(event.target.value))
+            }
+            onBlur={(event) =>
+              onPhoneNumberChange(formatPhoneNumber(event.target.value))
+            }
             className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-            placeholder="99999-9999"
+            placeholder="7898-7898 ou 78987-7898"
+            inputMode="numeric"
+            pattern="^(\d{4}-\d{4}|\d{5}-\d{4})$"
+            maxLength={10}
             required
           />
         </Form.Control>

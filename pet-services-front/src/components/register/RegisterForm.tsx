@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import * as Form from "@radix-ui/react-form";
 import * as Tabs from "@radix-ui/react-tabs";
@@ -101,6 +101,29 @@ export default function RegisterForm() {
       [],
     );
   }, [countries]);
+
+  useEffect(() => {
+    if (!dialCodeOptions.length) {
+      return;
+    }
+
+    const brOption = dialCodeOptions.find((option) =>
+      option.value.endsWith(`:${defaultCountryCode}`),
+    );
+
+    if (!brOption) {
+      return;
+    }
+
+    const hasMatch = dialCodeOptions.some((option) =>
+      option.value.startsWith(`${phoneCountryCode}:`),
+    );
+
+    if (!phoneCountryCode || !hasMatch) {
+      const [digits] = brOption.value.split(":");
+      setPhoneCountryCode(digits ?? defaultPhoneCountryCode);
+    }
+  }, [dialCodeOptions, phoneCountryCode]);
 
   const selectedDialCodeValue = useMemo(() => {
     if (!phoneCountryCode) {
