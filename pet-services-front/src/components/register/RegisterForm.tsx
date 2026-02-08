@@ -201,6 +201,8 @@ export default function RegisterForm() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    const phoneDigits = phoneNumber.replace(/\D/g, "");
+
     await mutateAsync({
       name,
       userType,
@@ -211,7 +213,7 @@ export default function RegisterForm() {
       phone: {
         countryCode: phoneCountryCode,
         areaCode,
-        number: phoneNumber,
+        number: phoneDigits,
       },
       address: {
         street,
