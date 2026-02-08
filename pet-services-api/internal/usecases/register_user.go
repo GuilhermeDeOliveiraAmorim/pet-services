@@ -51,22 +51,39 @@ func (uc *RegisterUserUseCase) Execute(ctx context.Context, input RegisterUserIn
 
 	var problems []exceptions.ProblemDetails
 
-	login, errs := entities.NewLogin(input.Login.Email, input.Login.Password)
+	var login *entities.Login
+	loginResult, errs := entities.NewLogin(input.Login.Email, input.Login.Password)
 	if len(errs) > 0 {
 		uc.logger.LogMultipleBadRequests(ctx, from, "Login inválido", errs)
 		problems = append(problems, errs...)
 	}
+	if len(errs) == 0 {
+		login = loginResult
+	}
 
-	phone, errs := entities.NewPhone(input.Phone.CountryCode, input.Phone.AreaCode, input.Phone.Number)
+	var phone *entities.Phone
+	phoneResult, errs := entities.NewPhone(input.Phone.CountryCode, input.Phone.AreaCode, input.Phone.Number)
 	if len(errs) > 0 {
 		uc.logger.LogMultipleBadRequests(ctx, from, "Telefone inválido", errs)
 		problems = append(problems, errs...)
 	}
+	if len(errs) == 0 {
+		phone = phoneResult
+	}
 
-	location, errs := entities.NewLocation(input.Address.Location.Latitude, input.Address.Location.Longitude)
+	var location *entities.Location
+	locationResult, errs := entities.NewLocation(input.Address.Location.Latitude, input.Address.Location.Longitude)
 	if len(errs) > 0 {
 		uc.logger.LogMultipleBadRequests(ctx, from, "Localização inválida", errs)
 		problems = append(problems, errs...)
+	}
+	if len(errs) == 0 {
+		location = locationResult
+	}
+
+	if len(problems) > 0 {
+		uc.logger.LogMultipleBadRequests(ctx, from, "Problemas de validação", problems)
+		return nil, problems
 	}
 
 	address, errs := entities.NewAddress(
@@ -83,6 +100,11 @@ func (uc *RegisterUserUseCase) Execute(ctx context.Context, input RegisterUserIn
 	if len(errs) > 0 {
 		uc.logger.LogMultipleBadRequests(ctx, from, "Endereço inválido", errs)
 		problems = append(problems, errs...)
+	}
+
+	if len(problems) > 0 {
+		uc.logger.LogMultipleBadRequests(ctx, from, "Problemas de validação", problems)
+		return nil, problems
 	}
 
 	user, errs := entities.NewUser(
