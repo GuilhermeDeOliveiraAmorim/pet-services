@@ -1,14 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import * as Checkbox from "@radix-ui/react-checkbox";
 import * as Form from "@radix-ui/react-form";
 import * as Toggle from "@radix-ui/react-toggle";
 import { Check, Eye, EyeOff } from "lucide-react";
+import { isAxiosError } from "axios";
 
-import { useAuthLogin, useAuthSession } from "@/application";
+import {
+  type ProblemDetailsResponse,
+  useAuthLogin,
+  useAuthResendVerificationEmail,
+  useAuthSession,
+} from "@/application";
 import MainNav from "@/components/common/MainNav";
 import PageWrapper from "@/components/common/PageWrapper";
 
@@ -16,10 +22,46 @@ export default function LoginPage() {
   const router = useRouter();
   const { setSession } = useAuthSession();
   const { mutateAsync, isPending, error } = useAuthLogin();
+  const {
+    mutateAsync: resendVerification,
+    isPending: isResendingVerification,
+    data: resendVerificationResult,
+  } = useAuthResendVerificationEmail();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  const feedback = useMemo(() => {
+    if (!error) {
+      return { message: "", canResend: false };
+    }
+
+    if (isAxiosError<ProblemDetailsResponse>(error)) {
+      const errorPayload = error.response?.data;
+      const problem = errorPayload?.errors?.[0];
+      const title = problem?.title?.toLowerCase() ?? "";
+      const detail = problem?.detail ?? "";
+      const status = problem?.status ?? error.response?.status;
+
+      const isUnverifiedEmail =
+        status === 403 &&
+        (title.includes("email não verificado") ||
+          detail.toLowerCase().includes("email") ||
+          detail.toLowerCase().includes("verifica"));
+
+      return {
+        message:
+          detail || "Não foi possível fazer login. Verifique suas credenciais.",
+        canResend: isUnverifiedEmail,
+      };
+    }
+
+    return {
+      message: "Não foi possível fazer login. Verifique suas credenciais.",
+      canResend: false,
+    };
+  }, [error]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -171,9 +213,44 @@ export default function LoginPage() {
               </div>
 
               {error ? (
-                <p className="text-sm text-rose-500">
-                  Não foi possível fazer login. Verifique suas credenciais.
-                </p>
+                <div className="rounded-3xl border border-rose-200/80 bg-rose-50/70 px-4 py-3 text-sm text-rose-600 shadow-sm">
+                  <div className="flex items-start gap-3">
+                    <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-rose-100 text-xs font-semibold text-rose-600">
+                      !
+                    </span>
+                    <div className="space-y-2">
+                      <p className="leading-5 text-rose-600">
+                        {feedback.message}
+                      </p>
+                      {feedback.canResend ? (
+                        <button
+                          type="button"
+                          disabled={!email || isResendingVerification}
+                          onClick={() => resendVerification({ email })}
+                          className="inline-flex items-center justify-center rounded-full border border-rose-200 bg-white px-3 py-1 text-xs font-semibold text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {isResendingVerification
+                            ? "Reenviando..."
+                            : "Reenviar email de verificação"}
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
+              {resendVerificationResult?.message ? (
+                <div className="rounded-3xl border border-emerald-200/80 bg-emerald-50/70 px-4 py-3 text-xs text-emerald-600 shadow-sm">
+                  <div className="flex items-start gap-3">
+                    <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-xs font-semibold text-emerald-600">
+                      ✓
+                    </span>
+                    <p className="leading-5">
+                      {resendVerificationResult.detail ??
+                        resendVerificationResult.message}
+                    </p>
+                  </div>
+                </div>
               ) : null}
 
               <Form.Submit asChild>
