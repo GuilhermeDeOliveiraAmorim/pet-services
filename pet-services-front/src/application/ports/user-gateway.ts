@@ -11,6 +11,7 @@ import type {
   UpdateUserInput,
   UpdateUserOutput,
 } from "../usecases/user";
+import type { AddUserPhotoInput, AddUserPhotoOutput } from "../usecases/user";
 
 export interface UserGateway {
   registerUser(input: RegisterUserInput): Promise<RegisterUserOutput>;
@@ -19,4 +20,5 @@ export interface UserGateway {
   updateUser(input: UpdateUserInput): Promise<UpdateUserOutput>;
   deactivateUser(): Promise<DeactivateUserOutput>;
   reactivateUser(): Promise<ReactivateUserOutput>;
+  addUserPhoto(input: AddUserPhotoInput): Promise<AddUserPhotoOutput>;
 }

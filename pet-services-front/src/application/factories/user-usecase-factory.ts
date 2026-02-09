@@ -1,6 +1,7 @@
 import type { UserGateway } from "../ports";
 import { ChangePasswordUseCase, RegisterUserUseCase } from "../usecases/auth";
 import {
+  AddUserPhotoUseCase,
   DeactivateUserUseCase,
   GetProfileUseCase,
   ReactivateUserUseCase,
@@ -15,5 +16,6 @@ export const createUserUseCases = (gateway: UserGateway) => {
     updateUserUseCase: new UpdateUserUseCase(gateway),
     deactivateUserUseCase: new DeactivateUserUseCase(gateway),
     reactivateUserUseCase: new ReactivateUserUseCase(gateway),
+    addUserPhotoUseCase: new AddUserPhotoUseCase(gateway),
   };
 };

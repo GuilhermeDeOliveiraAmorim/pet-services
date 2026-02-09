@@ -6,6 +6,8 @@ import type {
   UserGateway,
 } from "@/application";
 import type {
+  AddUserPhotoInput,
+  AddUserPhotoOutput,
   DeactivateUserOutput,
   GetProfileOutput,
   ReactivateUserOutput,
@@ -143,6 +145,23 @@ export class UserGatewayAxios implements UserGateway {
   async reactivateUser(): Promise<ReactivateUserOutput> {
     const { data } =
       await this.http.post<ReactivateUserOutput>("/users/reactivate");
+    return data;
+  }
+
+  async addUserPhoto(input: AddUserPhotoInput): Promise<AddUserPhotoOutput> {
+    const formData = new FormData();
+    formData.append("file", input.file);
+
+    const { data } = await this.http.post<AddUserPhotoOutput>(
+      "/users/photos",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
+    );
+
     return data;
   }
 }

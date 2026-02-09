@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Form from "@radix-ui/react-form";
@@ -9,6 +10,7 @@ import { isAxiosError } from "axios";
 import {
   type ProblemDetailsResponse,
   useAuthSession,
+  useUserAddPhoto,
   useUserDeactivate,
   useUserProfile,
   useUserReactivate,
@@ -190,12 +192,22 @@ type ProfileFormProps = {
 };
 
 const ProfileForm = ({ user }: ProfileFormProps) => {
+  const queryClient = useQueryClient();
   const {
     mutateAsync: updateUser,
     isPending: isSaving,
     error: updateError,
     isSuccess: updateSuccess,
   } = useUserUpdate();
+  const {
+    mutateAsync: addUserPhoto,
+    isPending: isUploadingPhoto,
+    error: uploadError,
+    isSuccess: uploadSuccess,
+  } = useUserAddPhoto({
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] }),
+  });
 
   const initialValues = useMemo(
     () => ({
@@ -245,6 +257,7 @@ const ProfileForm = ({ user }: ProfileFormProps) => {
   const [complement, setComplement] = useState(initialValues.complement);
   const [latitude, setLatitude] = useState(initialValues.latitude);
   const [longitude, setLongitude] = useState(initialValues.longitude);
+  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
 
   const hasChanges = useMemo(() => {
     const normalize = (value: string) => value.trim();
@@ -301,6 +314,34 @@ const ProfileForm = ({ user }: ProfileFormProps) => {
     return "Não foi possível atualizar o perfil.";
   }, [updateError]);
 
+  const photoFeedback = useMemo(() => {
+    if (!uploadError) {
+      return "";
+    }
+
+    if (isAxiosError<ProblemDetailsResponse>(uploadError)) {
+      const problem = uploadError.response?.data?.errors?.[0];
+      return (
+        problem?.detail ||
+        problem?.title ||
+        "Não foi possível enviar a foto."
+      );
+    }
+
+    return "Não foi possível enviar a foto.";
+  }, [uploadError]);
+
+  const currentPhotoUrl = user.photos?.[0]?.url;
+
+  const handlePhotoUpload = async () => {
+    if (!selectedPhoto) {
+      return;
+    }
+
+    await addUserPhoto({ file: selectedPhoto });
+    setSelectedPhoto(null);
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -352,6 +393,50 @@ const ProfileForm = ({ user }: ProfileFormProps) => {
 
   return (
     <Form.Root className="space-y-6" onSubmit={handleSubmit}>
+      <div className="rounded-3xl border border-slate-100 bg-slate-50/60 p-4">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="h-20 w-20 overflow-hidden rounded-3xl bg-slate-200">
+            {currentPhotoUrl ? (
+              <img
+                src={currentPhotoUrl}
+                alt="Foto do usuário"
+                className="h-full w-full object-cover"
+              />
+            ) : null}
+          </div>
+          <div className="flex flex-1 flex-col gap-2">
+            <p className="text-sm font-medium text-slate-800">
+              Foto do perfil
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(event) =>
+                  setSelectedPhoto(event.target.files?.[0] ?? null)
+                }
+                className="text-sm text-slate-600"
+              />
+              <button
+                type="button"
+                onClick={handlePhotoUpload}
+                disabled={!selectedPhoto || isUploadingPhoto}
+                className="rounded-full bg-cyan-500 px-4 py-2 text-xs font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {isUploadingPhoto ? "Enviando..." : "Enviar foto"}
+              </button>
+            </div>
+            {uploadSuccess ? (
+              <p className="text-xs text-emerald-600">
+                Foto enviada com sucesso.
+              </p>
+            ) : null}
+            {photoFeedback ? (
+              <p className="text-xs text-rose-600">{photoFeedback}</p>
+            ) : null}
+          </div>
+        </div>
+      </div>
       <div className="grid gap-4 md:grid-cols-2">
         <Form.Field className="space-y-2" name="name">
           <Form.Label className="text-sm font-medium">Nome</Form.Label>

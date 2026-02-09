@@ -7,6 +7,8 @@ import {
 } from "@tanstack/react-query";
 
 import type {
+  AddUserPhotoInput,
+  AddUserPhotoOutput,
   ChangePasswordInput,
   ChangePasswordOutput,
   DeactivateUserOutput,
@@ -54,6 +56,11 @@ type DeactivateUserOptions = Omit<
 
 type ReactivateUserOptions = Omit<
   UseMutationOptions<ReactivateUserOutput, Error, void>,
+  "mutationFn"
+>;
+
+type AddUserPhotoOptions = Omit<
+  UseMutationOptions<AddUserPhotoOutput, Error, AddUserPhotoInput>,
   "mutationFn"
 >;
 
@@ -108,6 +115,15 @@ export const useUserReactivate = (options?: ReactivateUserOptions) => {
 
   return useMutation({
     mutationFn: () => reactivateUserUseCase.execute(),
+    ...options,
+  });
+};
+
+export const useUserAddPhoto = (options?: AddUserPhotoOptions) => {
+  const { addUserPhotoUseCase } = useUserUseCases();
+
+  return useMutation({
+    mutationFn: (input) => addUserPhotoUseCase.execute(input),
     ...options,
   });
 };

@@ -1,5 +1,7 @@
 export type { GetProfileOutput } from "./get-profile";
 export { GetProfileUseCase } from "./get-profile";
+export type { AddUserPhotoInput, AddUserPhotoOutput } from "./add-user-photo";
+export { AddUserPhotoUseCase } from "./add-user-photo";
 export type { UpdateUserInput, UpdateUserOutput } from "./update-user";
 export { UpdateUserUseCase } from "./update-user";
 export type { DeactivateUserOutput } from "./deactivate-user";

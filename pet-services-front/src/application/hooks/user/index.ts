@@ -5,4 +5,5 @@ export {
   useUserUpdate,
   useUserDeactivate,
   useUserReactivate,
+  useUserAddPhoto,
 } from "./use-user";
