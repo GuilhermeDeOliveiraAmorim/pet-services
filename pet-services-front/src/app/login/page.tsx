@@ -225,9 +225,9 @@ export default function LoginPage() {
                   </Checkbox.Root>
                   Lembrar de mim
                 </label>
-                <button type="button" className="text-cyan-600">
+                <Link href="/forgot-password" className="text-cyan-600">
                   Esqueci minha senha
-                </button>
+                </Link>
               </div>
 
               {error ? (
