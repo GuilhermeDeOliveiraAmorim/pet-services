@@ -5,7 +5,15 @@ import type {
   RegisterUserOutput,
   UserGateway,
 } from "@/application";
+import type {
+  DeactivateUserOutput,
+  GetProfileOutput,
+  ReactivateUserOutput,
+  UpdateUserInput,
+  UpdateUserOutput,
+} from "@/application";
 import type { AxiosInstance } from "axios";
+import { mapUserFromApi } from "@/infra/mappers/user-mapper";
 
 export class UserGatewayAxios implements UserGateway {
   constructor(private readonly http: AxiosInstance) {}
@@ -66,6 +74,75 @@ export class UserGatewayAxios implements UserGateway {
       },
     );
 
+    return data;
+  }
+
+  async getProfile(): Promise<GetProfileOutput> {
+    const { data } = await this.http.get<{ user: Record<string, any> }>(
+      "/users/profile",
+    );
+
+    return {
+      user: mapUserFromApi(data.user),
+    };
+  }
+
+  async updateUser(input: UpdateUserInput): Promise<UpdateUserOutput> {
+    const payload: Record<string, any> = {};
+
+    if (typeof input.name === "string") {
+      payload.name = input.name;
+    }
+
+    if (input.phone) {
+      payload.phone = {
+        country_code: input.phone.countryCode,
+        area_code: input.phone.areaCode,
+        number: input.phone.number,
+      };
+    }
+
+    if (input.address) {
+      payload.address = {
+        street: input.address.street,
+        number: input.address.number,
+        neighborhood: input.address.neighborhood,
+        city: input.address.city,
+        zip_code: input.address.zipCode,
+        state: input.address.state,
+        country: input.address.country,
+        complement: input.address.complement,
+        location: input.address.location
+          ? {
+              latitude: input.address.location.latitude,
+              longitude: input.address.location.longitude,
+            }
+          : undefined,
+      };
+    }
+
+    const { data } = await this.http.put<{
+      message?: string;
+      detail?: string;
+      user?: Record<string, any>;
+    }>("/users", payload);
+
+    return {
+      message: data.message,
+      detail: data.detail,
+      user: data.user ? mapUserFromApi(data.user) : undefined,
+    };
+  }
+
+  async deactivateUser(): Promise<DeactivateUserOutput> {
+    const { data } =
+      await this.http.post<DeactivateUserOutput>("/users/deactivate");
+    return data;
+  }
+
+  async reactivateUser(): Promise<ReactivateUserOutput> {
+    const { data } =
+      await this.http.post<ReactivateUserOutput>("/users/reactivate");
     return data;
   }
 }

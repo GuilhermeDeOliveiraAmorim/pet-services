@@ -1,1 +1,8 @@
-export { useUserRegister, useUserChangePassword } from "./use-user";
+export {
+  useUserRegister,
+  useUserChangePassword,
+  useUserProfile,
+  useUserUpdate,
+  useUserDeactivate,
+  useUserReactivate,
+} from "./use-user";
