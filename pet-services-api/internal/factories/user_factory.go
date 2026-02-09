@@ -3,6 +3,7 @@ package factories
 import (
 	"pet-services-api/internal/logging"
 	"pet-services-api/internal/repository_impl"
+	"pet-services-api/internal/storage"
 	"pet-services-api/internal/usecases"
 
 	"gorm.io/gorm"
@@ -22,11 +23,13 @@ type UserFactory struct {
 	CheckPhoneExists    *usecases.CheckPhoneExistsUseCase
 	UpdateEmailVerified *usecases.UpdateEmailVerifiedUseCase
 	ChangePassword      *usecases.ChangePasswordUseCase
+	AddUserPhoto        *usecases.AddUserPhotoUseCase
 }
 
-func NewUserFactory(db *gorm.DB, logger logging.LoggerInterface) *UserFactory {
+func NewUserFactory(db *gorm.DB, storageService storage.ObjectStorage, logger logging.LoggerInterface) *UserFactory {
 	userRepo := repository_impl.NewUserRepository(db)
 	tokenRepo := repository_impl.NewRefreshTokenRepository(db)
+	photoRepo := repository_impl.NewPhotoRepository(db)
 
 	return &UserFactory{
 		RegisterUser:        usecases.NewRegisterUserUseCase(userRepo, logger),
@@ -42,5 +45,6 @@ func NewUserFactory(db *gorm.DB, logger logging.LoggerInterface) *UserFactory {
 		CheckPhoneExists:    usecases.NewCheckPhoneExistsUseCase(userRepo, logger),
 		UpdateEmailVerified: usecases.NewUpdateEmailVerifiedUseCase(userRepo, logger),
 		ChangePassword:      usecases.NewChangePasswordUseCase(userRepo, logger),
+		AddUserPhoto:        usecases.NewAddUserPhotoUseCase(userRepo, photoRepo, storageService, logger),
 	}
 }

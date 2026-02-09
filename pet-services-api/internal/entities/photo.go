@@ -7,6 +7,10 @@ type Photo struct {
 	URL string `json:"url"`
 }
 
+type PhotoRepository interface {
+	CreateAndAttachToUser(userID string, photo *Photo) error
+}
+
 func NewPhoto(url string) (*Photo, []exceptions.ProblemDetails) {
 	var problems []exceptions.ProblemDetails
 

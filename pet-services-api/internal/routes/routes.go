@@ -107,6 +107,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		authorizedUser.POST("/deactivate", handlerFactory.UserHandler.DeactivateUser)
 		authorizedUser.POST("/change-password", handlerFactory.UserHandler.ChangePassword)
 		authorizedUser.POST("/update-email-verified", handlerFactory.UserHandler.UpdateEmailVerified)
+		authorizedUser.POST("/photos", handlerFactory.UserHandler.AddUserPhoto)
 	}
 
 	authorizedOwner := r.Group("/pets/")

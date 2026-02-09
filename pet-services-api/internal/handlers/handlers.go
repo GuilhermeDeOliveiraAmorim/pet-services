@@ -6,6 +6,7 @@ import (
 	"pet-services-api/internal/factories"
 	"pet-services-api/internal/logging"
 	"pet-services-api/internal/mail"
+	"pet-services-api/internal/storage"
 
 	"github.com/oklog/ulid/v2"
 )
@@ -21,7 +22,11 @@ type HandlerFactory struct {
 }
 
 func NewHandlerFactory(inputFactory database.StorageInput, logger logging.LoggerInterface) *HandlerFactory {
-	userFactory := factories.NewUserFactory(inputFactory.DB, logger)
+	storageService, err := storage.NewMinioServiceFromEnv()
+	if err != nil {
+		logger.LogError(context.Background(), "HandlerFactory", "Falha ao configurar MinIO", err)
+	}
+	userFactory := factories.NewUserFactory(inputFactory.DB, storageService, logger)
 	mailService := mail.GetEmailServiceFromEnv()
 	tokenFactory := factories.NewTokenFactory(inputFactory.DB, mailService, 0, logger)
 	healthFactory := factories.NewHealthFactory(inputFactory.DB, logger)

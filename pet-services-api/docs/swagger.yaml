@@ -207,6 +207,15 @@ definitions:
       pet:
         $ref: '#/definitions/entities.Pet'
     type: object
+  usecases.AddUserPhotoOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+      photo:
+        $ref: '#/definitions/entities.Photo'
+    type: object
   usecases.ChangePasswordInputBody:
     properties:
       new_password:
@@ -1088,6 +1097,44 @@ paths:
       security:
       - Bearer: []
       summary: Desativa a conta do usuário autenticado
+      tags:
+      - Usuários
+  /users/photos:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: Imagem
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/usecases.AddUserPhotoOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Adiciona foto do usuário autenticado
       tags:
       - Usuários
   /users/profile:
