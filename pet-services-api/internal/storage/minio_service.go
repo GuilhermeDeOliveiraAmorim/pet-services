@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -21,6 +22,7 @@ type ObjectStorage interface {
 type MinioService struct {
 	client *minio.Client
 	bucket string
+	publicEndpoint string
 }
 
 func NewMinioServiceFromEnv() (*MinioService, error) {
@@ -29,6 +31,7 @@ func NewMinioServiceFromEnv() (*MinioService, error) {
 	secretKey := strings.TrimSpace(os.Getenv("MINIO_SECRET_KEY"))
 	bucket := strings.TrimSpace(os.Getenv("MINIO_BUCKET"))
 	useSSLRaw := strings.TrimSpace(os.Getenv("MINIO_USE_SSL"))
+	publicEndpoint := strings.TrimSpace(os.Getenv("MINIO_PUBLIC_ENDPOINT"))
 
 	if endpoint == "" || accessKey == "" || secretKey == "" || bucket == "" {
 		return nil, errors.New("configuração do MinIO incompleta")
@@ -50,7 +53,7 @@ func NewMinioServiceFromEnv() (*MinioService, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &MinioService{client: client, bucket: bucket}, nil
+	return &MinioService{client: client, bucket: bucket, publicEndpoint: publicEndpoint}, nil
 }
 
 func (s *MinioService) ensureBucket(ctx context.Context) error {
@@ -88,9 +91,26 @@ func (s *MinioService) GenerateReadURL(ctx context.Context, objectName string, t
 	if objectName == "" {
 		return "", errors.New("nome do objeto ausente")
 	}
-	url, err := s.client.PresignedGetObject(ctx, s.bucket, objectName, ttl, nil)
+	presignedURL, err := s.client.PresignedGetObject(ctx, s.bucket, objectName, ttl, nil)
 	if err != nil {
 		return "", err
 	}
-	return url.String(), nil
+	if s.publicEndpoint == "" {
+		return presignedURL.String(), nil
+	}
+
+	publicURL, err := url.Parse(s.publicEndpoint)
+	if err != nil {
+		return "", err
+	}
+
+	signedURL := *presignedURL
+	if publicURL.Scheme != "" {
+		signedURL.Scheme = publicURL.Scheme
+	}
+	if publicURL.Host != "" {
+		signedURL.Host = publicURL.Host
+	}
+
+	return signedURL.String(), nil
 }

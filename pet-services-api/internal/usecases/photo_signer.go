@@ -24,6 +24,9 @@ func signUserPhotos(ctx context.Context, storageService storage.ObjectStorage, u
 		if strings.HasPrefix(key, "http://") || strings.HasPrefix(key, "https://") {
 			continue
 		}
+		if !strings.Contains(key, "/") {
+			key = "users/" + user.ID + "/" + key
+		}
 
 		url, err := storageService.GenerateReadURL(ctx, key, photoSignedURLTTL)
 		if err != nil {

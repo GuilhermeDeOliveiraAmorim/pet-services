@@ -84,12 +84,13 @@ func (uc *AddUserPhotoUseCase) Execute(ctx context.Context, input AddUserPhotoIn
 		ext = ".jpg"
 	}
 
-	objectName := fmt.Sprintf("users/%s/%s%s", user.ID, ulid.Make().String(), ext)
+	fileName := fmt.Sprintf("%s%s", ulid.Make().String(), ext)
+	objectName := fmt.Sprintf("users/%s/%s", user.ID, fileName)
 	if err := uc.storage.Upload(ctx, objectName, input.Reader, input.Size, input.ContentType); err != nil {
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao enviar imagem", err)
 	}
 
-	photo, problems := entities.NewPhoto(objectName)
+	photo, problems := entities.NewPhoto(fileName)
 	if len(problems) > 0 {
 		uc.logger.LogMultipleBadRequests(ctx, from, "Foto inválida", problems)
 		return nil, problems

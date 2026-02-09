@@ -27,8 +27,8 @@ type AddPetPhotoInput struct {
 }
 
 type AddPetPhotoOutput struct {
-	Message string         `json:"message,omitempty"`
-	Detail  string         `json:"detail,omitempty"`
+	Message string          `json:"message,omitempty"`
+	Detail  string          `json:"detail,omitempty"`
 	Photo   *entities.Photo `json:"photo,omitempty"`
 }
 
@@ -108,12 +108,13 @@ func (uc *AddPetPhotoUseCase) Execute(ctx context.Context, input AddPetPhotoInpu
 		ext = ".jpg"
 	}
 
-	objectName := fmt.Sprintf("pets/%s/%s%s", pet.ID, ulid.Make().String(), ext)
+	fileName := fmt.Sprintf("%s%s", ulid.Make().String(), ext)
+	objectName := fmt.Sprintf("pets/%s/%s", pet.ID, fileName)
 	if err := uc.storage.Upload(ctx, objectName, input.Reader, input.Size, input.ContentType); err != nil {
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao enviar imagem", err)
 	}
 
-	photo, problems := entities.NewPhoto(objectName)
+	photo, problems := entities.NewPhoto(fileName)
 	if len(problems) > 0 {
 		uc.logger.LogMultipleBadRequests(ctx, from, "Foto inválida", problems)
 		return nil, problems
