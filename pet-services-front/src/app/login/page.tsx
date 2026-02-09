@@ -15,6 +15,7 @@ import {
   useAuthResendVerificationEmail,
   useAuthSession,
 } from "@/application";
+import { UserTypes } from "@/domain";
 import MainNav from "@/components/common/MainNav";
 import PageWrapper from "@/components/common/PageWrapper";
 
@@ -74,6 +75,18 @@ export default function LoginPage() {
       refreshToken: response.refreshToken,
       expiresAt,
     });
+
+    console.log("Login bem-sucedido:", {
+      userId: response.user.id,
+      email: response.user.login.email,
+      expiresIn: response.expiresIn,
+      type: response.user.userType,
+    });
+
+    if (response.user.userType === UserTypes.Owner) {
+      router.replace("/owner");
+      return;
+    }
 
     router.replace("/");
   };
