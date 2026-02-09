@@ -1,8 +1,8 @@
 import type { SpecieGateway } from "@/application/ports/specie-gateway";
-import type { Specie } from "@/domain";
+import type { Species } from "@/domain";
 
 export interface ListSpeciesOutput {
-  species: Specie[];
+  species: Species[];
 }
 
 export class ListSpeciesUseCase {

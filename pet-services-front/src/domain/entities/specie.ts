@@ -1,5 +1,5 @@
 import type { Base } from "./base";
 
-export interface Specie extends Base {
+export interface Species extends Base {
   name: string;
 }

@@ -4,7 +4,7 @@ export type { Phone } from "./phone";
 export type { Location } from "./location";
 export type { Address } from "./address";
 export type { Photo } from "./photo";
-export type { Specie } from "./specie";
+export type { Species } from "./specie";
 export type { Breed } from "./breed";
 export type { Pet } from "./pet";
 export type { User } from "./user";

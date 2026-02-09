@@ -4,15 +4,18 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
+import * as Form from "@radix-ui/react-form";
 
 import {
   type ProblemDetailsResponse,
   usePetAdd,
+  useSpeciesList,
   useUserAddPhoto,
   useUserProfile,
 } from "@/application";
 import ChangePasswordCard from "@/components/account/ChangePasswordCard";
 import MainNav from "@/components/common/MainNav";
+import RadixSelectField from "@/components/common/RadixSelectField";
 import PageWrapper from "@/components/common/PageWrapper";
 
 export default function OwnerDashboardPage() {
@@ -50,6 +53,20 @@ export default function OwnerDashboardPage() {
   const [petAge, setPetAge] = useState("");
   const [petWeight, setPetWeight] = useState("");
   const [petNotes, setPetNotes] = useState("");
+  const {
+    data: speciesData,
+    isLoading: isLoadingSpecies,
+    error: speciesError,
+  } = useSpeciesList();
+
+  const specieOptions = useMemo(
+    () =>
+      speciesData?.species?.map((specie) => ({
+        value: specie.id,
+        label: specie.name,
+      })) ?? [],
+    [speciesData?.species],
+  );
 
   const photoFeedback = useMemo(() => {
     if (!uploadError) {
@@ -151,7 +168,7 @@ export default function OwnerDashboardPage() {
           </p>
         </div>
 
-        <form onSubmit={handleAddPet} className="space-y-4">
+        <Form.Root onSubmit={handleAddPet} className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <label className="space-y-2 text-sm text-slate-700">
               <span className="font-medium">Nome</span>
@@ -164,17 +181,21 @@ export default function OwnerDashboardPage() {
                 required
               />
             </label>
-            <label className="space-y-2 text-sm text-slate-700">
-              <span className="font-medium">ID da espécie</span>
-              <input
-                type="text"
-                value={petSpecieId}
-                onChange={(event) => setPetSpecieId(event.target.value)}
-                className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-                placeholder="Informe a espécie"
-                required
-              />
-            </label>
+            <RadixSelectField
+              name="specie"
+              label="Espécie"
+              value={petSpecieId}
+              onValueChange={setPetSpecieId}
+              options={specieOptions}
+              placeholder={
+                isLoadingSpecies
+                  ? "Carregando espécies..."
+                  : "Selecione a espécie"
+              }
+              required
+              disabled={isLoadingSpecies || Boolean(speciesError)}
+              searchable
+            />
             <label className="space-y-2 text-sm text-slate-700">
               <span className="font-medium">Idade</span>
               <input
@@ -232,7 +253,12 @@ export default function OwnerDashboardPage() {
           {petFeedback ? (
             <p className="text-xs text-rose-600">{petFeedback}</p>
           ) : null}
-        </form>
+          {speciesError ? (
+            <p className="text-xs text-rose-600">
+              Não foi possível carregar as espécies.
+            </p>
+          ) : null}
+        </Form.Root>
       </section>
 
       <section className="rounded-4xl bg-white p-6 shadow-sm">

@@ -1,4 +1,4 @@
-import type { Specie } from "@/domain";
+import type { Species } from "@/domain";
 
 export interface SpecieApi {
   id?: string;
@@ -12,7 +12,7 @@ export interface SpecieApi {
   name?: string;
 }
 
-export const mapSpecieFromApi = (specie?: SpecieApi | null): Specie => {
+export const mapSpecieFromApi = (specie?: SpecieApi | null): Species => {
   const raw = specie ?? {};
 
   return {

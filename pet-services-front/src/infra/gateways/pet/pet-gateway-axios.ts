@@ -7,7 +7,7 @@ export class PetGatewayAxios implements PetGateway {
   async addPet(input: AddPetInput): Promise<AddPetOutput> {
     const payload = {
       name: input.name,
-      specie_id: input.specieId,
+      species_id: input.specieId,
       age: input.age,
       weight: input.weight,
       notes: input.notes,
@@ -17,7 +17,7 @@ export class PetGatewayAxios implements PetGateway {
       message?: string;
       detail?: string;
       pet?: Record<string, any>;
-    }>("/pets", payload);
+    }>("/pets/", payload);
 
     return {
       message: data.message,
@@ -28,7 +28,7 @@ export class PetGatewayAxios implements PetGateway {
             name: data.pet.name,
             specieId:
               data.pet.specie?.id ??
-              data.pet.specie_id ??
+              data.pet.species_id ??
               data.pet.specieId ??
               "",
             age: data.pet.age,
