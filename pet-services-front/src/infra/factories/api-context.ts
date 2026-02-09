@@ -3,6 +3,7 @@ import {
   AuthGatewayAxios,
   PetGatewayAxios,
   ReferenceGatewayAxios,
+  SpecieGatewayAxios,
   UserGatewayAxios,
 } from "../gateways";
 
@@ -15,5 +16,6 @@ export const createApiContext = (baseURL?: string) => {
     userGateway: new UserGatewayAxios(http),
     referenceGateway: new ReferenceGatewayAxios(http),
     petGateway: new PetGatewayAxios(http),
+    specieGateway: new SpecieGatewayAxios(http),
   };
 };
