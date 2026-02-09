@@ -7,6 +7,10 @@ type Specie struct {
 	Name string `json:"name"`
 }
 
+type SpecieRepository interface {
+	List() ([]*Specie, error)
+}
+
 func NewSpecie(name string) (*Specie, []exceptions.ProblemDetails) {
 	var problems []exceptions.ProblemDetails
 

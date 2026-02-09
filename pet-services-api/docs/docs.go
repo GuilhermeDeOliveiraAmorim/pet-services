@@ -477,6 +477,34 @@ const docTemplate = `{
                 }
             }
         },
+        "/species": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Espécies"
+                ],
+                "summary": "Lista espécies",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/usecases.ListSpeciesOutput"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
         "/users": {
             "get": {
                 "security": [
@@ -1410,6 +1438,17 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/reference.Country"
+                    }
+                }
+            }
+        },
+        "usecases.ListSpeciesOutput": {
+            "type": "object",
+            "properties": {
+                "species": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.Specie"
                     }
                 }
             }
