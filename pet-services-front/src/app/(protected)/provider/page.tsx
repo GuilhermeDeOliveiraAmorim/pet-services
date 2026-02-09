@@ -1,3 +1,4 @@
+import ChangePasswordCard from "@/components/account/ChangePasswordCard";
 import MainNav from "@/components/common/MainNav";
 import PageWrapper from "@/components/common/PageWrapper";
 
@@ -33,6 +34,8 @@ export default function ProviderDashboardPage() {
           </p>
         </div>
       </section>
+
+      <ChangePasswordCard />
     </PageWrapper>
   );
 }

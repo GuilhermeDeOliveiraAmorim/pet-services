@@ -1,1 +1,1 @@
-export { useUserRegister } from "./use-user";
+export { useUserRegister, useUserChangePassword } from "./use-user";

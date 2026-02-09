@@ -1,7 +1,7 @@
 import type { UserGateway } from "@/application/ports";
 
 export interface ChangePasswordInput {
-  userId: string;
+  userId?: string;
   oldPassword: string;
   newPassword: string;
 }
