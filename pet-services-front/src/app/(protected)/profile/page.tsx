@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import * as Dialog from "@radix-ui/react-dialog";
 import * as Form from "@radix-ui/react-form";
 import { isAxiosError } from "axios";
 
@@ -22,6 +23,7 @@ export default function ProfilePage() {
   const router = useRouter();
   const { clearSession } = useAuthSession();
   const { data, isLoading } = useUserProfile();
+  const [isDeactivateOpen, setIsDeactivateOpen] = useState(false);
   const {
     mutateAsync: deactivateUser,
     isPending: isDeactivating,
@@ -53,7 +55,7 @@ export default function ProfilePage() {
     return "Não foi possível atualizar o status da conta.";
   }, [deactivateError, reactivateError]);
 
-  const handleDeactivate = async () => {
+  const handleConfirmDeactivate = async () => {
     await deactivateUser();
     clearSession();
     router.replace("/login");
@@ -68,16 +70,29 @@ export default function ProfilePage() {
       <MainNav />
 
       <section className="rounded-4xl bg-white p-6 shadow-sm">
-        <div className="mb-6">
-          <p className="text-xs font-semibold uppercase text-cyan-400">
-            Perfil
-          </p>
-          <h1 className="mt-2 text-2xl font-semibold text-slate-900">
-            Seus dados
-          </h1>
-          <p className="mt-2 text-sm text-slate-600">
-            Atualize suas informações de contato.
-          </p>
+        <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase text-cyan-400">
+              Perfil
+            </p>
+            <h1 className="mt-2 text-2xl font-semibold text-slate-900">
+              Seus dados
+            </h1>
+            <p className="mt-2 text-sm text-slate-600">
+              Atualize suas informações de contato.
+            </p>
+          </div>
+          {user ? (
+            <span
+              className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${
+                user.active
+                  ? "bg-emerald-50 text-emerald-600"
+                  : "bg-amber-50 text-amber-600"
+              }`}
+            >
+              {user.active ? "Conta ativa" : "Conta desativada"}
+            </span>
+          ) : null}
         </div>
 
         {isLoading ? (
@@ -111,18 +126,55 @@ export default function ProfilePage() {
         ) : null}
 
         <div className="flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={handleDeactivate}
-            disabled={isDeactivating}
-            className="rounded-full border border-rose-200 px-4 py-2 text-sm font-medium text-rose-600 transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
+          <Dialog.Root
+            open={isDeactivateOpen}
+            onOpenChange={setIsDeactivateOpen}
           >
-            {isDeactivating ? "Desativando..." : "Desativar conta"}
-          </button>
+            <Dialog.Trigger asChild>
+              <button
+                type="button"
+                disabled={isDeactivating || !user || !user.active}
+                className="rounded-full border border-rose-200 px-4 py-2 text-sm font-medium text-rose-600 transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {isDeactivating ? "Desativando..." : "Desativar conta"}
+              </button>
+            </Dialog.Trigger>
+            <Dialog.Portal>
+              <Dialog.Overlay className="fixed inset-0 bg-slate-900/30" />
+              <Dialog.Content className="fixed left-1/2 top-1/2 w-[92vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-3xl bg-white p-6 shadow-xl">
+                <Dialog.Title className="text-lg font-semibold text-slate-900">
+                  Desativar conta?
+                </Dialog.Title>
+                <Dialog.Description className="mt-2 text-sm text-slate-600">
+                  Ao desativar sua conta, você será desconectado e precisará
+                  reativá-la para acessar novamente.
+                </Dialog.Description>
+
+                <div className="mt-6 flex flex-wrap justify-end gap-3">
+                  <Dialog.Close asChild>
+                    <button
+                      type="button"
+                      className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700"
+                    >
+                      Cancelar
+                    </button>
+                  </Dialog.Close>
+                  <button
+                    type="button"
+                    onClick={handleConfirmDeactivate}
+                    disabled={isDeactivating}
+                    className="rounded-full bg-rose-500 px-4 py-2 text-sm font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {isDeactivating ? "Desativando..." : "Confirmar"}
+                  </button>
+                </div>
+              </Dialog.Content>
+            </Dialog.Portal>
+          </Dialog.Root>
           <button
             type="button"
             onClick={handleReactivate}
-            disabled={isReactivating}
+            disabled={isReactivating || !user || user.active}
             className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isReactivating ? "Reativando..." : "Reativar conta"}
@@ -145,38 +197,92 @@ const ProfileForm = ({ user }: ProfileFormProps) => {
     isSuccess: updateSuccess,
   } = useUserUpdate();
 
-  const [name, setName] = useState(user.name ?? "");
+  const initialValues = useMemo(
+    () => ({
+      name: user.name ?? "",
+      phoneCountryCode: user.phone?.countryCode ?? "",
+      phoneAreaCode: user.phone?.areaCode ?? "",
+      phoneNumber: user.phone?.number ?? "",
+      street: user.address?.street ?? "",
+      addressNumber: user.address?.number ?? "",
+      neighborhood: user.address?.neighborhood ?? "",
+      city: user.address?.city ?? "",
+      zipCode: user.address?.zipCode ?? "",
+      state: user.address?.state ?? "",
+      country: user.address?.country ?? "",
+      complement: user.address?.complement ?? "",
+      latitude:
+        user.address?.location?.latitude !== undefined
+          ? String(user.address.location.latitude)
+          : "",
+      longitude:
+        user.address?.location?.longitude !== undefined
+          ? String(user.address.location.longitude)
+          : "",
+    }),
+    [user],
+  );
+
+  const [name, setName] = useState(initialValues.name);
   const [email] = useState(user.login?.email ?? "");
   const [phoneCountryCode, setPhoneCountryCode] = useState(
-    user.phone?.countryCode ?? "",
+    initialValues.phoneCountryCode,
   );
   const [phoneAreaCode, setPhoneAreaCode] = useState(
-    user.phone?.areaCode ?? "",
+    initialValues.phoneAreaCode,
   );
-  const [phoneNumber, setPhoneNumber] = useState(user.phone?.number ?? "");
+  const [phoneNumber, setPhoneNumber] = useState(initialValues.phoneNumber);
 
-  const [street, setStreet] = useState(user.address?.street ?? "");
+  const [street, setStreet] = useState(initialValues.street);
   const [addressNumber, setAddressNumber] = useState(
-    user.address?.number ?? "",
+    initialValues.addressNumber,
   );
-  const [neighborhood, setNeighborhood] = useState(
-    user.address?.neighborhood ?? "",
-  );
-  const [city, setCity] = useState(user.address?.city ?? "");
-  const [zipCode, setZipCode] = useState(user.address?.zipCode ?? "");
-  const [state, setState] = useState(user.address?.state ?? "");
-  const [country, setCountry] = useState(user.address?.country ?? "");
-  const [complement, setComplement] = useState(user.address?.complement ?? "");
-  const [latitude, setLatitude] = useState(
-    user.address?.location?.latitude !== undefined
-      ? String(user.address.location.latitude)
-      : "",
-  );
-  const [longitude, setLongitude] = useState(
-    user.address?.location?.longitude !== undefined
-      ? String(user.address.location.longitude)
-      : "",
-  );
+  const [neighborhood, setNeighborhood] = useState(initialValues.neighborhood);
+  const [city, setCity] = useState(initialValues.city);
+  const [zipCode, setZipCode] = useState(initialValues.zipCode);
+  const [state, setState] = useState(initialValues.state);
+  const [country, setCountry] = useState(initialValues.country);
+  const [complement, setComplement] = useState(initialValues.complement);
+  const [latitude, setLatitude] = useState(initialValues.latitude);
+  const [longitude, setLongitude] = useState(initialValues.longitude);
+
+  const hasChanges = useMemo(() => {
+    const normalize = (value: string) => value.trim();
+
+    return (
+      normalize(name) !== normalize(initialValues.name) ||
+      normalize(phoneCountryCode) !==
+        normalize(initialValues.phoneCountryCode) ||
+      normalize(phoneAreaCode) !== normalize(initialValues.phoneAreaCode) ||
+      normalize(phoneNumber) !== normalize(initialValues.phoneNumber) ||
+      normalize(street) !== normalize(initialValues.street) ||
+      normalize(addressNumber) !== normalize(initialValues.addressNumber) ||
+      normalize(neighborhood) !== normalize(initialValues.neighborhood) ||
+      normalize(city) !== normalize(initialValues.city) ||
+      normalize(zipCode) !== normalize(initialValues.zipCode) ||
+      normalize(state) !== normalize(initialValues.state) ||
+      normalize(country) !== normalize(initialValues.country) ||
+      normalize(complement) !== normalize(initialValues.complement) ||
+      normalize(latitude) !== normalize(initialValues.latitude) ||
+      normalize(longitude) !== normalize(initialValues.longitude)
+    );
+  }, [
+    addressNumber,
+    city,
+    complement,
+    country,
+    initialValues,
+    latitude,
+    longitude,
+    name,
+    neighborhood,
+    phoneAreaCode,
+    phoneCountryCode,
+    phoneNumber,
+    state,
+    street,
+    zipCode,
+  ]);
 
   const feedback = useMemo(() => {
     if (!updateError) {
@@ -269,6 +375,9 @@ const ProfileForm = ({ user }: ProfileFormProps) => {
               className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-100 px-4 text-sm text-slate-500"
             />
           </Form.Control>
+          <p className="text-xs text-slate-400">
+            O email é fixo e não pode ser alterado aqui.
+          </p>
         </Form.Field>
       </div>
 
@@ -452,7 +561,7 @@ const ProfileForm = ({ user }: ProfileFormProps) => {
 
       <button
         type="submit"
-        disabled={isSaving}
+        disabled={isSaving || !hasChanges}
         className="inline-flex h-11 w-full items-center justify-center rounded-full bg-linear-to-r from-teal-400 to-cyan-400 px-4 text-sm font-semibold text-white shadow-lg shadow-cyan-200 transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
       >
         {isSaving ? "Salvando..." : "Salvar alterações"}
