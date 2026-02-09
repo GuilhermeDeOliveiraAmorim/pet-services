@@ -88,6 +88,11 @@ export default function LoginPage() {
       return;
     }
 
+    if (response.user.userType === UserTypes.Provider) {
+      router.replace("/provider");
+      return;
+    }
+
     router.replace("/");
   };
 
