@@ -1,8 +1,58 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import Image from "next/image";
+import { useQueryClient } from "@tanstack/react-query";
+import { isAxiosError } from "axios";
+
+import {
+  type ProblemDetailsResponse,
+  useUserAddPhoto,
+  useUserProfile,
+} from "@/application";
 import ChangePasswordCard from "@/components/account/ChangePasswordCard";
 import MainNav from "@/components/common/MainNav";
 import PageWrapper from "@/components/common/PageWrapper";
 
 export default function OwnerDashboardPage() {
+  const queryClient = useQueryClient();
+  const { data, isLoading } = useUserProfile();
+  const user = data?.user;
+  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
+  const {
+    mutateAsync: addUserPhoto,
+    isPending: isUploadingPhoto,
+    error: uploadError,
+    isSuccess: uploadSuccess,
+  } = useUserAddPhoto({
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] }),
+  });
+
+  const photoFeedback = useMemo(() => {
+    if (!uploadError) {
+      return "";
+    }
+
+    if (isAxiosError<ProblemDetailsResponse>(uploadError)) {
+      const problem = uploadError.response?.data?.errors?.[0];
+      return (
+        problem?.detail || problem?.title || "Não foi possível enviar a foto."
+      );
+    }
+
+    return "Não foi possível enviar a foto.";
+  }, [uploadError]);
+
+  const handlePhotoUpload = async () => {
+    if (!selectedPhoto) {
+      return;
+    }
+
+    await addUserPhoto({ file: selectedPhoto });
+    setSelectedPhoto(null);
+  };
+
   return (
     <PageWrapper className="gap-10">
       <MainNav />
@@ -33,6 +83,77 @@ export default function OwnerDashboardPage() {
             informações vão aparecer aqui.
           </p>
         </div>
+      </section>
+
+      <section className="rounded-4xl bg-white p-6 shadow-sm">
+        <div className="mb-4">
+          <p className="text-xs font-semibold uppercase text-cyan-400">Fotos</p>
+          <h2 className="mt-2 text-xl font-semibold text-slate-900">
+            Fotos do perfil
+          </h2>
+          <p className="mt-2 text-sm text-slate-600">
+            Envie uma foto para aparecer no seu perfil.
+          </p>
+        </div>
+
+        {isLoading ? (
+          <p className="text-sm text-slate-500">Carregando fotos...</p>
+        ) : (
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(event) =>
+                  setSelectedPhoto(event.target.files?.[0] ?? null)
+                }
+                className="text-sm text-slate-600"
+              />
+              <button
+                type="button"
+                onClick={handlePhotoUpload}
+                disabled={!selectedPhoto || isUploadingPhoto}
+                className="rounded-full bg-cyan-500 px-4 py-2 text-xs font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {isUploadingPhoto ? "Enviando..." : "Enviar foto"}
+              </button>
+            </div>
+
+            {uploadSuccess ? (
+              <p className="text-xs text-emerald-600">
+                Foto enviada com sucesso.
+              </p>
+            ) : null}
+
+            {photoFeedback ? (
+              <p className="text-xs text-rose-600">{photoFeedback}</p>
+            ) : null}
+
+            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {user?.photos?.length ? (
+                user.photos.map((photo) => (
+                  <div
+                    key={photo.id}
+                    className="h-28 w-full overflow-hidden rounded-2xl bg-slate-100"
+                  >
+                    <Image
+                      src={photo.url}
+                      alt="Foto do usuário"
+                      width={112}
+                      height={112}
+                      className="h-full w-full object-cover"
+                      unoptimized
+                    />
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-slate-500">
+                  Nenhuma foto enviada ainda.
+                </p>
+              )}
+            </div>
+          </div>
+        )}
       </section>
 
       <ChangePasswordCard />

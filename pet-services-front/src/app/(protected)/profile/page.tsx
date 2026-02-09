@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -322,9 +323,7 @@ const ProfileForm = ({ user }: ProfileFormProps) => {
     if (isAxiosError<ProblemDetailsResponse>(uploadError)) {
       const problem = uploadError.response?.data?.errors?.[0];
       return (
-        problem?.detail ||
-        problem?.title ||
-        "Não foi possível enviar a foto."
+        problem?.detail || problem?.title || "Não foi possível enviar a foto."
       );
     }
 
@@ -397,17 +396,18 @@ const ProfileForm = ({ user }: ProfileFormProps) => {
         <div className="flex flex-wrap items-center gap-4">
           <div className="h-20 w-20 overflow-hidden rounded-3xl bg-slate-200">
             {currentPhotoUrl ? (
-              <img
+              <Image
                 src={currentPhotoUrl}
                 alt="Foto do usuário"
+                width={80}
+                height={80}
                 className="h-full w-full object-cover"
+                unoptimized
               />
             ) : null}
           </div>
           <div className="flex flex-1 flex-col gap-2">
-            <p className="text-sm font-medium text-slate-800">
-              Foto do perfil
-            </p>
+            <p className="text-sm font-medium text-slate-800">Foto do perfil</p>
             <div className="flex flex-wrap items-center gap-3">
               <input
                 type="file"
