@@ -35,7 +35,6 @@ type AddPetOutput struct {
 type AddPetUseCase struct {
 	userRepository   entities.UserRepository
 	specieRepository entities.SpecieRepository
-	breedRepository  entities.BreedRepository
 	petRepository    entities.PetRepository
 	logger           logging.LoggerInterface
 }
