@@ -4,9 +4,9 @@ import type { AxiosInstance } from "axios";
 type PetApi = {
   id?: string | number;
   name?: string;
-  specie?: { id?: string };
-  specie_id?: string;
-  specieId?: string;
+  species?: { id?: string };
+  species_id?: string;
+  speciesId?: string;
   age?: number;
   weight?: number;
   notes?: string;
@@ -18,7 +18,7 @@ export class PetGatewayAxios implements PetGateway {
   async addPet(input: AddPetInput): Promise<AddPetOutput> {
     const payload = {
       name: input.name,
-      specie_id: input.specieId,
+      species_id: input.speciesId,
       age: input.age,
       weight: input.weight,
       notes: input.notes,
@@ -37,10 +37,10 @@ export class PetGatewayAxios implements PetGateway {
         ? {
             id: Number(data.pet.id ?? 0),
             name: data.pet.name ?? "",
-            specieId:
-              data.pet.specie?.id ??
-              data.pet.specie_id ??
-              data.pet.specieId ??
+            speciesId:
+              data.pet.species?.id ??
+              data.pet.species_id ??
+              data.pet.speciesId ??
               "",
             age: data.pet.age ?? 0,
             weight: data.pet.weight ?? 0,

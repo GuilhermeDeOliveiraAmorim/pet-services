@@ -41,7 +41,7 @@ export default function OwnerDashboardPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
       setPetName("");
-      setPetSpecieId("");
+      setPetSpeciesId("");
       setPetAge("");
       setPetWeight("");
       setPetNotes("");
@@ -49,7 +49,7 @@ export default function OwnerDashboardPage() {
   });
 
   const [petName, setPetName] = useState("");
-  const [petSpecieId, setPetSpecieId] = useState("");
+  const [petSpeciesId, setPetSpeciesId] = useState("");
   const [petAge, setPetAge] = useState("");
   const [petWeight, setPetWeight] = useState("");
   const [petNotes, setPetNotes] = useState("");
@@ -100,7 +100,7 @@ export default function OwnerDashboardPage() {
 
   const isPetFormValid =
     petName.trim() &&
-    petSpecieId.trim() &&
+    petSpeciesId.trim() &&
     Number(petAge) > 0 &&
     Number(petWeight) > 0;
 
@@ -118,7 +118,7 @@ export default function OwnerDashboardPage() {
 
     await addPet({
       name: petName.trim(),
-      specieId: petSpecieId.trim(),
+      speciesId: petSpeciesId.trim(),
       age: Number(petAge),
       weight: Number(petWeight),
       notes: petNotes.trim(),
@@ -184,8 +184,8 @@ export default function OwnerDashboardPage() {
             <RadixSelectField
               name="specie"
               label="Espécie"
-              value={petSpecieId}
-              onValueChange={setPetSpecieId}
+              value={petSpeciesId}
+              onValueChange={setPetSpeciesId}
               options={specieOptions}
               placeholder={
                 isLoadingSpecies
