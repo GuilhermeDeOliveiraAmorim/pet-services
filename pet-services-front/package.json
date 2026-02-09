@@ -11,6 +11,7 @@
     "test:verify-email": "tsx scripts/test-verify-email.ts",
     "test:auth-flow": "tsx scripts/test-auth-flow.ts",
     "test:change-password": "tsx scripts/test-change-password.ts",
+    "test:update-user": "tsx scripts/test-update-user.ts",
     "test:reference": "tsx scripts/reference/test-reference.ts",
     "test:geocode": "tsx scripts/test-geocode.ts"
   },
