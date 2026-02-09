@@ -8,6 +8,7 @@ import (
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
+	"pet-services-api/internal/storage"
 )
 
 type UpdateUserInputBody struct {
@@ -31,12 +32,14 @@ type UpdateUserOutput struct {
 
 type UpdateUserUseCase struct {
 	userRepository entities.UserRepository
+	storage        storage.ObjectStorage
 	logger         logging.LoggerInterface
 }
 
-func NewUpdateUserUseCase(userRepo entities.UserRepository, logger logging.LoggerInterface) *UpdateUserUseCase {
+func NewUpdateUserUseCase(userRepo entities.UserRepository, storageService storage.ObjectStorage, logger logging.LoggerInterface) *UpdateUserUseCase {
 	return &UpdateUserUseCase{
 		userRepository: userRepo,
+		storage:        storageService,
 		logger:         logger,
 	}
 }
@@ -102,6 +105,10 @@ func (uc *UpdateUserUseCase) Execute(ctx context.Context, input UpdateUserInput)
 
 	if err := uc.userRepository.Update(user); err != nil {
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao atualizar usuário", err)
+	}
+
+	if err := signUserPhotos(ctx, uc.storage, user); err != nil {
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao gerar URLs das fotos", err)
 	}
 
 	return &UpdateUserOutput{

@@ -10,6 +10,7 @@ import (
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
+	"pet-services-api/internal/storage"
 )
 
 type LoginUserInput struct {
@@ -30,13 +31,15 @@ type LoginUserOutput struct {
 type LoginUserUseCase struct {
 	userRepository         entities.UserRepository
 	refreshTokenRepository entities.RefreshTokenRepository
+	storage                storage.ObjectStorage
 	logger                 logging.LoggerInterface
 }
 
-func NewLoginUserUseCase(userRepo entities.UserRepository, refreshRepo entities.RefreshTokenRepository, logger logging.LoggerInterface) *LoginUserUseCase {
+func NewLoginUserUseCase(userRepo entities.UserRepository, refreshRepo entities.RefreshTokenRepository, storageService storage.ObjectStorage, logger logging.LoggerInterface) *LoginUserUseCase {
 	return &LoginUserUseCase{
 		userRepository:         userRepo,
 		refreshTokenRepository: refreshRepo,
+		storage:                storageService,
 		logger:                 logger,
 	}
 }
@@ -67,6 +70,10 @@ func (uc *LoginUserUseCase) Execute(ctx context.Context, input LoginUserInput) (
 
 	if !user.EmailVerified {
 		return nil, uc.logger.LogForbidden(ctx, from, "Email não verificado", errors.New("Verifique seu email antes de fazer login. Utilize a opção de reenviar email de verificação"))
+	}
+
+	if err := signUserPhotos(ctx, uc.storage, user); err != nil {
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao gerar URLs das fotos", err)
 	}
 
 	jwtSvc, err := auth.NewJWTServiceFromEnv()

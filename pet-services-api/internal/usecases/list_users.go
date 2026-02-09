@@ -6,6 +6,7 @@ import (
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
+	"pet-services-api/internal/storage"
 )
 
 type ListUsersInput struct {
@@ -27,12 +28,14 @@ type ListUsersOutput struct {
 
 type ListUsersUseCase struct {
 	userRepository entities.UserRepository
+	storage        storage.ObjectStorage
 	logger         logging.LoggerInterface
 }
 
-func NewListUsersUseCase(userRepository entities.UserRepository, logger logging.LoggerInterface) *ListUsersUseCase {
+func NewListUsersUseCase(userRepository entities.UserRepository, storageService storage.ObjectStorage, logger logging.LoggerInterface) *ListUsersUseCase {
 	return &ListUsersUseCase{
 		userRepository: userRepository,
+		storage:        storageService,
 		logger:         logger,
 	}
 }
@@ -56,6 +59,10 @@ func (uc *ListUsersUseCase) Execute(ctx context.Context, input ListUsersInput) (
 	users, total, err := uc.userRepository.List(input.Page, input.Limit)
 	if err != nil {
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao listar usuários", err)
+	}
+
+	if err := signUsersPhotos(ctx, uc.storage, users); err != nil {
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao gerar URLs das fotos", err)
 	}
 
 	totalPages := int(total) / input.Limit

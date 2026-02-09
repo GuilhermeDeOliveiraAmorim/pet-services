@@ -4,6 +4,7 @@ import (
 	"pet-services-api/internal/logging"
 	"pet-services-api/internal/mail"
 	"pet-services-api/internal/repository_impl"
+	"pet-services-api/internal/storage"
 	"pet-services-api/internal/usecases"
 	"time"
 
@@ -21,12 +22,12 @@ type TokenFactory struct {
 	Logger                  logging.LoggerInterface
 }
 
-func NewTokenFactory(db *gorm.DB, mailService mail.EmailService, ttl time.Duration, logger logging.LoggerInterface) *TokenFactory {
+func NewTokenFactory(db *gorm.DB, mailService mail.EmailService, ttl time.Duration, storageService storage.ObjectStorage, logger logging.LoggerInterface) *TokenFactory {
 	userRepo := repository_impl.NewUserRepository(db)
 	tokenRepo := repository_impl.NewRefreshTokenRepository(db)
 
 	return &TokenFactory{
-		LoginUser:               usecases.NewLoginUserUseCase(userRepo, tokenRepo, logger),
+		LoginUser:               usecases.NewLoginUserUseCase(userRepo, tokenRepo, storageService, logger),
 		RefreshToken:            usecases.NewRefreshTokenUseCase(userRepo, tokenRepo, logger),
 		Logout:                  usecases.NewLogoutUseCase(tokenRepo, logger),
 		RequestPasswordReset:    usecases.NewRequestPasswordResetUseCase(userRepo, tokenRepo, mailService, ttl, logger),

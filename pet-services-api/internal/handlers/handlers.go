@@ -28,7 +28,7 @@ func NewHandlerFactory(inputFactory database.StorageInput, logger logging.Logger
 	}
 	userFactory := factories.NewUserFactory(inputFactory.DB, storageService, logger)
 	mailService := mail.GetEmailServiceFromEnv()
-	tokenFactory := factories.NewTokenFactory(inputFactory.DB, mailService, 0, logger)
+	tokenFactory := factories.NewTokenFactory(inputFactory.DB, mailService, 0, storageService, logger)
 	healthFactory := factories.NewHealthFactory(inputFactory.DB, logger)
 	referenceFactory := factories.NewReferenceFactory(logger)
 	specieFactory := factories.NewSpecieFactory(inputFactory.DB, logger)

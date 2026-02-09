@@ -109,12 +109,11 @@ func (uc *AddPetPhotoUseCase) Execute(ctx context.Context, input AddPetPhotoInpu
 	}
 
 	objectName := fmt.Sprintf("pets/%s/%s%s", pet.ID, ulid.Make().String(), ext)
-	url, err := uc.storage.UploadImage(ctx, objectName, input.Reader, input.Size, input.ContentType)
-	if err != nil {
+	if err := uc.storage.Upload(ctx, objectName, input.Reader, input.Size, input.ContentType); err != nil {
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao enviar imagem", err)
 	}
 
-	photo, problems := entities.NewPhoto(url)
+	photo, problems := entities.NewPhoto(objectName)
 	if len(problems) > 0 {
 		uc.logger.LogMultipleBadRequests(ctx, from, "Foto inválida", problems)
 		return nil, problems
@@ -124,9 +123,17 @@ func (uc *AddPetPhotoUseCase) Execute(ctx context.Context, input AddPetPhotoInpu
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao salvar foto", err)
 	}
 
+	signedURL, err := uc.storage.GenerateReadURL(ctx, objectName, photoSignedURLTTL)
+	if err != nil {
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao gerar URL da foto", err)
+	}
+
+	responsePhoto := *photo
+	responsePhoto.URL = signedURL
+
 	return &AddPetPhotoOutput{
 		Message: "Foto adicionada com sucesso",
 		Detail:  "A foto foi vinculada ao pet",
-		Photo:   photo,
+		Photo:   &responsePhoto,
 	}, nil
 }

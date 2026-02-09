@@ -8,6 +8,7 @@ import (
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
+	"pet-services-api/internal/storage"
 )
 
 type GetProfileInput struct {
@@ -20,12 +21,14 @@ type GetProfileOutput struct {
 
 type GetProfileUseCase struct {
 	userRepository entities.UserRepository
+	storage        storage.ObjectStorage
 	logger         logging.LoggerInterface
 }
 
-func NewGetProfileUseCase(userRepo entities.UserRepository, logger logging.LoggerInterface) *GetProfileUseCase {
+func NewGetProfileUseCase(userRepo entities.UserRepository, storageService storage.ObjectStorage, logger logging.LoggerInterface) *GetProfileUseCase {
 	return &GetProfileUseCase{
 		userRepository: userRepo,
+		storage:        storageService,
 		logger:         logger,
 	}
 }
@@ -43,6 +46,10 @@ func (uc *GetProfileUseCase) Execute(ctx context.Context, input GetProfileInput)
 			return nil, uc.logger.LogNotFound(ctx, from, "Usuário não encontrado", errors.New("Não foi possível encontrar um usuário com o ID informado"))
 		}
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar usuário", err)
+	}
+
+	if err := signUserPhotos(ctx, uc.storage, user); err != nil {
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao gerar URLs das fotos", err)
 	}
 
 	return &GetProfileOutput{
