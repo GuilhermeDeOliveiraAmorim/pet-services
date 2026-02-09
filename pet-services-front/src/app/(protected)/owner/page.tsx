@@ -7,6 +7,7 @@ import { isAxiosError } from "axios";
 
 import {
   type ProblemDetailsResponse,
+  usePetAdd,
   useUserAddPhoto,
   useUserProfile,
 } from "@/application";
@@ -28,6 +29,27 @@ export default function OwnerDashboardPage() {
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: ["user-profile"] }),
   });
+  const {
+    mutateAsync: addPet,
+    isPending: isAddingPet,
+    error: addPetError,
+    isSuccess: addPetSuccess,
+  } = usePetAdd({
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+      setPetName("");
+      setPetSpecieId("");
+      setPetAge("");
+      setPetWeight("");
+      setPetNotes("");
+    },
+  });
+
+  const [petName, setPetName] = useState("");
+  const [petSpecieId, setPetSpecieId] = useState("");
+  const [petAge, setPetAge] = useState("");
+  const [petWeight, setPetWeight] = useState("");
+  const [petNotes, setPetNotes] = useState("");
 
   const photoFeedback = useMemo(() => {
     if (!uploadError) {
@@ -44,6 +66,27 @@ export default function OwnerDashboardPage() {
     return "Não foi possível enviar a foto.";
   }, [uploadError]);
 
+  const petFeedback = useMemo(() => {
+    if (!addPetError) {
+      return "";
+    }
+
+    if (isAxiosError<ProblemDetailsResponse>(addPetError)) {
+      const problem = addPetError.response?.data?.errors?.[0];
+      return (
+        problem?.detail || problem?.title || "Não foi possível cadastrar o pet."
+      );
+    }
+
+    return "Não foi possível cadastrar o pet.";
+  }, [addPetError]);
+
+  const isPetFormValid =
+    petName.trim() &&
+    petSpecieId.trim() &&
+    Number(petAge) > 0 &&
+    Number(petWeight) > 0;
+
   const handlePhotoUpload = async () => {
     if (!selectedPhoto) {
       return;
@@ -51,6 +94,18 @@ export default function OwnerDashboardPage() {
 
     await addUserPhoto({ file: selectedPhoto });
     setSelectedPhoto(null);
+  };
+
+  const handleAddPet = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    await addPet({
+      name: petName.trim(),
+      specieId: petSpecieId.trim(),
+      age: Number(petAge),
+      weight: Number(petWeight),
+      notes: petNotes.trim(),
+    });
   };
 
   return (
@@ -83,6 +138,101 @@ export default function OwnerDashboardPage() {
             informações vão aparecer aqui.
           </p>
         </div>
+      </section>
+
+      <section className="rounded-4xl bg-white p-6 shadow-sm">
+        <div className="mb-4">
+          <p className="text-xs font-semibold uppercase text-cyan-400">Pets</p>
+          <h2 className="mt-2 text-xl font-semibold text-slate-900">
+            Cadastrar pet
+          </h2>
+          <p className="mt-2 text-sm text-slate-600">
+            Adicione um novo pet ao seu perfil.
+          </p>
+        </div>
+
+        <form onSubmit={handleAddPet} className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="space-y-2 text-sm text-slate-700">
+              <span className="font-medium">Nome</span>
+              <input
+                type="text"
+                value={petName}
+                onChange={(event) => setPetName(event.target.value)}
+                className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+                placeholder="Ex: Thor"
+                required
+              />
+            </label>
+            <label className="space-y-2 text-sm text-slate-700">
+              <span className="font-medium">ID da espécie</span>
+              <input
+                type="text"
+                value={petSpecieId}
+                onChange={(event) => setPetSpecieId(event.target.value)}
+                className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+                placeholder="Informe a espécie"
+                required
+              />
+            </label>
+            <label className="space-y-2 text-sm text-slate-700">
+              <span className="font-medium">Idade</span>
+              <input
+                type="number"
+                inputMode="numeric"
+                value={petAge}
+                onChange={(event) => setPetAge(event.target.value)}
+                className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+                placeholder="Ex: 3"
+                min={0}
+                required
+              />
+            </label>
+            <label className="space-y-2 text-sm text-slate-700">
+              <span className="font-medium">Peso (kg)</span>
+              <input
+                type="number"
+                inputMode="decimal"
+                value={petWeight}
+                onChange={(event) => setPetWeight(event.target.value)}
+                className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+                placeholder="Ex: 12.5"
+                min={0}
+                step="0.1"
+                required
+              />
+            </label>
+          </div>
+
+          <label className="space-y-2 text-sm text-slate-700">
+            <span className="font-medium">Observações</span>
+            <textarea
+              value={petNotes}
+              onChange={(event) => setPetNotes(event.target.value)}
+              className="min-h-24 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+              placeholder="Comportamento, cuidados especiais, etc."
+            />
+          </label>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="submit"
+              disabled={!isPetFormValid || isAddingPet}
+              className="rounded-full bg-cyan-500 px-4 py-2 text-xs font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {isAddingPet ? "Cadastrando..." : "Cadastrar pet"}
+            </button>
+            {addPetSuccess ? (
+              <p className="text-xs text-emerald-600">
+                Pet cadastrado com sucesso.
+              </p>
+            ) : null}
+          </div>
+
+          {petFeedback ? (
+            <p className="text-xs text-rose-600">{petFeedback}</p>
+          ) : null}
+        </form>
       </section>
 
       <section className="rounded-4xl bg-white p-6 shadow-sm">
