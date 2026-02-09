@@ -117,7 +117,6 @@ export class AuthGatewayAxios implements AuthGateway {
 
   async logout(input: LogoutInput): Promise<LogoutOutput> {
     const payload = {
-      user_id: input.userId,
       token_id: input.tokenId,
       revoke_all: input.revokeAll,
     };

@@ -1,7 +1,7 @@
 import type { AuthGateway } from "@/application/ports";
 
 export interface LogoutInput {
-  userId: string;
+  userId?: string;
   tokenId?: string;
   revokeAll: boolean;
 }

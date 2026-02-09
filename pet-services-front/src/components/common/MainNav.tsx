@@ -1,5 +1,10 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
+
+import { useAuthLogout, useAuthSession } from "@/application";
 
 const navItems = [
   { label: "Home", href: "/" },
@@ -20,6 +25,21 @@ export default function MainNav({
   showLinks = true,
   showActions = true,
 }: MainNavProps) {
+  const router = useRouter();
+  const { session, isAuthenticated, clearSession } = useAuthSession();
+  const { mutateAsync: logout, isPending } = useAuthLogout();
+
+  const handleLogout = async () => {
+    try {
+      if (session) {
+        await logout({ revokeAll: true });
+      }
+    } finally {
+      clearSession();
+      router.replace("/login");
+    }
+  };
+
   return (
     <header className={`flex items-center justify-between ${className}`.trim()}>
       <Link href="/" className="flex items-center gap-2">
@@ -50,18 +70,31 @@ export default function MainNav({
 
       {showActions ? (
         <div className="flex items-center gap-3">
-          <Link
-            href="/login"
-            className="hidden rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 lg:inline-flex"
-          >
-            Login
-          </Link>
-          <Link
-            href="/login"
-            className="rounded-full bg-linear-to-r from-teal-400 to-cyan-400 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-cyan-200"
-          >
-            Agendar
-          </Link>
+          {isAuthenticated ? (
+            <button
+              type="button"
+              onClick={handleLogout}
+              disabled={isPending}
+              className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {isPending ? "Saindo..." : "Sair"}
+            </button>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="hidden rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 lg:inline-flex"
+              >
+                Login
+              </Link>
+              <Link
+                href="/login"
+                className="rounded-full bg-linear-to-r from-teal-400 to-cyan-400 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-cyan-200"
+              >
+                Agendar
+              </Link>
+            </>
+          )}
         </div>
       ) : null}
     </header>

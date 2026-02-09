@@ -28,8 +28,10 @@ export const createApiClient = (baseURL?: string): AxiosInstance => {
     const session = getAuthSession();
     const url = config.url ?? "";
     const isAuthRoute = url.startsWith("/auth/") || url.includes("/auth/");
+    const shouldAttachToken =
+      session?.accessToken && (!isAuthRoute || url.includes("/auth/logout"));
 
-    if (session?.accessToken && !isAuthRoute) {
+    if (shouldAttachToken) {
       const headers = AxiosHeaders.from(config.headers ?? {});
       headers.set("Authorization", `Bearer ${session.accessToken}`);
       config.headers = headers;

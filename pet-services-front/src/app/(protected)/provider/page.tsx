@@ -4,7 +4,7 @@ import PageWrapper from "@/components/common/PageWrapper";
 export default function ProviderDashboardPage() {
   return (
     <PageWrapper className="gap-10">
-      <MainNav showActions={false} />
+      <MainNav />
 
       <section className="flex flex-col gap-6">
         <div>
