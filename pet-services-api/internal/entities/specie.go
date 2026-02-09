@@ -9,6 +9,7 @@ type Specie struct {
 
 type SpecieRepository interface {
 	List() ([]*Specie, error)
+	FindByID(id string) (*Specie, error)
 }
 
 func NewSpecie(name string) (*Specie, []exceptions.ProblemDetails) {

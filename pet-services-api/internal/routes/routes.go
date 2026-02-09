@@ -109,6 +109,12 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		authorizedUser.POST("/update-email-verified", handlerFactory.UserHandler.UpdateEmailVerified)
 	}
 
+	authorizedOwner := r.Group("/pets/")
+	authorizedOwner.Use(middlewareFactory.AuthMiddleware(), middlewareFactory.OwnerOnlyMiddleware())
+	{
+		authorizedOwner.POST("", handlerFactory.PetHandler.AddPet)
+	}
+
 	authorizedAdmin := r.Group("/admin/")
 	authorizedAdmin.Use(middlewareFactory.AuthMiddleware(), middlewareFactory.AdminOnlyMiddleware())
 	{

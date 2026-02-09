@@ -1,6 +1,8 @@
 package repository_impl
 
 import (
+	"errors"
+	"pet-services-api/internal/consts"
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/models"
 
@@ -28,4 +30,17 @@ func (r *specieRepository) List() ([]*entities.Specie, error) {
 	}
 
 	return species, nil
+}
+
+func (r *specieRepository) FindByID(id string) (*entities.Specie, error) {
+	var model models.Specie
+	err := r.db.First(&model, "id = ?", id).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New(consts.SpecieNotFoundErr)
+		}
+		return nil, err
+	}
+
+	return model.ToEntity(), nil
 }

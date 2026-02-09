@@ -24,7 +24,6 @@ type Pet struct {
 
 	User   User    `gorm:"foreignKey:UserID" json:"user"`
 	Specie Specie  `gorm:"foreignKey:SpecieID" json:"specie"`
-	Breed  Breed   `gorm:"foreignKey:BreedID" json:"breed"`
 	Photos []Photo `gorm:"many2many:pet_photos;constraint:OnDelete:CASCADE" json:"photos"`
 }
 
@@ -49,7 +48,6 @@ func (p *Pet) ToEntity() *entities.Pet {
 		UserID: p.UserID,
 		Name:   p.Name,
 		Specie: *p.Specie.ToEntity(),
-		Breed:  *p.Breed.ToEntity(),
 		Age:    p.Age,
 		Weight: p.Weight,
 		Notes:  p.Notes,
@@ -62,7 +60,6 @@ func (p *Pet) FromEntity(entity *entities.Pet) {
 	p.UserID = entity.UserID
 	p.Name = entity.Name
 	p.SpecieID = entity.Specie.ID
-	p.BreedID = entity.Breed.ID
 	p.Age = entity.Age
 	p.Weight = entity.Weight
 	p.Notes = entity.Notes

@@ -379,6 +379,74 @@ const docTemplate = `{
                 }
             }
         },
+        "/pets": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Adiciona um novo pet",
+                "parameters": [
+                    {
+                        "description": "Dados do pet",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/usecases.AddPetInputBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/usecases.AddPetOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
         "/reference/cities": {
             "get": {
                 "consumes": [
@@ -991,32 +1059,6 @@ const docTemplate = `{
                 }
             }
         },
-        "entities.Breed": {
-            "type": "object",
-            "properties": {
-                "active": {
-                    "type": "boolean"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "deactivated_at": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "specie_id": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
         "entities.Location": {
             "type": "object",
             "properties": {
@@ -1047,9 +1089,6 @@ const docTemplate = `{
                 },
                 "age": {
                     "type": "integer"
-                },
-                "breed": {
-                    "$ref": "#/definitions/entities.Breed"
                 },
                 "created_at": {
                     "type": "string"
@@ -1269,6 +1308,40 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "usecases.AddPetInputBody": {
+            "type": "object",
+            "properties": {
+                "age": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "specie_id": {
+                    "type": "string"
+                },
+                "weight": {
+                    "type": "number"
+                }
+            }
+        },
+        "usecases.AddPetOutput": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "pet": {
+                    "$ref": "#/definitions/entities.Pet"
                 }
             }
         },

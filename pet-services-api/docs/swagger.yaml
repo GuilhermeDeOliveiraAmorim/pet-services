@@ -21,23 +21,6 @@ definitions:
       zip_code:
         type: string
     type: object
-  entities.Breed:
-    properties:
-      active:
-        type: boolean
-      created_at:
-        type: string
-      deactivated_at:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
-      specie_id:
-        type: string
-      updated_at:
-        type: string
-    type: object
   entities.Location:
     properties:
       latitude:
@@ -58,8 +41,6 @@ definitions:
         type: boolean
       age:
         type: integer
-      breed:
-        $ref: '#/definitions/entities.Breed'
       created_at:
         type: string
       deactivated_at:
@@ -203,6 +184,28 @@ definitions:
         type: integer
       name:
         type: string
+    type: object
+  usecases.AddPetInputBody:
+    properties:
+      age:
+        type: integer
+      name:
+        type: string
+      notes:
+        type: string
+      specie_id:
+        type: string
+      weight:
+        type: number
+    type: object
+  usecases.AddPetOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+      pet:
+        $ref: '#/definitions/entities.Pet'
     type: object
   usecases.ChangePasswordInputBody:
     properties:
@@ -768,6 +771,49 @@ paths:
       summary: Verifica a saúde da API
       tags:
       - Verificação
+  /pets:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados do pet
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.AddPetInputBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/usecases.AddPetOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Adiciona um novo pet
+      tags:
+      - Pets
   /reference/cities:
     get:
       consumes:

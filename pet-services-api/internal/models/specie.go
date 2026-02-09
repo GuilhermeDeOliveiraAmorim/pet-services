@@ -15,8 +15,6 @@ type Specie struct {
 	UpdatedAt     *time.Time     `gorm:"autoUpdateTime" json:"updated_at"`
 	DeactivatedAt *time.Time     `json:"deactivated_at"`
 	DeletedAt     gorm.DeletedAt `gorm:"index" json:"deleted_at"`
-
-	Breeds []Breed `gorm:"foreignKey:SpecieID;constraint:OnDelete:CASCADE" json:"breeds"`
 }
 
 func (Specie) TableName() string {

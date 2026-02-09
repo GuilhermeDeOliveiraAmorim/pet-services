@@ -10,14 +10,17 @@ type Pet struct {
 	UserID string  `json:"user_id"`
 	Name   string  `json:"name"`
 	Specie Specie  `json:"specie"`
-	Breed  Breed   `json:"breed"`
 	Age    int     `json:"age"`
 	Weight float64 `json:"weight"`
 	Notes  string  `json:"notes"`
 	Photos []Photo `json:"photos"`
 }
 
-func NewPet(userID string, name string, specie Specie, breed Breed, age int, weight float64, notes string) (*Pet, []exceptions.ProblemDetails) {
+type PetRepository interface {
+	Create(pet *Pet) error
+}
+
+func NewPet(userID string, name string, specie Specie, age int, weight float64, notes string) (*Pet, []exceptions.ProblemDetails) {
 	var problems []exceptions.ProblemDetails
 
 	if userID == "" {
@@ -69,7 +72,6 @@ func NewPet(userID string, name string, specie Specie, breed Breed, age int, wei
 		UserID: userID,
 		Name:   name,
 		Specie: specie,
-		Breed:  breed,
 		Age:    age,
 		Weight: weight,
 		Notes:  notes,
