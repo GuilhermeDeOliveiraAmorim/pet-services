@@ -19,6 +19,7 @@ import {
 } from "@/application/usecases/auth";
 import { createAuthUseCases } from "@/application/factories/auth-usecase-factory";
 import { createApiContext } from "@/infra";
+import { useAuthSession } from "./use-auth-session";
 
 const useAuthUseCases = () => {
   return useMemo(() => {
@@ -81,9 +82,20 @@ export const useAuthLogin = (options?: LoginOptions) => {
 
 export const useAuthRefreshToken = (options?: RefreshTokenOptions) => {
   const { refreshTokenUseCase } = useAuthUseCases();
+  const { setSession } = useAuthSession();
 
   return useMutation({
     mutationFn: (input) => refreshTokenUseCase.execute(input),
+    onSuccess: (data, variables, context) => {
+      const expiresAt = Date.now() + data.expiresIn * 1000;
+      setSession({
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+        expiresAt,
+      });
+
+      options?.onSuccess?.(data, variables, context);
+    },
     ...options,
   });
 };
