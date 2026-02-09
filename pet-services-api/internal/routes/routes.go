@@ -114,6 +114,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	authorizedOwner.Use(middlewareFactory.AuthMiddleware(), middlewareFactory.OwnerOnlyMiddleware())
 	{
 		authorizedOwner.POST("", handlerFactory.PetHandler.AddPet)
+		authorizedOwner.POST("/:pet_id/photos", handlerFactory.PetHandler.AddPetPhoto)
 	}
 
 	authorizedAdmin := r.Group("/admin/")

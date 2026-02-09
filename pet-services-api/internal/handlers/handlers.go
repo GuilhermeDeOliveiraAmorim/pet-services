@@ -32,7 +32,7 @@ func NewHandlerFactory(inputFactory database.StorageInput, logger logging.Logger
 	healthFactory := factories.NewHealthFactory(inputFactory.DB, logger)
 	referenceFactory := factories.NewReferenceFactory(logger)
 	specieFactory := factories.NewSpecieFactory(inputFactory.DB, logger)
-	petFactory := factories.NewPetFactory(inputFactory.DB, logger)
+	petFactory := factories.NewPetFactory(inputFactory.DB, storageService, logger)
 
 	return &HandlerFactory{
 		UserHandler:      NewUserHandler(userFactory, logger),

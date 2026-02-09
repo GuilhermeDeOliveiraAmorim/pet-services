@@ -18,6 +18,7 @@ type Pet struct {
 
 type PetRepository interface {
 	Create(pet *Pet) error
+	FindByID(id string) (*Pet, error)
 }
 
 func NewPet(userID string, name string, specie Specie, age int, weight float64, notes string) (*Pet, []exceptions.ProblemDetails) {

@@ -8,6 +8,7 @@ type Photo struct {
 }
 
 type PhotoRepository interface {
+	CreateAndAttachToPet(petID string, photo *Photo) error
 	CreateAndAttachToUser(userID string, photo *Photo) error
 }
 

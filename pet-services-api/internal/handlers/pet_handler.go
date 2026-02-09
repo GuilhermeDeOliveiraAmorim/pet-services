@@ -78,3 +78,74 @@ func (h *PetHandler) AddPet(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, output)
 }
+
+// AddPetPhoto godoc
+// @Summary Adiciona foto ao pet
+// @Tags Pets
+// @Accept multipart/form-data
+// @Produce json
+// @Param pet_id path string true "ID do pet"
+// @Param file formData file true "Imagem"
+// @Success 201 {object} usecases.AddPetPhotoOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Failure 401 {object} exceptions.ProblemDetails
+// @Failure 403 {object} exceptions.ProblemDetails
+// @Failure 404 {object} exceptions.ProblemDetails
+// @Failure 500 {object} exceptions.ProblemDetails
+// @Security Bearer
+// @Router /pets/{pet_id}/photos [post]
+func (h *PetHandler) AddPetPhoto(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	userID, exists := c.Get("user_id")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Usuário não autenticado",
+			Detail: "Não foi possível obter o ID do usuário autenticado",
+		})
+		h.Logger.LogBadRequest(ctx, "PetHandler.AddPetPhoto", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
+		return
+	}
+
+	petID := c.Param("pet_id")
+	if petID == "" {
+		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "ID do pet ausente",
+			Detail: "O ID do pet é obrigatório",
+		})
+		h.Logger.LogBadRequest(ctx, "PetHandler.AddPetPhoto", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		return
+	}
+
+	file, header, err := c.Request.FormFile("file")
+	if err != nil {
+		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "Arquivo ausente",
+			Detail: "A imagem é obrigatória",
+		})
+		h.Logger.LogBadRequest(ctx, "PetHandler.AddPetPhoto", problem.Detail, err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		return
+	}
+	defer file.Close()
+
+	contentType := header.Header.Get("Content-Type")
+	input := usecases.AddPetPhotoInput{
+		UserID:      userID.(string),
+		PetID:       petID,
+		FileName:    header.Filename,
+		ContentType: contentType,
+		Size:        header.Size,
+		Reader:      file,
+	}
+
+	output, errs := h.PetFactory.AddPetPhoto.Execute(ctx, input)
+	if len(errs) > 0 {
+		exceptions.HandleErrors(c, errs)
+		return
+	}
+
+	c.JSON(http.StatusCreated, output)
+}
