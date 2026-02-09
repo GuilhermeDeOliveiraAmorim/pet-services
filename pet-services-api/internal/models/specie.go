@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type Specie struct {
+type Species struct {
 	ID            string         `gorm:"type:char(26);primaryKey" json:"id"`
 	Name          string         `gorm:"type:varchar(50);uniqueIndex;not null" json:"name"`
 	Active        bool           `gorm:"default:true;index" json:"active"`
@@ -17,12 +17,12 @@ type Specie struct {
 	DeletedAt     gorm.DeletedAt `gorm:"index" json:"deleted_at"`
 }
 
-func (Specie) TableName() string {
+func (Species) TableName() string {
 	return "species"
 }
 
-func (s *Specie) ToEntity() *entities.Specie {
-	return &entities.Specie{
+func (s *Species) ToEntity() *entities.Species {
+	return &entities.Species{
 		Base: entities.Base{
 			ID:            s.ID,
 			Active:        s.Active,
@@ -34,7 +34,7 @@ func (s *Specie) ToEntity() *entities.Specie {
 	}
 }
 
-func (s *Specie) FromEntity(entity *entities.Specie) {
+func (s *Species) FromEntity(entity *entities.Species) {
 	s.ID = entity.ID
 	s.Name = entity.Name
 	s.Active = entity.Active

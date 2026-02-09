@@ -11,7 +11,7 @@ type Pet struct {
 	ID            string         `gorm:"type:char(26);primaryKey" json:"id"`
 	UserID        string         `gorm:"type:char(26);not null;index" json:"user_id"`
 	Name          string         `gorm:"type:varchar(50);not null" json:"name"`
-	SpecieID      string         `gorm:"type:char(26);not null;index" json:"specie_id"`
+	SpeciesID     string         `gorm:"type:char(26);not null;index" json:"species_id"`
 	Age           int            `gorm:"type:int" json:"age"`
 	Weight        float64        `gorm:"type:decimal(6,2)" json:"weight"`
 	Notes         string         `gorm:"type:varchar(500)" json:"notes"`
@@ -21,9 +21,9 @@ type Pet struct {
 	DeactivatedAt *time.Time     `json:"deactivated_at"`
 	DeletedAt     gorm.DeletedAt `gorm:"index" json:"deleted_at"`
 
-	User   User    `gorm:"foreignKey:UserID" json:"user"`
-	Specie Specie  `gorm:"foreignKey:SpecieID" json:"specie"`
-	Photos []Photo `gorm:"many2many:pet_photos;constraint:OnDelete:CASCADE" json:"photos"`
+	User    User    `gorm:"foreignKey:UserID" json:"user"`
+	Species Species `gorm:"foreignKey:SpeciesID" json:"specie"`
+	Photos  []Photo `gorm:"many2many:pet_photos;constraint:OnDelete:CASCADE" json:"photos"`
 }
 
 func (Pet) TableName() string {
@@ -44,13 +44,13 @@ func (p *Pet) ToEntity() *entities.Pet {
 			UpdatedAt:     p.UpdatedAt,
 			DeactivatedAt: p.DeactivatedAt,
 		},
-		UserID: p.UserID,
-		Name:   p.Name,
-		Specie: *p.Specie.ToEntity(),
-		Age:    p.Age,
-		Weight: p.Weight,
-		Notes:  p.Notes,
-		Photos: photos,
+		UserID:  p.UserID,
+		Name:    p.Name,
+		Species: *p.Species.ToEntity(),
+		Age:     p.Age,
+		Weight:  p.Weight,
+		Notes:   p.Notes,
+		Photos:  photos,
 	}
 }
 
@@ -58,7 +58,7 @@ func (p *Pet) FromEntity(entity *entities.Pet) {
 	p.ID = entity.ID
 	p.UserID = entity.UserID
 	p.Name = entity.Name
-	p.SpecieID = entity.Specie.ID
+	p.SpeciesID = entity.Species.ID
 	p.Age = entity.Age
 	p.Weight = entity.Weight
 	p.Notes = entity.Notes

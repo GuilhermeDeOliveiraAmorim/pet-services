@@ -9,7 +9,7 @@ definitions:
       country:
         type: string
       location:
-        $ref: '#/definitions/entities.Location'
+        $ref: "#/definitions/entities.Location"
       neighborhood:
         type: string
       number:
@@ -53,10 +53,10 @@ definitions:
         type: string
       photos:
         items:
-          $ref: '#/definitions/entities.Photo'
+          $ref: "#/definitions/entities.Photo"
         type: array
       specie:
-        $ref: '#/definitions/entities.Specie'
+        $ref: "#/definitions/entities.Species"
       updated_at:
         type: string
       user_id:
@@ -88,7 +88,7 @@ definitions:
       url:
         type: string
     type: object
-  entities.Specie:
+  entities.Species:
     properties:
       active:
         type: boolean
@@ -108,7 +108,7 @@ definitions:
       active:
         type: boolean
       address:
-        $ref: '#/definitions/entities.Address'
+        $ref: "#/definitions/entities.Address"
       created_at:
         type: string
       deactivated_at:
@@ -118,18 +118,18 @@ definitions:
       id:
         type: string
       login:
-        $ref: '#/definitions/entities.Login'
+        $ref: "#/definitions/entities.Login"
       name:
         type: string
       pets:
         items:
-          $ref: '#/definitions/entities.Pet'
+          $ref: "#/definitions/entities.Pet"
         type: array
       phone:
-        $ref: '#/definitions/entities.Phone'
+        $ref: "#/definitions/entities.Phone"
       photos:
         items:
-          $ref: '#/definitions/entities.Photo'
+          $ref: "#/definitions/entities.Photo"
         type: array
       updated_at:
         type: string
@@ -152,9 +152,9 @@ definitions:
   handlers.HealthCheckResponse:
     properties:
       api:
-        $ref: '#/definitions/usecases.HealthCheckAPIOutput'
+        $ref: "#/definitions/usecases.HealthCheckAPIOutput"
       db:
-        $ref: '#/definitions/usecases.HealthCheckDBOutput'
+        $ref: "#/definitions/usecases.HealthCheckDBOutput"
     type: object
   reference.City:
     properties:
@@ -193,7 +193,7 @@ definitions:
         type: string
       notes:
         type: string
-      specie_id:
+      species_id:
         type: string
       weight:
         type: number
@@ -205,7 +205,7 @@ definitions:
       message:
         type: string
       pet:
-        $ref: '#/definitions/entities.Pet'
+        $ref: "#/definitions/entities.Pet"
     type: object
   usecases.AddPetPhotoOutput:
     properties:
@@ -214,7 +214,7 @@ definitions:
       message:
         type: string
       photo:
-        $ref: '#/definitions/entities.Photo'
+        $ref: "#/definitions/entities.Photo"
     type: object
   usecases.AddUserPhotoOutput:
     properties:
@@ -223,7 +223,7 @@ definitions:
       message:
         type: string
       photo:
-        $ref: '#/definitions/entities.Photo'
+        $ref: "#/definitions/entities.Photo"
     type: object
   usecases.ChangePasswordInputBody:
     properties:
@@ -270,13 +270,13 @@ definitions:
   usecases.CreateAdminInput:
     properties:
       address:
-        $ref: '#/definitions/entities.Address'
+        $ref: "#/definitions/entities.Address"
       login:
-        $ref: '#/definitions/entities.Login'
+        $ref: "#/definitions/entities.Login"
       name:
         type: string
       phone:
-        $ref: '#/definitions/entities.Phone'
+        $ref: "#/definitions/entities.Phone"
     type: object
   usecases.CreateAdminOutput:
     properties:
@@ -302,12 +302,12 @@ definitions:
   usecases.GetProfileOutput:
     properties:
       user:
-        $ref: '#/definitions/entities.User'
+        $ref: "#/definitions/entities.User"
     type: object
   usecases.GetUserByIDOutput:
     properties:
       user:
-        $ref: '#/definitions/entities.User'
+        $ref: "#/definitions/entities.User"
     type: object
   usecases.HealthCheckAPIOutput:
     properties:
@@ -323,37 +323,37 @@ definitions:
     properties:
       cities:
         items:
-          $ref: '#/definitions/reference.City'
+          $ref: "#/definitions/reference.City"
         type: array
     type: object
   usecases.ListCountriesOutput:
     properties:
       countries:
         items:
-          $ref: '#/definitions/reference.Country'
+          $ref: "#/definitions/reference.Country"
         type: array
     type: object
   usecases.ListSpeciesOutput:
     properties:
       species:
         items:
-          $ref: '#/definitions/entities.Specie'
+          $ref: "#/definitions/entities.Species"
         type: array
     type: object
   usecases.ListStatesOutput:
     properties:
       states:
         items:
-          $ref: '#/definitions/reference.State'
+          $ref: "#/definitions/reference.State"
         type: array
     type: object
   usecases.ListUsersOutput:
     properties:
       pagination:
-        $ref: '#/definitions/usecases.PaginationMetadata'
+        $ref: "#/definitions/usecases.PaginationMetadata"
       users:
         items:
-          $ref: '#/definitions/entities.User'
+          $ref: "#/definitions/entities.User"
         type: array
     type: object
   usecases.LoginUserInput:
@@ -375,12 +375,12 @@ definitions:
         type: integer
       problems:
         items:
-          $ref: '#/definitions/exceptions.ProblemDetails'
+          $ref: "#/definitions/exceptions.ProblemDetails"
         type: array
       refresh_token:
         type: string
       user:
-        $ref: '#/definitions/entities.User'
+        $ref: "#/definitions/entities.User"
     type: object
   usecases.LogoutInputBody:
     properties:
@@ -435,13 +435,13 @@ definitions:
   usecases.RegisterUserInput:
     properties:
       address:
-        $ref: '#/definitions/entities.Address'
+        $ref: "#/definitions/entities.Address"
       login:
-        $ref: '#/definitions/entities.Login'
+        $ref: "#/definitions/entities.Login"
       name:
         type: string
       phone:
-        $ref: '#/definitions/entities.Phone'
+        $ref: "#/definitions/entities.Phone"
       user_type:
         type: string
     type: object
@@ -523,11 +523,11 @@ definitions:
   usecases.UpdateUserInputBody:
     properties:
       address:
-        $ref: '#/definitions/entities.Address'
+        $ref: "#/definitions/entities.Address"
       name:
         type: string
       phone:
-        $ref: '#/definitions/entities.Phone'
+        $ref: "#/definitions/entities.Phone"
     type: object
   usecases.UpdateUserOutput:
     properties:
@@ -536,7 +536,7 @@ definitions:
       message:
         type: string
       user:
-        $ref: '#/definitions/entities.User'
+        $ref: "#/definitions/entities.User"
     type: object
   usecases.VerifyEmailInput:
     properties:
@@ -566,723 +566,724 @@ paths:
   /admin:
     post:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Dados do admin
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/usecases.CreateAdminInput'
+        - description: Dados do admin
+          in: body
+          name: input
+          required: true
+          schema:
+            $ref: "#/definitions/usecases.CreateAdminInput"
       produces:
-      - application/json
+        - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/usecases.CreateAdminOutput'
+            $ref: "#/definitions/usecases.CreateAdminOutput"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       security:
-      - Bearer: []
+        - Bearer: []
       summary: Cria um novo administrador
       tags:
-      - Administração
+        - Administração
   /auth/login:
     post:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Dados de login
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/usecases.LoginUserInput'
+        - description: Dados de login
+          in: body
+          name: input
+          required: true
+          schema:
+            $ref: "#/definitions/usecases.LoginUserInput"
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/usecases.LoginUserOutput'
+            $ref: "#/definitions/usecases.LoginUserOutput"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       summary: Realiza login do usuário
       tags:
-      - Autenticação
+        - Autenticação
   /auth/logout:
     post:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Opções de logout
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/usecases.LogoutInputBody'
+        - description: Opções de logout
+          in: body
+          name: input
+          required: true
+          schema:
+            $ref: "#/definitions/usecases.LogoutInputBody"
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/usecases.LogoutOutput'
+            $ref: "#/definitions/usecases.LogoutOutput"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       security:
-      - Bearer: []
+        - Bearer: []
       summary: Realiza logout do usuário autenticado
       tags:
-      - Autenticação
+        - Autenticação
   /auth/refresh:
     post:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Token de atualização
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/usecases.RefreshTokenInput'
+        - description: Token de atualização
+          in: body
+          name: input
+          required: true
+          schema:
+            $ref: "#/definitions/usecases.RefreshTokenInput"
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/usecases.RefreshTokenOutput'
+            $ref: "#/definitions/usecases.RefreshTokenOutput"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       summary: Renova tokens de autenticação
       tags:
-      - Autenticação
+        - Autenticação
   /auth/request-password-reset:
     post:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Dados para redefinição de senha
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/usecases.RequestPasswordResetInput'
+        - description: Dados para redefinição de senha
+          in: body
+          name: input
+          required: true
+          schema:
+            $ref: "#/definitions/usecases.RequestPasswordResetInput"
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/usecases.RequestPasswordResetOutput'
+            $ref: "#/definitions/usecases.RequestPasswordResetOutput"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       summary: Solicita reset de senha
       tags:
-      - Autenticação
+        - Autenticação
   /auth/resend-verification-email:
     post:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Dados para reenvio de verificação
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/usecases.ResendVerificationEmailInput'
+        - description: Dados para reenvio de verificação
+          in: body
+          name: input
+          required: true
+          schema:
+            $ref: "#/definitions/usecases.ResendVerificationEmailInput"
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/usecases.ResendVerificationEmailOutput'
+            $ref: "#/definitions/usecases.ResendVerificationEmailOutput"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       summary: Reenvia email de verificação
       tags:
-      - Autenticação
+        - Autenticação
   /auth/reset-password:
     post:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Dados para redefinição de senha
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/usecases.ResetPasswordInput'
+        - description: Dados para redefinição de senha
+          in: body
+          name: input
+          required: true
+          schema:
+            $ref: "#/definitions/usecases.ResetPasswordInput"
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/usecases.ResetPasswordOutput'
+            $ref: "#/definitions/usecases.ResetPasswordOutput"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       summary: Realiza reset de senha
       tags:
-      - Autenticação
+        - Autenticação
   /auth/verify-email:
     post:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Dados para verificação de email
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/usecases.VerifyEmailInput'
+        - description: Dados para verificação de email
+          in: body
+          name: input
+          required: true
+          schema:
+            $ref: "#/definitions/usecases.VerifyEmailInput"
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/usecases.VerifyEmailOutput'
+            $ref: "#/definitions/usecases.VerifyEmailOutput"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       summary: Verifica email do usuário
       tags:
-      - Autenticação
+        - Autenticação
   /health:
     get:
       consumes:
-      - application/json
+        - application/json
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.HealthCheckResponse'
+            $ref: "#/definitions/handlers.HealthCheckResponse"
       summary: Verifica a saúde da API
       tags:
-      - Verificação
+        - Verificação
   /pets:
     post:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Dados do pet
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/usecases.AddPetInputBody'
+        - description: Dados do pet
+          in: body
+          name: input
+          required: true
+          schema:
+            $ref: "#/definitions/usecases.AddPetInputBody"
       produces:
-      - application/json
+        - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/usecases.AddPetOutput'
+            $ref: "#/definitions/usecases.AddPetOutput"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       security:
-      - Bearer: []
+        - Bearer: []
       summary: Adiciona um novo pet
       tags:
-      - Pets
+        - Pets
   /pets/{pet_id}/photos:
     post:
       consumes:
-      - multipart/form-data
+        - multipart/form-data
       parameters:
-      - description: ID do pet
-        in: path
-        name: pet_id
-        required: true
-        type: string
-      - description: Imagem
-        in: formData
-        name: file
-        required: true
-        type: file
+        - description: ID do pet
+          in: path
+          name: pet_id
+          required: true
+          type: string
+        - description: Imagem
+          in: formData
+          name: file
+          required: true
+          type: file
       produces:
-      - application/json
+        - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/usecases.AddPetPhotoOutput'
+            $ref: "#/definitions/usecases.AddPetPhotoOutput"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       security:
-      - Bearer: []
+        - Bearer: []
       summary: Adiciona foto ao pet
       tags:
-      - Pets
+        - Pets
   /reference/cities:
     get:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: ID do estado (IBGE)
-        in: query
-        name: state_id
-        type: integer
+        - description: ID do estado (IBGE)
+          in: query
+          name: state_id
+          type: integer
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/usecases.ListCitiesOutput'
+            $ref: "#/definitions/usecases.ListCitiesOutput"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       summary: Lista cidades
       tags:
-      - Referências
+        - Referências
   /reference/countries:
     get:
       consumes:
-      - application/json
+        - application/json
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/usecases.ListCountriesOutput'
+            $ref: "#/definitions/usecases.ListCountriesOutput"
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       summary: Lista países
       tags:
-      - Referências
+        - Referências
   /reference/states:
     get:
       consumes:
-      - application/json
+        - application/json
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/usecases.ListStatesOutput'
+            $ref: "#/definitions/usecases.ListStatesOutput"
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       summary: Lista estados
       tags:
-      - Referências
+        - Referências
   /species:
     get:
       consumes:
-      - application/json
+        - application/json
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/usecases.ListSpeciesOutput'
+            $ref: "#/definitions/usecases.ListSpeciesOutput"
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       summary: Lista espécies
       tags:
-      - Espécies
+        - Espécies
   /users:
     delete:
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/usecases.DeleteUserOutput'
+            $ref: "#/definitions/usecases.DeleteUserOutput"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       security:
-      - Bearer: []
+        - Bearer: []
       summary: Deleta a conta do usuário autenticado
       tags:
-      - Usuários
+        - Usuários
     get:
       parameters:
-      - description: Página
-        in: query
-        name: page
-        type: integer
-      - description: Limite
-        in: query
-        name: limit
-        type: integer
+        - description: Página
+          in: query
+          name: page
+          type: integer
+        - description: Limite
+          in: query
+          name: limit
+          type: integer
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: '#/definitions/usecases.ListUsersOutput'
+              $ref: "#/definitions/usecases.ListUsersOutput"
             type: array
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       security:
-      - Bearer: []
+        - Bearer: []
       summary: Lista usuários
       tags:
-      - Usuários
+        - Usuários
     put:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Dados do usuário
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/usecases.UpdateUserInputBody'
+        - description: Dados do usuário
+          in: body
+          name: input
+          required: true
+          schema:
+            $ref: "#/definitions/usecases.UpdateUserInputBody"
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/usecases.UpdateUserOutput'
+            $ref: "#/definitions/usecases.UpdateUserOutput"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       security:
-      - Bearer: []
+        - Bearer: []
       summary: Atualiza dados do usuário autenticado
       tags:
-      - Usuários
+        - Usuários
   /users/{user_id}:
     get:
       parameters:
-      - description: ID do usuário
-        in: path
-        name: user_id
-        required: true
-        type: string
+        - description: ID do usuário
+          in: path
+          name: user_id
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/usecases.GetUserByIDOutput'
+            $ref: "#/definitions/usecases.GetUserByIDOutput"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       security:
-      - Bearer: []
+        - Bearer: []
       summary: Busca usuário por ID
       tags:
-      - Usuários
+        - Usuários
   /users/change-password:
     post:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Senhas atual e nova
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/usecases.ChangePasswordInputBody'
+        - description: Senhas atual e nova
+          in: body
+          name: input
+          required: true
+          schema:
+            $ref: "#/definitions/usecases.ChangePasswordInputBody"
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/usecases.ChangePasswordOutput'
+            $ref: "#/definitions/usecases.ChangePasswordOutput"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       security:
-      - Bearer: []
+        - Bearer: []
       summary: Altera a senha do usuário autenticado
       tags:
-      - Usuários
+        - Usuários
   /users/check-email:
     post:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Email
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/usecases.CheckEmailExistsInput'
+        - description: Email
+          in: body
+          name: input
+          required: true
+          schema:
+            $ref: "#/definitions/usecases.CheckEmailExistsInput"
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/usecases.CheckEmailExistsOutput'
+            $ref: "#/definitions/usecases.CheckEmailExistsOutput"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       summary: Verifica se email existe
       tags:
-      - Usuários
+        - Usuários
   /users/check-phone:
     post:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Telefone
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/usecases.CheckPhoneExistsInput'
+        - description: Telefone
+          in: body
+          name: input
+          required: true
+          schema:
+            $ref: "#/definitions/usecases.CheckPhoneExistsInput"
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/usecases.CheckPhoneExistsOutput'
+            $ref: "#/definitions/usecases.CheckPhoneExistsOutput"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       summary: Verifica se telefone existe
       tags:
-      - Usuários
+        - Usuários
   /users/deactivate:
     post:
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/usecases.DeactivateUserOutput'
+            $ref: "#/definitions/usecases.DeactivateUserOutput"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       security:
-      - Bearer: []
+        - Bearer: []
       summary: Desativa a conta do usuário autenticado
       tags:
-      - Usuários
+        - Usuários
   /users/photos:
     post:
       consumes:
-      - multipart/form-data
+        - multipart/form-data
       parameters:
-      - description: Imagem
-        in: formData
-        name: file
-        required: true
-        type: file
+        - description: Imagem
+          in: formData
+          name: file
+          required: true
+          type: file
       produces:
-      - application/json
+        - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/usecases.AddUserPhotoOutput'
+            $ref: "#/definitions/usecases.AddUserPhotoOutput"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       security:
-      - Bearer: []
+        - Bearer: []
       summary: Adiciona foto do usuário autenticado
       tags:
-      - Usuários
+        - Usuários
   /users/profile:
     get:
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/usecases.GetProfileOutput'
+            $ref: "#/definitions/usecases.GetProfileOutput"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       security:
-      - Bearer: []
+        - Bearer: []
       summary: Retorna o perfil do usuário autenticado
       tags:
-      - Usuários
+        - Usuários
   /users/reactivate:
     post:
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/usecases.ReactivateUserOutput'
+            $ref: "#/definitions/usecases.ReactivateUserOutput"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       security:
-      - Bearer: []
+        - Bearer: []
       summary: Reativa a conta do usuário autenticado
       tags:
-      - Usuários
+        - Usuários
   /users/register:
     post:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Dados do usuário
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/usecases.RegisterUserInput'
+        - description: Dados do usuário
+          in: body
+          name: input
+          required: true
+          schema:
+            $ref: "#/definitions/usecases.RegisterUserInput"
       produces:
-      - application/json
+        - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/usecases.RegisterUserOutput'
+            $ref: "#/definitions/usecases.RegisterUserOutput"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       summary: Registra um novo usuário
       tags:
-      - Usuários
+        - Usuários
   /users/update-email-verified:
     post:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Dados de verificação
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/usecases.UpdateEmailVerifiedInput'
+        - description: Dados de verificação
+          in: body
+          name: input
+          required: true
+          schema:
+            $ref: "#/definitions/usecases.UpdateEmailVerifiedInput"
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/usecases.UpdateEmailVerifiedOutput'
+            $ref: "#/definitions/usecases.UpdateEmailVerifiedOutput"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
+            $ref: "#/definitions/exceptions.ProblemDetails"
       summary: Atualiza verificação de email
       tags:
-      - Usuários
+        - Usuários
 securityDefinitions:
   Bearer:
-    description: 'JWT Authorization header usando o esquema Bearer. Exemplo: ''Authorization:
-      Bearer {token}'''
+    description:
+      "JWT Authorization header usando o esquema Bearer. Exemplo: 'Authorization:
+      Bearer {token}'"
     in: header
     name: Authorization
     type: apiKey

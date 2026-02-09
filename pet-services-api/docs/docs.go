@@ -1245,7 +1245,7 @@ const docTemplate = `{
                     }
                 },
                 "specie": {
-                    "$ref": "#/definitions/entities.Specie"
+                    "$ref": "#/definitions/entities.Species"
                 },
                 "updated_at": {
                     "type": "string"
@@ -1295,7 +1295,7 @@ const docTemplate = `{
                 }
             }
         },
-        "entities.Specie": {
+        "entities.Species": {
             "type": "object",
             "properties": {
                 "active": {
@@ -1456,7 +1456,7 @@ const docTemplate = `{
                 "notes": {
                     "type": "string"
                 },
-                "specie_id": {
+                "species_id": {
                     "type": "string"
                 },
                 "weight": {
@@ -1682,7 +1682,7 @@ const docTemplate = `{
                 "species": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/entities.Specie"
+                        "$ref": "#/definitions/entities.Species"
                     }
                 }
             }

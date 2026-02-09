@@ -62,12 +62,12 @@ func (h *PetHandler) AddPet(c *gin.Context) {
 	}
 
 	input := usecases.AddPetInput{
-		UserID:   userID.(string),
-		Name:     inputBody.Name,
-		SpecieID: inputBody.SpecieID,
-		Age:      inputBody.Age,
-		Weight:   inputBody.Weight,
-		Notes:    inputBody.Notes,
+		UserID:    userID.(string),
+		Name:      inputBody.Name,
+		SpeciesID: inputBody.SpeciesID,
+		Age:       inputBody.Age,
+		Weight:    inputBody.Weight,
+		Notes:     inputBody.Notes,
 	}
 
 	output, errs := h.PetFactory.AddPet.Execute(ctx, input)

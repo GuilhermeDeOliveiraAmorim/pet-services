@@ -10,20 +10,20 @@ import (
 )
 
 type AddPetInputBody struct {
-	Name     string  `json:"name"`
-	SpecieID string  `json:"specie_id"`
-	Age      int     `json:"age"`
-	Weight   float64 `json:"weight"`
-	Notes    string  `json:"notes"`
+	Name      string  `json:"name"`
+	SpeciesID string  `json:"species_id"`
+	Age       int     `json:"age"`
+	Weight    float64 `json:"weight"`
+	Notes     string  `json:"notes"`
 }
 
 type AddPetInput struct {
-	UserID   string  `json:"user_id"`
-	Name     string  `json:"name"`
-	SpecieID string  `json:"specie_id"`
-	Age      int     `json:"age"`
-	Weight   float64 `json:"weight"`
-	Notes    string  `json:"notes"`
+	UserID    string  `json:"user_id"`
+	Name      string  `json:"name"`
+	SpeciesID string  `json:"species_id"`
+	Age       int     `json:"age"`
+	Weight    float64 `json:"weight"`
+	Notes     string  `json:"notes"`
 }
 
 type AddPetOutput struct {
@@ -60,7 +60,7 @@ func (uc *AddPetUseCase) Execute(ctx context.Context, input AddPetInput) (*AddPe
 		return nil, uc.logger.LogBadRequest(ctx, from, "ID do usuário ausente", errors.New("O ID do usuário é obrigatório"))
 	}
 
-	if input.SpecieID == "" {
+	if input.SpeciesID == "" {
 		return nil, uc.logger.LogBadRequest(ctx, from, "ID da espécie ausente", errors.New("O ID da espécie é obrigatório"))
 	}
 
@@ -76,7 +76,7 @@ func (uc *AddPetUseCase) Execute(ctx context.Context, input AddPetInput) (*AddPe
 		return nil, uc.logger.LogForbidden(ctx, from, "Acesso negado", errors.New("Somente usuários do tipo owner podem adicionar pets"))
 	}
 
-	specie, err := uc.specieRepository.FindByID(input.SpecieID)
+	specie, err := uc.specieRepository.FindByID(input.SpeciesID)
 	if err != nil {
 		if err.Error() == consts.SpecieNotFoundErr {
 			return nil, uc.logger.LogNotFound(ctx, from, "Espécie não encontrada", errors.New("Não foi possível encontrar a espécie informada"))

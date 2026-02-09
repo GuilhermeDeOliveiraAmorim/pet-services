@@ -8,12 +8,12 @@ import (
 )
 
 type ListSpeciesOutput struct {
-	Species []*entities.Specie `json:"species"`
+	Species []*entities.Species `json:"species"`
 }
 
 type ListSpeciesUseCase struct {
 	specieRepository entities.SpecieRepository
-	logger          logging.LoggerInterface
+	logger           logging.LoggerInterface
 }
 
 func NewListSpeciesUseCase(specieRepository entities.SpecieRepository, logger logging.LoggerInterface) *ListSpeciesUseCase {

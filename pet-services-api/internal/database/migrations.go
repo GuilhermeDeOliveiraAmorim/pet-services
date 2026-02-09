@@ -9,7 +9,7 @@ import (
 func Migration20260110000000(db *gorm.DB) error {
 	return db.AutoMigrate(
 		&models.User{},
-		&models.Specie{},
+		&models.Species{},
 		&models.Category{},
 		&models.Tag{},
 		&models.Photo{},

@@ -2,17 +2,17 @@ package entities
 
 import "pet-services-api/internal/exceptions"
 
-type Specie struct {
+type Species struct {
 	Base
 	Name string `json:"name"`
 }
 
 type SpecieRepository interface {
-	List() ([]*Specie, error)
-	FindByID(id string) (*Specie, error)
+	List() ([]*Species, error)
+	FindByID(id string) (*Species, error)
 }
 
-func NewSpecie(name string) (*Specie, []exceptions.ProblemDetails) {
+func NewSpecie(name string) (*Species, []exceptions.ProblemDetails) {
 	var problems []exceptions.ProblemDetails
 
 	if name == "" {
@@ -31,7 +31,7 @@ func NewSpecie(name string) (*Specie, []exceptions.ProblemDetails) {
 		return nil, problems
 	}
 
-	return &Specie{
+	return &Species{
 		Base: *NewBase(),
 		Name: name,
 	}, nil

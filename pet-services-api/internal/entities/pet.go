@@ -7,13 +7,13 @@ import (
 
 type Pet struct {
 	Base
-	UserID string  `json:"user_id"`
-	Name   string  `json:"name"`
-	Specie Specie  `json:"specie"`
-	Age    int     `json:"age"`
-	Weight float64 `json:"weight"`
-	Notes  string  `json:"notes"`
-	Photos []Photo `json:"photos"`
+	UserID  string  `json:"user_id"`
+	Name    string  `json:"name"`
+	Species Species `json:"specie"`
+	Age     int     `json:"age"`
+	Weight  float64 `json:"weight"`
+	Notes   string  `json:"notes"`
+	Photos  []Photo `json:"photos"`
 }
 
 type PetRepository interface {
@@ -21,7 +21,7 @@ type PetRepository interface {
 	FindByID(id string) (*Pet, error)
 }
 
-func NewPet(userID string, name string, specie Specie, age int, weight float64, notes string) (*Pet, []exceptions.ProblemDetails) {
+func NewPet(userID string, name string, specie Species, age int, weight float64, notes string) (*Pet, []exceptions.ProblemDetails) {
 	var problems []exceptions.ProblemDetails
 
 	if userID == "" {
@@ -69,13 +69,13 @@ func NewPet(userID string, name string, specie Specie, age int, weight float64, 
 	}
 
 	return &Pet{
-		Base:   *NewBase(),
-		UserID: userID,
-		Name:   name,
-		Specie: specie,
-		Age:    age,
-		Weight: weight,
-		Notes:  notes,
+		Base:    *NewBase(),
+		UserID:  userID,
+		Name:    name,
+		Species: specie,
+		Age:     age,
+		Weight:  weight,
+		Notes:   notes,
 	}, nil
 }
 
