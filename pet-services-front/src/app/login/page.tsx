@@ -76,13 +76,6 @@ export default function LoginPage() {
       expiresAt,
     });
 
-    console.log("Login bem-sucedido:", {
-      userId: response.user.id,
-      email: response.user.login.email,
-      expiresIn: response.expiresIn,
-      type: response.user.userType,
-    });
-
     if (response.user.userType === UserTypes.Owner) {
       router.replace("/owner");
       return;

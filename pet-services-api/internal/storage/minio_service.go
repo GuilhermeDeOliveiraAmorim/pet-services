@@ -20,9 +20,11 @@ type ObjectStorage interface {
 }
 
 type MinioService struct {
-	client *minio.Client
-	bucket string
+	client         *minio.Client
+	bucket         string
 	publicEndpoint string
+	creds          *credentials.Credentials
+	region         string
 }
 
 func NewMinioServiceFromEnv() (*MinioService, error) {
@@ -32,6 +34,10 @@ func NewMinioServiceFromEnv() (*MinioService, error) {
 	bucket := strings.TrimSpace(os.Getenv("MINIO_BUCKET"))
 	useSSLRaw := strings.TrimSpace(os.Getenv("MINIO_USE_SSL"))
 	publicEndpoint := strings.TrimSpace(os.Getenv("MINIO_PUBLIC_ENDPOINT"))
+	region := strings.TrimSpace(os.Getenv("MINIO_REGION"))
+	if region == "" {
+		region = "us-east-1"
+	}
 
 	if endpoint == "" || accessKey == "" || secretKey == "" || bucket == "" {
 		return nil, errors.New("configuração do MinIO incompleta")
@@ -46,14 +52,16 @@ func NewMinioServiceFromEnv() (*MinioService, error) {
 		useSSL = parsed
 	}
 
+	creds := credentials.NewStaticV4(accessKey, secretKey, "")
 	client, err := minio.New(endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(accessKey, secretKey, ""),
+		Creds:  creds,
 		Secure: useSSL,
+		Region: region,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return &MinioService{client: client, bucket: bucket, publicEndpoint: publicEndpoint}, nil
+	return &MinioService{client: client, bucket: bucket, publicEndpoint: publicEndpoint, creds: creds, region: region}, nil
 }
 
 func (s *MinioService) ensureBucket(ctx context.Context) error {
@@ -91,26 +99,33 @@ func (s *MinioService) GenerateReadURL(ctx context.Context, objectName string, t
 	if objectName == "" {
 		return "", errors.New("nome do objeto ausente")
 	}
-	presignedURL, err := s.client.PresignedGetObject(ctx, s.bucket, objectName, ttl, nil)
+	client := s.client
+	if s.publicEndpoint != "" {
+		publicURL, err := url.Parse(s.publicEndpoint)
+		if err != nil {
+			return "", err
+		}
+		endpoint := publicURL.Host
+		if endpoint == "" {
+			endpoint = strings.TrimSpace(s.publicEndpoint)
+		}
+		useSSL := strings.EqualFold(publicURL.Scheme, "https")
+		presignClient, err := minio.New(endpoint, &minio.Options{
+			Creds:        s.creds,
+			Secure:       useSSL,
+			BucketLookup: minio.BucketLookupPath,
+			Region:       s.region,
+		})
+		if err != nil {
+			return "", err
+		}
+		client = presignClient
+	}
+
+	presignedURL, err := client.PresignedGetObject(ctx, s.bucket, objectName, ttl, nil)
 	if err != nil {
 		return "", err
 	}
-	if s.publicEndpoint == "" {
-		return presignedURL.String(), nil
-	}
 
-	publicURL, err := url.Parse(s.publicEndpoint)
-	if err != nil {
-		return "", err
-	}
-
-	signedURL := *presignedURL
-	if publicURL.Scheme != "" {
-		signedURL.Scheme = publicURL.Scheme
-	}
-	if publicURL.Host != "" {
-		signedURL.Host = publicURL.Host
-	}
-
-	return signedURL.String(), nil
+	return presignedURL.String(), nil
 }
