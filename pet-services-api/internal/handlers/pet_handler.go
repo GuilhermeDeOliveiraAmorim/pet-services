@@ -189,6 +189,76 @@ func (h *PetHandler) GetPet(c *gin.Context) {
 	c.JSON(http.StatusOK, output)
 }
 
+// UpdatePet godoc
+// @Summary Atualiza dados de um pet
+// @Tags Pets
+// @Accept json
+// @Produce json
+// @Param pet_id path string true "ID do pet"
+// @Param input body usecases.UpdatePetInputBody true "Dados do pet"
+// @Success 200 {object} usecases.UpdatePetOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Failure 401 {object} exceptions.ProblemDetails
+// @Failure 403 {object} exceptions.ProblemDetails
+// @Failure 404 {object} exceptions.ProblemDetails
+// @Failure 500 {object} exceptions.ProblemDetails
+// @Security Bearer
+// @Router /pets/{pet_id} [put]
+func (h *PetHandler) UpdatePet(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	userID, exists := c.Get("user_id")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Usuário não autenticado",
+			Detail: "Não foi possível obter o ID do usuário autenticado",
+		})
+		h.Logger.LogBadRequest(ctx, "PetHandler.UpdatePet", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
+		return
+	}
+
+	petID := c.Param("pet_id")
+	if petID == "" {
+		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "ID do pet ausente",
+			Detail: "O ID do pet é obrigatório",
+		})
+		h.Logger.LogBadRequest(ctx, "PetHandler.UpdatePet", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		return
+	}
+
+	var inputBody usecases.UpdatePetInputBody
+	if err := c.ShouldBindJSON(&inputBody); err != nil {
+		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "Erro ao fazer o parser",
+			Detail: "Erro ao fazer o parser dos dados do pet",
+		})
+		h.Logger.LogBadRequest(ctx, "PetHandler.UpdatePet", problem.Detail, err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		return
+	}
+
+	input := usecases.UpdatePetInput{
+		UserID:    userID.(string),
+		PetID:     petID,
+		Name:      inputBody.Name,
+		SpeciesID: inputBody.SpeciesID,
+		Age:       inputBody.Age,
+		Weight:    inputBody.Weight,
+		Notes:     inputBody.Notes,
+	}
+
+	output, errs := h.PetFactory.UpdatePet.Execute(ctx, input)
+	if len(errs) > 0 {
+		exceptions.HandleErrors(c, errs)
+		return
+	}
+
+	c.JSON(http.StatusOK, output)
+}
+
 // AddPetPhoto godoc
 // @Summary Adiciona foto ao pet
 // @Tags Pets

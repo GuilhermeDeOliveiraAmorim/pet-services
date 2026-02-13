@@ -67,3 +67,9 @@ func (r *petRepository) ListByUser(userID string, page, pageSize int) ([]*entiti
 
 	return entitiesList, total, nil
 }
+
+func (r *petRepository) Update(pet *entities.Pet) error {
+	var model models.Pet
+	model.FromEntity(pet)
+	return r.db.Save(&model).Error
+}

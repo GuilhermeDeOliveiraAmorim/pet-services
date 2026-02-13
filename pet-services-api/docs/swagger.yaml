@@ -1079,6 +1079,28 @@ definitions:
       message:
         type: string
     type: object
+  usecases.UpdatePetInputBody:
+    properties:
+      age:
+        type: integer
+      name:
+        type: string
+      notes:
+        type: string
+      species_id:
+        type: string
+      weight:
+        type: number
+    type: object
+  usecases.UpdatePetOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+      pet:
+        $ref: '#/definitions/entities.Pet'
+    type: object
   usecases.UpdateUserInputBody:
     properties:
       address:
@@ -1557,6 +1579,53 @@ paths:
       security:
       - Bearer: []
       summary: Obtém detalhes de um pet
+      tags:
+      - Pets
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID do pet
+        in: path
+        name: pet_id
+        required: true
+        type: string
+      - description: Dados do pet
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.UpdatePetInputBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.UpdatePetOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Atualiza dados de um pet
       tags:
       - Pets
   /pets/{pet_id}/photos:

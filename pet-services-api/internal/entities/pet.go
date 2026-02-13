@@ -20,6 +20,7 @@ type PetRepository interface {
 	Create(pet *Pet) error
 	FindByID(id string) (*Pet, error)
 	ListByUser(userID string, page, pageSize int) ([]*Pet, int64, error)
+	Update(pet *Pet) error
 }
 
 func NewPet(userID string, name string, specie Species, age int, weight float64, notes string) (*Pet, []exceptions.ProblemDetails) {
