@@ -3937,9 +3937,6 @@ const docTemplate = `{
         "usecases.RegisterUserInput": {
             "type": "object",
             "properties": {
-                "address": {
-                    "$ref": "#/definitions/entities.Address"
-                },
                 "login": {
                     "$ref": "#/definitions/entities.Login"
                 },
@@ -3948,9 +3945,6 @@ const docTemplate = `{
                 },
                 "phone": {
                     "$ref": "#/definitions/entities.Phone"
-                },
-                "user_type": {
-                    "type": "string"
                 }
             }
         },

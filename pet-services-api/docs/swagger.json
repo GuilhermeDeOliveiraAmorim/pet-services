@@ -3931,9 +3931,6 @@
         "usecases.RegisterUserInput": {
             "type": "object",
             "properties": {
-                "address": {
-                    "$ref": "#/definitions/entities.Address"
-                },
                 "login": {
                     "$ref": "#/definitions/entities.Login"
                 },
@@ -3942,9 +3939,6 @@
                 },
                 "phone": {
                     "$ref": "#/definitions/entities.Phone"
-                },
-                "user_type": {
-                    "type": "string"
                 }
             }
         },

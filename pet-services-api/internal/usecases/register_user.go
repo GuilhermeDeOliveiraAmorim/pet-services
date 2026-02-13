@@ -9,11 +9,9 @@ import (
 )
 
 type RegisterUserInput struct {
-	Name     string           `json:"name"`
-	UserType string           `json:"user_type"`
-	Login    entities.Login   `json:"login"`
-	Phone    entities.Phone   `json:"phone"`
-	Address  entities.Address `json:"address"`
+	Name  string         `json:"name"`
+	Login entities.Login `json:"login"`
+	Phone entities.Phone `json:"phone"`
 }
 
 type RegisterUserOutput struct {
@@ -35,10 +33,6 @@ func NewRegisterUserUseCase(userRepository entities.UserRepository, logger loggi
 
 func (uc *RegisterUserUseCase) Execute(ctx context.Context, input RegisterUserInput) (*RegisterUserOutput, []exceptions.ProblemDetails) {
 	const from = "RegisterUserUseCase.Execute"
-
-	if input.UserType == "admin" {
-		return nil, uc.logger.LogForbidden(ctx, from, "Tipo de usuário não permitido", errors.New("Não é permitido criar usuários do tipo admin por este endpoint"))
-	}
 
 	exists, err := uc.userRepository.ExistsByEmail(input.Login.Email)
 	if err != nil {
@@ -78,59 +72,11 @@ func (uc *RegisterUserUseCase) Execute(ctx context.Context, input RegisterUserIn
 		return nil, problems
 	}
 
-	var user *entities.User
-
-	if input.UserType == "" {
-		user, errs = entities.NewIncompleteUser(
-			input.Name,
-			*login,
-			*phone,
-		)
-	} else {
-		var location *entities.Location
-		locationResult, errs := entities.NewLocation(input.Address.Location.Latitude, input.Address.Location.Longitude)
-		if len(errs) > 0 {
-			uc.logger.LogMultipleBadRequests(ctx, from, "Localização inválida", errs)
-			problems = append(problems, errs...)
-		}
-		if len(errs) == 0 {
-			location = locationResult
-		}
-
-		if len(problems) > 0 {
-			uc.logger.LogMultipleBadRequests(ctx, from, "Problemas de validação", problems)
-			return nil, problems
-		}
-
-		address, errs := entities.NewAddress(
-			input.Address.Street,
-			input.Address.Number,
-			input.Address.Neighborhood,
-			input.Address.City,
-			input.Address.ZipCode,
-			input.Address.State,
-			input.Address.Country,
-			input.Address.Complement,
-			*location,
-		)
-		if len(errs) > 0 {
-			uc.logger.LogMultipleBadRequests(ctx, from, "Endereço inválido", errs)
-			problems = append(problems, errs...)
-		}
-
-		if len(problems) > 0 {
-			uc.logger.LogMultipleBadRequests(ctx, from, "Problemas de validação", problems)
-			return nil, problems
-		}
-
-		user, errs = entities.NewUser(
-			input.Name,
-			input.UserType,
-			*login,
-			*phone,
-			*address,
-		)
-	}
+	user, errs := entities.NewIncompleteUser(
+		input.Name,
+		*login,
+		*phone,
+	)
 
 	if len(errs) > 0 {
 		uc.logger.LogMultipleBadRequests(ctx, from, "Usuário inválido", errs)
