@@ -15,6 +15,7 @@ type PhotoRepository interface {
 	ReplaceUserPhoto(userID string, photo *Photo) error
 	DeleteServicePhoto(serviceID, photoID string) error
 	DeletePetPhoto(petID, photoID string) error
+	DeleteProviderPhoto(providerID, photoID string) error
 	CountProviderPhotos(providerID string) (int, error)
 	CountPetPhotos(petID string) (int, error)
 	CountServicePhotos(serviceID string) (int, error)

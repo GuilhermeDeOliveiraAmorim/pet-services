@@ -151,6 +151,23 @@ func (r *photoRepository) DeletePetPhoto(petID, photoID string) error {
 	})
 }
 
+func (r *photoRepository) DeleteProviderPhoto(providerID, photoID string) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		provider := models.Provider{ID: providerID}
+		photo := models.Photo{ID: photoID}
+
+		if err := tx.Model(&provider).Association("Photos").Delete(&photo); err != nil {
+			return err
+		}
+
+		if err := tx.Delete(&photo).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
 func (r *photoRepository) CountProviderPhotos(providerID string) (int, error) {
 	var count int64
 	err := r.db.Table("provider_photos").
