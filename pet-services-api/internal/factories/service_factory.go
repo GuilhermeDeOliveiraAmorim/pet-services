@@ -10,10 +10,11 @@ import (
 )
 
 type ServiceFactory struct {
-	AddService      *usecases.AddServiceUseCase
-	AddServicePhoto *usecases.AddServicePhotoUseCase
-	AddServiceTag   *usecases.AddServiceTagUseCase
-	ListTags        *usecases.ListTagsUseCase
+	AddService         *usecases.AddServiceUseCase
+	AddServicePhoto    *usecases.AddServicePhotoUseCase
+	AddServiceTag      *usecases.AddServiceTagUseCase
+	ListTags           *usecases.ListTagsUseCase
+	AddServiceCategory *usecases.AddServiceCategoryUseCase
 }
 
 func NewServiceFactory(db *gorm.DB, storageService storage.ObjectStorage, logger logging.LoggerInterface) *ServiceFactory {
@@ -22,11 +23,13 @@ func NewServiceFactory(db *gorm.DB, storageService storage.ObjectStorage, logger
 	serviceRepo := repository_impl.NewServiceRepository(db)
 	photoRepo := repository_impl.NewPhotoRepository(db)
 	tagRepo := repository_impl.NewTagRepository(db)
+	categoryRepo := repository_impl.NewCategoryRepository(db)
 
 	return &ServiceFactory{
-		AddService:      usecases.NewAddServiceUseCase(userRepo, providerRepo, serviceRepo, logger),
-		AddServicePhoto: usecases.NewAddServicePhotoUseCase(userRepo, serviceRepo, providerRepo, photoRepo, storageService, logger),
-		AddServiceTag:   usecases.NewAddServiceTagUseCase(userRepo, serviceRepo, providerRepo, tagRepo, logger),
-		ListTags:        usecases.NewListTagsUseCase(tagRepo),
+		AddService:         usecases.NewAddServiceUseCase(userRepo, providerRepo, serviceRepo, logger),
+		AddServicePhoto:    usecases.NewAddServicePhotoUseCase(userRepo, serviceRepo, providerRepo, photoRepo, storageService, logger),
+		AddServiceTag:      usecases.NewAddServiceTagUseCase(userRepo, serviceRepo, providerRepo, tagRepo, logger),
+		ListTags:           usecases.NewListTagsUseCase(tagRepo),
+		AddServiceCategory: usecases.NewAddServiceCategoryUseCase(userRepo, serviceRepo, providerRepo, categoryRepo, logger),
 	}
 }

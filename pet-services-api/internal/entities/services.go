@@ -24,6 +24,8 @@ type ServiceRepository interface {
 	FindByID(id string) (*Service, error)
 	HasTag(serviceID, tagID string) (bool, error)
 	AddTag(serviceID, tagID string) error
+	HasCategory(serviceID, categoryID string) (bool, error)
+	AddCategory(serviceID, categoryID string) error
 }
 
 func NewService(providerID string, name string, description string, price float64, priceMinimum float64, priceMaximum float64, duration int) (*Service, []exceptions.ProblemDetails) {

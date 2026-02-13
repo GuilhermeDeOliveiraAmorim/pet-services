@@ -283,3 +283,70 @@ func (h *ServiceHandler) AddServiceTag(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, output)
 }
+
+// AddServiceCategory godoc
+// @Summary Adiciona categoria ao serviço
+// @Tags Serviços
+// @Accept json
+// @Produce json
+// @Param service_id path string true "ID do serviço"
+// @Param input body usecases.AddServiceCategoryInput true "Dados da categoria"
+// @Success 201 {object} usecases.AddServiceCategoryOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Failure 401 {object} exceptions.ProblemDetails
+// @Failure 403 {object} exceptions.ProblemDetails
+// @Failure 404 {object} exceptions.ProblemDetails
+// @Failure 409 {object} exceptions.ProblemDetails
+// @Failure 500 {object} exceptions.ProblemDetails
+// @Security Bearer
+// @Router /services/{service_id}/categories [post]
+func (h *ServiceHandler) AddServiceCategory(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	userID, exists := c.Get("user_id")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Usuário não autenticado",
+			Detail: "Não foi possível obter o ID do usuário autenticado",
+		})
+		h.Logger.LogBadRequest(ctx, "ServiceHandler.AddServiceCategory", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
+		return
+	}
+
+	serviceID := c.Param("service_id")
+	if serviceID == "" {
+		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "ID do serviço ausente",
+			Detail: "O ID do serviço é obrigatório",
+		})
+		h.Logger.LogBadRequest(ctx, "ServiceHandler.AddServiceCategory", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		return
+	}
+
+	var inputBody usecases.AddServiceCategoryInput
+	if err := c.ShouldBindJSON(&inputBody); err != nil {
+		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "Erro ao fazer o parser",
+			Detail: "Erro ao fazer o parser dos dados da categoria",
+		})
+		h.Logger.LogBadRequest(ctx, "ServiceHandler.AddServiceCategory", problem.Detail, err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		return
+	}
+
+	input := usecases.AddServiceCategoryInput{
+		UserID:     userID.(string),
+		ServiceID:  serviceID,
+		CategoryID: inputBody.CategoryID,
+	}
+
+	output, errs := h.ServiceFactory.AddServiceCategory.Execute(ctx, input)
+	if len(errs) > 0 {
+		exceptions.HandleErrors(c, errs)
+		return
+	}
+
+	c.JSON(http.StatusCreated, output)
+}

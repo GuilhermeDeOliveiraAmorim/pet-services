@@ -7,4 +7,5 @@ const (
 	ProviderNotFoundError = "provedor não encontrado"
 	ServiceNotFoundError  = "servico não encontrado"
 	TagNotFoundError      = "tag não encontrada"
+	CategoryNotFoundError = "categoria não encontrada"
 )

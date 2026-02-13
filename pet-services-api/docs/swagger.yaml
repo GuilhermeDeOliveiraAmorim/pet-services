@@ -408,6 +408,24 @@ definitions:
       request:
         $ref: '#/definitions/entities.Request'
     type: object
+  usecases.AddServiceCategoryInput:
+    properties:
+      category_id:
+        type: string
+      service_id:
+        type: string
+      user_id:
+        type: string
+    type: object
+  usecases.AddServiceCategoryOutput:
+    properties:
+      category:
+        $ref: '#/definitions/entities.Category'
+      detail:
+        type: string
+      message:
+        type: string
+    type: object
   usecases.AddServiceInputBody:
     properties:
       description:
@@ -1461,6 +1479,58 @@ paths:
       tags:
       - Serviços
       - Tags
+  /services/{service_id}/categories:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID do serviço
+        in: path
+        name: service_id
+        required: true
+        type: string
+      - description: Dados da categoria
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.AddServiceCategoryInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/usecases.AddServiceCategoryOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Adiciona categoria ao serviço
+      tags:
+      - Serviços
   /services/{service_id}/photos:
     post:
       consumes:

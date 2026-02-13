@@ -2,6 +2,8 @@ package repository_impl
 
 import (
 	"context"
+	"errors"
+	"pet-services-api/internal/consts"
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/models"
 
@@ -22,10 +24,25 @@ func (r *categoryRepository) Create(category *entities.Category) error {
 	return r.db.Create(&model).Error
 }
 
+func (r *categoryRepository) FindByID(id string) (*entities.Category, error) {
+	var model models.Category
+	err := r.db.First(&model, "id = ?", id).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New(consts.CategoryNotFoundError)
+		}
+		return nil, err
+	}
+	return model.ToEntity(), nil
+}
+
 func (r *categoryRepository) FindByName(name string) (*entities.Category, error) {
 	var model models.Category
 	err := r.db.First(&model, "name = ?", name).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New(consts.CategoryNotFoundError)
+		}
 		return nil, err
 	}
 	return model.ToEntity(), nil
