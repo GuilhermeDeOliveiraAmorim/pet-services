@@ -1108,6 +1108,30 @@ definitions:
       pet:
         $ref: '#/definitions/entities.Pet'
     type: object
+  usecases.UpdateServiceInputBody:
+    properties:
+      description:
+        type: string
+      duration:
+        type: integer
+      name:
+        type: string
+      price:
+        type: number
+      price_maximum:
+        type: number
+      price_minimum:
+        type: number
+    type: object
+  usecases.UpdateServiceOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+      service:
+        $ref: '#/definitions/entities.Service'
+    type: object
   usecases.UpdateUserInputBody:
     properties:
       address:
@@ -2528,6 +2552,53 @@ paths:
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
       summary: Obtém detalhes de um serviço
+      tags:
+      - Serviços
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID do serviço
+        in: path
+        name: service_id
+        required: true
+        type: string
+      - description: Dados do serviço
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.UpdateServiceInputBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.UpdateServiceOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Atualiza dados de um serviço
       tags:
       - Serviços
   /services/{service_id}/categories:

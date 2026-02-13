@@ -24,6 +24,12 @@ func (r *serviceRepository) Create(service *entities.Service) error {
 	return r.db.Create(&model).Error
 }
 
+func (r *serviceRepository) Update(service *entities.Service) error {
+	var model models.Service
+	model.FromEntity(service)
+	return r.db.Save(&model).Error
+}
+
 func (r *serviceRepository) FindByID(id string) (*entities.Service, error) {
 	var model models.Service
 	err := r.db.

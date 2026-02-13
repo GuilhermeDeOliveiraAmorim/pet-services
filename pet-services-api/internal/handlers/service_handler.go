@@ -220,6 +220,77 @@ func (h *ServiceHandler) SearchServices(c *gin.Context) {
 	c.JSON(http.StatusOK, output)
 }
 
+// UpdateService godoc
+// @Summary Atualiza dados de um serviço
+// @Tags Serviços
+// @Accept json
+// @Produce json
+// @Param service_id path string true "ID do serviço"
+// @Param input body usecases.UpdateServiceInputBody true "Dados do serviço"
+// @Success 200 {object} usecases.UpdateServiceOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Failure 401 {object} exceptions.ProblemDetails
+// @Failure 403 {object} exceptions.ProblemDetails
+// @Failure 404 {object} exceptions.ProblemDetails
+// @Failure 500 {object} exceptions.ProblemDetails
+// @Security Bearer
+// @Router /services/{service_id} [put]
+func (h *ServiceHandler) UpdateService(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	userID, exists := c.Get("user_id")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Usuário não autenticado",
+			Detail: "Não foi possível obter o ID do usuário autenticado",
+		})
+		h.Logger.LogBadRequest(ctx, "ServiceHandler.UpdateService", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
+		return
+	}
+
+	serviceID := c.Param("service_id")
+	if serviceID == "" {
+		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "ID do serviço ausente",
+			Detail: "O ID do serviço é obrigatório",
+		})
+		h.Logger.LogBadRequest(ctx, "ServiceHandler.UpdateService", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		return
+	}
+
+	var inputBody usecases.UpdateServiceInputBody
+	if err := c.ShouldBindJSON(&inputBody); err != nil {
+		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "Erro ao fazer o parser",
+			Detail: "Erro ao fazer o parser dos dados do serviço",
+		})
+		h.Logger.LogBadRequest(ctx, "ServiceHandler.UpdateService", problem.Detail, err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		return
+	}
+
+	input := usecases.UpdateServiceInput{
+		UserID:       userID.(string),
+		ServiceID:    serviceID,
+		Name:         inputBody.Name,
+		Description:  inputBody.Description,
+		Price:        inputBody.Price,
+		PriceMinimum: inputBody.PriceMinimum,
+		PriceMaximum: inputBody.PriceMaximum,
+		Duration:     inputBody.Duration,
+	}
+
+	output, errs := h.ServiceFactory.UpdateService.Execute(ctx, input)
+	if len(errs) > 0 {
+		exceptions.HandleErrors(c, errs)
+		return
+	}
+
+	c.JSON(http.StatusOK, output)
+}
+
 // ListTags godoc
 // @Summary Lista tags com paginação
 // @Tags Tags

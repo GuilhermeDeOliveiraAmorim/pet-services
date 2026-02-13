@@ -22,6 +22,7 @@ type Service struct {
 type ServiceRepository interface {
 	Create(service *Service) error
 	FindByID(id string) (*Service, error)
+	Update(service *Service) error
 	List(providerID, categoryID, tagID string, priceMin, priceMax float64, page, pageSize int) ([]*Service, int64, error)
 	Search(query, categoryID, tagID string, latitude, longitude, radiusKm, priceMin, priceMax float64, page, pageSize int) ([]*Service, int64, error)
 	HasTag(serviceID, tagID string) (bool, error)
