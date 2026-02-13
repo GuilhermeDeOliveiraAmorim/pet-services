@@ -36,3 +36,45 @@ func (r *requestRepository) ExistsCompleted(userID, providerID string) (bool, er
 		Count(&count).Error
 	return count > 0, err
 }
+
+func (r *requestRepository) List(userID, providerID, status string, page, pageSize int) ([]*entities.Request, int64, error) {
+	var requests []models.Request
+	var total int64
+
+	query := r.db.Model(&models.Request{}).
+		Preload("User").
+		Preload("Provider").
+		Preload("Service").
+		Preload("Pet.Species")
+
+	if userID != "" {
+		query = query.Where("user_id = ?", userID)
+	}
+
+	if providerID != "" {
+		query = query.Where("provider_id = ?", providerID)
+	}
+
+	if status != "" {
+		query = query.Where("status = ?", status)
+	}
+
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	offset := (page - 1) * pageSize
+	if err := query.Order("created_at DESC").
+		Offset(offset).
+		Limit(pageSize).
+		Find(&requests).Error; err != nil {
+		return nil, 0, err
+	}
+
+	entities := make([]*entities.Request, len(requests))
+	for i, req := range requests {
+		entities[i] = req.ToEntity()
+	}
+
+	return entities, total, nil
+}
