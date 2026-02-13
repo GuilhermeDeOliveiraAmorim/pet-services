@@ -3,20 +3,24 @@ package factories
 import (
 	"pet-services-api/internal/logging"
 	"pet-services-api/internal/repository_impl"
+	"pet-services-api/internal/storage"
 	"pet-services-api/internal/usecases"
 
 	"gorm.io/gorm"
 )
 
 type ProviderFactory struct {
-	AddProvider *usecases.AddProviderUseCase
+	AddProvider      *usecases.AddProviderUseCase
+	AddProviderPhoto *usecases.AddProviderPhotoUseCase
 }
 
-func NewProviderFactory(db *gorm.DB, logger logging.LoggerInterface) *ProviderFactory {
+func NewProviderFactory(db *gorm.DB, storageService storage.ObjectStorage, logger logging.LoggerInterface) *ProviderFactory {
 	userRepo := repository_impl.NewUserRepository(db)
 	providerRepo := repository_impl.NewProviderRepository(db)
+	photoRepo := repository_impl.NewPhotoRepository(db)
 
 	return &ProviderFactory{
-		AddProvider: usecases.NewAddProviderUseCase(userRepo, providerRepo, logger),
+		AddProvider:      usecases.NewAddProviderUseCase(userRepo, providerRepo, logger),
+		AddProviderPhoto: usecases.NewAddProviderPhotoUseCase(userRepo, providerRepo, photoRepo, storageService, logger),
 	}
 }

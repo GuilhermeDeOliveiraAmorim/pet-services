@@ -137,6 +137,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	authorizedProvider.Use(middlewareFactory.AuthMiddleware(), middlewareFactory.ProviderOnlyMiddleware())
 	{
 		authorizedProvider.POST("", handlerFactory.ProviderHandler.AddProvider)
+		authorizedProvider.POST("/photos", handlerFactory.ProviderHandler.AddProviderPhoto)
 	}
 
 	authorizedServices := r.Group("/services/")

@@ -727,6 +727,78 @@ const docTemplate = `{
                 }
             }
         },
+        "/providers/photos": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Provedores"
+                ],
+                "summary": "Adiciona foto ao provedor",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Imagem",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/usecases.AddProviderPhotoOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
         "/providers/{provider_id}/reviews": {
             "post": {
                 "security": [
@@ -2552,6 +2624,20 @@ const docTemplate = `{
                 },
                 "provider": {
                     "$ref": "#/definitions/entities.Provider"
+                }
+            }
+        },
+        "usecases.AddProviderPhotoOutput": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "photo": {
+                    "$ref": "#/definitions/entities.Photo"
                 }
             }
         },
