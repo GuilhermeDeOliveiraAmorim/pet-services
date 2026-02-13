@@ -153,9 +153,10 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	r.GET("/categories", middlewareFactory.AuthMiddleware(), middlewareFactory.ProviderOnlyMiddleware(), handlerFactory.CategoryHandler.ListCategories)
 
 	authorizedRequests := r.Group("/requests/")
-	authorizedRequests.Use(middlewareFactory.AuthMiddleware(), middlewareFactory.OwnerOnlyMiddleware())
+	authorizedRequests.Use(middlewareFactory.AuthMiddleware())
 	{
-		authorizedRequests.POST("", handlerFactory.RequestHandler.AddRequest)
+		authorizedRequests.GET("", handlerFactory.RequestHandler.ListRequests)
+		authorizedRequests.POST("", middlewareFactory.OwnerOnlyMiddleware(), handlerFactory.RequestHandler.AddRequest)
 	}
 
 	authorizedAdmin := r.Group("/admin/")

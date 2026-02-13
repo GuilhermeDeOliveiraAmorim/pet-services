@@ -40,7 +40,7 @@ func NewHandlerFactory(inputFactory database.StorageInput, logger logging.Logger
 	petFactory := factories.NewPetFactory(inputFactory.DB, storageService, logger)
 	providerFactory := factories.NewProviderFactory(inputFactory.DB, storageService, logger)
 	serviceFactory := factories.NewServiceFactory(inputFactory.DB, storageService, logger)
-	requestFactory := factories.NewRequestFactory(inputFactory.DB, logger)
+	requestFactory := factories.NewRequestFactory(inputFactory.DB, storageService, logger)
 	categoryFactory := factories.NewCategoryFactory(inputFactory.DB, logger)
 	reviewFactory := factories.NewReviewFactory(inputFactory.DB, logger)
 
