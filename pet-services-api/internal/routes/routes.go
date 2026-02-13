@@ -127,8 +127,8 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	authorizedServices.Use(middlewareFactory.AuthMiddleware(), middlewareFactory.ProviderOnlyMiddleware())
 	{
 		authorizedServices.POST("", handlerFactory.ServiceHandler.AddService)
-		authorizedServices.POST(":/service_id/photos", handlerFactory.ServiceHandler.AddServicePhoto)
-		authorizedServices.POST(":/service_id/tags", handlerFactory.ServiceHandler.AddServiceTag)
+		authorizedServices.POST("/:service_id/photos", handlerFactory.ServiceHandler.AddServicePhoto)
+		authorizedServices.POST("/:service_id/tags", handlerFactory.ServiceHandler.AddServiceTag)
 	}
 
 	r.GET("/tags", middlewareFactory.AuthMiddleware(), middlewareFactory.ProviderOnlyMiddleware(), handlerFactory.ServiceHandler.ListTags)
