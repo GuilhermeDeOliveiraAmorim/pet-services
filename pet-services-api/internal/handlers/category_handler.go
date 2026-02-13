@@ -36,7 +36,7 @@ func NewCategoryHandler(factory *factories.CategoryFactory, logger logging.Logge
 // @Failure 409 {object} exceptions.ProblemDetails
 // @Failure 500 {object} exceptions.ProblemDetails
 // @Security Bearer
-// @Router /categories [post]
+// @Router /admin/categories [post]
 func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 	ctx := c.Request.Context()
 

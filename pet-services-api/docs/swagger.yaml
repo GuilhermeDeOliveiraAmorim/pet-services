@@ -891,6 +891,49 @@ paths:
       summary: Cria um novo administrador
       tags:
       - Administração
+  /admin/categories:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados da categoria
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.CreateCategoryInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/usecases.CreateCategoryOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Cria uma nova categoria de serviço
+      tags:
+      - Categorias
   /auth/login:
     post:
       consumes:
@@ -1111,48 +1154,6 @@ paths:
       security:
       - Bearer: []
       summary: Lista categorias com paginação
-      tags:
-      - Categorias
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dados da categoria
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/usecases.CreateCategoryInput'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/usecases.CreateCategoryOutput'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
-        "409":
-          description: Conflict
-          schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
-      security:
-      - Bearer: []
-      summary: Cria uma nova categoria de serviço
       tags:
       - Categorias
   /health:
@@ -1420,7 +1421,6 @@ paths:
     post:
       consumes:
       - application/json
-      - application/json
       parameters:
       - description: Dados do serviço
         in: body
@@ -1428,26 +1428,9 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/usecases.AddServiceInputBody'
-      - description: Número da página
-        in: query
-        name: page
-        type: integer
-      - description: Itens por página
-        in: query
-        name: page_size
-        type: integer
-      - description: Filtro por nome
-        in: query
-        name: name
-        type: string
       produces:
       - application/json
-      - application/json
       responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/usecases.ListTagsOutput'
         "201":
           description: Created
           schema:
@@ -1474,11 +1457,9 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       security:
       - Bearer: []
-      - Bearer: []
-      summary: Lista tags com paginação
+      summary: Adiciona um novo serviço
       tags:
       - Serviços
-      - Tags
   /services/{service_id}/categories:
     post:
       consumes:
@@ -1652,14 +1633,7 @@ paths:
     get:
       consumes:
       - application/json
-      - application/json
       parameters:
-      - description: Dados do serviço
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/usecases.AddServiceInputBody'
       - description: Número da página
         in: query
         name: page
@@ -1674,20 +1648,11 @@ paths:
         type: string
       produces:
       - application/json
-      - application/json
       responses:
         "200":
           description: OK
           schema:
             $ref: '#/definitions/usecases.ListTagsOutput'
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/usecases.AddServiceOutput'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
         "401":
           description: Unauthorized
           schema:
@@ -1696,20 +1661,14 @@ paths:
           description: Forbidden
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
       security:
       - Bearer: []
-      - Bearer: []
       summary: Lista tags com paginação
       tags:
-      - Serviços
       - Tags
   /users:
     delete:

@@ -24,20 +24,6 @@ func NewServiceHandler(factory *factories.ServiceFactory, logger logging.LoggerI
 	}
 }
 
-// AddService godoc
-// @Summary Adiciona um novo serviço
-// @Tags Serviços
-// @Accept json
-// @Produce json
-// @Param input body usecases.AddServiceInputBody true "Dados do serviço"
-// @Success 201 {object} usecases.AddServiceOutput
-// @Failure 400 {object} exceptions.ProblemDetails
-// @Failure 401 {object} exceptions.ProblemDetails
-// @Failure 403 {object} exceptions.ProblemDetails
-// @Failure 404 {object} exceptions.ProblemDetails
-// @Failure 500 {object} exceptions.ProblemDetails
-// @Security Bearer
-// @Router /services [post]
 // ListTags godoc
 // @Summary Lista tags com paginação
 // @Tags Tags
@@ -101,6 +87,21 @@ func (h *ServiceHandler) ListTags(c *gin.Context) {
 
 	c.JSON(http.StatusOK, output)
 }
+
+// AddService godoc
+// @Summary Adiciona um novo serviço
+// @Tags Serviços
+// @Accept json
+// @Produce json
+// @Param input body usecases.AddServiceInputBody true "Dados do serviço"
+// @Success 201 {object} usecases.AddServiceOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Failure 401 {object} exceptions.ProblemDetails
+// @Failure 403 {object} exceptions.ProblemDetails
+// @Failure 404 {object} exceptions.ProblemDetails
+// @Failure 500 {object} exceptions.ProblemDetails
+// @Security Bearer
+// @Router /services [post]
 func (h *ServiceHandler) AddService(c *gin.Context) {
 	ctx := c.Request.Context()
 
