@@ -249,3 +249,70 @@ func (h *RequestHandler) CompleteRequest(c *gin.Context) {
 
 	c.JSON(http.StatusOK, output)
 }
+
+// RejectRequest godoc
+// @Summary Rejeita uma solicitação de serviço
+// @Tags Solicitações
+// @Accept json
+// @Produce json
+// @Param request_id path string true "ID da solicitação"
+// @Param input body usecases.RejectRequestInputBody true "Motivo da rejeição"
+// @Success 200 {object} usecases.RejectRequestOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Failure 401 {object} exceptions.ProblemDetails
+// @Failure 403 {object} exceptions.ProblemDetails
+// @Failure 404 {object} exceptions.ProblemDetails
+// @Failure 409 {object} exceptions.ProblemDetails
+// @Failure 500 {object} exceptions.ProblemDetails
+// @Security Bearer
+// @Router /requests/{request_id}/reject [patch]
+func (h *RequestHandler) RejectRequest(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	userID, exists := c.Get("user_id")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Usuário não autenticado",
+			Detail: "Não foi possível obter o ID do usuário autenticado",
+		})
+		h.Logger.LogBadRequest(ctx, "RequestHandler.RejectRequest", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
+		return
+	}
+
+	requestID := c.Param("request_id")
+	if requestID == "" {
+		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "ID da solicitação ausente",
+			Detail: "O ID da solicitação é obrigatório",
+		})
+		h.Logger.LogBadRequest(ctx, "RequestHandler.RejectRequest", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		return
+	}
+
+	var inputBody usecases.RejectRequestInputBody
+	if err := c.ShouldBindJSON(&inputBody); err != nil {
+		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "Erro ao fazer o parser",
+			Detail: "Erro ao fazer o parser do motivo da rejeição",
+		})
+		h.Logger.LogBadRequest(ctx, "RequestHandler.RejectRequest", problem.Detail, err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		return
+	}
+
+	input := usecases.RejectRequestInput{
+		UserID:    userID.(string),
+		RequestID: requestID,
+		Reason:    inputBody.Reason,
+	}
+
+	output, errs := h.RequestFactory.RejectRequest.Execute(ctx, input)
+	if len(errs) > 0 {
+		exceptions.HandleErrors(c, errs)
+		return
+	}
+
+	c.JSON(http.StatusOK, output)
+}

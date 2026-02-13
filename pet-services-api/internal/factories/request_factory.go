@@ -14,6 +14,7 @@ type RequestFactory struct {
 	ListRequests    *usecases.ListRequestsUseCase
 	AcceptRequest   *usecases.AcceptRequestUseCase
 	CompleteRequest *usecases.CompleteRequestUseCase
+	RejectRequest   *usecases.RejectRequestUseCase
 }
 
 func NewRequestFactory(db *gorm.DB, storageService storage.ObjectStorage, logger logging.LoggerInterface) *RequestFactory {
@@ -28,5 +29,6 @@ func NewRequestFactory(db *gorm.DB, storageService storage.ObjectStorage, logger
 		ListRequests:    usecases.NewListRequestsUseCase(userRepo, requestRepo, providerRepo, serviceRepo, storageService, logger),
 		AcceptRequest:   usecases.NewAcceptRequestUseCase(userRepo, providerRepo, requestRepo, logger),
 		CompleteRequest: usecases.NewCompleteRequestUseCase(userRepo, providerRepo, requestRepo, logger),
+		RejectRequest:   usecases.NewRejectRequestUseCase(userRepo, providerRepo, requestRepo, logger),
 	}
 }
