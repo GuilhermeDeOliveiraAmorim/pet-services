@@ -1,0 +1,70 @@
+services:
+  - type: web
+    name: pet-services-api
+    env: docker
+    region: ohio
+    plan: starter
+    
+    rootDir: pet-services-api
+    
+    dockerfilePath: Dockerfile
+    dockerContext: pet-services-api
+    
+    envVars:
+      - key: DB_HOST
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: SERVER_PORT
+        value: 10000
+      - key: SWAGGER_HOST
+        sync: false
+      - key: FRONT_END_URL_DEV
+        sync: false
+      - key: FRONT_END_URL_PROD
+        sync: false
+      - key: MINIO_ENDPOINT
+        sync: false
+      - key: MINIO_ACCESS_KEY
+        sync: false
+      - key: MINIO_SECRET_KEY
+        sync: false
+      - key: MINIO_USE_SSL
+        value: "true"
+      - key: IMAGE_BUCKET_NAME
+        value: pet-services-images
+      - key: URL_BUCKET_NAME
+        value: pet-services-urls
+      - key: EMAIL_SERVICE_API_KEY
+        sync: false
+      - key: EMAIL_VERIFY
+        sync: false
+      - key: RESET_PASSWORD_EXPIRATION_TIME
+        value: "3600"
+      - key: EMAIL_CHANGE_EXPIRATION_TIME
+        value: "86400"
+      - key: VERIFY_EMAIL_EXPIRATION_TIME
+        value: "86400"
+      - key: MAX_CHANGE_EMAIL_ATTEMPTS
+        value: "3"
+    
+    preDeployCommand: cd pet-services-api && go run ./cmd/migrate
+
+databases:
+  - name: pet-services-db
+    databaseName: pet_services
+    user: postgres
+    region: ohio
+    plan: starter
