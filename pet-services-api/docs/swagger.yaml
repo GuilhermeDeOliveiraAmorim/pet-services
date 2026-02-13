@@ -626,6 +626,11 @@ definitions:
       user:
         $ref: '#/definitions/entities.User'
     type: object
+  usecases.GetServiceOutput:
+    properties:
+      service:
+        $ref: '#/definitions/entities.Service'
+    type: object
   usecases.GetUserByIDOutput:
     properties:
       user:
@@ -1939,6 +1944,38 @@ paths:
       security:
       - Bearer: []
       summary: Adiciona um novo serviço
+      tags:
+      - Serviços
+  /services/{service_id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID do serviço
+        in: path
+        name: service_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.GetServiceOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Obtém detalhes de um serviço
       tags:
       - Serviços
   /services/{service_id}/categories:

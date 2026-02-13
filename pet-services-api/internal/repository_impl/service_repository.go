@@ -26,7 +26,11 @@ func (r *serviceRepository) Create(service *entities.Service) error {
 
 func (r *serviceRepository) FindByID(id string) (*entities.Service, error) {
 	var model models.Service
-	err := r.db.First(&model, "id = ?", id).Error
+	err := r.db.
+		Preload("Photos").
+		Preload("Categories").
+		Preload("Tags").
+		First(&model, "id = ?", id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New(consts.ServiceNotFoundError)

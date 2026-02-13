@@ -92,6 +92,41 @@ func (h *ServiceHandler) ListServices(c *gin.Context) {
 	c.JSON(http.StatusOK, output)
 }
 
+// GetService godoc
+// @Summary Obtém detalhes de um serviço
+// @Tags Serviços
+// @Accept json
+// @Produce json
+// @Param service_id path string true "ID do serviço"
+// @Success 200 {object} usecases.GetServiceOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Failure 404 {object} exceptions.ProblemDetails
+// @Failure 500 {object} exceptions.ProblemDetails
+// @Router /services/{service_id} [get]
+func (h *ServiceHandler) GetService(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	serviceID := c.Param("service_id")
+	if serviceID == "" {
+		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "ID do serviço ausente",
+			Detail: "O ID do serviço é obrigatório",
+		})
+		h.Logger.LogBadRequest(ctx, "ServiceHandler.GetService", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		return
+	}
+
+	input := usecases.GetServiceInput{ServiceID: serviceID}
+	output, errs := h.ServiceFactory.GetService.Execute(ctx, input)
+	if len(errs) > 0 {
+		exceptions.HandleErrors(c, errs)
+		return
+	}
+
+	c.JSON(http.StatusOK, output)
+}
+
 // SearchServices godoc
 // @Summary Busca serviços por texto, localização e filtros
 // @Tags Serviços
