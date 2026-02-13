@@ -162,6 +162,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	authorizedRequests.Use(middlewareFactory.AuthMiddleware(), profileComplete)
 	{
 		authorizedRequests.GET("", handlerFactory.RequestHandler.ListRequests)
+		authorizedRequests.GET("/:request_id", handlerFactory.RequestHandler.GetRequest)
 		authorizedRequests.POST("", middlewareFactory.OwnerOnlyMiddleware(), handlerFactory.RequestHandler.AddRequest)
 		authorizedRequests.PATCH("/:request_id/accept", middlewareFactory.ProviderOnlyMiddleware(), handlerFactory.RequestHandler.AcceptRequest)
 		authorizedRequests.PATCH("/:request_id/reject", middlewareFactory.ProviderOnlyMiddleware(), handlerFactory.RequestHandler.RejectRequest)
