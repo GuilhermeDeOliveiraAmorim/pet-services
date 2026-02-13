@@ -19,6 +19,10 @@ type Service struct {
 	Tags         []Tag      `json:"tags"`
 }
 
+type ServiceRepository interface {
+	Create(service *Service) error
+}
+
 func NewService(providerID string, name string, description string, price float64, priceMinimum float64, priceMaximum float64, duration int) (*Service, []exceptions.ProblemDetails) {
 	var problems []exceptions.ProblemDetails
 

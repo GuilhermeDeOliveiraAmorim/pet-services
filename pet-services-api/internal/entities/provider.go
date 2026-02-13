@@ -18,6 +18,10 @@ type Provider struct {
 	Requests      []Request `json:"requests"`
 }
 
+type ProviderRepository interface {
+	FindByUserID(userID string) (*Provider, error)
+}
+
 func NewProvider(userID string, businessName string, address Address, description string, priceRange string) (*Provider, []exceptions.ProblemDetails) {
 	var problems []exceptions.ProblemDetails
 
