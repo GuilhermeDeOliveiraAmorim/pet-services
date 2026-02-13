@@ -127,6 +127,12 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		authorizedOwner.POST("/:pet_id/photos", handlerFactory.PetHandler.AddPetPhoto)
 	}
 
+	authorizedOwnerProviders := r.Group("/providers/")
+	authorizedOwnerProviders.Use(middlewareFactory.AuthMiddleware(), middlewareFactory.OwnerOnlyMiddleware())
+	{
+		authorizedOwnerProviders.POST("/:provider_id/reviews", handlerFactory.ReviewHandler.CreateReview)
+	}
+
 	authorizedProvider := r.Group("/providers/")
 	authorizedProvider.Use(middlewareFactory.AuthMiddleware(), middlewareFactory.ProviderOnlyMiddleware())
 	{

@@ -17,6 +17,11 @@ type CreateReviewInput struct {
 	Comment    string  `json:"comment"`
 }
 
+type CreateReviewInputBody struct {
+	Rating  float64 `json:"rating"`
+	Comment string  `json:"comment"`
+}
+
 type CreateReviewOutput struct {
 	Message string          `json:"message,omitempty"`
 	Detail  string          `json:"detail,omitempty"`
