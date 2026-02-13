@@ -4,6 +4,8 @@ import (
 	"errors"
 	"net/http"
 	"pet-services-api/internal/auth"
+	"pet-services-api/internal/consts"
+	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
 	"strings"
@@ -109,5 +111,56 @@ func AdminOnlyMiddleware(logger logging.LoggerInterface) gin.HandlerFunc {
 		}
 		c.Set("is_admin", true)
 		c.Next()
+	}
+}
+
+func ProfileCompleteMiddleware(logger logging.LoggerInterface, userRepository entities.UserRepository) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userID, exists := c.Get("user_id")
+		if !exists {
+			abortUnauthorized(c, "Usuário não autenticado", "Não foi possível obter o ID do usuário autenticado", logger)
+			return
+		}
+
+		fullPath := c.FullPath()
+		method := c.Request.Method
+		if (method == http.MethodGet && fullPath == "/users/profile") ||
+			(method == http.MethodPut && fullPath == "/users") ||
+			(method == http.MethodPost && fullPath == "/auth/logout") {
+			c.Next()
+			return
+		}
+
+		user, err := userRepository.FindByID(userID.(string))
+		if err != nil {
+			if err.Error() == consts.UserNotFoundError {
+				problem := exceptions.NewProblemDetails(exceptions.NotFound, exceptions.ErrorMessage{
+					Title:  "Usuário não encontrado",
+					Detail: "Não foi possível encontrar o usuário autenticado",
+				})
+				logger.LogError(c.Request.Context(), "ProfileCompleteMiddleware", problem.Title, err)
+				c.AbortWithStatusJSON(http.StatusNotFound, problem)
+				return
+			}
+			problem := exceptions.NewProblemDetails(exceptions.InternalServerError, exceptions.ErrorMessage{
+				Title:  "Erro ao buscar usuário",
+				Detail: "Não foi possível validar o perfil do usuário",
+			})
+			logger.LogError(c.Request.Context(), "ProfileCompleteMiddleware", problem.Title, err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, problem)
+			return
+		}
+
+		if user.ProfileComplete {
+			c.Next()
+			return
+		}
+
+		problem := exceptions.NewProblemDetails(exceptions.Forbidden, exceptions.ErrorMessage{
+			Title:  "Cadastro incompleto",
+			Detail: "Complete seu cadastro para acessar este recurso",
+		})
+		logger.LogError(c.Request.Context(), "ProfileCompleteMiddleware", problem.Title, errors.New(problem.Detail))
+		c.AbortWithStatusJSON(http.StatusForbidden, problem)
 	}
 }

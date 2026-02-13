@@ -6,6 +6,7 @@ import (
 	"pet-services-api/internal/database"
 	"pet-services-api/internal/handlers"
 	"pet-services-api/internal/middlewares"
+	"pet-services-api/internal/repository_impl"
 	"time"
 
 	"pet-services-api/docs"
@@ -33,6 +34,8 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 
 	handlerFactory := handlers.NewHandlerFactory(storageInput, logger)
 	middlewareFactory := middlewares.NewMiddlewareFactory(logger)
+	userRepo := repository_impl.NewUserRepository(storageInput.DB)
+	profileComplete := middlewares.ProfileCompleteMiddleware(logger, userRepo)
 
 	r := gin.Default()
 
@@ -92,7 +95,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	}
 
 	authorizedUser := r.Group("/users/")
-	authorizedUser.Use(middlewareFactory.AuthMiddleware())
+	authorizedUser.Use(middlewareFactory.AuthMiddleware(), profileComplete)
 	{
 		authorizedUser.GET("/profile", handlerFactory.UserHandler.GetProfile)
 		authorizedUser.GET("/:user_id", handlerFactory.UserHandler.GetUserByID)
@@ -119,27 +122,27 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	}
 
 	authorizedOwner := r.Group("/pets/")
-	authorizedOwner.Use(middlewareFactory.AuthMiddleware(), middlewareFactory.OwnerOnlyMiddleware())
+	authorizedOwner.Use(middlewareFactory.AuthMiddleware(), profileComplete, middlewareFactory.OwnerOnlyMiddleware())
 	{
 		authorizedOwner.POST("", handlerFactory.PetHandler.AddPet)
 		authorizedOwner.POST("/:pet_id/photos", handlerFactory.PetHandler.AddPetPhoto)
 	}
 
 	authorizedOwnerProviders := r.Group("/providers/")
-	authorizedOwnerProviders.Use(middlewareFactory.AuthMiddleware(), middlewareFactory.OwnerOnlyMiddleware())
+	authorizedOwnerProviders.Use(middlewareFactory.AuthMiddleware(), profileComplete, middlewareFactory.OwnerOnlyMiddleware())
 	{
 		authorizedOwnerProviders.POST("/:provider_id/reviews", handlerFactory.ReviewHandler.CreateReview)
 	}
 
 	authorizedProvider := r.Group("/providers/")
-	authorizedProvider.Use(middlewareFactory.AuthMiddleware(), middlewareFactory.ProviderOnlyMiddleware())
+	authorizedProvider.Use(middlewareFactory.AuthMiddleware(), profileComplete, middlewareFactory.ProviderOnlyMiddleware())
 	{
 		authorizedProvider.POST("", handlerFactory.ProviderHandler.AddProvider)
 		authorizedProvider.POST("/photos", handlerFactory.ProviderHandler.AddProviderPhoto)
 	}
 
 	authorizedServices := r.Group("/services/")
-	authorizedServices.Use(middlewareFactory.AuthMiddleware(), middlewareFactory.ProviderOnlyMiddleware())
+	authorizedServices.Use(middlewareFactory.AuthMiddleware(), profileComplete, middlewareFactory.ProviderOnlyMiddleware())
 	{
 		authorizedServices.POST("", handlerFactory.ServiceHandler.AddService)
 		authorizedServices.POST("/:service_id/photos", handlerFactory.ServiceHandler.AddServicePhoto)
@@ -156,7 +159,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	r.GET("/categories", handlerFactory.CategoryHandler.ListCategories)
 
 	authorizedRequests := r.Group("/requests/")
-	authorizedRequests.Use(middlewareFactory.AuthMiddleware())
+	authorizedRequests.Use(middlewareFactory.AuthMiddleware(), profileComplete)
 	{
 		authorizedRequests.GET("", handlerFactory.RequestHandler.ListRequests)
 		authorizedRequests.POST("", middlewareFactory.OwnerOnlyMiddleware(), handlerFactory.RequestHandler.AddRequest)
@@ -166,7 +169,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	}
 
 	authorizedAdmin := r.Group("/admin/")
-	authorizedAdmin.Use(middlewareFactory.AuthMiddleware(), middlewareFactory.AdminOnlyMiddleware())
+	authorizedAdmin.Use(middlewareFactory.AuthMiddleware(), profileComplete, middlewareFactory.AdminOnlyMiddleware())
 	{
 		authorizedAdmin.POST("", handlerFactory.UserHandler.CreateAdmin)
 		authorizedAdmin.POST("/categories", handlerFactory.CategoryHandler.CreateCategory)
