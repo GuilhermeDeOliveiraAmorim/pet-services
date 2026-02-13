@@ -17,6 +17,7 @@ type User struct {
 	AreaCode      string         `gorm:"type:varchar(3);not null" json:"area_code"`
 	PhoneNumber   string         `gorm:"type:varchar(15);not null" json:"phone_number"`
 	EmailVerified bool           `gorm:"default:false" json:"email_verified"`
+	ProfileComplete bool         `gorm:"default:false" json:"profile_complete"`
 	Active        bool           `gorm:"default:true;index" json:"active"`
 	CreatedAt     time.Time      `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt     *time.Time     `gorm:"autoUpdateTime" json:"updated_at"`
@@ -90,6 +91,7 @@ func (u *User) ToEntity() *entities.User {
 			},
 		},
 		EmailVerified: u.EmailVerified,
+		ProfileComplete: u.ProfileComplete,
 		Photos:        photos,
 		Pets:          pets,
 	}
@@ -105,6 +107,7 @@ func (u *User) FromEntity(entity *entities.User) {
 	u.AreaCode = entity.Phone.AreaCode
 	u.PhoneNumber = entity.Phone.Number
 	u.EmailVerified = entity.EmailVerified
+	u.ProfileComplete = entity.ProfileComplete
 	u.Active = entity.Active
 	u.CreatedAt = entity.CreatedAt
 	u.UpdatedAt = entity.UpdatedAt

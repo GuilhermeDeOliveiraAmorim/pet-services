@@ -33,3 +33,9 @@ func Migration20260204000000(db *gorm.DB) error {
 		&models.PasswordResetToken{},
 	)
 }
+
+func Migration20260213000000(db *gorm.DB) error {
+	return db.AutoMigrate(
+		&models.User{},
+	)
+}

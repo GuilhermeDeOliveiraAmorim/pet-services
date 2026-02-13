@@ -57,6 +57,7 @@ func (uc *RegisterUserUseCase) Execute(ctx context.Context, input RegisterUserIn
 		uc.logger.LogMultipleBadRequests(ctx, from, "Login inválido", errs)
 		problems = append(problems, errs...)
 	}
+
 	if len(errs) == 0 {
 		login = loginResult
 	}
@@ -67,53 +68,70 @@ func (uc *RegisterUserUseCase) Execute(ctx context.Context, input RegisterUserIn
 		uc.logger.LogMultipleBadRequests(ctx, from, "Telefone inválido", errs)
 		problems = append(problems, errs...)
 	}
+
 	if len(errs) == 0 {
 		phone = phoneResult
 	}
 
-	var location *entities.Location
-	locationResult, errs := entities.NewLocation(input.Address.Location.Latitude, input.Address.Location.Longitude)
-	if len(errs) > 0 {
-		uc.logger.LogMultipleBadRequests(ctx, from, "Localização inválida", errs)
-		problems = append(problems, errs...)
-	}
-	if len(errs) == 0 {
-		location = locationResult
-	}
-
 	if len(problems) > 0 {
 		uc.logger.LogMultipleBadRequests(ctx, from, "Problemas de validação", problems)
 		return nil, problems
 	}
 
-	address, errs := entities.NewAddress(
-		input.Address.Street,
-		input.Address.Number,
-		input.Address.Neighborhood,
-		input.Address.City,
-		input.Address.ZipCode,
-		input.Address.State,
-		input.Address.Country,
-		input.Address.Complement,
-		*location,
-	)
-	if len(errs) > 0 {
-		uc.logger.LogMultipleBadRequests(ctx, from, "Endereço inválido", errs)
-		problems = append(problems, errs...)
+	var user *entities.User
+
+	if input.UserType == "" {
+		user, errs = entities.NewIncompleteUser(
+			input.Name,
+			*login,
+			*phone,
+		)
+	} else {
+		var location *entities.Location
+		locationResult, errs := entities.NewLocation(input.Address.Location.Latitude, input.Address.Location.Longitude)
+		if len(errs) > 0 {
+			uc.logger.LogMultipleBadRequests(ctx, from, "Localização inválida", errs)
+			problems = append(problems, errs...)
+		}
+		if len(errs) == 0 {
+			location = locationResult
+		}
+
+		if len(problems) > 0 {
+			uc.logger.LogMultipleBadRequests(ctx, from, "Problemas de validação", problems)
+			return nil, problems
+		}
+
+		address, errs := entities.NewAddress(
+			input.Address.Street,
+			input.Address.Number,
+			input.Address.Neighborhood,
+			input.Address.City,
+			input.Address.ZipCode,
+			input.Address.State,
+			input.Address.Country,
+			input.Address.Complement,
+			*location,
+		)
+		if len(errs) > 0 {
+			uc.logger.LogMultipleBadRequests(ctx, from, "Endereço inválido", errs)
+			problems = append(problems, errs...)
+		}
+
+		if len(problems) > 0 {
+			uc.logger.LogMultipleBadRequests(ctx, from, "Problemas de validação", problems)
+			return nil, problems
+		}
+
+		user, errs = entities.NewUser(
+			input.Name,
+			input.UserType,
+			*login,
+			*phone,
+			*address,
+		)
 	}
 
-	if len(problems) > 0 {
-		uc.logger.LogMultipleBadRequests(ctx, from, "Problemas de validação", problems)
-		return nil, problems
-	}
-
-	user, errs := entities.NewUser(
-		input.Name,
-		input.UserType,
-		*login,
-		*phone,
-		*address,
-	)
 	if len(errs) > 0 {
 		uc.logger.LogMultipleBadRequests(ctx, from, "Usuário inválido", errs)
 		problems = append(problems, errs...)

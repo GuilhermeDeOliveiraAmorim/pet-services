@@ -3069,6 +3069,9 @@ const docTemplate = `{
                         "$ref": "#/definitions/entities.Photo"
                     }
                 },
+                "profile_complete": {
+                    "type": "boolean"
+                },
                 "updated_at": {
                     "type": "string"
                 },
@@ -4244,6 +4247,9 @@ const docTemplate = `{
                 },
                 "phone": {
                     "$ref": "#/definitions/entities.Phone"
+                },
+                "user_type": {
+                    "type": "string"
                 }
             }
         },

@@ -87,10 +87,11 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 	}
 
 	input := usecases.UpdateUserInput{
-		UserID:  userID.(string),
-		Name:    inputBody.Name,
-		Phone:   inputBody.Phone,
-		Address: inputBody.Address,
+		UserID:   userID.(string),
+		Name:     inputBody.Name,
+		UserType: inputBody.UserType,
+		Phone:    inputBody.Phone,
+		Address:  inputBody.Address,
 	}
 
 	output, errs := h.UserFactory.UpdateUser.Execute(ctx, input)

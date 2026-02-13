@@ -285,6 +285,8 @@ definitions:
         items:
           $ref: '#/definitions/entities.Photo'
         type: array
+      profile_complete:
+        type: boolean
       updated_at:
         type: string
       user_type:
@@ -1043,6 +1045,8 @@ definitions:
         type: string
       phone:
         $ref: '#/definitions/entities.Phone'
+      user_type:
+        type: string
     type: object
   usecases.UpdateUserOutput:
     properties:

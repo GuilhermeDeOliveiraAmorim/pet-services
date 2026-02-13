@@ -84,5 +84,10 @@ func getMigrations() []Migration {
 			Description: "Criar tabela password_reset_tokens para redefinição de senha e verificação de email",
 			Up:          Migration20260204000000,
 		},
+		{
+			Version:     "20260213000000",
+			Description: "Adicionar profile_complete ao usuário",
+			Up:          Migration20260213000000,
+		},
 	}
 }
