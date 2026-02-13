@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/factories"
@@ -89,4 +90,52 @@ func (h *ReviewHandler) CreateReview(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, output)
+}
+
+// ListReviews godoc
+// @Summary Lista reviews por provedor ou usuário
+// @Tags Reviews
+// @Accept json
+// @Produce json
+// @Param provider_id query string false "Filtro por provedor"
+// @Param user_id query string false "Filtro por usuário"
+// @Param page query int false "Número da página"
+// @Param page_size query int false "Itens por página"
+// @Success 200 {object} usecases.ListReviewsOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Failure 500 {object} exceptions.ProblemDetails
+// @Router /reviews [get]
+func (h *ReviewHandler) ListReviews(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	providerID := c.Query("provider_id")
+	userID := c.Query("user_id")
+
+	page := 1
+	pageSize := 10
+	if p := c.Query("page"); p != "" {
+		if val, err := strconv.Atoi(p); err == nil && val > 0 {
+			page = val
+		}
+	}
+	if ps := c.Query("page_size"); ps != "" {
+		if val, err := strconv.Atoi(ps); err == nil && val > 0 {
+			pageSize = val
+		}
+	}
+
+	input := usecases.ListReviewsInput{
+		ProviderID: providerID,
+		UserID:     userID,
+		Page:       page,
+		PageSize:   pageSize,
+	}
+
+	output, errs := h.ReviewFactory.ListReviews.Execute(ctx, input)
+	if len(errs) > 0 {
+		exceptions.HandleErrors(c, errs)
+		return
+	}
+
+	c.JSON(http.StatusOK, output)
 }

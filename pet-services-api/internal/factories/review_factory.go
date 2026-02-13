@@ -10,6 +10,7 @@ import (
 
 type ReviewFactory struct {
 	CreateReview *usecases.CreateReviewUseCase
+	ListReviews  *usecases.ListReviewsUseCase
 }
 
 func NewReviewFactory(db *gorm.DB, logger logging.LoggerInterface) *ReviewFactory {
@@ -20,5 +21,6 @@ func NewReviewFactory(db *gorm.DB, logger logging.LoggerInterface) *ReviewFactor
 
 	return &ReviewFactory{
 		CreateReview: usecases.NewCreateReviewUseCase(userRepo, providerRepo, requestRepo, reviewRepo, logger),
+		ListReviews:  usecases.NewListReviewsUseCase(reviewRepo, logger),
 	}
 }

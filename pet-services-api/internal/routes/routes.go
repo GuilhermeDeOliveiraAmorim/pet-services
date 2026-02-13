@@ -153,8 +153,9 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	r.GET("/services/:service_id", handlerFactory.ServiceHandler.GetService)
 	r.GET("/services/search", handlerFactory.ServiceHandler.SearchServices)
 	r.GET("/providers/:provider_id", handlerFactory.ProviderHandler.GetProvider)
-	r.GET("/tags", middlewareFactory.AuthMiddleware(), middlewareFactory.ProviderOnlyMiddleware(), handlerFactory.ServiceHandler.ListTags)
-	r.GET("/categories", middlewareFactory.AuthMiddleware(), middlewareFactory.ProviderOnlyMiddleware(), handlerFactory.CategoryHandler.ListCategories)
+	r.GET("/reviews", handlerFactory.ReviewHandler.ListReviews)
+	r.GET("/tags", handlerFactory.ServiceHandler.ListTags)
+	r.GET("/categories", handlerFactory.CategoryHandler.ListCategories)
 
 	authorizedRequests := r.Group("/requests/")
 	authorizedRequests.Use(middlewareFactory.AuthMiddleware())

@@ -12,6 +12,7 @@ type Review struct {
 
 type ReviewRepository interface {
 	Create(review *Review) error
+	List(providerID, userID string, page, pageSize int) ([]*Review, int64, error)
 }
 
 func NewReview(userID string, providerID string, rating float64, comment string) (*Review, []exceptions.ProblemDetails) {
