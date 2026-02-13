@@ -125,6 +125,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	authorizedOwner.Use(middlewareFactory.AuthMiddleware(), profileComplete, middlewareFactory.OwnerOnlyMiddleware())
 	{
 		authorizedOwner.GET("", handlerFactory.PetHandler.ListPets)
+		authorizedOwner.GET("/:pet_id", handlerFactory.PetHandler.GetPet)
 		authorizedOwner.POST("", handlerFactory.PetHandler.AddPet)
 		authorizedOwner.POST("/:pet_id/photos", handlerFactory.PetHandler.AddPetPhoto)
 		authorizedOwner.DELETE("/:pet_id/photos/:photo_id", handlerFactory.PetHandler.DeletePetPhoto)
