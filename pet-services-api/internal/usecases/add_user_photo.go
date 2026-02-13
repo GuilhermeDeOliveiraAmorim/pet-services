@@ -125,7 +125,7 @@ func (uc *AddUserPhotoUseCase) Execute(ctx context.Context, input AddUserPhotoIn
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao salvar foto", err)
 	}
 
-	signedURL, err := uc.storage.GenerateReadURL(ctx, objectName, photoSignedURLTTL)
+	signedURL, err := uc.storage.GenerateReadURL(ctx, objectName, storage.PhotoSignedURLTTL)
 	if err != nil {
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao gerar URL da foto", err)
 	}

@@ -72,7 +72,7 @@ func (uc *LoginUserUseCase) Execute(ctx context.Context, input LoginUserInput) (
 		return nil, uc.logger.LogForbidden(ctx, from, "Email não verificado", errors.New("Verifique seu email antes de fazer login. Utilize a opção de reenviar email de verificação"))
 	}
 
-	if err := signUserPhotos(ctx, uc.storage, user); err != nil {
+	if err := storage.SignUserPhotos(ctx, uc.storage, user); err != nil {
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao gerar URLs das fotos", err)
 	}
 

@@ -107,7 +107,7 @@ func (uc *UpdateUserUseCase) Execute(ctx context.Context, input UpdateUserInput)
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao atualizar usuário", err)
 	}
 
-	if err := signUserPhotos(ctx, uc.storage, user); err != nil {
+	if err := storage.SignUserPhotos(ctx, uc.storage, user); err != nil {
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao gerar URLs das fotos", err)
 	}
 

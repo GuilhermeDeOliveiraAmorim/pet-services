@@ -69,6 +69,24 @@ func (r *photoRepository) CreateAndAttachToUser(userID string, photo *entities.P
 	})
 }
 
+func (r *photoRepository) CreateAndAttachToProvider(providerID string, photo *entities.Photo) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		var model models.Photo
+		model.FromEntity(photo)
+
+		if err := tx.Create(&model).Error; err != nil {
+			return err
+		}
+
+		provider := models.Provider{ID: providerID}
+		if err := tx.Model(&provider).Association("Photos").Append(&model); err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
 func (r *photoRepository) ReplaceUserPhoto(userID string, photo *entities.Photo) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		user := models.User{ID: userID}
@@ -97,4 +115,37 @@ func (r *photoRepository) ReplaceUserPhoto(userID string, photo *entities.Photo)
 
 		return nil
 	})
+}
+
+func (r *photoRepository) CountProviderPhotos(providerID string) (int, error) {
+	var count int64
+	err := r.db.Table("provider_photos").
+		Where("provider_id = ?", providerID).
+		Count(&count).Error
+	if err != nil {
+		return 0, err
+	}
+	return int(count), nil
+}
+
+func (r *photoRepository) CountPetPhotos(petID string) (int, error) {
+	var count int64
+	err := r.db.Table("pet_photos").
+		Where("pet_id = ?", petID).
+		Count(&count).Error
+	if err != nil {
+		return 0, err
+	}
+	return int(count), nil
+}
+
+func (r *photoRepository) CountServicePhotos(serviceID string) (int, error) {
+	var count int64
+	err := r.db.Table("service_photos").
+		Where("service_id = ?", serviceID).
+		Count(&count).Error
+	if err != nil {
+		return 0, err
+	}
+	return int(count), nil
 }

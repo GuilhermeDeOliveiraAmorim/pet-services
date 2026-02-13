@@ -118,6 +118,14 @@ func (uc *AddServicePhotoUseCase) Execute(ctx context.Context, input AddServiceP
 		return nil, uc.logger.LogBadRequest(ctx, from, "Serviço inativo", errors.New("O serviço informado está inativo"))
 	}
 
+	count, err := uc.photoRepository.CountServicePhotos(service.ID)
+	if err != nil {
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao contar fotos do serviço", err)
+	}
+	if count >= 10 {
+		return nil, uc.logger.LogConflict(ctx, from, "Limite de fotos excedido", errors.New("O serviço já possui o máximo de 10 fotos"))
+	}
+
 	ext := strings.ToLower(filepath.Ext(input.FileName))
 	if ext == "" {
 		ext = ".jpg"
@@ -139,7 +147,7 @@ func (uc *AddServicePhotoUseCase) Execute(ctx context.Context, input AddServiceP
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao salvar foto", err)
 	}
 
-	signedURL, err := uc.storage.GenerateReadURL(ctx, objectName, photoSignedURLTTL)
+	signedURL, err := uc.storage.GenerateReadURL(ctx, objectName, storage.PhotoSignedURLTTL)
 	if err != nil {
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao gerar URL da foto", err)
 	}

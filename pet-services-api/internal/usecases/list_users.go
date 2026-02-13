@@ -61,7 +61,7 @@ func (uc *ListUsersUseCase) Execute(ctx context.Context, input ListUsersInput) (
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao listar usuários", err)
 	}
 
-	if err := signUsersPhotos(ctx, uc.storage, users); err != nil {
+	if err := storage.SignUsersPhotos(ctx, uc.storage, users); err != nil {
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao gerar URLs das fotos", err)
 	}
 

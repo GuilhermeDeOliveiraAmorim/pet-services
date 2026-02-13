@@ -11,7 +11,11 @@ type PhotoRepository interface {
 	CreateAndAttachToPet(petID string, photo *Photo) error
 	CreateAndAttachToService(serviceID string, photo *Photo) error
 	CreateAndAttachToUser(userID string, photo *Photo) error
+	CreateAndAttachToProvider(providerID string, photo *Photo) error
 	ReplaceUserPhoto(userID string, photo *Photo) error
+	CountProviderPhotos(providerID string) (int, error)
+	CountPetPhotos(petID string) (int, error)
+	CountServicePhotos(serviceID string) (int, error)
 }
 
 func NewPhoto(url string) (*Photo, []exceptions.ProblemDetails) {

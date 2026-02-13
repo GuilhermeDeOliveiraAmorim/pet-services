@@ -48,7 +48,7 @@ func (uc *GetProfileUseCase) Execute(ctx context.Context, input GetProfileInput)
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar usuário", err)
 	}
 
-	if err := signUserPhotos(ctx, uc.storage, user); err != nil {
+	if err := storage.SignUserPhotos(ctx, uc.storage, user); err != nil {
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao gerar URLs das fotos", err)
 	}
 
