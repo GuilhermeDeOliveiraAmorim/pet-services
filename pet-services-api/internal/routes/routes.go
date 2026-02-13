@@ -143,6 +143,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	authorizedAdmin.Use(middlewareFactory.AuthMiddleware(), middlewareFactory.AdminOnlyMiddleware())
 	{
 		authorizedAdmin.POST("", handlerFactory.UserHandler.CreateAdmin)
+		authorizedAdmin.POST("/categories", handlerFactory.CategoryHandler.CreateCategory)
 	}
 
 	return r

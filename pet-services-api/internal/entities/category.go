@@ -1,6 +1,13 @@
 package entities
 
-import "pet-services-api/internal/exceptions"
+import (
+	"pet-services-api/internal/exceptions"
+)
+
+type CategoryRepository interface {
+	Create(category *Category) error
+	FindByName(name string) (*Category, error)
+}
 
 type Category struct {
 	Base
