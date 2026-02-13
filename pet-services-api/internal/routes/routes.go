@@ -158,6 +158,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		authorizedRequests.GET("", handlerFactory.RequestHandler.ListRequests)
 		authorizedRequests.POST("", middlewareFactory.OwnerOnlyMiddleware(), handlerFactory.RequestHandler.AddRequest)
 		authorizedRequests.PATCH("/:request_id/accept", middlewareFactory.ProviderOnlyMiddleware(), handlerFactory.RequestHandler.AcceptRequest)
+		authorizedRequests.PATCH("/:request_id/complete", middlewareFactory.ProviderOnlyMiddleware(), handlerFactory.RequestHandler.CompleteRequest)
 	}
 
 	authorizedAdmin := r.Group("/admin/")

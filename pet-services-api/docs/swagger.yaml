@@ -548,6 +548,15 @@ definitions:
       message:
         type: string
     type: object
+  usecases.CompleteRequestOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+      request:
+        $ref: '#/definitions/entities.Request'
+    type: object
   usecases.CreateAdminInput:
     properties:
       address:
@@ -1715,6 +1724,52 @@ paths:
       security:
       - Bearer: []
       summary: Aceita uma solicitação de serviço
+      tags:
+      - Solicitações
+  /requests/{request_id}/complete:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID da solicitação
+        in: path
+        name: request_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.CompleteRequestOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Conclui uma solicitação de serviço
       tags:
       - Solicitações
   /services:

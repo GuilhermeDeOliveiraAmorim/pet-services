@@ -6,16 +6,16 @@ import (
 )
 
 type RequestStatusENUM struct {
-	Pending  string `json:"pending"`
-	Accepted string `json:"accepted"`
-	Rejected string `json:"rejected"`
+	Pending   string `json:"pending"`
+	Accepted  string `json:"accepted"`
+	Rejected  string `json:"rejected"`
 	Completed string `json:"completed"`
 }
 
 var RequestStatuses = RequestStatusENUM{
-	Pending:  "pending",
-	Accepted: "accepted",
-	Rejected: "rejected",
+	Pending:   "pending",
+	Accepted:  "accepted",
+	Rejected:  "rejected",
 	Completed: "completed",
 }
 
@@ -97,5 +97,11 @@ func (r *Request) Reject(reason string) {
 	timeNow := time.Now()
 	r.Status = RequestStatuses.Rejected
 	r.RejectReason = reason
+	r.UpdatedAt = &timeNow
+}
+
+func (r *Request) Complete() {
+	timeNow := time.Now()
+	r.Status = RequestStatuses.Completed
 	r.UpdatedAt = &timeNow
 }
