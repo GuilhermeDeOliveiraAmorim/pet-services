@@ -4,8 +4,8 @@ root = "."
   cmd = "go build -o ./bin/api ./cmd/api"
   bin = "./bin/api"
   delay = 1000
-  exclude_dir = ["bin", "docs", "vendor", "tmp"]
-  include_ext = ["go", "env", "json", "yaml", "yml"]
+  exclude_dir = ["bin", "vendor", "tmp"]
+  include_ext = ["go", "env", "json", "yaml", "yml", "docs"]
   stop_on_error = true
 
 [log]

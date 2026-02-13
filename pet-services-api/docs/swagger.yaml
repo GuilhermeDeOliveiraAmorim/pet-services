@@ -1695,8 +1695,6 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
-      security:
-      - Bearer: []
       summary: Lista cidades
       tags:
       - Referências
@@ -1723,8 +1721,6 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
-      security:
-      - Bearer: []
       summary: Lista países
       tags:
       - Referências
@@ -1751,8 +1747,6 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
-      security:
-      - Bearer: []
       summary: Lista estados
       tags:
       - Referências

@@ -36,7 +36,6 @@ func NewReferenceHandler(factory *factories.ReferenceFactory, logger logging.Log
 // @Failure 401 {object} exceptions.ProblemDetails
 // @Failure 403 {object} exceptions.ProblemDetails
 // @Failure 500 {object} exceptions.ProblemDetails
-// @Security Bearer
 // @Router /reference/countries [get]
 func (h *ReferenceHandler) ListCountries(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -57,7 +56,6 @@ func (h *ReferenceHandler) ListCountries(c *gin.Context) {
 // @Failure 401 {object} exceptions.ProblemDetails
 // @Failure 403 {object} exceptions.ProblemDetails
 // @Failure 500 {object} exceptions.ProblemDetails
-// @Security Bearer
 // @Router /reference/states [get]
 func (h *ReferenceHandler) ListStates(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -80,7 +78,6 @@ func (h *ReferenceHandler) ListStates(c *gin.Context) {
 // @Failure 401 {object} exceptions.ProblemDetails
 // @Failure 403 {object} exceptions.ProblemDetails
 // @Failure 500 {object} exceptions.ProblemDetails
-// @Security Bearer
 // @Router /reference/cities [get]
 func (h *ReferenceHandler) ListCities(c *gin.Context) {
 	ctx := c.Request.Context()

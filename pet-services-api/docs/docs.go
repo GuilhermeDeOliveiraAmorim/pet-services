@@ -943,11 +943,6 @@ const docTemplate = `{
         },
         "/reference/cities": {
             "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -1002,11 +997,6 @@ const docTemplate = `{
         },
         "/reference/countries": {
             "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -1047,11 +1037,6 @@ const docTemplate = `{
         },
         "/reference/states": {
             "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],

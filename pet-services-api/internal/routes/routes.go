@@ -106,18 +106,16 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		authorizedUser.POST("/photos", handlerFactory.UserHandler.AddUserPhoto)
 	}
 
-	authorizedReference := r.Group("/reference/")
-	authorizedReference.Use(middlewareFactory.AuthMiddleware())
+	publicReference := r.Group("/reference/")
 	{
-		authorizedReference.GET("/countries", handlerFactory.ReferenceHandler.ListCountries)
-		authorizedReference.GET("/states", handlerFactory.ReferenceHandler.ListStates)
-		authorizedReference.GET("/cities", handlerFactory.ReferenceHandler.ListCities)
+		publicReference.GET("/countries", handlerFactory.ReferenceHandler.ListCountries)
+		publicReference.GET("/states", handlerFactory.ReferenceHandler.ListStates)
+		publicReference.GET("/cities", handlerFactory.ReferenceHandler.ListCities)
 	}
 
-	authorizedSpecies := r.Group("/species/")
-	authorizedSpecies.Use(middlewareFactory.AuthMiddleware())
+	publicSpecies := r.Group("/species/")
 	{
-		authorizedSpecies.GET("", handlerFactory.SpecieHandler.ListSpecies)
+		publicSpecies.GET("", handlerFactory.SpecieHandler.ListSpecies)
 	}
 
 	authorizedOwner := r.Group("/pets/")
