@@ -117,6 +117,23 @@ func (r *photoRepository) ReplaceUserPhoto(userID string, photo *entities.Photo)
 	})
 }
 
+func (r *photoRepository) DeleteServicePhoto(serviceID, photoID string) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		service := models.Service{ID: serviceID}
+		photo := models.Photo{ID: photoID}
+
+		if err := tx.Model(&service).Association("Photos").Delete(&photo); err != nil {
+			return err
+		}
+
+		if err := tx.Delete(&photo).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
 func (r *photoRepository) CountProviderPhotos(providerID string) (int, error) {
 	var count int64
 	err := r.db.Table("provider_photos").

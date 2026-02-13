@@ -9,4 +9,5 @@ const (
 	TagNotFoundError      = "tag não encontrada"
 	CategoryNotFoundError = "categoria não encontrada"
 	RequestNotFoundError  = "request not found"
+	PhotoNotFoundError    = "foto não encontrada"
 )

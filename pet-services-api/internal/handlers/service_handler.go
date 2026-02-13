@@ -412,6 +412,72 @@ func (h *ServiceHandler) AddServicePhoto(c *gin.Context) {
 	c.JSON(http.StatusCreated, output)
 }
 
+// DeleteServicePhoto godoc
+// @Summary Remove foto do serviço
+// @Tags Serviços
+// @Accept json
+// @Produce json
+// @Param service_id path string true "ID do serviço"
+// @Param photo_id path string true "ID da foto"
+// @Success 200 {object} usecases.DeleteServicePhotoOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Failure 401 {object} exceptions.ProblemDetails
+// @Failure 403 {object} exceptions.ProblemDetails
+// @Failure 404 {object} exceptions.ProblemDetails
+// @Failure 500 {object} exceptions.ProblemDetails
+// @Security Bearer
+// @Router /services/{service_id}/photos/{photo_id} [delete]
+func (h *ServiceHandler) DeleteServicePhoto(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	userID, exists := c.Get("user_id")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Usuário não autenticado",
+			Detail: "Não foi possível obter o ID do usuário autenticado",
+		})
+		h.Logger.LogBadRequest(ctx, "ServiceHandler.DeleteServicePhoto", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
+		return
+	}
+
+	serviceID := c.Param("service_id")
+	if serviceID == "" {
+		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "ID do serviço ausente",
+			Detail: "O ID do serviço é obrigatório",
+		})
+		h.Logger.LogBadRequest(ctx, "ServiceHandler.DeleteServicePhoto", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		return
+	}
+
+	photoID := c.Param("photo_id")
+	if photoID == "" {
+		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "ID da foto ausente",
+			Detail: "O ID da foto é obrigatório",
+		})
+		h.Logger.LogBadRequest(ctx, "ServiceHandler.DeleteServicePhoto", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		return
+	}
+
+	input := usecases.DeleteServicePhotoInput{
+		UserID:    userID.(string),
+		ServiceID: serviceID,
+		PhotoID:   photoID,
+	}
+
+	output, errs := h.ServiceFactory.DeleteServicePhoto.Execute(ctx, input)
+	if len(errs) > 0 {
+		exceptions.HandleErrors(c, errs)
+		return
+	}
+
+	c.JSON(http.StatusOK, output)
+}
+
 // AddServiceTag godoc
 // @Summary Adiciona tag ao serviço
 // @Tags Serviços

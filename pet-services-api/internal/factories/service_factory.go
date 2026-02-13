@@ -12,6 +12,7 @@ import (
 type ServiceFactory struct {
 	AddService         *usecases.AddServiceUseCase
 	AddServicePhoto    *usecases.AddServicePhotoUseCase
+	DeleteServicePhoto *usecases.DeleteServicePhotoUseCase
 	AddServiceTag      *usecases.AddServiceTagUseCase
 	ListTags           *usecases.ListTagsUseCase
 	AddServiceCategory *usecases.AddServiceCategoryUseCase
@@ -31,6 +32,7 @@ func NewServiceFactory(db *gorm.DB, storageService storage.ObjectStorage, logger
 	return &ServiceFactory{
 		AddService:         usecases.NewAddServiceUseCase(userRepo, providerRepo, serviceRepo, logger),
 		AddServicePhoto:    usecases.NewAddServicePhotoUseCase(userRepo, serviceRepo, providerRepo, photoRepo, storageService, logger),
+		DeleteServicePhoto: usecases.NewDeleteServicePhotoUseCase(userRepo, serviceRepo, providerRepo, photoRepo, storageService, logger),
 		AddServiceTag:      usecases.NewAddServiceTagUseCase(userRepo, serviceRepo, providerRepo, tagRepo, logger),
 		ListTags:           usecases.NewListTagsUseCase(tagRepo),
 		AddServiceCategory: usecases.NewAddServiceCategoryUseCase(userRepo, serviceRepo, providerRepo, categoryRepo, logger),

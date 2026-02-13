@@ -13,6 +13,7 @@ type PhotoRepository interface {
 	CreateAndAttachToUser(userID string, photo *Photo) error
 	CreateAndAttachToProvider(providerID string, photo *Photo) error
 	ReplaceUserPhoto(userID string, photo *Photo) error
+	DeleteServicePhoto(serviceID, photoID string) error
 	CountProviderPhotos(providerID string) (int, error)
 	CountPetPhotos(petID string) (int, error)
 	CountServicePhotos(serviceID string) (int, error)
