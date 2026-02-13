@@ -19,6 +19,7 @@ type HandlerFactory struct {
 	SpecieHandler    *SpecieHandler
 	PetHandler       *PetHandler
 	ProviderHandler  *ProviderHandler
+	ServiceHandler   *ServiceHandler
 	Logger           logging.LoggerInterface
 }
 
@@ -35,6 +36,7 @@ func NewHandlerFactory(inputFactory database.StorageInput, logger logging.Logger
 	specieFactory := factories.NewSpecieFactory(inputFactory.DB, logger)
 	petFactory := factories.NewPetFactory(inputFactory.DB, storageService, logger)
 	providerFactory := factories.NewProviderFactory(inputFactory.DB, logger)
+	serviceFactory := factories.NewServiceFactory(inputFactory.DB, logger)
 
 	return &HandlerFactory{
 		UserHandler:      NewUserHandler(userFactory, logger),
@@ -44,6 +46,7 @@ func NewHandlerFactory(inputFactory database.StorageInput, logger logging.Logger
 		SpecieHandler:    NewSpecieHandler(specieFactory, logger),
 		PetHandler:       NewPetHandler(petFactory, logger),
 		ProviderHandler:  NewProviderHandler(providerFactory, logger),
+		ServiceHandler:   NewServiceHandler(serviceFactory, logger),
 		Logger:           logger,
 	}
 }

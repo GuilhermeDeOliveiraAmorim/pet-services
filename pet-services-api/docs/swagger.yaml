@@ -21,6 +21,21 @@ definitions:
       zip_code:
         type: string
     type: object
+  entities.Category:
+    properties:
+      active:
+        type: boolean
+      created_at:
+        type: string
+      deactivated_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
   entities.Location:
     properties:
       latitude:
@@ -173,7 +188,61 @@ definitions:
       user_id:
         type: string
     type: object
+  entities.Service:
+    properties:
+      active:
+        type: boolean
+      categories:
+        items:
+          $ref: '#/definitions/entities.Category'
+        type: array
+      created_at:
+        type: string
+      deactivated_at:
+        type: string
+      description:
+        type: string
+      duration:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      photos:
+        items:
+          $ref: '#/definitions/entities.Photo'
+        type: array
+      price:
+        type: number
+      price_maximum:
+        type: number
+      price_minimum:
+        type: number
+      provider_id:
+        type: string
+      tags:
+        items:
+          $ref: '#/definitions/entities.Tag'
+        type: array
+      updated_at:
+        type: string
+    type: object
   entities.Species:
+    properties:
+      active:
+        type: boolean
+      created_at:
+        type: string
+      deactivated_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  entities.Tag:
     properties:
       active:
         type: boolean
@@ -320,6 +389,30 @@ definitions:
         type: string
       provider:
         $ref: '#/definitions/entities.Provider'
+    type: object
+  usecases.AddServiceInputBody:
+    properties:
+      description:
+        type: string
+      duration:
+        type: integer
+      name:
+        type: string
+      price:
+        type: number
+      price_maximum:
+        type: number
+      price_minimum:
+        type: number
+    type: object
+  usecases.AddServiceOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+      service:
+        $ref: '#/definitions/entities.Service'
     type: object
   usecases.AddUserPhotoOutput:
     properties:
@@ -1094,6 +1187,49 @@ paths:
       summary: Lista estados
       tags:
       - Referências
+  /services:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados do serviço
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.AddServiceInputBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/usecases.AddServiceOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Adiciona um novo serviço
+      tags:
+      - Serviços
   /species:
     get:
       consumes:
