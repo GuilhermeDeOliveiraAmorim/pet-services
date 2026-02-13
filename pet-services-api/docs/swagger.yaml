@@ -592,6 +592,15 @@ definitions:
           $ref: '#/definitions/reference.State'
         type: array
     type: object
+  usecases.ListTagsOutput:
+    properties:
+      tags:
+        items:
+          $ref: '#/definitions/entities.Tag'
+        type: array
+      total:
+        type: integer
+    type: object
   usecases.ListUsersOutput:
     properties:
       pagination:
@@ -1285,6 +1294,7 @@ paths:
     post:
       consumes:
       - application/json
+      - application/json
       parameters:
       - description: Dados do serviço
         in: body
@@ -1292,9 +1302,26 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/usecases.AddServiceInputBody'
+      - description: Número da página
+        in: query
+        name: page
+        type: integer
+      - description: Itens por página
+        in: query
+        name: page_size
+        type: integer
+      - description: Filtro por nome
+        in: query
+        name: name
+        type: string
       produces:
       - application/json
+      - application/json
       responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.ListTagsOutput'
         "201":
           description: Created
           schema:
@@ -1321,9 +1348,11 @@ paths:
             $ref: '#/definitions/exceptions.ProblemDetails'
       security:
       - Bearer: []
-      summary: Adiciona um novo serviço
+      - Bearer: []
+      summary: Lista tags com paginação
       tags:
       - Serviços
+      - Tags
   /services/{service_id}/photos:
     post:
       consumes:
@@ -1441,6 +1470,69 @@ paths:
       summary: Lista espécies
       tags:
       - Espécies
+  /tags:
+    get:
+      consumes:
+      - application/json
+      - application/json
+      parameters:
+      - description: Dados do serviço
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.AddServiceInputBody'
+      - description: Número da página
+        in: query
+        name: page
+        type: integer
+      - description: Itens por página
+        in: query
+        name: page_size
+        type: integer
+      - description: Filtro por nome
+        in: query
+        name: name
+        type: string
+      produces:
+      - application/json
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.ListTagsOutput'
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/usecases.AddServiceOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      - Bearer: []
+      summary: Lista tags com paginação
+      tags:
+      - Serviços
+      - Tags
   /users:
     delete:
       produces:

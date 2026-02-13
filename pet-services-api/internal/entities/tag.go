@@ -1,6 +1,9 @@
 package entities
 
-import "pet-services-api/internal/exceptions"
+import (
+	"context"
+	"pet-services-api/internal/exceptions"
+)
 
 type Tag struct {
 	Base
@@ -11,6 +14,8 @@ type TagRepository interface {
 	Create(tag *Tag) error
 	FindByID(id string) (*Tag, error)
 	FindByName(name string) (*Tag, error)
+	ListTagsPaginated(ctx context.Context, name string, offset, limit int) ([]Tag, error)
+	CountTags(ctx context.Context, name string) (int, error)
 }
 
 func NewTag(name string) (*Tag, []exceptions.ProblemDetails) {

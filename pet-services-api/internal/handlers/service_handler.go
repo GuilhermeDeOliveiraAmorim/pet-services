@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/factories"
@@ -37,6 +38,69 @@ func NewServiceHandler(factory *factories.ServiceFactory, logger logging.LoggerI
 // @Failure 500 {object} exceptions.ProblemDetails
 // @Security Bearer
 // @Router /services [post]
+// ListTags godoc
+// @Summary Lista tags com paginação
+// @Tags Tags
+// @Accept json
+// @Produce json
+// @Param page query int false "Número da página"
+// @Param page_size query int false "Itens por página"
+// @Param name query string false "Filtro por nome"
+// @Success 200 {object} usecases.ListTagsOutput
+// @Failure 401 {object} exceptions.ProblemDetails
+// @Failure 403 {object} exceptions.ProblemDetails
+// @Failure 500 {object} exceptions.ProblemDetails
+// @Security Bearer
+// @Router /tags [get]
+func (h *ServiceHandler) ListTags(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	userType, exists := c.Get("user_type")
+	if !exists || userType != "provider" {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Acesso negado",
+			Detail: "Acesso permitido apenas para usuários do tipo provider",
+		})
+		h.Logger.LogError(ctx, "ServiceHandler.ListTags", problem.Title+": "+problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusForbidden, problem)
+		return
+	}
+
+	page := 1
+	pageSize := 10
+	name := c.Query("name")
+	if p := c.Query("page"); p != "" {
+		if val, err := strconv.Atoi(p); err == nil && val > 0 {
+			page = val
+		}
+	}
+	if ps := c.Query("page_size"); ps != "" {
+		if val, err := strconv.Atoi(ps); err == nil && val > 0 {
+			pageSize = val
+		}
+	}
+
+	providerID, _ := c.Get("user_id")
+	input := usecases.ListTagsInput{
+		Page:       page,
+		PageSize:   pageSize,
+		Name:       name,
+		ProviderID: providerID.(string),
+	}
+
+	output, err := h.ServiceFactory.ListTags.Execute(ctx, input)
+	if err != nil {
+		problem := exceptions.NewProblemDetails(exceptions.InternalServerError, exceptions.ErrorMessage{
+			Title:  "Erro ao listar tags",
+			Detail: err.Error(),
+		})
+		h.Logger.LogError(ctx, "ServiceHandler.ListTags", problem.Title+": "+problem.Detail, err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, problem)
+		return
+	}
+
+	c.JSON(http.StatusOK, output)
+}
 func (h *ServiceHandler) AddService(c *gin.Context) {
 	ctx := c.Request.Context()
 
