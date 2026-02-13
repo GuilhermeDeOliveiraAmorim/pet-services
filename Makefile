@@ -13,7 +13,7 @@ help:
 	@echo "  make clean      - Limpa artefatos de build da API"
 
 up:
-	cd pet-services-infra && docker compose up --build
+	cd pet-services-infra && docker compose up -d
 
 down:
 	cd pet-services-infra && docker compose down
