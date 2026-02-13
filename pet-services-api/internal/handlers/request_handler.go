@@ -141,3 +141,57 @@ func (h *RequestHandler) ListRequests(c *gin.Context) {
 
 	c.JSON(http.StatusOK, output)
 }
+
+// AcceptRequest godoc
+// @Summary Aceita uma solicitação de serviço
+// @Tags Solicitações
+// @Accept json
+// @Produce json
+// @Param request_id path string true "ID da solicitação"
+// @Success 200 {object} usecases.AcceptRequestOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Failure 401 {object} exceptions.ProblemDetails
+// @Failure 403 {object} exceptions.ProblemDetails
+// @Failure 404 {object} exceptions.ProblemDetails
+// @Failure 409 {object} exceptions.ProblemDetails
+// @Failure 500 {object} exceptions.ProblemDetails
+// @Security Bearer
+// @Router /requests/{request_id}/accept [patch]
+func (h *RequestHandler) AcceptRequest(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	userID, exists := c.Get("user_id")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Usuário não autenticado",
+			Detail: "Não foi possível obter o ID do usuário autenticado",
+		})
+		h.Logger.LogBadRequest(ctx, "RequestHandler.AcceptRequest", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
+		return
+	}
+
+	requestID := c.Param("request_id")
+	if requestID == "" {
+		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "ID da solicitação ausente",
+			Detail: "O ID da solicitação é obrigatório",
+		})
+		h.Logger.LogBadRequest(ctx, "RequestHandler.AcceptRequest", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		return
+	}
+
+	input := usecases.AcceptRequestInput{
+		UserID:    userID.(string),
+		RequestID: requestID,
+	}
+
+	output, errs := h.RequestFactory.AcceptRequest.Execute(ctx, input)
+	if len(errs) > 0 {
+		exceptions.HandleErrors(c, errs)
+		return
+	}
+
+	c.JSON(http.StatusOK, output)
+}

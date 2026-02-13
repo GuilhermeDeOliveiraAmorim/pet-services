@@ -10,8 +10,9 @@ import (
 )
 
 type RequestFactory struct {
-	AddRequest   *usecases.AddRequestUseCase
-	ListRequests *usecases.ListRequestsUseCase
+	AddRequest    *usecases.AddRequestUseCase
+	ListRequests  *usecases.ListRequestsUseCase
+	AcceptRequest *usecases.AcceptRequestUseCase
 }
 
 func NewRequestFactory(db *gorm.DB, storageService storage.ObjectStorage, logger logging.LoggerInterface) *RequestFactory {
@@ -22,7 +23,8 @@ func NewRequestFactory(db *gorm.DB, storageService storage.ObjectStorage, logger
 	requestRepo := repository_impl.NewRequestRepository(db)
 
 	return &RequestFactory{
-		AddRequest:   usecases.NewAddRequestUseCase(userRepo, petRepo, serviceRepo, providerRepo, requestRepo, logger),
-		ListRequests: usecases.NewListRequestsUseCase(userRepo, requestRepo, providerRepo, serviceRepo, storageService, logger),
+		AddRequest:    usecases.NewAddRequestUseCase(userRepo, petRepo, serviceRepo, providerRepo, requestRepo, logger),
+		ListRequests:  usecases.NewListRequestsUseCase(userRepo, requestRepo, providerRepo, serviceRepo, storageService, logger),
+		AcceptRequest: usecases.NewAcceptRequestUseCase(userRepo, providerRepo, requestRepo, logger),
 	}
 }

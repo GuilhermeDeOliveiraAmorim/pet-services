@@ -1,6 +1,8 @@
 package repository_impl
 
 import (
+	"errors"
+
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/models"
 
@@ -19,6 +21,29 @@ func (r *requestRepository) Create(request *entities.Request) error {
 	var model models.Request
 	model.FromEntity(request)
 	return r.db.Create(&model).Error
+}
+
+func (r *requestRepository) FindByID(id string) (*entities.Request, error) {
+	var model models.Request
+	err := r.db.Preload("User").
+		Preload("Provider").
+		Preload("Service").
+		Preload("Pet.Species").
+		Where("id = ?", id).
+		First(&model).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, errors.New("request not found")
+		}
+		return nil, err
+	}
+	return model.ToEntity(), nil
+}
+
+func (r *requestRepository) Update(request *entities.Request) error {
+	var model models.Request
+	model.FromEntity(request)
+	return r.db.Save(&model).Error
 }
 
 func (r *requestRepository) ExistsPending(userID, serviceID, petID string) (bool, error) {

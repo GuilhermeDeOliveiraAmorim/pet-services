@@ -339,6 +339,15 @@ definitions:
       name:
         type: string
     type: object
+  usecases.AcceptRequestOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+      request:
+        $ref: '#/definitions/entities.Request'
+    type: object
   usecases.AddPetInputBody:
     properties:
       age:
@@ -1660,6 +1669,52 @@ paths:
       security:
       - Bearer: []
       summary: Cria uma solicitação de serviço
+      tags:
+      - Solicitações
+  /requests/{request_id}/accept:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID da solicitação
+        in: path
+        name: request_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.AcceptRequestOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Aceita uma solicitação de serviço
       tags:
       - Solicitações
   /services:

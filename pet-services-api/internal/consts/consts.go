@@ -8,4 +8,5 @@ const (
 	ServiceNotFoundError  = "servico não encontrado"
 	TagNotFoundError      = "tag não encontrada"
 	CategoryNotFoundError = "categoria não encontrada"
+	RequestNotFoundError  = "request not found"
 )

@@ -32,6 +32,8 @@ type Request struct {
 
 type RequestRepository interface {
 	Create(request *Request) error
+	FindByID(id string) (*Request, error)
+	Update(request *Request) error
 	ExistsPending(userID, serviceID, petID string) (bool, error)
 	ExistsCompleted(userID, providerID string) (bool, error)
 	List(userID, providerID, status string, page, pageSize int) ([]*Request, int64, error)
