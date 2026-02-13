@@ -24,6 +24,74 @@ func NewServiceHandler(factory *factories.ServiceFactory, logger logging.LoggerI
 	}
 }
 
+// ListServices godoc
+// @Summary Lista serviços com filtros e paginação
+// @Tags Serviços
+// @Accept json
+// @Produce json
+// @Param provider_id query string false "Filtro por provedor"
+// @Param category_id query string false "Filtro por categoria"
+// @Param tag_id query string false "Filtro por tag"
+// @Param price_min query number false "Preço mínimo"
+// @Param price_max query number false "Preço máximo"
+// @Param page query int false "Número da página"
+// @Param page_size query int false "Itens por página"
+// @Success 200 {object} usecases.ListServicesOutput
+// @Failure 500 {object} exceptions.ProblemDetails
+// @Router /services [get]
+func (h *ServiceHandler) ListServices(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	page := 1
+	pageSize := 10
+	providerID := c.Query("provider_id")
+	categoryID := c.Query("category_id")
+	tagID := c.Query("tag_id")
+
+	var priceMin, priceMax float64
+	if pm := c.Query("price_min"); pm != "" {
+		if val, err := strconv.ParseFloat(pm, 64); err == nil && val > 0 {
+			priceMin = val
+		}
+	}
+
+	if pm := c.Query("price_max"); pm != "" {
+		if val, err := strconv.ParseFloat(pm, 64); err == nil && val > 0 {
+			priceMax = val
+		}
+	}
+
+	if p := c.Query("page"); p != "" {
+		if val, err := strconv.Atoi(p); err == nil && val > 0 {
+			page = val
+		}
+	}
+
+	if ps := c.Query("page_size"); ps != "" {
+		if val, err := strconv.Atoi(ps); err == nil && val > 0 {
+			pageSize = val
+		}
+	}
+
+	input := usecases.ListServicesInput{
+		ProviderID: providerID,
+		CategoryID: categoryID,
+		TagID:      tagID,
+		PriceMin:   priceMin,
+		PriceMax:   priceMax,
+		Page:       page,
+		PageSize:   pageSize,
+	}
+
+	output, errs := h.ServiceFactory.ListServices.Execute(ctx, input)
+	if len(errs) > 0 {
+		exceptions.HandleErrors(c, errs)
+		return
+	}
+
+	c.JSON(http.StatusOK, output)
+}
+
 // ListTags godoc
 // @Summary Lista tags com paginação
 // @Tags Tags

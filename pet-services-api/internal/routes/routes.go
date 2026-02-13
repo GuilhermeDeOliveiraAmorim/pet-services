@@ -149,6 +149,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		authorizedServices.POST("/:service_id/categories", handlerFactory.ServiceHandler.AddServiceCategory)
 	}
 
+	r.GET("/services", handlerFactory.ServiceHandler.ListServices)
 	r.GET("/tags", middlewareFactory.AuthMiddleware(), middlewareFactory.ProviderOnlyMiddleware(), handlerFactory.ServiceHandler.ListTags)
 	r.GET("/categories", middlewareFactory.AuthMiddleware(), middlewareFactory.ProviderOnlyMiddleware(), handlerFactory.CategoryHandler.ListCategories)
 

@@ -679,6 +679,21 @@ definitions:
       total_pages:
         type: integer
     type: object
+  usecases.ListServicesOutput:
+    properties:
+      current_page:
+        type: integer
+      items_per_page:
+        type: integer
+      services:
+        items:
+          $ref: '#/definitions/usecases.ServiceListItem'
+        type: array
+      total_items:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
   usecases.ListSpeciesOutput:
     properties:
       species:
@@ -889,6 +904,43 @@ definitions:
         type: string
       message:
         type: string
+    type: object
+  usecases.ServiceListItem:
+    properties:
+      active:
+        type: boolean
+      business_name:
+        type: string
+      categories:
+        items:
+          $ref: '#/definitions/entities.Category'
+        type: array
+      created_at:
+        type: string
+      description:
+        type: string
+      duration:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      photos:
+        items:
+          $ref: '#/definitions/entities.Photo'
+        type: array
+      price:
+        type: number
+      price_maximum:
+        type: number
+      price_minimum:
+        type: number
+      provider_id:
+        type: string
+      tags:
+        items:
+          $ref: '#/definitions/entities.Tag'
+        type: array
     type: object
   usecases.UpdateEmailVerifiedInput:
     properties:
@@ -1773,6 +1825,52 @@ paths:
       tags:
       - Solicitações
   /services:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Filtro por provedor
+        in: query
+        name: provider_id
+        type: string
+      - description: Filtro por categoria
+        in: query
+        name: category_id
+        type: string
+      - description: Filtro por tag
+        in: query
+        name: tag_id
+        type: string
+      - description: Preço mínimo
+        in: query
+        name: price_min
+        type: number
+      - description: Preço máximo
+        in: query
+        name: price_max
+        type: number
+      - description: Número da página
+        in: query
+        name: page
+        type: integer
+      - description: Itens por página
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.ListServicesOutput'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Lista serviços com filtros e paginação
+      tags:
+      - Serviços
     post:
       consumes:
       - application/json

@@ -64,3 +64,56 @@ func (r *serviceRepository) AddCategory(serviceID, categoryID string) error {
 	category := models.Category{ID: categoryID}
 	return r.db.Model(&service).Association("Categories").Append(&category)
 }
+
+func (r *serviceRepository) List(providerID, categoryID, tagID string, priceMin, priceMax float64, page, pageSize int) ([]*entities.Service, int64, error) {
+	var services []models.Service
+	var total int64
+
+	query := r.db.Model(&models.Service{}).
+		Preload("Provider").
+		Preload("Photos").
+		Preload("Categories").
+		Preload("Tags").
+		Where("active = ?", true)
+
+	if providerID != "" {
+		query = query.Where("provider_id = ?", providerID)
+	}
+
+	if categoryID != "" {
+		query = query.Joins("INNER JOIN service_categories ON service_categories.service_id = services.id").
+			Where("service_categories.category_id = ?", categoryID)
+	}
+
+	if tagID != "" {
+		query = query.Joins("INNER JOIN service_tags ON service_tags.service_id = services.id").
+			Where("service_tags.tag_id = ?", tagID)
+	}
+
+	if priceMin > 0 {
+		query = query.Where("price_minimum >= ?", priceMin)
+	}
+
+	if priceMax > 0 {
+		query = query.Where("price_maximum <= ?", priceMax)
+	}
+
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	offset := (page - 1) * pageSize
+	if err := query.Order("created_at DESC").
+		Offset(offset).
+		Limit(pageSize).
+		Find(&services).Error; err != nil {
+		return nil, 0, err
+	}
+
+	entities := make([]*entities.Service, len(services))
+	for i, svc := range services {
+		entities[i] = svc.ToEntity()
+	}
+
+	return entities, total, nil
+}
