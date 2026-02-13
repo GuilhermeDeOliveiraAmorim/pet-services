@@ -905,6 +905,34 @@ definitions:
       message:
         type: string
     type: object
+  usecases.SearchLocation:
+    properties:
+      latitude:
+        type: number
+      longitude:
+        type: number
+      radius_km:
+        type: number
+    type: object
+  usecases.SearchServicesOutput:
+    properties:
+      current_page:
+        type: integer
+      items_per_page:
+        type: integer
+      location:
+        $ref: '#/definitions/usecases.SearchLocation'
+      search_query:
+        type: string
+      services:
+        items:
+          $ref: '#/definitions/usecases.ServiceListItem'
+        type: array
+      total_items:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
   usecases.ServiceListItem:
     properties:
       active:
@@ -2062,6 +2090,65 @@ paths:
       security:
       - Bearer: []
       summary: Adiciona tag ao serviço
+      tags:
+      - Serviços
+  /services/search:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Busca textual (nome ou descrição)
+        in: query
+        name: q
+        type: string
+      - description: Filtro por categoria
+        in: query
+        name: category_id
+        type: string
+      - description: Filtro por tag
+        in: query
+        name: tag_id
+        type: string
+      - description: Latitude para busca geoespacial
+        in: query
+        name: latitude
+        type: number
+      - description: Longitude para busca geoespacial
+        in: query
+        name: longitude
+        type: number
+      - description: 'Raio em km (padrão: 10km)'
+        in: query
+        name: radius_km
+        type: number
+      - description: Preço mínimo
+        in: query
+        name: price_min
+        type: number
+      - description: Preço máximo
+        in: query
+        name: price_max
+        type: number
+      - description: Número da página
+        in: query
+        name: page
+        type: integer
+      - description: Itens por página
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.SearchServicesOutput'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Busca serviços por texto, localização e filtros
       tags:
       - Serviços
   /species:

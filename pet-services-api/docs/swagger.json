@@ -1454,6 +1454,96 @@
                 }
             }
         },
+        "/services/search": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Serviços"
+                ],
+                "summary": "Busca serviços por texto, localização e filtros",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Busca textual (nome ou descrição)",
+                        "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filtro por categoria",
+                        "name": "category_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filtro por tag",
+                        "name": "tag_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Latitude para busca geoespacial",
+                        "name": "latitude",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Longitude para busca geoespacial",
+                        "name": "longitude",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Raio em km (padrão: 10km)",
+                        "name": "radius_km",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Preço mínimo",
+                        "name": "price_min",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Preço máximo",
+                        "name": "price_max",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Número da página",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Itens por página",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/usecases.SearchServicesOutput"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
         "/services/{service_id}/categories": {
             "post": {
                 "security": [
@@ -3708,6 +3798,49 @@
                 },
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "usecases.SearchLocation": {
+            "type": "object",
+            "properties": {
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "radius_km": {
+                    "type": "number"
+                }
+            }
+        },
+        "usecases.SearchServicesOutput": {
+            "type": "object",
+            "properties": {
+                "current_page": {
+                    "type": "integer"
+                },
+                "items_per_page": {
+                    "type": "integer"
+                },
+                "location": {
+                    "$ref": "#/definitions/usecases.SearchLocation"
+                },
+                "search_query": {
+                    "type": "string"
+                },
+                "services": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/usecases.ServiceListItem"
+                    }
+                },
+                "total_items": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
                 }
             }
         },

@@ -117,3 +117,77 @@ func (r *serviceRepository) List(providerID, categoryID, tagID string, priceMin,
 
 	return entities, total, nil
 }
+
+func (r *serviceRepository) Search(query, categoryID, tagID string, latitude, longitude, radiusKm, priceMin, priceMax float64, page, pageSize int) ([]*entities.Service, int64, error) {
+	var services []models.Service
+	var total int64
+
+	baseQuery := r.db.Model(&models.Service{}).
+		Preload("Provider").
+		Preload("Photos").
+		Preload("Categories").
+		Preload("Tags").
+		Where("services.active = ?", true)
+
+	// Busca textual por nome ou descrição
+	if query != "" {
+		searchPattern := "%" + query + "%"
+		baseQuery = baseQuery.Where("services.name ILIKE ? OR services.description ILIKE ?", searchPattern, searchPattern)
+	}
+
+	// Filtro por categoria
+	if categoryID != "" {
+		baseQuery = baseQuery.Joins("INNER JOIN service_categories ON service_categories.service_id = services.id").
+			Where("service_categories.category_id = ?", categoryID)
+	}
+
+	// Filtro por tag
+	if tagID != "" {
+		baseQuery = baseQuery.Joins("INNER JOIN service_tags ON service_tags.service_id = services.id").
+			Where("service_tags.tag_id = ?", tagID)
+	}
+
+	// Busca geoespacial por raio
+	if latitude != 0 && longitude != 0 && radiusKm > 0 {
+		// Fórmula Haversine para calcular distância em km
+		// earthRadiusKm = 6371
+		baseQuery = baseQuery.Joins("INNER JOIN providers ON providers.id = services.provider_id").
+			Where("providers.active = ?", true).
+			Where("(6371 * acos(cos(radians(?)) * cos(radians(providers.latitude)) * cos(radians(providers.longitude) - radians(?)) + sin(radians(?)) * sin(radians(providers.latitude)))) <= ?",
+				latitude, longitude, latitude, radiusKm)
+	} else {
+		// Apenas garantir que o provider está ativo
+		baseQuery = baseQuery.Joins("INNER JOIN providers ON providers.id = services.provider_id").
+			Where("providers.active = ?", true)
+	}
+
+	// Filtro por faixa de preço
+	if priceMin > 0 {
+		baseQuery = baseQuery.Where("services.price_minimum >= ?", priceMin)
+	}
+
+	if priceMax > 0 {
+		baseQuery = baseQuery.Where("services.price_maximum <= ?", priceMax)
+	}
+
+	// Contar total de resultados
+	if err := baseQuery.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// Aplicar paginação e ordenação
+	offset := (page - 1) * pageSize
+	if err := baseQuery.Order("services.created_at DESC").
+		Offset(offset).
+		Limit(pageSize).
+		Find(&services).Error; err != nil {
+		return nil, 0, err
+	}
+
+	entities := make([]*entities.Service, len(services))
+	for i, svc := range services {
+		entities[i] = svc.ToEntity()
+	}
+
+	return entities, total, nil
+}

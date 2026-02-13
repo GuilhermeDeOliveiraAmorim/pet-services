@@ -16,6 +16,7 @@ type ServiceFactory struct {
 	ListTags           *usecases.ListTagsUseCase
 	AddServiceCategory *usecases.AddServiceCategoryUseCase
 	ListServices       *usecases.ListServicesUseCase
+	SearchServices     *usecases.SearchServicesUseCase
 }
 
 func NewServiceFactory(db *gorm.DB, storageService storage.ObjectStorage, logger logging.LoggerInterface) *ServiceFactory {
@@ -33,5 +34,6 @@ func NewServiceFactory(db *gorm.DB, storageService storage.ObjectStorage, logger
 		ListTags:           usecases.NewListTagsUseCase(tagRepo),
 		AddServiceCategory: usecases.NewAddServiceCategoryUseCase(userRepo, serviceRepo, providerRepo, categoryRepo, logger),
 		ListServices:       usecases.NewListServicesUseCase(serviceRepo, providerRepo, storageService, logger),
+		SearchServices:     usecases.NewSearchServicesUseCase(serviceRepo, providerRepo, storageService, logger),
 	}
 }

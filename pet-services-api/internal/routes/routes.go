@@ -150,6 +150,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	}
 
 	r.GET("/services", handlerFactory.ServiceHandler.ListServices)
+	r.GET("/services/search", handlerFactory.ServiceHandler.SearchServices)
 	r.GET("/tags", middlewareFactory.AuthMiddleware(), middlewareFactory.ProviderOnlyMiddleware(), handlerFactory.ServiceHandler.ListTags)
 	r.GET("/categories", middlewareFactory.AuthMiddleware(), middlewareFactory.ProviderOnlyMiddleware(), handlerFactory.CategoryHandler.ListCategories)
 

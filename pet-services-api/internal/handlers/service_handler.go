@@ -92,6 +92,99 @@ func (h *ServiceHandler) ListServices(c *gin.Context) {
 	c.JSON(http.StatusOK, output)
 }
 
+// SearchServices godoc
+// @Summary Busca serviços por texto, localização e filtros
+// @Tags Serviços
+// @Accept json
+// @Produce json
+// @Param q query string false "Busca textual (nome ou descrição)"
+// @Param category_id query string false "Filtro por categoria"
+// @Param tag_id query string false "Filtro por tag"
+// @Param latitude query number false "Latitude para busca geoespacial"
+// @Param longitude query number false "Longitude para busca geoespacial"
+// @Param radius_km query number false "Raio em km (padrão: 10km)"
+// @Param price_min query number false "Preço mínimo"
+// @Param price_max query number false "Preço máximo"
+// @Param page query int false "Número da página"
+// @Param page_size query int false "Itens por página"
+// @Success 200 {object} usecases.SearchServicesOutput
+// @Failure 500 {object} exceptions.ProblemDetails
+// @Router /services/search [get]
+func (h *ServiceHandler) SearchServices(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	page := 1
+	pageSize := 10
+	query := c.Query("q")
+	categoryID := c.Query("category_id")
+	tagID := c.Query("tag_id")
+
+	var latitude, longitude, radiusKm, priceMin, priceMax float64
+
+	if lat := c.Query("latitude"); lat != "" {
+		if val, err := strconv.ParseFloat(lat, 64); err == nil {
+			latitude = val
+		}
+	}
+
+	if lon := c.Query("longitude"); lon != "" {
+		if val, err := strconv.ParseFloat(lon, 64); err == nil {
+			longitude = val
+		}
+	}
+
+	if radius := c.Query("radius_km"); radius != "" {
+		if val, err := strconv.ParseFloat(radius, 64); err == nil && val > 0 {
+			radiusKm = val
+		}
+	}
+
+	if pm := c.Query("price_min"); pm != "" {
+		if val, err := strconv.ParseFloat(pm, 64); err == nil && val > 0 {
+			priceMin = val
+		}
+	}
+
+	if pm := c.Query("price_max"); pm != "" {
+		if val, err := strconv.ParseFloat(pm, 64); err == nil && val > 0 {
+			priceMax = val
+		}
+	}
+
+	if p := c.Query("page"); p != "" {
+		if val, err := strconv.Atoi(p); err == nil && val > 0 {
+			page = val
+		}
+	}
+
+	if ps := c.Query("page_size"); ps != "" {
+		if val, err := strconv.Atoi(ps); err == nil && val > 0 {
+			pageSize = val
+		}
+	}
+
+	input := usecases.SearchServicesInput{
+		Query:      query,
+		CategoryID: categoryID,
+		TagID:      tagID,
+		Latitude:   latitude,
+		Longitude:  longitude,
+		RadiusKm:   radiusKm,
+		PriceMin:   priceMin,
+		PriceMax:   priceMax,
+		Page:       page,
+		PageSize:   pageSize,
+	}
+
+	output, errs := h.ServiceFactory.SearchServices.Execute(ctx, input)
+	if len(errs) > 0 {
+		exceptions.HandleErrors(c, errs)
+		return
+	}
+
+	c.JSON(http.StatusOK, output)
+}
+
 // ListTags godoc
 // @Summary Lista tags com paginação
 // @Tags Tags
