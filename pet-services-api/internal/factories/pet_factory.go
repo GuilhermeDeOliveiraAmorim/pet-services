@@ -13,6 +13,7 @@ type PetFactory struct {
 	AddPet         *usecases.AddPetUseCase
 	AddPetPhoto    *usecases.AddPetPhotoUseCase
 	DeletePetPhoto *usecases.DeletePetPhotoUseCase
+	ListPets       *usecases.ListPetsUseCase
 }
 
 func NewPetFactory(db *gorm.DB, storageService storage.ObjectStorage, logger logging.LoggerInterface) *PetFactory {
@@ -25,5 +26,6 @@ func NewPetFactory(db *gorm.DB, storageService storage.ObjectStorage, logger log
 		AddPet:         usecases.NewAddPetUseCase(userRepo, specieRepo, petRepo, logger),
 		AddPetPhoto:    usecases.NewAddPetPhotoUseCase(userRepo, petRepo, photoRepo, storageService, logger),
 		DeletePetPhoto: usecases.NewDeletePetPhotoUseCase(userRepo, petRepo, photoRepo, storageService, logger),
+		ListPets:       usecases.NewListPetsUseCase(userRepo, petRepo, storageService, logger),
 	}
 }

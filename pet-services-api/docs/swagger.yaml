@@ -714,6 +714,21 @@ definitions:
           $ref: '#/definitions/reference.Country'
         type: array
     type: object
+  usecases.ListPetsOutput:
+    properties:
+      current_page:
+        type: integer
+      items_per_page:
+        type: integer
+      pets:
+        items:
+          $ref: '#/definitions/entities.Pet'
+        type: array
+      total_items:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
   usecases.ListRequestsOutput:
     properties:
       current_page:
@@ -1415,6 +1430,46 @@ paths:
       tags:
       - Verificação
   /pets:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Número da página
+        in: query
+        name: page
+        type: integer
+      - description: Itens por página
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.ListPetsOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Lista pets do usuário autenticado
+      tags:
+      - Pets
     post:
       consumes:
       - application/json

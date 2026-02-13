@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/factories"
 	"pet-services-api/internal/logging"
@@ -77,6 +78,62 @@ func (h *PetHandler) AddPet(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, output)
+}
+
+// ListPets godoc
+// @Summary Lista pets do usuário autenticado
+// @Tags Pets
+// @Accept json
+// @Produce json
+// @Param page query int false "Número da página"
+// @Param page_size query int false "Itens por página"
+// @Success 200 {object} usecases.ListPetsOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Failure 401 {object} exceptions.ProblemDetails
+// @Failure 403 {object} exceptions.ProblemDetails
+// @Failure 500 {object} exceptions.ProblemDetails
+// @Security Bearer
+// @Router /pets [get]
+func (h *PetHandler) ListPets(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	userID, exists := c.Get("user_id")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Usuário não autenticado",
+			Detail: "Não foi possível obter o ID do usuário autenticado",
+		})
+		h.Logger.LogBadRequest(ctx, "PetHandler.ListPets", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
+		return
+	}
+
+	page := 1
+	pageSize := 10
+	if p := c.Query("page"); p != "" {
+		if val, err := strconv.Atoi(p); err == nil && val > 0 {
+			page = val
+		}
+	}
+	if ps := c.Query("page_size"); ps != "" {
+		if val, err := strconv.Atoi(ps); err == nil && val > 0 {
+			pageSize = val
+		}
+	}
+
+	input := usecases.ListPetsInput{
+		UserID:   userID.(string),
+		Page:     page,
+		PageSize: pageSize,
+	}
+
+	output, errs := h.PetFactory.ListPets.Execute(ctx, input)
+	if len(errs) > 0 {
+		exceptions.HandleErrors(c, errs)
+		return
+	}
+
+	c.JSON(http.StatusOK, output)
 }
 
 // AddPetPhoto godoc
