@@ -50,3 +50,33 @@ func (r *photoRepository) CreateAndAttachToUser(userID string, photo *entities.P
 		return nil
 	})
 }
+
+func (r *photoRepository) ReplaceUserPhoto(userID string, photo *entities.Photo) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		user := models.User{ID: userID}
+
+		var existing []models.Photo
+		if err := tx.Model(&user).Association("Photos").Find(&existing); err != nil {
+			return err
+		}
+		if err := tx.Model(&user).Association("Photos").Clear(); err != nil {
+			return err
+		}
+		if len(existing) > 0 {
+			if err := tx.Delete(&existing).Error; err != nil {
+				return err
+			}
+		}
+
+		var model models.Photo
+		model.FromEntity(photo)
+		if err := tx.Create(&model).Error; err != nil {
+			return err
+		}
+		if err := tx.Model(&user).Association("Photos").Append(&model); err != nil {
+			return err
+		}
+
+		return nil
+	})
+}

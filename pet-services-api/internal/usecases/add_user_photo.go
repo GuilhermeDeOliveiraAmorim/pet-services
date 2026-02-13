@@ -79,6 +79,21 @@ func (uc *AddUserPhotoUseCase) Execute(ctx context.Context, input AddUserPhotoIn
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar usuário", err)
 	}
 
+	var existingPhotoKeys []string
+	for _, photo := range user.Photos {
+		key := strings.TrimSpace(photo.URL)
+		if key == "" {
+			continue
+		}
+		if strings.HasPrefix(key, "http://") || strings.HasPrefix(key, "https://") {
+			continue
+		}
+		if !strings.Contains(key, "/") {
+			key = "users/" + user.ID + "/" + key
+		}
+		existingPhotoKeys = append(existingPhotoKeys, key)
+	}
+
 	ext := strings.ToLower(filepath.Ext(input.FileName))
 	if ext == "" {
 		ext = ".jpg"
@@ -96,7 +111,17 @@ func (uc *AddUserPhotoUseCase) Execute(ctx context.Context, input AddUserPhotoIn
 		return nil, problems
 	}
 
-	if err := uc.photoRepository.CreateAndAttachToUser(user.ID, photo); err != nil {
+	if len(existingPhotoKeys) > 0 {
+		for _, key := range existingPhotoKeys {
+			if err := uc.storage.Delete(ctx, key); err != nil {
+				_ = uc.storage.Delete(ctx, objectName)
+				return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao remover foto anterior", err)
+			}
+		}
+	}
+
+	if err := uc.photoRepository.ReplaceUserPhoto(user.ID, photo); err != nil {
+		_ = uc.storage.Delete(ctx, objectName)
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao salvar foto", err)
 	}
 
@@ -108,9 +133,16 @@ func (uc *AddUserPhotoUseCase) Execute(ctx context.Context, input AddUserPhotoIn
 	responsePhoto := *photo
 	responsePhoto.URL = signedURL
 
+	message := "Foto adicionada com sucesso"
+	detail := "A foto foi vinculada ao usuário"
+	if len(existingPhotoKeys) > 0 {
+		message = "Foto atualizada com sucesso"
+		detail = "A foto do usuário foi atualizada"
+	}
+
 	return &AddUserPhotoOutput{
-		Message: "Foto adicionada com sucesso",
-		Detail:  "A foto foi vinculada ao usuário",
+		Message: message,
+		Detail:  detail,
 		Photo:   &responsePhoto,
 	}, nil
 }

@@ -17,6 +17,7 @@ import (
 type ObjectStorage interface {
 	Upload(ctx context.Context, objectName string, reader io.Reader, size int64, contentType string) error
 	GenerateReadURL(ctx context.Context, objectName string, ttl time.Duration) (string, error)
+	Delete(ctx context.Context, objectName string) error
 }
 
 type MinioService struct {
@@ -128,4 +129,11 @@ func (s *MinioService) GenerateReadURL(ctx context.Context, objectName string, t
 	}
 
 	return presignedURL.String(), nil
+}
+
+func (s *MinioService) Delete(ctx context.Context, objectName string) error {
+	if objectName == "" {
+		return errors.New("nome do objeto ausente")
+	}
+	return s.client.RemoveObject(ctx, s.bucket, objectName, minio.RemoveObjectOptions{})
 }

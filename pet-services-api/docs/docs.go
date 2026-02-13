@@ -931,7 +931,7 @@ const docTemplate = `{
                 "tags": [
                     "Usuários"
                 ],
-                "summary": "Adiciona foto do usuário autenticado",
+                "summary": "Adiciona ou atualiza foto do usuário autenticado",
                 "parameters": [
                     {
                         "type": "file",

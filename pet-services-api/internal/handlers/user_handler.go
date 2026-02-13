@@ -198,7 +198,7 @@ func (h *UserHandler) DeactivateUser(c *gin.Context) {
 }
 
 // AddUserPhoto godoc
-// @Summary Adiciona foto do usuário autenticado
+// @Summary Adiciona ou atualiza foto do usuário autenticado
 // @Tags Usuários
 // @Accept multipart/form-data
 // @Produce json
