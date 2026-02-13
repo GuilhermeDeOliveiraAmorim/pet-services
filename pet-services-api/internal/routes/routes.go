@@ -127,6 +127,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		authorizedOwner.GET("", handlerFactory.PetHandler.ListPets)
 		authorizedOwner.GET("/:pet_id", handlerFactory.PetHandler.GetPet)
 		authorizedOwner.PUT("/:pet_id", handlerFactory.PetHandler.UpdatePet)
+		authorizedOwner.DELETE("/:pet_id", handlerFactory.PetHandler.DeletePet)
 		authorizedOwner.POST("", handlerFactory.PetHandler.AddPet)
 		authorizedOwner.POST("/:pet_id/photos", handlerFactory.PetHandler.AddPetPhoto)
 		authorizedOwner.DELETE("/:pet_id/photos/:photo_id", handlerFactory.PetHandler.DeletePetPhoto)
