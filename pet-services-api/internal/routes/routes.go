@@ -7,6 +7,7 @@ import (
 	"pet-services-api/internal/handlers"
 	"pet-services-api/internal/middlewares"
 	"pet-services-api/internal/repository_impl"
+	"strings"
 	"time"
 
 	"pet-services-api/docs"
@@ -26,8 +27,14 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 
 	if host := config.GetSwaggerHost(); host != "" {
 		docs.SwaggerInfo.Host = host
+		if strings.Contains(host, "onrender.com") {
+			docs.SwaggerInfo.Schemes = []string{"https"}
+		} else {
+			docs.SwaggerInfo.Schemes = []string{"http"}
+		}
 	} else {
 		docs.SwaggerInfo.Host = "localhost:8080"
+		docs.SwaggerInfo.Schemes = []string{"http"}
 	}
 
 	docs.SwaggerInfo.BasePath = "/"
