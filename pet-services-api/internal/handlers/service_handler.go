@@ -80,3 +80,74 @@ func (h *ServiceHandler) AddService(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, output)
 }
+
+// AddServicePhoto godoc
+// @Summary Adiciona foto ao serviço
+// @Tags Serviços
+// @Accept multipart/form-data
+// @Produce json
+// @Param service_id path string true "ID do serviço"
+// @Param file formData file true "Imagem"
+// @Success 201 {object} usecases.AddServicePhotoOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Failure 401 {object} exceptions.ProblemDetails
+// @Failure 403 {object} exceptions.ProblemDetails
+// @Failure 404 {object} exceptions.ProblemDetails
+// @Failure 500 {object} exceptions.ProblemDetails
+// @Security Bearer
+// @Router /services/{service_id}/photos [post]
+func (h *ServiceHandler) AddServicePhoto(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	userID, exists := c.Get("user_id")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Usuário não autenticado",
+			Detail: "Não foi possível obter o ID do usuário autenticado",
+		})
+		h.Logger.LogBadRequest(ctx, "ServiceHandler.AddServicePhoto", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
+		return
+	}
+
+	serviceID := c.Param("service_id")
+	if serviceID == "" {
+		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "ID do serviço ausente",
+			Detail: "O ID do serviço é obrigatório",
+		})
+		h.Logger.LogBadRequest(ctx, "ServiceHandler.AddServicePhoto", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		return
+	}
+
+	file, header, err := c.Request.FormFile("file")
+	if err != nil {
+		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "Arquivo ausente",
+			Detail: "A imagem é obrigatória",
+		})
+		h.Logger.LogBadRequest(ctx, "ServiceHandler.AddServicePhoto", problem.Detail, err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		return
+	}
+	defer file.Close()
+
+	contentType := header.Header.Get("Content-Type")
+	input := usecases.AddServicePhotoInput{
+		UserID:      userID.(string),
+		ServiceID:   serviceID,
+		FileName:    header.Filename,
+		ContentType: contentType,
+		Size:        header.Size,
+		Reader:      file,
+	}
+
+	output, errs := h.ServiceFactory.AddServicePhoto.Execute(ctx, input)
+	if len(errs) > 0 {
+		exceptions.HandleErrors(c, errs)
+		return
+	}
+
+	c.JSON(http.StatusCreated, output)
+}

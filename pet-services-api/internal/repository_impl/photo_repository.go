@@ -33,6 +33,24 @@ func (r *photoRepository) CreateAndAttachToPet(petID string, photo *entities.Pho
 	})
 }
 
+func (r *photoRepository) CreateAndAttachToService(serviceID string, photo *entities.Photo) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		var model models.Photo
+		model.FromEntity(photo)
+
+		if err := tx.Create(&model).Error; err != nil {
+			return err
+		}
+
+		service := models.Service{ID: serviceID}
+		if err := tx.Model(&service).Association("Photos").Append(&model); err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
 func (r *photoRepository) CreateAndAttachToUser(userID string, photo *entities.Photo) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		var model models.Photo
