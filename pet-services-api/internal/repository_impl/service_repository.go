@@ -1,6 +1,9 @@
 package repository_impl
 
 import (
+	"errors"
+
+	"pet-services-api/internal/consts"
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/models"
 
@@ -19,4 +22,17 @@ func (r *serviceRepository) Create(service *entities.Service) error {
 	var model models.Service
 	model.FromEntity(service)
 	return r.db.Create(&model).Error
+}
+
+func (r *serviceRepository) FindByID(id string) (*entities.Service, error) {
+	var model models.Service
+	err := r.db.First(&model, "id = ?", id).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New(consts.ServiceNotFoundError)
+		}
+		return nil, err
+	}
+
+	return model.ToEntity(), nil
 }

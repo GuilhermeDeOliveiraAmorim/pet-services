@@ -24,6 +24,19 @@ func (r *providerRepository) Create(provider *entities.Provider) error {
 	return r.db.Create(&model).Error
 }
 
+func (r *providerRepository) FindByID(id string) (*entities.Provider, error) {
+	var model models.Provider
+	err := r.db.First(&model, "id = ?", id).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New(consts.ProviderNotFoundError)
+		}
+		return nil, err
+	}
+
+	return model.ToEntity(), nil
+}
+
 func (r *providerRepository) FindByUserID(userID string) (*entities.Provider, error) {
 	var model models.Provider
 	err := r.db.First(&model, "user_id = ?", userID).Error

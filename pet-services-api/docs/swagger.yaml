@@ -390,6 +390,24 @@ definitions:
       provider:
         $ref: '#/definitions/entities.Provider'
     type: object
+  usecases.AddRequestInputBody:
+    properties:
+      notes:
+        type: string
+      pet_id:
+        type: string
+      service_id:
+        type: string
+    type: object
+  usecases.AddRequestOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+      request:
+        $ref: '#/definitions/entities.Request'
+    type: object
   usecases.AddServiceInputBody:
     properties:
       description:
@@ -1187,6 +1205,53 @@ paths:
       summary: Lista estados
       tags:
       - Referências
+  /requests:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados da solicitação
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.AddRequestInputBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/usecases.AddRequestOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Cria uma solicitação de serviço
+      tags:
+      - Solicitações
   /services:
     post:
       consumes:

@@ -129,6 +129,12 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		authorizedServices.POST("", handlerFactory.ServiceHandler.AddService)
 	}
 
+	authorizedRequests := r.Group("/requests/")
+	authorizedRequests.Use(middlewareFactory.AuthMiddleware(), middlewareFactory.OwnerOnlyMiddleware())
+	{
+		authorizedRequests.POST("", handlerFactory.RequestHandler.AddRequest)
+	}
+
 	authorizedAdmin := r.Group("/admin/")
 	authorizedAdmin.Use(middlewareFactory.AuthMiddleware(), middlewareFactory.AdminOnlyMiddleware())
 	{

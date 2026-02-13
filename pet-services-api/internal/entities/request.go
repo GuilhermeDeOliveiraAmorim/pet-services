@@ -28,6 +28,11 @@ type Request struct {
 	RejectReason string `json:"reject_reason"`
 }
 
+type RequestRepository interface {
+	Create(request *Request) error
+	ExistsPending(userID, serviceID, petID string) (bool, error)
+}
+
 func NewRequest(userID, providerID, serviceID string, pet Pet, notes string) (*Request, []exceptions.ProblemDetails) {
 	var problems []exceptions.ProblemDetails
 

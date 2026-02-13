@@ -20,6 +20,7 @@ type Provider struct {
 
 type ProviderRepository interface {
 	Create(provider *Provider) error
+	FindByID(id string) (*Provider, error)
 	FindByUserID(userID string) (*Provider, error)
 }
 

@@ -5,4 +5,5 @@ const (
 	SpecieNotFoundErr     = "especie não encontrada"
 	PetNotFoundError      = "pet não encontrado"
 	ProviderNotFoundError = "provedor não encontrado"
+	ServiceNotFoundError  = "servico não encontrado"
 )
