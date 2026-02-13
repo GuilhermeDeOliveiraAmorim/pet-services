@@ -1,0 +1,13 @@
+.git
+.gitignore
+README.md
+pet-services-front/
+pet-services-infra/
+.env
+.env.local
+.DS_Store
+node_modules/
+coverage/
+*.log
+.vscode/
+.idea/
