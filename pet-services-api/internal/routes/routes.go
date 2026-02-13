@@ -152,6 +152,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	{
 		authorizedServices.POST("", handlerFactory.ServiceHandler.AddService)
 		authorizedServices.PUT("/:service_id", handlerFactory.ServiceHandler.UpdateService)
+		authorizedServices.DELETE("/:service_id", handlerFactory.ServiceHandler.DeleteService)
 		authorizedServices.POST("/:service_id/photos", handlerFactory.ServiceHandler.AddServicePhoto)
 		authorizedServices.DELETE("/:service_id/photos/:photo_id", handlerFactory.ServiceHandler.DeleteServicePhoto)
 		authorizedServices.POST("/:service_id/tags", handlerFactory.ServiceHandler.AddServiceTag)

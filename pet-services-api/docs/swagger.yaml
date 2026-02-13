@@ -637,6 +637,13 @@ definitions:
       message:
         type: string
     type: object
+  usecases.DeleteServiceOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+    type: object
   usecases.DeleteServicePhotoOutput:
     properties:
       detail:
@@ -2523,6 +2530,47 @@ paths:
       tags:
       - Serviços
   /services/{service_id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID do serviço
+        in: path
+        name: service_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.DeleteServiceOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Remove um serviço
+      tags:
+      - Serviços
     get:
       consumes:
       - application/json
