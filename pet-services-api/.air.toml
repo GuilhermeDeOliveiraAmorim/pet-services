@@ -1,0 +1,15 @@
+root = "."
+
+[build]
+  cmd = "go build -o ./bin/api ./cmd/api"
+  bin = "./bin/api"
+  delay = 1000
+  exclude_dir = ["bin", "docs", "vendor", "tmp"]
+  include_ext = ["go", "env", "json", "yaml", "yml"]
+  stop_on_error = true
+
+[log]
+  time = true
+
+[misc]
+  clean_on_exit = true

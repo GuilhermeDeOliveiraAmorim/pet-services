@@ -10,6 +10,7 @@ help:
 	@echo "Available targets:"
 	@echo "  make build        - Build the API binary"
 	@echo "  make run          - Run the API server"
+	@echo "  make dev          - Run with hot reload (air)"
 	@echo "  make test         - Run all tests"
 	@echo "  make migrate      - Run database migrations"
 	@echo "  make clean        - Clean build artifacts"
@@ -23,6 +24,10 @@ build:
 run: build
 	@echo "Starting API server..."
 	@./bin/api
+
+dev:
+	@echo "Starting API with hot reload (air)..."
+	@air
 
 test:
 	@echo "Running tests..."

@@ -59,6 +59,20 @@ make migrate
 make run
 ```
 
+### Hot reload (Air)
+
+Instale o Air:
+
+```bash
+go install github.com/air-verse/air@latest
+```
+
+Depois rode:
+
+```bash
+make dev
+```
+
 A API estará disponível em `http://localhost:8080`.
 
 ## Documentação Swagger
