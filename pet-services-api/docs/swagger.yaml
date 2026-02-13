@@ -2388,8 +2388,6 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
-      security:
-      - Bearer: []
       summary: Lista espécies
       tags:
       - Espécies
@@ -2429,8 +2427,6 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
-      security:
-      - Bearer: []
       summary: Lista tags com paginação
       tags:
       - Tags

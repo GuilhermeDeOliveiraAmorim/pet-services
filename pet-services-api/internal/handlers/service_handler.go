@@ -232,7 +232,6 @@ func (h *ServiceHandler) SearchServices(c *gin.Context) {
 // @Failure 401 {object} exceptions.ProblemDetails
 // @Failure 403 {object} exceptions.ProblemDetails
 // @Failure 500 {object} exceptions.ProblemDetails
-// @Security Bearer
 // @Router /tags [get]
 func (h *ServiceHandler) ListTags(c *gin.Context) {
 	ctx := c.Request.Context()

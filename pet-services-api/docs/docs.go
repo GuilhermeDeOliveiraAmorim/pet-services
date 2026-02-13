@@ -2038,11 +2038,6 @@ const docTemplate = `{
         },
         "/species": {
             "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -2083,11 +2078,6 @@ const docTemplate = `{
         },
         "/tags": {
             "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],

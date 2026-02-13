@@ -2032,11 +2032,6 @@
         },
         "/species": {
             "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -2077,11 +2072,6 @@
         },
         "/tags": {
             "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
