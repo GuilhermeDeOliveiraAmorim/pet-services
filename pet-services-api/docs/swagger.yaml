@@ -88,6 +88,91 @@ definitions:
       url:
         type: string
     type: object
+  entities.Provider:
+    properties:
+      active:
+        type: boolean
+      address:
+        $ref: '#/definitions/entities.Address'
+      average_rating:
+        type: number
+      business_name:
+        type: string
+      created_at:
+        type: string
+      deactivated_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      photos:
+        items:
+          $ref: '#/definitions/entities.Photo'
+        type: array
+      price_range:
+        type: string
+      requests:
+        items:
+          $ref: '#/definitions/entities.Request'
+        type: array
+      reviews:
+        items:
+          $ref: '#/definitions/entities.Review'
+        type: array
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  entities.Request:
+    properties:
+      active:
+        type: boolean
+      created_at:
+        type: string
+      deactivated_at:
+        type: string
+      id:
+        type: string
+      notes:
+        type: string
+      pet:
+        $ref: '#/definitions/entities.Pet'
+      provider_id:
+        type: string
+      reject_reason:
+        type: string
+      service_id:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  entities.Review:
+    properties:
+      active:
+        type: boolean
+      comment:
+        type: string
+      created_at:
+        type: string
+      deactivated_at:
+        type: string
+      id:
+        type: string
+      provider_id:
+        type: string
+      rating:
+        type: number
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
   entities.Species:
     properties:
       active:
@@ -215,6 +300,26 @@ definitions:
         type: string
       photo:
         $ref: '#/definitions/entities.Photo'
+    type: object
+  usecases.AddProviderInputBody:
+    properties:
+      address:
+        $ref: '#/definitions/entities.Address'
+      business_name:
+        type: string
+      description:
+        type: string
+      price_range:
+        type: string
+    type: object
+  usecases.AddProviderOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+      provider:
+        $ref: '#/definitions/entities.Provider'
     type: object
   usecases.AddUserPhotoOutput:
     properties:
@@ -879,6 +984,53 @@ paths:
       summary: Adiciona foto ao pet
       tags:
       - Pets
+  /providers:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados do provedor
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.AddProviderInputBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/usecases.AddProviderOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Cria um provedor para o usuário autenticado
+      tags:
+      - Provedores
   /reference/cities:
     get:
       consumes:
