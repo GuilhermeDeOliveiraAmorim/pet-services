@@ -28,7 +28,10 @@ func NewSpecieHandler(factory *factories.SpecieFactory, logger logging.LoggerInt
 // @Accept json
 // @Produce json
 // @Success 200 {object} usecases.ListSpeciesOutput
+// @Failure 401 {object} exceptions.ProblemDetails
+// @Failure 403 {object} exceptions.ProblemDetails
 // @Failure 500 {object} exceptions.ProblemDetails
+// @Security Bearer
 // @Router /species [get]
 func (h *SpecieHandler) ListSpecies(c *gin.Context) {
 	ctx := c.Request.Context()
