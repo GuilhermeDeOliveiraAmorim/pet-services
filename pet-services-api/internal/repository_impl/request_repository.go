@@ -28,3 +28,11 @@ func (r *requestRepository) ExistsPending(userID, serviceID, petID string) (bool
 		Count(&count).Error
 	return count > 0, err
 }
+
+func (r *requestRepository) ExistsCompleted(userID, providerID string) (bool, error) {
+	var count int64
+	err := r.db.Model(&models.Request{}).
+		Where("user_id = ? AND provider_id = ? AND status = ?", userID, providerID, entities.RequestStatuses.Completed).
+		Count(&count).Error
+	return count > 0, err
+}

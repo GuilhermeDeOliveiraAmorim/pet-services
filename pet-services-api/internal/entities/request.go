@@ -9,12 +9,14 @@ type RequestStatusENUM struct {
 	Pending  string `json:"pending"`
 	Accepted string `json:"accepted"`
 	Rejected string `json:"rejected"`
+	Completed string `json:"completed"`
 }
 
 var RequestStatuses = RequestStatusENUM{
 	Pending:  "pending",
 	Accepted: "accepted",
 	Rejected: "rejected",
+	Completed: "completed",
 }
 
 type Request struct {
@@ -31,6 +33,7 @@ type Request struct {
 type RequestRepository interface {
 	Create(request *Request) error
 	ExistsPending(userID, serviceID, petID string) (bool, error)
+	ExistsCompleted(userID, providerID string) (bool, error)
 }
 
 func NewRequest(userID, providerID, serviceID string, pet Pet, notes string) (*Request, []exceptions.ProblemDetails) {

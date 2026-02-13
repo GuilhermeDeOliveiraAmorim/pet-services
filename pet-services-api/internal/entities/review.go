@@ -10,6 +10,10 @@ type Review struct {
 	Comment    string  `json:"comment"`
 }
 
+type ReviewRepository interface {
+	Create(review *Review) error
+}
+
 func NewReview(userID string, providerID string, rating float64, comment string) (*Review, []exceptions.ProblemDetails) {
 	var problems []exceptions.ProblemDetails
 
