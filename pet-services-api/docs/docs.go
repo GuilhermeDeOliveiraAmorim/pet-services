@@ -799,6 +799,67 @@ const docTemplate = `{
                 }
             }
         },
+        "/providers/{provider_id}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Provedores"
+                ],
+                "summary": "Obtém detalhes de um provedor",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID do provedor",
+                        "name": "provider_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Número da página de serviços",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Itens por página de serviços",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/usecases.GetProviderOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
         "/providers/{provider_id}/reviews": {
             "post": {
                 "security": [
@@ -3420,6 +3481,32 @@ const docTemplate = `{
             "properties": {
                 "user": {
                     "$ref": "#/definitions/entities.User"
+                }
+            }
+        },
+        "usecases.GetProviderOutput": {
+            "type": "object",
+            "properties": {
+                "current_page": {
+                    "type": "integer"
+                },
+                "items_per_page": {
+                    "type": "integer"
+                },
+                "provider": {
+                    "$ref": "#/definitions/entities.Provider"
+                },
+                "services": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.Service"
+                    }
+                },
+                "total_items": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
                 }
             }
         },

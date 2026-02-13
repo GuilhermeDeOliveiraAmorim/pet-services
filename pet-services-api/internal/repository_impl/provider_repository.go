@@ -26,7 +26,10 @@ func (r *providerRepository) Create(provider *entities.Provider) error {
 
 func (r *providerRepository) FindByID(id string) (*entities.Provider, error) {
 	var model models.Provider
-	err := r.db.First(&model, "id = ?", id).Error
+	err := r.db.
+		Preload("Photos").
+		Preload("Reviews").
+		First(&model, "id = ?", id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New(consts.ProviderNotFoundError)
@@ -39,7 +42,10 @@ func (r *providerRepository) FindByID(id string) (*entities.Provider, error) {
 
 func (r *providerRepository) FindByUserID(userID string) (*entities.Provider, error) {
 	var model models.Provider
-	err := r.db.First(&model, "user_id = ?", userID).Error
+	err := r.db.
+		Preload("Photos").
+		Preload("Reviews").
+		First(&model, "user_id = ?", userID).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New(consts.ProviderNotFoundError)

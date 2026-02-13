@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/factories"
@@ -137,4 +138,59 @@ func (h *ProviderHandler) AddProviderPhoto(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, output)
+}
+
+// GetProvider godoc
+// @Summary Obtém detalhes de um provedor
+// @Tags Provedores
+// @Accept json
+// @Produce json
+// @Param provider_id path string true "ID do provedor"
+// @Param page query int false "Número da página de serviços"
+// @Param page_size query int false "Itens por página de serviços"
+// @Success 200 {object} usecases.GetProviderOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Failure 404 {object} exceptions.ProblemDetails
+// @Failure 500 {object} exceptions.ProblemDetails
+// @Router /providers/{provider_id} [get]
+func (h *ProviderHandler) GetProvider(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	providerID := c.Param("provider_id")
+	if providerID == "" {
+		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "ID do provedor ausente",
+			Detail: "O ID do provedor é obrigatório",
+		})
+		h.Logger.LogBadRequest(ctx, "ProviderHandler.GetProvider", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		return
+	}
+
+	page := 1
+	pageSize := 10
+	if p := c.Query("page"); p != "" {
+		if val, err := strconv.Atoi(p); err == nil && val > 0 {
+			page = val
+		}
+	}
+	if ps := c.Query("page_size"); ps != "" {
+		if val, err := strconv.Atoi(ps); err == nil && val > 0 {
+			pageSize = val
+		}
+	}
+
+	input := usecases.GetProviderInput{
+		ProviderID: providerID,
+		Page:       page,
+		PageSize:   pageSize,
+	}
+
+	output, errs := h.ProviderFactory.GetProvider.Execute(ctx, input)
+	if len(errs) > 0 {
+		exceptions.HandleErrors(c, errs)
+		return
+	}
+
+	c.JSON(http.StatusOK, output)
 }

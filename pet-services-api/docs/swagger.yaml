@@ -626,6 +626,23 @@ definitions:
       user:
         $ref: '#/definitions/entities.User'
     type: object
+  usecases.GetProviderOutput:
+    properties:
+      current_page:
+        type: integer
+      items_per_page:
+        type: integer
+      provider:
+        $ref: '#/definitions/entities.Provider'
+      services:
+        items:
+          $ref: '#/definitions/entities.Service'
+        type: array
+      total_items:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
   usecases.GetServiceOutput:
     properties:
       service:
@@ -1477,6 +1494,46 @@ paths:
       security:
       - Bearer: []
       summary: Cria um provedor para o usuário autenticado
+      tags:
+      - Provedores
+  /providers/{provider_id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID do provedor
+        in: path
+        name: provider_id
+        required: true
+        type: string
+      - description: Número da página de serviços
+        in: query
+        name: page
+        type: integer
+      - description: Itens por página de serviços
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.GetProviderOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Obtém detalhes de um provedor
       tags:
       - Provedores
   /providers/{provider_id}/reviews:
