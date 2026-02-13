@@ -19,6 +19,7 @@ type Provider struct {
 }
 
 type ProviderRepository interface {
+	Create(provider *Provider) error
 	FindByUserID(userID string) (*Provider, error)
 }
 

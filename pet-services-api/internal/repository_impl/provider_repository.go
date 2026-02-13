@@ -18,6 +18,12 @@ func NewProviderRepository(db *gorm.DB) entities.ProviderRepository {
 	return &providerRepository{db: db}
 }
 
+func (r *providerRepository) Create(provider *entities.Provider) error {
+	var model models.Provider
+	model.FromEntity(provider)
+	return r.db.Create(&model).Error
+}
+
 func (r *providerRepository) FindByUserID(userID string) (*entities.Provider, error) {
 	var model models.Provider
 	err := r.db.First(&model, "user_id = ?", userID).Error
