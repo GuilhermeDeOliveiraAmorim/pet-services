@@ -6,4 +6,5 @@ const (
 	PetNotFoundError      = "pet não encontrado"
 	ProviderNotFoundError = "provedor não encontrado"
 	ServiceNotFoundError  = "servico não encontrado"
+	TagNotFoundError      = "tag não encontrada"
 )

@@ -36,3 +36,17 @@ func (r *serviceRepository) FindByID(id string) (*entities.Service, error) {
 
 	return model.ToEntity(), nil
 }
+
+func (r *serviceRepository) HasTag(serviceID, tagID string) (bool, error) {
+	var count int64
+	err := r.db.Table("service_tags").
+		Where("service_id = ? AND tag_id = ?", serviceID, tagID).
+		Count(&count).Error
+	return count > 0, err
+}
+
+func (r *serviceRepository) AddTag(serviceID, tagID string) error {
+	service := models.Service{ID: serviceID}
+	tag := models.Tag{ID: tagID}
+	return r.db.Model(&service).Association("Tags").Append(&tag)
+}

@@ -7,6 +7,12 @@ type Tag struct {
 	Name string `json:"name"`
 }
 
+type TagRepository interface {
+	Create(tag *Tag) error
+	FindByID(id string) (*Tag, error)
+	FindByName(name string) (*Tag, error)
+}
+
 func NewTag(name string) (*Tag, []exceptions.ProblemDetails) {
 	var problems []exceptions.ProblemDetails
 
