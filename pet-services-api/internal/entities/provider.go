@@ -22,6 +22,7 @@ type ProviderRepository interface {
 	Create(provider *Provider) error
 	FindByID(id string) (*Provider, error)
 	FindByUserID(userID string) (*Provider, error)
+	Update(provider *Provider) error
 }
 
 func NewProvider(userID string, businessName string, address Address, description string, priceRange string) (*Provider, []exceptions.ProblemDetails) {

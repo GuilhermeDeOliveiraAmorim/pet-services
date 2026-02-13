@@ -55,3 +55,9 @@ func (r *providerRepository) FindByUserID(userID string) (*entities.Provider, er
 
 	return model.ToEntity(), nil
 }
+
+func (r *providerRepository) Update(provider *entities.Provider) error {
+	var model models.Provider
+	model.FromEntity(provider)
+	return r.db.Save(&model).Error
+}
