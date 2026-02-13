@@ -33,7 +33,10 @@ func NewReferenceHandler(factory *factories.ReferenceFactory, logger logging.Log
 // @Accept json
 // @Produce json
 // @Success 200 {object} usecases.ListCountriesOutput
+// @Failure 401 {object} exceptions.ProblemDetails
+// @Failure 403 {object} exceptions.ProblemDetails
 // @Failure 500 {object} exceptions.ProblemDetails
+// @Security Bearer
 // @Router /reference/countries [get]
 func (h *ReferenceHandler) ListCountries(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -51,7 +54,10 @@ func (h *ReferenceHandler) ListCountries(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Success 200 {object} usecases.ListStatesOutput
+// @Failure 401 {object} exceptions.ProblemDetails
+// @Failure 403 {object} exceptions.ProblemDetails
 // @Failure 500 {object} exceptions.ProblemDetails
+// @Security Bearer
 // @Router /reference/states [get]
 func (h *ReferenceHandler) ListStates(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -71,7 +77,10 @@ func (h *ReferenceHandler) ListStates(c *gin.Context) {
 // @Param state_id query int false "ID do estado (IBGE)"
 // @Success 200 {object} usecases.ListCitiesOutput
 // @Failure 400 {object} exceptions.ProblemDetails
+// @Failure 401 {object} exceptions.ProblemDetails
+// @Failure 403 {object} exceptions.ProblemDetails
 // @Failure 500 {object} exceptions.ProblemDetails
+// @Security Bearer
 // @Router /reference/cities [get]
 func (h *ReferenceHandler) ListCities(c *gin.Context) {
 	ctx := c.Request.Context()

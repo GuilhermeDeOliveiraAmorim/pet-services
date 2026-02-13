@@ -68,9 +68,6 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	{
 		public.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 		public.GET("/health", handlerFactory.HealthHandler.HealthCheck)
-		public.GET("/reference/countries", handlerFactory.ReferenceHandler.ListCountries)
-		public.GET("/reference/states", handlerFactory.ReferenceHandler.ListStates)
-		public.GET("/reference/cities", handlerFactory.ReferenceHandler.ListCities)
 		public.GET("/species", handlerFactory.SpecieHandler.ListSpecies)
 
 		public.POST("/users/register", handlerFactory.UserHandler.RegisterUser)
@@ -108,6 +105,14 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		authorizedUser.POST("/change-password", handlerFactory.UserHandler.ChangePassword)
 		authorizedUser.POST("/update-email-verified", handlerFactory.UserHandler.UpdateEmailVerified)
 		authorizedUser.POST("/photos", handlerFactory.UserHandler.AddUserPhoto)
+	}
+
+	authorizedReference := r.Group("/reference/")
+	authorizedReference.Use(middlewareFactory.AuthMiddleware())
+	{
+		authorizedReference.GET("/countries", handlerFactory.ReferenceHandler.ListCountries)
+		authorizedReference.GET("/states", handlerFactory.ReferenceHandler.ListStates)
+		authorizedReference.GET("/cities", handlerFactory.ReferenceHandler.ListCities)
 	}
 
 	authorizedOwner := r.Group("/pets/")
