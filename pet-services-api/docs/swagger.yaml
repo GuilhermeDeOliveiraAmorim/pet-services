@@ -580,6 +580,15 @@ definitions:
       status:
         type: string
     type: object
+  usecases.ListCategoriesOutput:
+    properties:
+      categories:
+        items:
+          $ref: '#/definitions/entities.Category'
+        type: array
+      total:
+        type: integer
+    type: object
   usecases.ListCitiesOutput:
     properties:
       cities:
@@ -1046,6 +1055,46 @@ paths:
       tags:
       - Autenticação
   /categories:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Número da página
+        in: query
+        name: page
+        type: integer
+      - description: Itens por página
+        in: query
+        name: page_size
+        type: integer
+      - description: Filtro por nome
+        in: query
+        name: name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.ListCategoriesOutput'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Lista categorias com paginação
+      tags:
+      - Categorias
     post:
       consumes:
       - application/json

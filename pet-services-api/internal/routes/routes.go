@@ -132,6 +132,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	}
 
 	r.GET("/tags", middlewareFactory.AuthMiddleware(), middlewareFactory.ProviderOnlyMiddleware(), handlerFactory.ServiceHandler.ListTags)
+	r.GET("/categories", middlewareFactory.AuthMiddleware(), middlewareFactory.ProviderOnlyMiddleware(), handlerFactory.CategoryHandler.ListCategories)
 
 	authorizedRequests := r.Group("/requests/")
 	authorizedRequests.Use(middlewareFactory.AuthMiddleware(), middlewareFactory.OwnerOnlyMiddleware())

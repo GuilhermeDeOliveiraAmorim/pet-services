@@ -10,11 +10,13 @@ import (
 
 type CategoryFactory struct {
 	CreateCategory *usecases.CreateCategoryUseCase
+	ListCategories *usecases.ListCategoriesUseCase
 }
 
 func NewCategoryFactory(db *gorm.DB, logger logging.LoggerInterface) *CategoryFactory {
 	categoryRepo := repository_impl.NewCategoryRepository(db)
 	return &CategoryFactory{
 		CreateCategory: usecases.NewCreateCategoryUseCase(categoryRepo, logger),
+		ListCategories: usecases.NewListCategoriesUseCase(categoryRepo),
 	}
 }
