@@ -25,7 +25,9 @@ func (r *petRepository) Create(pet *entities.Pet) error {
 
 func (r *petRepository) FindByID(id string) (*entities.Pet, error) {
 	var model models.Pet
-	err := r.db.First(&model, "id = ?", id).Error
+	err := r.db.
+		Preload("Photos").
+		First(&model, "id = ?", id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New(consts.PetNotFoundError)

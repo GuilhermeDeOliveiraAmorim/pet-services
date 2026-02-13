@@ -149,3 +149,69 @@ func (h *PetHandler) AddPetPhoto(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, output)
 }
+
+// DeletePetPhoto godoc
+// @Summary Remove foto do pet
+// @Tags Pets
+// @Accept json
+// @Produce json
+// @Param pet_id path string true "ID do pet"
+// @Param photo_id path string true "ID da foto"
+// @Success 200 {object} usecases.DeletePetPhotoOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Failure 401 {object} exceptions.ProblemDetails
+// @Failure 403 {object} exceptions.ProblemDetails
+// @Failure 404 {object} exceptions.ProblemDetails
+// @Failure 500 {object} exceptions.ProblemDetails
+// @Security Bearer
+// @Router /pets/{pet_id}/photos/{photo_id} [delete]
+func (h *PetHandler) DeletePetPhoto(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	userID, exists := c.Get("user_id")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Usuário não autenticado",
+			Detail: "Não foi possível obter o ID do usuário autenticado",
+		})
+		h.Logger.LogBadRequest(ctx, "PetHandler.DeletePetPhoto", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
+		return
+	}
+
+	petID := c.Param("pet_id")
+	if petID == "" {
+		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "ID do pet ausente",
+			Detail: "O ID do pet é obrigatório",
+		})
+		h.Logger.LogBadRequest(ctx, "PetHandler.DeletePetPhoto", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		return
+	}
+
+	photoID := c.Param("photo_id")
+	if photoID == "" {
+		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "ID da foto ausente",
+			Detail: "O ID da foto é obrigatório",
+		})
+		h.Logger.LogBadRequest(ctx, "PetHandler.DeletePetPhoto", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		return
+	}
+
+	input := usecases.DeletePetPhotoInput{
+		UserID:  userID.(string),
+		PetID:   petID,
+		PhotoID: photoID,
+	}
+
+	output, errs := h.PetFactory.DeletePetPhoto.Execute(ctx, input)
+	if len(errs) > 0 {
+		exceptions.HandleErrors(c, errs)
+		return
+	}
+
+	c.JSON(http.StatusOK, output)
+}
