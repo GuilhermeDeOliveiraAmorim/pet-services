@@ -131,7 +131,6 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		authorizedServices.POST(":/service_id/tags", handlerFactory.ServiceHandler.AddServiceTag)
 	}
 
-	// Rota para listar tags (apenas providers autenticados)
 	r.GET("/tags", middlewareFactory.AuthMiddleware(), middlewareFactory.ProviderOnlyMiddleware(), handlerFactory.ServiceHandler.ListTags)
 
 	authorizedRequests := r.Group("/requests/")

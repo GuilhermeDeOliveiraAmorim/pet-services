@@ -50,7 +50,6 @@ func (r *tagRepository) FindByName(name string) (*entities.Tag, error) {
 	return model.ToEntity(), nil
 }
 
-// ListTagsPaginated retorna tags paginadas e filtradas por nome
 func (r *tagRepository) ListTagsPaginated(ctx context.Context, name string, offset, limit int) ([]entities.Tag, error) {
 	var tagModels []models.Tag
 	query := r.db.Model(&models.Tag{})
@@ -68,7 +67,6 @@ func (r *tagRepository) ListTagsPaginated(ctx context.Context, name string, offs
 	return tags, nil
 }
 
-// CountTags retorna o total de tags filtradas por nome
 func (r *tagRepository) CountTags(ctx context.Context, name string) (int, error) {
 	var count int64
 	query := r.db.Model(&models.Tag{})

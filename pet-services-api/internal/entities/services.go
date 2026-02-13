@@ -81,7 +81,6 @@ func NewService(providerID string, name string, description string, price float6
 		}))
 	}
 
-	// Validar lógica de preços
 	if price > 0 && (priceMinimum > 0 || priceMaximum > 0) {
 		problems = append(problems, exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
 			Title:  "Conflito de preços",

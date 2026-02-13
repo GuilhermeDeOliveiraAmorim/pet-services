@@ -5,12 +5,6 @@ import (
 	"pet-services-api/internal/entities"
 )
 
-// ListTagsInput define os parâmetros de entrada para paginação
-// Page: número da página (1-indexed)
-// PageSize: quantidade de itens por página
-// Name: filtro opcional por nome
-// ProviderID: ID do usuário provider autenticado
-// (ProviderID pode ser usado para validação, não para filtrar tags)
 type ListTagsInput struct {
 	Page       int
 	PageSize   int
@@ -18,24 +12,16 @@ type ListTagsInput struct {
 	ProviderID string
 }
 
-// ListTagsOutput define o resultado da listagem
-// Tags: lista de tags
-// Total: total de tags disponíveis (para paginação)
 type ListTagsOutput struct {
 	Tags  []entities.Tag
 	Total int
 }
 
-// TagRepository define interface para buscar tags
-// Precisa implementar ListTagsPaginated e CountTags
-// (CountTags pode ser embutido no ListTagsPaginated se preferir)
 type TagRepository interface {
 	ListTagsPaginated(ctx context.Context, name string, offset, limit int) ([]entities.Tag, error)
 	CountTags(ctx context.Context, name string) (int, error)
 }
 
-// ListTagsUseCase executa a listagem paginada de tags
-// Só providers autenticados podem acessar (validação fora do usecase)
 type ListTagsUseCase struct {
 	tagRepo TagRepository
 }
