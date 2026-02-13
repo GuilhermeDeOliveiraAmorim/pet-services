@@ -1,12 +1,15 @@
 package entities
 
 import (
+	"context"
 	"pet-services-api/internal/exceptions"
 )
 
 type CategoryRepository interface {
 	Create(category *Category) error
 	FindByName(name string) (*Category, error)
+	ListCategoriesPaginated(ctx context.Context, name string, offset, limit int) ([]Category, error)
+	CountCategories(ctx context.Context, name string) (int, error)
 }
 
 type Category struct {

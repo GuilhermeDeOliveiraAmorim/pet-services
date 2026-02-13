@@ -1,6 +1,7 @@
 package repository_impl
 
 import (
+	"context"
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/models"
 
@@ -28,4 +29,34 @@ func (r *categoryRepository) FindByName(name string) (*entities.Category, error)
 		return nil, err
 	}
 	return model.ToEntity(), nil
+}
+
+func (r *categoryRepository) ListCategoriesPaginated(ctx context.Context, name string, offset, limit int) ([]entities.Category, error) {
+	var models []models.Category
+	query := r.db.Model(&models)
+	if name != "" {
+		query = query.Where("name LIKE ?", "%"+name+"%")
+	}
+	err := query.Offset(offset).Limit(limit).Order("name asc").Find(&models).Error
+	if err != nil {
+		return nil, err
+	}
+	categories := make([]entities.Category, 0, len(models))
+	for _, m := range models {
+		categories = append(categories, *m.ToEntity())
+	}
+	return categories, nil
+}
+
+func (r *categoryRepository) CountCategories(ctx context.Context, name string) (int, error) {
+	var count int64
+	query := r.db.Model(&models.Category{})
+	if name != "" {
+		query = query.Where("name LIKE ?", "%"+name+"%")
+	}
+	err := query.Count(&count).Error
+	if err != nil {
+		return 0, err
+	}
+	return int(count), nil
 }
