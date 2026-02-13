@@ -70,7 +70,8 @@ func (r *requestRepository) List(userID, providerID, status string, page, pageSi
 		Preload("User").
 		Preload("Provider").
 		Preload("Service").
-		Preload("Pet.Species")
+		Preload("Pet.Species").
+		Where("active = ?", true)
 
 	if userID != "" {
 		query = query.Where("user_id = ?", userID)

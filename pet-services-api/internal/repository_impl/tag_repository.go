@@ -52,7 +52,7 @@ func (r *tagRepository) FindByName(name string) (*entities.Tag, error) {
 
 func (r *tagRepository) ListTagsPaginated(ctx context.Context, name string, offset, limit int) ([]entities.Tag, error) {
 	var tagModels []models.Tag
-	query := r.db.Model(&models.Tag{})
+	query := r.db.Model(&models.Tag{}).Where("active = ?", true)
 	if name != "" {
 		query = query.Where("name LIKE ?", "%"+name+"%")
 	}
@@ -69,7 +69,7 @@ func (r *tagRepository) ListTagsPaginated(ctx context.Context, name string, offs
 
 func (r *tagRepository) CountTags(ctx context.Context, name string) (int, error) {
 	var count int64
-	query := r.db.Model(&models.Tag{})
+	query := r.db.Model(&models.Tag{}).Where("active = ?", true)
 	if name != "" {
 		query = query.Where("name LIKE ?", "%"+name+"%")
 	}

@@ -77,7 +77,7 @@ func (r *userRepository) List(page, limit int) ([]*entities.User, int64, error) 
 	var modelsUsers []models.User
 	var total int64
 	offset := (page - 1) * limit
-	db := r.db.Model(&models.User{})
+	db := r.db.Model(&models.User{}).Where("active = ?", true)
 	db.Count(&total)
 	err := db.Offset(offset).Limit(limit).Preload("Photos").Preload("Pets").Find(&modelsUsers).Error
 	if err != nil {

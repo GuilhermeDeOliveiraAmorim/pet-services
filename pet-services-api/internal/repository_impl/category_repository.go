@@ -50,7 +50,7 @@ func (r *categoryRepository) FindByName(name string) (*entities.Category, error)
 
 func (r *categoryRepository) ListCategoriesPaginated(ctx context.Context, name string, offset, limit int) ([]entities.Category, error) {
 	var models []models.Category
-	query := r.db.Model(&models)
+	query := r.db.Model(&models).Where("active = ?", true)
 	if name != "" {
 		query = query.Where("name LIKE ?", "%"+name+"%")
 	}
@@ -67,7 +67,7 @@ func (r *categoryRepository) ListCategoriesPaginated(ctx context.Context, name s
 
 func (r *categoryRepository) CountCategories(ctx context.Context, name string) (int, error) {
 	var count int64
-	query := r.db.Model(&models.Category{})
+	query := r.db.Model(&models.Category{}).Where("active = ?", true)
 	if name != "" {
 		query = query.Where("name LIKE ?", "%"+name+"%")
 	}

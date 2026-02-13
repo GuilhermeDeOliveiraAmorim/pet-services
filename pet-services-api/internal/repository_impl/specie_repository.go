@@ -19,7 +19,7 @@ func NewSpecieRepository(db *gorm.DB) entities.SpecieRepository {
 
 func (r *specieRepository) List() ([]*entities.Species, error) {
 	var modelsSpecies []models.Species
-	err := r.db.Order("name asc").Find(&modelsSpecies).Error
+	err := r.db.Where("active = ?", true).Order("name asc").Find(&modelsSpecies).Error
 	if err != nil {
 		return nil, err
 	}
