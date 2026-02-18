@@ -772,6 +772,244 @@ docs: atualizar documentação de autenticação
 test: adicionar testes de rate limiting
 ```
 
+## ☁️ Armazenamento em Cloud (Google Cloud Storage)
+
+### Visão Geral
+
+A API suporta dois provedores de armazenamento:
+- **MinIO**: Para desenvolvimento local
+- **Google Cloud Storage (GCS)**: Para produção
+
+A seleção é automática baseada em variáveis de ambiente.
+
+### 🚀 Desenvolvimento Local (MinIO)
+
+MinIO está pré-configurado no `docker-compose.yml`. Basta rodar:
+
+```bash
+docker-compose up -d
+# MinIO será usado automaticamente
+```
+
+**Variáveis necessárias:**
+```env
+MINIO_ENDPOINT=minio:9000
+MINIO_ACCESS_KEY=petimages
+MINIO_SECRET_KEY=petimages123
+MINIO_BUCKET=pet-services
+MINIO_PUBLIC_ENDPOINT=http://localhost:9002
+MINIO_USE_SSL=false
+```
+
+**Console MinIO**: http://localhost:9001 (petimages / petimages123)
+
+### 🌐 Produção (Google Cloud Storage)
+
+#### ⚡ Quick Start (5 minutos)
+
+1. **Criar Service Account no Google Cloud**
+```bash
+gcloud iam service-accounts create pet-services \
+  --display-name="Pet Services Storage"
+
+gcloud projects add-iam-policy-binding seu-projeto-id \
+  --member="serviceAccount:pet-services@seu-projeto-id.iam.gserviceaccount.com" \
+  --role="roles/storage.admin"
+
+gcloud iam service-accounts keys create sa-key.json \
+  --iam-account=pet-services@seu-projeto-id.iam.gserviceaccount.com
+```
+
+2. **Criar Bucket GCS**
+```bash
+gsutil mb -l us-central1 gs://seu-bucket-nome
+```
+
+3. **Configurar Variáveis de Ambiente**
+```env
+IMAGE_BUCKET_NAME=seu-bucket-nome
+GOOGLE_APPLICATION_CREDENTIALS=/caminho/para/sa-key.json
+```
+
+4. **Testar Conexão**
+```bash
+go run ./cmd/test-gcs/main.go
+```
+
+#### 📋 Configuração Completa
+
+**Pré-requisitos:**
+- Google Cloud Account
+- `gcloud` CLI instalado
+- Projeto Google Cloud criado
+
+**Passos detalhados:**
+
+1. **Autenticar no Google Cloud**
+```bash
+curl https://sdk.cloud.google.com | bash
+gcloud auth login
+gcloud config set project seu-gcp-project-id
+```
+
+2. **Criar Service Account com Storage Admin**
+```bash
+gcloud iam service-accounts create pet-services-storage \
+  --display-name="Pet Services Storage"
+
+gcloud projects add-iam-policy-binding seu-gcp-project-id \
+  --member="serviceAccount:pet-services-storage@seu-gcp-project-id.iam.gserviceaccount.com" \
+  --role="roles/storage.admin"
+```
+
+3. **Gerar e Baixar Chave JSON**
+```bash
+gcloud iam service-accounts keys create service-account-key.json \
+  --iam-account=pet-services-storage@seu-gcp-project-id.iam.gserviceaccount.com
+```
+
+4. **Criar Bucket**
+```bash
+gsutil mb -p seu-gcp-project-id -l us-central1 gs://pet-services-bucket
+
+# (Opcional) Configurar CORS
+cat > cors.json << EOF
+[
+  {
+    "origin": ["https://seu-dominio.com"],
+    "method": ["GET", "PUT", "DELETE"],
+    "responseHeader": ["Content-Type"],
+    "maxAgeSeconds": 3600
+  }
+]
+EOF
+gsutil cors set cors.json gs://pet-services-bucket
+```
+
+5. **Configurar .env**
+```env
+IMAGE_BUCKET_NAME=pet-services-bucket
+GOOGLE_APPLICATION_CREDENTIALS=/app/service-account-key.json
+```
+
+6. **Migrar Dados do MinIO (Opcional)**
+```bash
+go run ./scripts/migrate-to-gcs/main.go \
+  --minio-endpoint=localhost:9000 \
+  --minio-bucket=pet-services \
+  --minio-access-key=petimages \
+  --minio-secret-key=petimages123 \
+  --gcs-bucket=pet-services-bucket \
+  --gcs-project=seu-gcp-project-id
+```
+
+#### 🏗️ Arquitetura de Armazenamento
+
+Ambos os provedores implementam a interface `ObjectStorage`:
+
+```go
+type ObjectStorage interface {
+    Upload(ctx context.Context, objectName string, reader io.Reader, size int64, contentType string) error
+    GenerateReadURL(ctx context.Context, objectName string, ttl time.Duration) (string, error)
+    Delete(ctx context.Context, objectName string) error
+}
+```
+
+**Seleção automática:**
+```
+if IMAGE_BUCKET_NAME (ou GCS_BUCKET_NAME) configurado:
+    ✅ Use Google Cloud Storage
+else:
+    ✅ Use MinIO
+```
+
+#### 📝 Exemplos de Código
+
+**Upload de Foto**
+```go
+func (h *PhotoHandler) Upload(c *gin.Context) {
+    file, _ := c.FormFile("photo")
+    f, _ := file.Open()
+    defer f.Close()
+    
+    objectName := fmt.Sprintf("users/%s/%s", userID, file.Filename)
+    h.storageService.Upload(c.Request.Context(), objectName, f, file.Size, file.Header.Get("Content-Type"))
+}
+```
+
+**Gerar URL Assinada (15 minutos)**
+```go
+func (h *PhotoHandler) GetSignedURL(c *gin.Context) {
+    url, _ := h.storageService.GenerateReadURL(
+        c.Request.Context(),
+        objectName,
+        15 * time.Minute,
+    )
+    c.JSON(200, gin.H{"url": url})
+}
+```
+
+**Deletar Foto**
+```go
+func (h *PhotoHandler) Delete(c *gin.Context) {
+    h.storageService.Delete(c.Request.Context(), objectName)
+}
+```
+
+#### 🔐 Segurança
+
+- **URLs assinadas** expiram automaticamente (15 minutos padrão)
+- **Bucket privado** por padrão (sem acesso público)
+- **Service account** com permissões limitadas apenas ao bucket necessário
+- **Sem credenciais** no repositório (use arquivo .json)
+
+#### ✅ Verificação
+
+**Testar conexão GCS:**
+```bash
+go run ./cmd/test-gcs/main.go
+```
+
+**Esperado:**
+```
+✅ Conectado ao Google Cloud Storage
+✅ Bucket encontrado: seu-bucket
+📤 Testando upload... ✅ Upload bem-sucedido
+🔗 Testando URL assinada... ✅ URL assinada gerada
+🗑️  Limpando... ✅ Arquivo de teste deletado
+
+✅ TUDO FUNCIONANDO!
+```
+
+#### 🚨 Troubleshooting
+
+| Erro | Solução |
+|------|---------|
+| "bucket not found" | Verificar `IMAGE_BUCKET_NAME` e nome real do bucket |
+| "permission denied" | Service account precisa de `Storage Admin` role |
+| "invalid credentials" | Verificar caminho e validade do arquivo sa-key.json |
+| "connection refused" | Verificar endpoint MinIO em desenvolvimento |
+
+#### 📊 Migração Gradual (Opcional)
+
+Para transição suave entre MinIO e GCS:
+
+**Fase 1:** Dev → MinIO, Staging → MinIO, Prod → GCS  
+**Fase 2:** Validar dados em GCS  
+**Fase 3:** Testar failover (GCS → MinIO)  
+**Fase 4:** Remover MinIO quando estável  
+
+#### 🎯 Comparação
+
+| Aspecto | MinIO | GCS |
+|---------|-------|-----|
+| Desenvolvimento | ✅ Ideal | ❌ Overkill |
+| Produção | ⚠️ Complexo | ✅ Recomendado |
+| Custo | 🔴 Alto | 🟢 Baixo (~$0.02-$20/mês) |
+| Manutenção | 🔴 Manual | 🟢 Automática |
+| Escalabilidade | 🟡 Limitada | 🟢 Infinita |
+| Durabilidade | 🟡 Boa | 🟢 11 noves |
+
 ## 📞 Suporte e Contato
 
 - **Autor**: Guilherme de Oliveira Amorim
@@ -785,6 +1023,4 @@ MIT License - veja [LICENSE](LICENSE) para detalhes.
 
 ---
 
-**Última atualização**: 13 de fevereiro de 2026  
-**Versão da API**: 1.0.0  
-**Versão do Go**: 1.24+
+**Última atualização**: 18 de fevereiro de 2026  

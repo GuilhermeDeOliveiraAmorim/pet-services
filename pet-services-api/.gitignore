@@ -4,3 +4,4 @@ api
 main
 test-rate-limiting.sh
 /tmp
+/gcp

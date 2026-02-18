@@ -27,10 +27,8 @@ type HandlerFactory struct {
 }
 
 func NewHandlerFactory(inputFactory database.StorageInput, logger logging.LoggerInterface) *HandlerFactory {
-	storageService, err := storage.NewMinioServiceFromEnv()
-	if err != nil {
-		logger.LogError(context.Background(), "HandlerFactory", "Falha ao configurar MinIO", err)
-	}
+	storageService := initializeStorageService(logger)
+
 	userFactory := factories.NewUserFactory(inputFactory.DB, storageService, logger)
 	mailService := mail.GetEmailServiceFromEnv()
 	tokenFactory := factories.NewTokenFactory(inputFactory.DB, mailService, 0, storageService, logger)
@@ -59,7 +57,24 @@ func NewHandlerFactory(inputFactory database.StorageInput, logger logging.Logger
 		Logger:           logger,
 	}
 }
+func initializeStorageService(logger logging.LoggerInterface) storage.ObjectStorage {
+	// Try to initialize GCS if configured
+	if gcsService, err := storage.NewGCSServiceFromEnv(); err == nil {
+		logger.LogInfo(context.Background(), "StorageService", "Google Cloud Storage inicializado")
+		return gcsService
+	}
 
+	// Fall back to MinIO
+	minioService, err := storage.NewMinioServiceFromEnv()
+	if err != nil {
+		logger.LogError(context.Background(), "StorageService", "Falha ao configurar armazenamento", err)
+		// Return nil service - will cause errors if storage is used
+		return nil
+	}
+
+	logger.LogInfo(context.Background(), "StorageService", "MinIO inicializado")
+	return minioService
+}
 func (hf *HandlerFactory) IsValidULID(ctx context.Context, id string) bool {
 	var isValid = true
 
