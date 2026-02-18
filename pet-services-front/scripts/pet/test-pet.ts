@@ -52,7 +52,10 @@ const run = async () => {
       age: getResult.pet.age + 1,
       notes: `Updated at ${Date.now()}`,
     });
-    console.log("Update ok:", updateResult.message ?? updateResult.detail ?? "ok");
+    console.log(
+      "Update ok:",
+      updateResult.message ?? updateResult.detail ?? "ok",
+    );
   } else {
     console.log("ℹ No pets found. Skipping get/update tests.");
   }
@@ -60,7 +63,7 @@ const run = async () => {
   console.log("→ Add pet");
   const addResult = await addPetUseCase.execute({
     name: `Pet Test ${Date.now()}`,
-    speciesId: "1", // Ajuste conforme species disponíveis
+    speciesId: "01KG7BG1XN0BQ4KHKPHY5V5ZEW", // Cachorro
     age: 2,
     weight: 5.5,
     notes: "Test pet created at " + new Date().toISOString(),
@@ -74,7 +77,10 @@ const run = async () => {
   if (addResult.pet?.id) {
     console.log("→ Delete pet");
     const deleteResult = await deletePetUseCase.execute(addResult.pet.id);
-    console.log("Delete ok:", deleteResult.message ?? deleteResult.detail ?? "ok");
+    console.log(
+      "Delete ok:",
+      deleteResult.message ?? deleteResult.detail ?? "ok",
+    );
   }
 };
 
@@ -83,5 +89,13 @@ run().catch((error) => {
   const data = error?.response?.data;
   const message = error?.message;
   console.error("Erro no teste de pets:", { status, data, message });
+
+  if (status === 404) {
+    console.log("\nℹ Verificar se:");
+    console.log("  - API está rodando em", apiBaseUrl);
+    console.log("  - Usuário tem tipo 'owner'");
+    console.log("  - Perfil do usuário está completo");
+  }
+
   process.exit(1);
 });
