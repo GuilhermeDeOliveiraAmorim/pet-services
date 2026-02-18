@@ -125,7 +125,7 @@ func ProfileCompleteMiddleware(logger logging.LoggerInterface, userRepository en
 		fullPath := c.FullPath()
 		method := c.Request.Method
 		if (method == http.MethodGet && fullPath == "/users/profile") ||
-			(method == http.MethodPut && fullPath == "/users") ||
+			(method == http.MethodPut && (fullPath == "/users" || fullPath == "/users/")) ||
 			(method == http.MethodPost && fullPath == "/auth/logout") {
 			c.Next()
 			return
