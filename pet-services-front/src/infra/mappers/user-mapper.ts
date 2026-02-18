@@ -1,6 +1,56 @@
 import type { User } from "@/domain";
 
-export const mapUserFromApi = (user?: Record<string, any> | null): User => {
+interface RawLogin {
+  email?: string;
+  password?: string;
+}
+interface RawPhone {
+  countryCode?: string;
+  areaCode?: string;
+  number?: string;
+  country_code?: string;
+  area_code?: string;
+}
+interface RawLocation {
+  latitude?: number;
+  longitude?: number;
+  lat?: number;
+  lng?: number;
+}
+interface RawAddress {
+  street?: string;
+  number?: string;
+  neighborhood?: string;
+  city?: string;
+  zipCode?: string;
+  zip_code?: string;
+  state?: string;
+  country?: string;
+  complement?: string;
+  location?: RawLocation;
+}
+interface RawUser {
+  id?: string;
+  active?: boolean;
+  created_at?: string;
+  createdAt?: string;
+  updated_at?: string;
+  updatedAt?: string;
+  deactivated_at?: string;
+  deactivatedAt?: string;
+  name?: string;
+  userType?: string;
+  user_type?: string;
+  login?: RawLogin;
+  phone?: RawPhone;
+  address?: RawAddress;
+  emailVerified?: boolean;
+  email_verified?: boolean;
+  photos?: unknown[];
+  pets?: unknown[];
+}
+
+export const mapUserFromApi = (user?: RawUser | null): User => {
   const raw = user ?? {};
 
   return {
@@ -10,7 +60,7 @@ export const mapUserFromApi = (user?: Record<string, any> | null): User => {
     updatedAt: raw.updated_at ?? raw.updatedAt ?? null,
     deactivatedAt: raw.deactivated_at ?? raw.deactivatedAt ?? null,
     name: raw.name ?? "",
-    userType: raw.userType ?? raw.user_type ?? "owner",
+    userType: (raw.userType ?? raw.user_type ?? "owner") as User["userType"],
     login: {
       email: raw.login?.email ?? "",
       password: raw.login?.password ?? "",
@@ -30,14 +80,12 @@ export const mapUserFromApi = (user?: Record<string, any> | null): User => {
       country: raw.address?.country ?? "",
       complement: raw.address?.complement ?? "",
       location: {
-        latitude:
-          raw.address?.location?.latitude ?? raw.address?.location?.lat ?? 0,
-        longitude:
-          raw.address?.location?.longitude ?? raw.address?.location?.lng ?? 0,
+        latitude: raw.address?.location?.latitude ?? raw.address?.location?.lat ?? 0,
+        longitude: raw.address?.location?.longitude ?? raw.address?.location?.lng ?? 0,
       },
     },
     emailVerified: raw.emailVerified ?? raw.email_verified ?? false,
-    photos: raw.photos ?? [],
-    pets: raw.pets ?? [],
+    photos: Array.isArray(raw.photos) ? raw.photos : [],
+    pets: Array.isArray(raw.pets) ? raw.pets : [],
   } as User;
 };

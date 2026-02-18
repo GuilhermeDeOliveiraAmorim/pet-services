@@ -8,3 +8,5 @@ export type { DeactivateUserOutput } from "./deactivate-user";
 export { DeactivateUserUseCase } from "./deactivate-user";
 export type { ReactivateUserOutput } from "./reactivate-user";
 export { ReactivateUserUseCase } from "./reactivate-user";
+export type { DeleteUserOutput } from "./delete-user";
+export { DeleteUserUseCase } from "./delete-user";

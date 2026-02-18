@@ -80,17 +80,36 @@ export class UserGatewayAxios implements UserGateway {
   }
 
   async getProfile(): Promise<GetProfileOutput> {
-    const { data } = await this.http.get<{ user: Record<string, any> }>(
-      "/users/profile",
-    );
+    const { data } = await this.http.get<{ user: unknown }>("/users/profile");
 
     return {
-      user: mapUserFromApi(data.user),
+      user: mapUserFromApi(data.user as Record<string, unknown>),
     };
   }
 
   async updateUser(input: UpdateUserInput): Promise<UpdateUserOutput> {
-    const payload: Record<string, any> = {};
+    const payload: {
+      name?: string;
+      phone?: {
+        country_code?: string;
+        area_code?: string;
+        number?: string;
+      };
+      address?: {
+        street?: string;
+        number?: string;
+        neighborhood?: string;
+        city?: string;
+        zip_code?: string;
+        state?: string;
+        country?: string;
+        complement?: string;
+        location?: {
+          latitude: number;
+          longitude: number;
+        };
+      };
+    } = {};
 
     if (typeof input.name === "string") {
       payload.name = input.name;
@@ -126,13 +145,15 @@ export class UserGatewayAxios implements UserGateway {
     const { data } = await this.http.put<{
       message?: string;
       detail?: string;
-      user?: Record<string, any>;
+      user?: unknown;
     }>("/users", payload);
 
     return {
       message: data.message,
       detail: data.detail,
-      user: data.user ? mapUserFromApi(data.user) : undefined,
+      user: data.user
+        ? mapUserFromApi(data.user as Record<string, unknown>)
+        : undefined,
     };
   }
 
@@ -145,6 +166,11 @@ export class UserGatewayAxios implements UserGateway {
   async reactivateUser(): Promise<ReactivateUserOutput> {
     const { data } =
       await this.http.post<ReactivateUserOutput>("/users/reactivate");
+    return data;
+  }
+
+  async deleteUser(): Promise<DeactivateUserOutput> {
+    const { data } = await this.http.delete<DeactivateUserOutput>("/users");
     return data;
   }
 

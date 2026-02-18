@@ -1,6 +1,7 @@
 import type {
   AddPetInput,
   AddPetOutput,
+  AddPetPhotoOutput,
   DeletePetOutput,
   DeletePetPhotoOutput,
   GetPetOutput,
@@ -164,6 +165,30 @@ export class PetGatewayAxios implements PetGateway {
     return {
       message: data.message,
       detail: data.detail,
+    };
+  }
+
+  async addPetPhoto(
+    petId: string | number,
+    photo: File,
+  ): Promise<AddPetPhotoOutput> {
+    const formData = new FormData();
+    formData.append("file", photo);
+
+    const { data } = await this.http.post<{
+      message?: string;
+      detail?: string;
+      photo?: { id: string; url: string };
+    }>(`/pets/${petId}/photos`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return {
+      message: data.message,
+      detail: data.detail,
+      photo: data.photo,
     };
   }
 }

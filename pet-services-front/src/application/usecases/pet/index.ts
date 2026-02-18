@@ -10,3 +10,5 @@ export type { ListPetsOutput } from "./list-pets";
 export { ListPetsUseCase } from "./list-pets";
 export type { DeletePetPhotoOutput } from "./delete-pet-photo";
 export { DeletePetPhotoUseCase } from "./delete-pet-photo";
+export type { AddPetPhotoInput, AddPetPhotoOutput } from "./add-pet-photo";
+export { AddPetPhotoUseCase } from "./add-pet-photo";

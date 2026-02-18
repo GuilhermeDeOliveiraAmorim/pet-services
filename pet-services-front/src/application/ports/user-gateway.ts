@@ -6,6 +6,7 @@ import type {
 } from "../usecases/auth";
 import type {
   DeactivateUserOutput,
+  DeleteUserOutput,
   GetProfileOutput,
   ReactivateUserOutput,
   UpdateUserInput,
@@ -20,5 +21,6 @@ export interface UserGateway {
   updateUser(input: UpdateUserInput): Promise<UpdateUserOutput>;
   deactivateUser(): Promise<DeactivateUserOutput>;
   reactivateUser(): Promise<ReactivateUserOutput>;
+  deleteUser(): Promise<DeleteUserOutput>;
   addUserPhoto(input: AddUserPhotoInput): Promise<AddUserPhotoOutput>;
 }
