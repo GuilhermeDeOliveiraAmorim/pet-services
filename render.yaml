@@ -4,12 +4,12 @@ services:
     env: docker
     region: ohio
     plan: starter
-    
+
     rootDir: pet-services-api
-    
+
     dockerfilePath: Dockerfile
     dockerContext: pet-services-api
-    
+
     envVars:
       - key: DB_HOST
         sync: false
@@ -47,6 +47,8 @@ services:
         value: pet-services-images
       - key: URL_BUCKET_NAME
         value: pet-services-urls
+      - key: GOOGLE_APPLICATION_CREDENTIALS
+        sync: false
       - key: EMAIL_SERVICE_API_KEY
         sync: false
       - key: EMAIL_VERIFY
@@ -59,7 +61,7 @@ services:
         value: "86400"
       - key: MAX_CHANGE_EMAIL_ATTEMPTS
         value: "3"
-    
+
     preDeployCommand: cd pet-services-api && go run ./cmd/migrate
 
 databases:
