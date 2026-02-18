@@ -13,7 +13,8 @@
     "test:change-password": "tsx scripts/test-change-password.ts",
     "test:update-user": "tsx scripts/test-update-user.ts",
     "test:reference": "tsx scripts/reference/test-reference.ts",
-    "test:geocode": "tsx scripts/test-geocode.ts"
+    "test:geocode": "tsx scripts/test-geocode.ts",
+    "test:pet": "tsx scripts/pet/test-pet.ts"
   },
   "dependencies": {
     "@ariakit/react": "^0.4.21",

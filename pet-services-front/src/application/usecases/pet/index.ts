@@ -1,2 +1,12 @@
 export type { AddPetInput, AddPetOutput } from "./add_pet";
 export { AddPetUseCase } from "./add_pet";
+export type { GetPetOutput } from "./get-pet";
+export { GetPetUseCase } from "./get-pet";
+export type { UpdatePetInput, UpdatePetOutput } from "./update-pet";
+export { UpdatePetUseCase } from "./update-pet";
+export type { DeletePetOutput } from "./delete-pet";
+export { DeletePetUseCase } from "./delete-pet";
+export type { ListPetsOutput } from "./list-pets";
+export { ListPetsUseCase } from "./list-pets";
+export type { DeletePetPhotoOutput } from "./delete-pet-photo";
+export { DeletePetPhotoUseCase } from "./delete-pet-photo";

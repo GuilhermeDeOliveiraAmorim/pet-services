@@ -1,1 +1,8 @@
-export { usePetAdd } from "./use-pet";
+export {
+  usePetAdd,
+  usePetGet,
+  usePetUpdate,
+  usePetDelete,
+  usePetList,
+  usePetDeletePhoto,
+} from "./use-pet";

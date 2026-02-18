@@ -1,5 +1,4 @@
 import type { Base } from "./base";
-import type { Breed } from "./breed";
 import type { Photo } from "./photo";
 import type { Species } from "./specie";
 
@@ -7,7 +6,6 @@ export interface Pet extends Base {
   userId: string;
   name: string;
   specie: Species;
-  breed: Breed;
   age: number;
   weight: number;
   notes: string;
