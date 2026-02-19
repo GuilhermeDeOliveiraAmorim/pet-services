@@ -1,8 +1,10 @@
 import type {
   AddProviderInput,
   AddProviderOutput,
+  GetProviderOutput,
   ProviderGateway,
 } from "@/application";
+import { mapProviderFromApi } from "@/infra/mappers/provider-mapper";
 import type { AxiosInstance } from "axios";
 
 export class ProviderGatewayAxios implements ProviderGateway {
@@ -39,5 +41,15 @@ export class ProviderGatewayAxios implements ProviderGateway {
     );
 
     return data;
+  }
+
+  async getProvider(providerId: string | number): Promise<GetProviderOutput> {
+    const { data } = await this.http.get<{ provider: unknown }>(
+      `/providers/${providerId}`,
+    );
+
+    return {
+      provider: mapProviderFromApi(data.provider as Record<string, unknown>),
+    };
   }
 }

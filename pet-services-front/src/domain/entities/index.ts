@@ -8,6 +8,7 @@ export type { Species } from "./specie";
 export type { Breed } from "./breed";
 export type { Pet } from "./pet";
 export type { User } from "./user";
+export type { Provider } from "./provider";
 export type { RefreshToken } from "./refresh-token";
 export type { PasswordResetToken } from "./password-reset-token";
 export type { Country } from "./country";
