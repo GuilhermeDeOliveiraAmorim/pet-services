@@ -86,7 +86,7 @@ export const useAuthRefreshToken = (options?: RefreshTokenOptions) => {
 
   return useMutation({
     mutationFn: (input) => refreshTokenUseCase.execute(input),
-    onSuccess: (data, variables, context) => {
+    onSuccess: (data, variables, context, mutation) => {
       const expiresAt = Date.now() + data.expiresIn * 1000;
       setSession({
         accessToken: data.accessToken,
@@ -94,7 +94,7 @@ export const useAuthRefreshToken = (options?: RefreshTokenOptions) => {
         expiresAt,
       });
 
-      options?.onSuccess?.(data, variables, context);
+      options?.onSuccess?.(data, variables, context, mutation);
     },
     ...options,
   });
