@@ -12,6 +12,7 @@ import type {
   ChangePasswordInput,
   ChangePasswordOutput,
   DeactivateUserOutput,
+  DeleteUserOutput,
   GetProfileOutput,
   ReactivateUserOutput,
   RegisterUserInput,
@@ -61,6 +62,11 @@ type ReactivateUserOptions = Omit<
 
 type AddUserPhotoOptions = Omit<
   UseMutationOptions<AddUserPhotoOutput, Error, AddUserPhotoInput>,
+  "mutationFn"
+>;
+
+type DeleteUserOptions = Omit<
+  UseMutationOptions<DeleteUserOutput, Error, void>,
   "mutationFn"
 >;
 
@@ -124,6 +130,15 @@ export const useUserAddPhoto = (options?: AddUserPhotoOptions) => {
 
   return useMutation({
     mutationFn: (input) => addUserPhotoUseCase.execute(input),
+    ...options,
+  });
+};
+
+export const useUserDelete = (options?: DeleteUserOptions) => {
+  const { deleteUserUseCase } = useUserUseCases();
+
+  return useMutation({
+    mutationFn: () => deleteUserUseCase.execute(),
     ...options,
   });
 };

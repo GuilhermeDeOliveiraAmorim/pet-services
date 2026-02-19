@@ -9,6 +9,7 @@ import {
 import type {
   AddPetInput,
   AddPetOutput,
+  AddPetPhotoOutput,
   DeletePetOutput,
   DeletePetPhotoOutput,
   GetPetOutput,
@@ -56,6 +57,15 @@ type DeletePetPhotoOptions = Omit<
     DeletePetPhotoOutput,
     Error,
     { petId: string | number; photoId: string | number }
+  >,
+  "mutationFn"
+>;
+
+type AddPetPhotoOptions = Omit<
+  UseMutationOptions<
+    AddPetPhotoOutput,
+    Error,
+    { petId: string | number; photo: File }
   >,
   "mutationFn"
 >;
@@ -117,6 +127,15 @@ export const usePetDeletePhoto = (options?: DeletePetPhotoOptions) => {
   return useMutation({
     mutationFn: (input) =>
       deletePetPhoto.execute(input.petId, input.photoId),
+    ...options,
+  });
+};
+
+export const usePetAddPhoto = (options?: AddPetPhotoOptions) => {
+  const { addPetPhoto } = usePetUseCases();
+
+  return useMutation({
+    mutationFn: (input) => addPetPhoto.execute(input),
     ...options,
   });
 };
