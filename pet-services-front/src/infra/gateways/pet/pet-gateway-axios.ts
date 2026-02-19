@@ -89,7 +89,7 @@ export class PetGatewayAxios implements PetGateway {
       message?: string;
       detail?: string;
       pet?: PetApi;
-    }>("/pets/", payload);
+    }>("/pets", payload);
 
     return {
       message: data.message,
@@ -147,7 +147,7 @@ export class PetGatewayAxios implements PetGateway {
   }
 
   async listPets(): Promise<ListPetsOutput> {
-    const { data } = await this.http.get<{ pets: PetApi[] }>("/pets/");
+    const { data } = await this.http.get<{ pets: PetApi[] }>("/pets");
     return {
       pets: (data.pets ?? []).map(mapPetApiToDomain),
     };
