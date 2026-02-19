@@ -2,6 +2,7 @@ import { createApiClient } from "../http";
 import {
   AuthGatewayAxios,
   PetGatewayAxios,
+  ProviderGatewayAxios,
   ReferenceGatewayAxios,
   SpecieGatewayAxios,
   UserGatewayAxios,
@@ -17,5 +18,6 @@ export const createApiContext = (baseURL?: string) => {
     referenceGateway: new ReferenceGatewayAxios(http),
     petGateway: new PetGatewayAxios(http),
     specieGateway: new SpecieGatewayAxios(http),
+    providerGateway: new ProviderGatewayAxios(http),
   };
 };

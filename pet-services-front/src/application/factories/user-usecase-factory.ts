@@ -3,6 +3,7 @@ import { ChangePasswordUseCase, RegisterUserUseCase } from "../usecases/auth";
 import {
   AddUserPhotoUseCase,
   DeactivateUserUseCase,
+  DeleteUserUseCase,
   GetProfileUseCase,
   ReactivateUserUseCase,
   UpdateUserUseCase,
@@ -16,6 +17,7 @@ export const createUserUseCases = (gateway: UserGateway) => {
     updateUserUseCase: new UpdateUserUseCase(gateway),
     deactivateUserUseCase: new DeactivateUserUseCase(gateway),
     reactivateUserUseCase: new ReactivateUserUseCase(gateway),
+    deleteUserUseCase: new DeleteUserUseCase(gateway),
     addUserPhotoUseCase: new AddUserPhotoUseCase(gateway),
   };
 };
