@@ -89,5 +89,10 @@ func getMigrations() []Migration {
 			Description: "Adicionar profile_complete ao usuário",
 			Up:          Migration20260213000000,
 		},
+		{
+			Version:     "20260218000000",
+			Description: "Seed inicial da tabela species",
+			Up:          Migration20260218000000,
+		},
 	}
 }
