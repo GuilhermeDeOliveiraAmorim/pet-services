@@ -94,5 +94,10 @@ func getMigrations() []Migration {
 			Description: "Seed inicial da tabela species",
 			Up:          Migration20260218000000,
 		},
+		{
+			Version:     "20260218000001",
+			Description: "Seed inicial da tabela categories",
+			Up:          Migration20260218000001,
+		},
 	}
 }
