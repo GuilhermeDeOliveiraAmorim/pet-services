@@ -205,9 +205,16 @@ MINIO_USE_SSL=false
 IMAGE_BUCKET_NAME=pet-services-images
 URL_BUCKET_NAME=pet-services-urls
 
-# Email
-EMAIL_SERVICE_API_KEY=sua_chave_api_email
-EMAIL_VERIFY=seu_email_verificacao
+# Email (SMTP - recomendado: Brevo)
+SMTP_HOST=smtp-relay.brevo.com
+SMTP_PORT=587
+SMTP_USER=seu_usuario_smtp_brevo
+SMTP_PASS=sua_senha_smtp_brevo
+SMTP_FROM=noreply@petservices.com
+
+# URLs para links dos emails
+PASSWORD_RESET_BASE_URL=https://seu-dominio.com/reset-password
+EMAIL_VERIFY_BASE_URL=https://seu-dominio.com/verify-email
 
 # Segurança
 RESET_PASSWORD_EXPIRATION_TIME=3600
