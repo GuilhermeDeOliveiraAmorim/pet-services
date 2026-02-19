@@ -84,7 +84,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		public.POST("/users/check-phone", handlerFactory.UserHandler.CheckPhoneExists)
 	}
 
-	authPublic := r.Group("/auth/")
+	authPublic := r.Group("/auth")
 	authPublic.Use(middlewareFactory.StrictRateLimitMiddleware())
 	{
 		authPublic.POST("login", handlerFactory.TokenHandler.LoginUser)
@@ -95,13 +95,13 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		authPublic.POST("verify-email", handlerFactory.TokenHandler.VerifyEmail)
 	}
 
-	authorizedAuth := r.Group("/auth/")
+	authorizedAuth := r.Group("/auth")
 	authorizedAuth.Use(middlewareFactory.AuthMiddleware())
 	{
 		authorizedAuth.POST("logout", handlerFactory.TokenHandler.Logout)
 	}
 
-	authorizedUser := r.Group("/users/")
+	authorizedUser := r.Group("/users")
 	authorizedUser.Use(middlewareFactory.AuthMiddleware(), profileComplete)
 	{
 		authorizedUser.GET("/profile", handlerFactory.UserHandler.GetProfile)
@@ -116,19 +116,19 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		authorizedUser.POST("/photos", handlerFactory.UserHandler.AddUserPhoto)
 	}
 
-	publicReference := r.Group("/reference/")
+	publicReference := r.Group("/reference")
 	{
 		publicReference.GET("/countries", handlerFactory.ReferenceHandler.ListCountries)
 		publicReference.GET("/states", handlerFactory.ReferenceHandler.ListStates)
 		publicReference.GET("/cities", handlerFactory.ReferenceHandler.ListCities)
 	}
 
-	publicSpecies := r.Group("/species/")
+	publicSpecies := r.Group("/species")
 	{
 		publicSpecies.GET("", handlerFactory.SpecieHandler.ListSpecies)
 	}
 
-	authorizedOwner := r.Group("/pets/")
+	authorizedOwner := r.Group("/pets")
 	authorizedOwner.Use(middlewareFactory.AuthMiddleware(), profileComplete, middlewareFactory.OwnerOnlyMiddleware())
 	{
 		authorizedOwner.GET("", handlerFactory.PetHandler.ListPets)
@@ -140,13 +140,13 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		authorizedOwner.DELETE("/:pet_id/photos/:photo_id", handlerFactory.PetHandler.DeletePetPhoto)
 	}
 
-	authorizedOwnerProviders := r.Group("/providers/")
+	authorizedOwnerProviders := r.Group("/providers")
 	authorizedOwnerProviders.Use(middlewareFactory.AuthMiddleware(), profileComplete, middlewareFactory.OwnerOnlyMiddleware())
 	{
 		authorizedOwnerProviders.POST("/:provider_id/reviews", handlerFactory.ReviewHandler.CreateReview)
 	}
 
-	authorizedProvider := r.Group("/providers/")
+	authorizedProvider := r.Group("/providers")
 	authorizedProvider.Use(middlewareFactory.AuthMiddleware(), profileComplete, middlewareFactory.ProviderOnlyMiddleware())
 	{
 		authorizedProvider.POST("", handlerFactory.ProviderHandler.AddProvider)
@@ -155,7 +155,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		authorizedProvider.DELETE("/:provider_id", handlerFactory.ProviderHandler.DeleteProvider)
 	}
 
-	authorizedServices := r.Group("/services/")
+	authorizedServices := r.Group("/services")
 	authorizedServices.Use(middlewareFactory.AuthMiddleware(), profileComplete, middlewareFactory.ProviderOnlyMiddleware())
 	{
 		authorizedServices.POST("", handlerFactory.ServiceHandler.AddService)
@@ -175,7 +175,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	r.GET("/tags", handlerFactory.ServiceHandler.ListTags)
 	r.GET("/categories", handlerFactory.CategoryHandler.ListCategories)
 
-	authorizedRequests := r.Group("/requests/")
+	authorizedRequests := r.Group("/requests")
 	authorizedRequests.Use(middlewareFactory.AuthMiddleware(), profileComplete)
 	{
 		authorizedRequests.GET("", handlerFactory.RequestHandler.ListRequests)
@@ -186,7 +186,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		authorizedRequests.PATCH("/:request_id/complete", middlewareFactory.ProviderOnlyMiddleware(), handlerFactory.RequestHandler.CompleteRequest)
 	}
 
-	authorizedAdmin := r.Group("/admin/")
+	authorizedAdmin := r.Group("/admin")
 	authorizedAdmin.Use(middlewareFactory.AuthMiddleware(), profileComplete, middlewareFactory.AdminOnlyMiddleware())
 	{
 		authorizedAdmin.POST("", handlerFactory.UserHandler.CreateAdmin)
