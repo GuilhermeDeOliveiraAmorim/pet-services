@@ -58,6 +58,9 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 
 	r := gin.Default()
 
+	// Desabilitar redirecionamento automático de trailing slash para evitar problemas com CORS
+	r.RedirectTrailingSlash = false
+
 	corsOrigins := config.GetCORSOrigins()
 	allowOrigins := []string{}
 
@@ -152,11 +155,6 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		publicUtil.GET("/categories", handlerFactory.CategoryHandler.ListCategories)
 	}
 
-	publicSpecies := r.Group("/species")
-	{
-		publicSpecies.GET("", handlerFactory.SpecieHandler.ListSpecies)
-	}
-
 	authorizedOwner := r.Group("/pets")
 	authorizedOwner.Use(middlewareFactory.AuthMiddleware(), profileComplete, middlewareFactory.OwnerOnlyMiddleware())
 	{
@@ -202,7 +200,6 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	r.GET("/providers/:provider_id", handlerFactory.ProviderHandler.GetProvider)
 	r.GET("/reviews", handlerFactory.ReviewHandler.ListReviews)
 	r.GET("/tags", handlerFactory.ServiceHandler.ListTags)
-	r.GET("/categories", handlerFactory.CategoryHandler.ListCategories)
 
 	authorizedRequests := r.Group("/requests")
 	authorizedRequests.Use(middlewareFactory.AuthMiddleware(), profileComplete)
