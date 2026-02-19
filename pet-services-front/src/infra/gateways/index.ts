@@ -6,3 +6,4 @@ export { SpecieGatewayAxios } from "./specie/specie-gateway-axios";
 export { ProviderGatewayAxios } from "./provider/provider-gateway-axios";
 export { ServiceGatewayAxios } from "./service/service-gateway-axios";
 export { RequestGatewayAxios } from "./request/request-gateway-axios";
+export { ReviewGatewayAxios } from "./review/review-gateway-axios";

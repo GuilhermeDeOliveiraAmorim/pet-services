@@ -6,3 +6,4 @@ export type { SpecieGateway } from "./specie-gateway";
 export type { ProviderGateway } from "./provider-gateway";
 export type { ServiceGateway } from "./service-gateway";
 export type { RequestGateway } from "./request-gateway";
+export type { ReviewGateway } from "./review-gateway";

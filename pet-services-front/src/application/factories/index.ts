@@ -6,3 +6,4 @@ export { createPetCases } from "./pet-usecase-factory";
 export { createProviderCases } from "./provider-usecase-factory";
 export { createServiceCases } from "./service-usecase-factory";
 export { createRequestCases } from "./request-usecase-factory";
+export { createReviewCases } from "./review-usecase-factory";

@@ -5,6 +5,7 @@ import {
   ProviderGatewayAxios,
   ReferenceGatewayAxios,
   RequestGatewayAxios,
+  ReviewGatewayAxios,
   ServiceGatewayAxios,
   SpecieGatewayAxios,
   UserGatewayAxios,
@@ -23,5 +24,6 @@ export const createApiContext = (baseURL?: string) => {
     providerGateway: new ProviderGatewayAxios(http),
     serviceGateway: new ServiceGatewayAxios(http),
     requestGateway: new RequestGatewayAxios(http),
+    reviewGateway: new ReviewGatewayAxios(http),
   };
 };

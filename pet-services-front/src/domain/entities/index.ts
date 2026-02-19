@@ -13,6 +13,7 @@ export type { Service } from "./service";
 export type { Category } from "./category";
 export type { Tag } from "./tag";
 export type { Request } from "./request";
+export type { Review } from "./review";
 export type { RefreshToken } from "./refresh-token";
 export type { PasswordResetToken } from "./password-reset-token";
 export type { Country } from "./country";

@@ -9,4 +9,5 @@ export * from "./usecases/specie";
 export * from "./usecases/provider";
 export * from "./usecases/service";
 export * from "./usecases/request";
+export * from "./usecases/review";
 export * from "./ports";

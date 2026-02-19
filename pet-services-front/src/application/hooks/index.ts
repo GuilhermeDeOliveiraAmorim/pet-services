@@ -6,3 +6,4 @@ export * from "./specie";
 export * from "./provider";
 export * from "./service";
 export * from "./request";
+export * from "./review";
