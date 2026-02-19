@@ -1,7 +1,11 @@
 import type {
   AddProviderInput,
   AddProviderOutput,
+  AddProviderPhotoOutput,
+  DeleteProviderOutput,
+  DeleteProviderPhotoOutput,
   GetProviderOutput,
+  ListProvidersOutput,
   ProviderGateway,
   UpdateProviderInput,
   UpdateProviderOutput,
@@ -119,6 +123,68 @@ export class ProviderGatewayAxios implements ProviderGateway {
       provider: data.provider
         ? mapProviderFromApi(data.provider as Record<string, unknown>)
         : undefined,
+    };
+  }
+
+  async deleteProvider(
+    providerId: string | number,
+  ): Promise<DeleteProviderOutput> {
+    const { data } = await this.http.delete<DeleteProviderOutput>(
+      `/providers/${providerId}`,
+    );
+    return data;
+  }
+
+  async listProviders(): Promise<ListProvidersOutput> {
+    const { data } = await this.http.get<{ providers: unknown[] }>(
+      "/providers",
+    );
+
+    return {
+      providers: Array.isArray(data.providers)
+        ? data.providers.map((p) =>
+            mapProviderFromApi(p as Record<string, unknown>),
+          )
+        : [],
+    };
+  }
+
+  async addProviderPhoto(
+    providerId: string | number,
+    photo: File,
+  ): Promise<AddProviderPhotoOutput> {
+    const formData = new FormData();
+    formData.append("file", photo);
+
+    const { data } = await this.http.post<{
+      message?: string;
+      detail?: string;
+      photo?: { id: string; url: string };
+    }>(`/providers/${providerId}/photos`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return {
+      message: data.message,
+      detail: data.detail,
+      photo: data.photo,
+    };
+  }
+
+  async deleteProviderPhoto(
+    providerId: string | number,
+    photoId: string | number,
+  ): Promise<DeleteProviderPhotoOutput> {
+    const { data } = await this.http.delete<{
+      message?: string;
+      detail?: string;
+    }>(`/providers/${providerId}/photos/${photoId}`);
+
+    return {
+      message: data.message,
+      detail: data.detail,
     };
   }
 }
