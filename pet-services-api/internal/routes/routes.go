@@ -145,10 +145,16 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		publicReference.GET("/cities", handlerFactory.ReferenceHandler.ListCities)
 	}
 
+	// Rotas utilitárias públicas - sem autenticação
+	publicUtil := r.Group("/util")
+	{
+		publicUtil.GET("/species", handlerFactory.SpecieHandler.ListSpecies)
+		publicUtil.GET("/categories", handlerFactory.CategoryHandler.ListCategories)
+	}
+
 	publicSpecies := r.Group("/species")
 	{
 		publicSpecies.GET("", handlerFactory.SpecieHandler.ListSpecies)
-		publicSpecies.GET("/", handlerFactory.SpecieHandler.ListSpecies)
 	}
 
 	authorizedOwner := r.Group("/pets")

@@ -10,7 +10,7 @@ export class CategoryGatewayAxios implements CategoryGateway {
   constructor(private readonly httpClient: AxiosInstance) {}
 
   async listCategories(
-    input?: ListCategoriesInput
+    input?: ListCategoriesInput,
   ): Promise<ListCategoriesOutput> {
     const params = new URLSearchParams();
 
@@ -19,16 +19,16 @@ export class CategoryGatewayAxios implements CategoryGateway {
     if (input?.pageSize) params.append("page_size", input.pageSize.toString());
 
     const queryString = params.toString();
-    const url = queryString ? `/categories?${queryString}` : "/categories";
+    const url = queryString
+      ? `/util/categories?${queryString}`
+      : "/util/categories";
 
     const response = await this.httpClient.get<{
       categories?: Record<string, unknown>[];
       total?: number;
     }>(url);
 
-    const categories = (response.data.categories || []).map(
-      mapCategoryFromApi
-    );
+    const categories = (response.data.categories || []).map(mapCategoryFromApi);
 
     return {
       categories,
