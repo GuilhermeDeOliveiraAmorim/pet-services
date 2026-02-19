@@ -20,6 +20,18 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+func splitAndTrim(s, sep string) []string {
+	parts := strings.Split(s, sep)
+	result := make([]string, 0, len(parts))
+	for _, part := range parts {
+		trimmed := strings.TrimSpace(part)
+		if trimmed != "" {
+			result = append(result, trimmed)
+		}
+	}
+	return result
+}
+
 func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger logging.LoggerInterface) *gin.Engine {
 	docs.SwaggerInfo.Title = "Pet Services API"
 	docs.SwaggerInfo.Description = "API para gerenciamento de serviços pet."
@@ -46,15 +58,25 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 
 	r := gin.Default()
 
-	devURL, prodURL := config.GetFrontendURLs()
-
+	corsOrigins := config.GetCORSOrigins()
 	allowOrigins := []string{}
-	if devURL != "" {
-		allowOrigins = append(allowOrigins, devURL)
-	}
 
-	if prodURL != "" {
-		allowOrigins = append(allowOrigins, prodURL)
+	if corsOrigins != "" {
+		// Split CORS_ORIGINS by comma
+		for _, origin := range splitAndTrim(corsOrigins, ",") {
+			if origin != "" {
+				allowOrigins = append(allowOrigins, origin)
+			}
+		}
+	} else {
+		// Fallback to old env vars
+		devURL, prodURL := config.GetFrontendURLs()
+		if devURL != "" {
+			allowOrigins = append(allowOrigins, devURL)
+		}
+		if prodURL != "" {
+			allowOrigins = append(allowOrigins, prodURL)
+		}
 	}
 
 	if len(allowOrigins) == 0 {
@@ -65,7 +87,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     allowOrigins,
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "PATCH"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: allowCredentials,

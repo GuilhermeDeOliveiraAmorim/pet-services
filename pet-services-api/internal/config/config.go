@@ -107,6 +107,10 @@ func GetFrontendURLs() (string, string) {
 	return os.Getenv("FRONT_END_URL_DEV"), os.Getenv("FRONT_END_URL_PROD")
 }
 
+func GetCORSOrigins() string {
+	return os.Getenv("CORS_ORIGINS")
+}
+
 func GetBucketNames() (string, string) {
 	return os.Getenv("IMAGE_BUCKET_NAME"), os.Getenv("URL_BUCKET_NAME")
 }
