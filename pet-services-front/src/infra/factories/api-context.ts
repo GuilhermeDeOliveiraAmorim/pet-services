@@ -4,6 +4,7 @@ import {
   PetGatewayAxios,
   ProviderGatewayAxios,
   ReferenceGatewayAxios,
+  ServiceGatewayAxios,
   SpecieGatewayAxios,
   UserGatewayAxios,
 } from "../gateways";
@@ -19,5 +20,6 @@ export const createApiContext = (baseURL?: string) => {
     petGateway: new PetGatewayAxios(http),
     specieGateway: new SpecieGatewayAxios(http),
     providerGateway: new ProviderGatewayAxios(http),
+    serviceGateway: new ServiceGatewayAxios(http),
   };
 };

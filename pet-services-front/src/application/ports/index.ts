@@ -4,3 +4,4 @@ export type { ReferenceGateway } from "./reference-gateway";
 export type { PetGateway } from "./pet-gateway";
 export type { SpecieGateway } from "./specie-gateway";
 export type { ProviderGateway } from "./provider-gateway";
+export type { ServiceGateway } from "./service-gateway";

@@ -7,4 +7,5 @@ export * from "./usecases/user";
 export * from "./usecases/pet";
 export * from "./usecases/specie";
 export * from "./usecases/provider";
+export * from "./usecases/service";
 export * from "./ports";
