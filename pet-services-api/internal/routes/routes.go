@@ -126,6 +126,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	publicSpecies := r.Group("/species")
 	{
 		publicSpecies.GET("", handlerFactory.SpecieHandler.ListSpecies)
+		publicSpecies.GET("/", handlerFactory.SpecieHandler.ListSpecies)
 	}
 
 	authorizedOwner := r.Group("/pets")
