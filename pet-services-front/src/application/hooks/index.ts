@@ -5,3 +5,4 @@ export * from "./pet";
 export * from "./specie";
 export * from "./provider";
 export * from "./service";
+export * from "./request";

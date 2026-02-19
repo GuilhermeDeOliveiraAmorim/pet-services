@@ -5,3 +5,4 @@ export { PetGatewayAxios } from "./pet/pet-gateway-axios";
 export { SpecieGatewayAxios } from "./specie/specie-gateway-axios";
 export { ProviderGatewayAxios } from "./provider/provider-gateway-axios";
 export { ServiceGatewayAxios } from "./service/service-gateway-axios";
+export { RequestGatewayAxios } from "./request/request-gateway-axios";

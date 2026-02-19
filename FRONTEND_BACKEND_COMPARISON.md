@@ -66,18 +66,18 @@
 - ✅ add-service-category
 - ✅ add-service-tag
 
+### Request (6/6) ✅
+
+- ✅ add-request
+- ✅ get-request
+- ✅ list-requests
+- ✅ accept-request
+- ✅ reject-request
+- ✅ complete-request
+
 ---
 
 ## ❌ Módulos FALTANDO no Frontend
-
-### Request (0/5) 🔴
-
-- ❌ add-request
-- ❌ get-request
-- ❌ list-requests
-- ❌ accept-request
-- ❌ reject-request
-- ❌ complete-request
 
 ### Review (0/2) 🔴
 
@@ -115,13 +115,13 @@
 | **Specie**    | 1            | 1         | 100% ✅    |
 | **Provider**  | 8            | 8         | 100% ✅    |
 | **Service**   | 11           | 11        | 100% ✅    |
-| **Request**   | 0            | 5         | 0% 🔴      |
+| **Request**   | 6            | 6         | 100% ✅    |
 | **Review**    | 0            | 2         | 0% 🔴      |
 | **Category**  | 0            | 2         | 0% 🔴      |
 | **Tag**       | 0            | 1         | 0% 🔴      |
 | **Admin**     | 0            | 1         | 0% 🔴      |
 | **Health**    | 0            | 2         | 0% 🔴      |
-| **TOTAL**     | **46**       | **58**    | **79%**    |
+| **TOTAL**     | **52**       | **58**    | **90%**    |
 
 ---
 
@@ -129,18 +129,9 @@
 
 ### 🔥 Alta Prioridade (Core Business)
 
-1. **Provider Module** (8 usecases)
-   - Essencial para prestadores de serviço se cadastrarem
-   - Gerenciar perfil e fotos
-2. **Service Module** (11 usecases)
-   - Principal funcionalidade: listar/buscar serviços
-   - Providers criarem/editarem serviços
-   - Categorias e tags
-
-3. **Request Module** (5 usecases)
-   - Fluxo de agendamento
-   - Owners solicitarem serviços
-   - Providers aceitarem/rejeitarem
+1. ~~**Provider Module**~~ ✅ (8/8 usecases)
+2. ~~**Service Module**~~ ✅ (11/11 usecases)
+3. ~~**Request Module**~~ ✅ (6/6 usecases)
 
 ### 🟡 Média Prioridade
 
@@ -163,15 +154,6 @@
 ---
 
 ## 📝 Usecases Faltando (Detalhado)
-
-### Request
-
-- `add-request` - Criar requisição de serviço
-- `get-request` - Obter requisição específica
-- `list-requests` - Listar requisições
-- `accept-request` - Provider aceitar
-- `reject-request` - Provider rejeitar
-- `complete-request` - Marcar como completo
 
 ### Review
 
@@ -200,12 +182,12 @@
 
 ## 🚀 Próximos Passos Recomendados
 
-1. **Implementar Request** (5 usecases)
-   - Fluxo de agendamento
-3. **Implementar Review** (2 usecases)
+1. **Implementar Review** (2 usecases)
    - Feedback e reputação
+2. **Implementar Category & Tag** (3 usecases)
+   - Organização de serviços
 
-**Total de 12 usecases para completar 100% da API! 🎯**
+**Total de 6 usecases para completar 100% da API! 🎯**
 
 ---
 
@@ -226,5 +208,8 @@
   - ✅ delete-service, list-services, search-services
   - ✅ add-service-photo, delete-service-photo
   - ✅ add-service-category, add-service-tag
+- **Request Module**: 100% completo (6/6) 🎉🎉🎉
+  - ✅ add-request, get-request, list-requests
+  - ✅ accept-request, reject-request, complete-request
 
-**Progresso geral**: 25/58 (43%) → **46/58 (79%)** 📈🚀🔥
+**Progresso geral**: 25/58 (43%) → **52/58 (90%)** 📈🚀🔥🔥🔥
