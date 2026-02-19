@@ -7,3 +7,5 @@ export { createProviderCases } from "./provider-usecase-factory";
 export { createServiceCases } from "./service-usecase-factory";
 export { createRequestCases } from "./request-usecase-factory";
 export { createReviewCases } from "./review-usecase-factory";
+export { createCategoryCases } from "./category-usecase-factory";
+export { createTagCases } from "./tag-usecase-factory";

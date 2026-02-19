@@ -1,6 +1,7 @@
 import { createApiClient } from "../http";
 import {
   AuthGatewayAxios,
+  CategoryGatewayAxios,
   PetGatewayAxios,
   ProviderGatewayAxios,
   ReferenceGatewayAxios,
@@ -8,6 +9,7 @@ import {
   ReviewGatewayAxios,
   ServiceGatewayAxios,
   SpecieGatewayAxios,
+  TagGatewayAxios,
   UserGatewayAxios,
 } from "../gateways";
 
@@ -25,5 +27,7 @@ export const createApiContext = (baseURL?: string) => {
     serviceGateway: new ServiceGatewayAxios(http),
     requestGateway: new RequestGatewayAxios(http),
     reviewGateway: new ReviewGatewayAxios(http),
+    categoryGateway: new CategoryGatewayAxios(http),
+    tagGateway: new TagGatewayAxios(http),
   };
 };
