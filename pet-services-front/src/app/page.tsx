@@ -4,148 +4,65 @@ import * as Tooltip from "@radix-ui/react-tooltip";
 
 import MainNav from "@/components/common/MainNav";
 import PageWrapper from "@/components/common/PageWrapper";
+import Banner from "../../public/banner.png";
 
 export default function Home() {
   return (
     <PageWrapper className="gap-16">
-      <MainNav />
-
-      <section
+      <MainNav 
+       />
+   <section
         id="home"
-        className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]"
+        className="relative flex items-center justify-center py-24 bg-cover bg-center rounded-4xl overflow-hidden"
+        style={{ backgroundImage: `url(${Banner.src})` }}
       >
-        <div className="flex flex-col gap-6">
-          <span className="w-fit rounded-full bg-pink-100 px-4 py-1 text-xs font-semibold text-pink-500">
-            Plataforma de cuidados
-          </span>
-          <h1 className="text-4xl font-semibold leading-tight text-slate-900 sm:text-5xl">
-            Cuidado excelente para deixar seu pet feliz
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="relative z-10 flex w-full max-w-3xl flex-col items-center gap-8 text-center">
+          <h1 className="text-4xl font-semibold leading-tight text-white sm:text-5xl">
+            Cuidado Profissional para quem você Ama
           </h1>
-          <p className="max-w-xl text-base leading-7 text-slate-600">
-            Consultas, banho e tosa, vacinas e acompanhamentos em um só lugar.
-            Faça a gestão completa do bem-estar do seu pet com agilidade e
-            carinho.
+
+          <p className="max-w-xl text-base leading-7 text-white">
+            Conecte-se com os melhores veterinários, pet shops e cuidadores da sua
+            região.
           </p>
-            <Tooltip.Provider delayDuration={200}>
-              <div className="flex flex-wrap items-center gap-4">
-                <Tooltip.Root>
-                  <Tooltip.Trigger asChild>
-                    <button className="rounded-full bg-linear-to-r from-teal-400 to-cyan-400 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-cyan-200">
-                      Agendar agora
-                    </button>
-                  </Tooltip.Trigger>
-                  <Tooltip.Portal>
-                    <Tooltip.Content
-                      sideOffset={8}
-                      className="rounded-full bg-slate-900 px-3 py-1 text-xs text-white shadow-lg"
-                    >
-                      Agende sua consulta
-                      <Tooltip.Arrow className="fill-slate-900" />
-                    </Tooltip.Content>
-                  </Tooltip.Portal>
-                </Tooltip.Root>
-                <Tooltip.Root>
-                  <Tooltip.Trigger asChild>
-                    <button className="rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700">
-                      Ver serviços
-                    </button>
-                  </Tooltip.Trigger>
-                  <Tooltip.Portal>
-                    <Tooltip.Content
-                      sideOffset={8}
-                      className="rounded-full bg-slate-900 px-3 py-1 text-xs text-white shadow-lg"
-                    >
-                      Veja o catálogo completo
-                      <Tooltip.Arrow className="fill-slate-900" />
-                    </Tooltip.Content>
-                  </Tooltip.Portal>
-                </Tooltip.Root>
-              </div>
-            </Tooltip.Provider>
+          <div className="flex w-full max-w-xl items-stretch rounded-full border border-slate-300 overflow-hidden">
+            <input
+              type="text"
+              placeholder="Onde você está?"
+              className="flex-1 bg-white px-4 py-2 text-sm text-slate-700 focus:outline-none"
+            />
+            <select
+              className="bg-white px-4 py-2 text-sm text-slate-700 focus:outline-none"
+              defaultValue=""
+            >
+              <option value="" disabled>
+                Qual serviço seu pet precisa?
+              </option>
+              <option>Clínica Veterinária</option>
+              <option>Pet Shop</option>
+              <option>Banho e Tosa</option>
+              <option>Hotelzinho e Creche</option>
+              <option>Passeador(a)</option>
+              <option>Pet Sitter</option>
+              <option>Adestrador</option>
+            </select>
+            <button className="bg-teal-400 px-6 py-2 text-sm font-semibold text-white">
+              Buscar
+            </button>
+          </div>
+
+          <Tooltip.Provider delayDuration={200}>
+            <div className="flex flex-wrap items-center gap-4">
+              {/* …restante dos botões… */}
+            </div>
+          </Tooltip.Provider>
+
           <div className="grid grid-cols-3 gap-6 pt-6 text-sm">
-            <div>
-              <p className="text-2xl font-semibold text-slate-900">99%</p>
-              <p className="text-slate-500">Satisfação</p>
-            </div>
-            <div>
-              <p className="text-2xl font-semibold text-slate-900">85k+</p>
-              <p className="text-slate-500">Clientes</p>
-            </div>
-            <div>
-              <p className="text-2xl font-semibold text-slate-900">90k+</p>
-              <p className="text-slate-500">Atendimentos</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative">
-          <div className="absolute -left-6 top-10 hidden h-16 w-16 rounded-full bg-teal-300/40 blur-xl lg:block" />
-          <div className="absolute -right-6 bottom-8 hidden h-20 w-20 rounded-full bg-pink-300/40 blur-xl lg:block" />
-          <div className="relative rounded-4xl bg-white p-6 shadow-[0_30px_80px_rgba(124,139,255,0.25)]">
-            <div className="flex items-start justify-between">
-              <div className="rounded-2xl bg-teal-50 px-4 py-2 text-xs font-semibold text-teal-500">
-                Melhor atendimento
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-cyan-100 text-xs font-semibold text-cyan-600">
-                  2
-                </span>
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-pink-100 text-xs font-semibold text-pink-500">
-                  4
-                </span>
-              </div>
-            </div>
-            <div className="mt-6 flex items-center gap-6">
-              <div className="relative flex h-36 w-36 items-center justify-center rounded-full bg-linear-to-tr from-yellow-200 via-orange-200 to-pink-200">
-                <div className="h-24 w-24 rounded-[28px] bg-white shadow-xl" />
-              </div>
-              <div className="flex flex-col gap-3">
-                <div className="rounded-2xl border border-slate-100 bg-white px-4 py-3 text-sm shadow-sm">
-                  <p className="text-slate-600">Consulta veterinária</p>
-                  <p className="font-semibold text-slate-900">Dra. Sophia</p>
-                </div>
-                <div className="rounded-2xl border border-slate-100 bg-white px-4 py-3 text-sm shadow-sm">
-                  <p className="text-slate-600">Dica do dia</p>
-                  <p className="font-semibold text-slate-900">Hidratação</p>
-                </div>
-              </div>
-            </div>
-            <div className="mt-6 flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-sm">
-              <span className="text-slate-600">Pets atendidos</span>
-              <span className="font-semibold text-slate-900">85k</span>
-            </div>
+            {/* … */}
           </div>
         </div>
       </section>
-
-      <section className="grid gap-8 rounded-4xl bg-white px-6 py-10 shadow-sm lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="flex flex-col gap-4">
-          <h2 className="text-2xl font-semibold text-slate-900">
-            Nossos melhores profissionais
-          </h2>
-          <p className="text-slate-600">
-            Veterinários e especialistas certificados, prontos para cuidar do
-            seu animal com carinho e tecnologia.
-          </p>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-3">
-          {["Dra. Livia Amaral", "Dr. João Esporte", "Dra. Emery Roser"].map(
-            (name, index) => (
-              <div
-                key={name}
-                className="flex flex-col items-center gap-3 rounded-3xl bg-slate-50 px-4 py-6 text-center"
-              >
-                <Avatar.Root className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-linear-to-br from-cyan-200 to-blue-200 text-lg font-semibold text-slate-700">
-                  <Avatar.Fallback>{index + 1}</Avatar.Fallback>
-                </Avatar.Root>
-                <p className="text-sm font-semibold text-slate-900">{name}</p>
-                <p className="text-xs text-slate-500">Veterinário</p>
-              </div>
-            ),
-          )}
-        </div>
-      </section>
-
       <section id="services" className="flex flex-col gap-8">
         <div className="flex items-center justify-between">
           <div>
