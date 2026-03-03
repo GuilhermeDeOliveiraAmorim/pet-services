@@ -6,12 +6,11 @@ import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 
 import { useAuthLogout, useAuthSession } from "@/application";
 
+import Image from "next/image";
+
 const navItems = [
-  { label: "Home", href: "/" },
-  { label: "Serviços", href: "/#services" },
-  { label: "Veterinários", href: "/#doctors" },
-  { label: "Depoimentos", href: "/#testimonials" },
-  { label: "Contato", href: "/#contact" },
+  { label: "Encontre Serviços", href: "/services" },
+  { label: "Seja um Parceiro", href: "/partner" }
 ];
 
 type MainNavProps = {
@@ -43,10 +42,13 @@ export default function MainNav({
   return (
     <header className={`flex items-center justify-between ${className}`.trim()}>
       <Link href="/" className="flex items-center gap-2">
-        <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-linear-to-tr from-teal-400 to-cyan-400 text-white font-semibold">
-          pet
-        </div>
-        <span className="text-lg font-semibold text-slate-900">PetCare</span>
+        <Image
+  src="/pawIcon.svg"
+  alt="Pet Services Logo"
+  width={32}
+  height={32}
+/>
+        <span className="text-lg font-semibold text-slate-900">Pet Services</span>
       </Link>
 
       {showLinks ? (
@@ -85,13 +87,13 @@ export default function MainNav({
                 href="/login"
                 className="hidden rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 lg:inline-flex"
               >
-                Login
+                Entrar
               </Link>
               <Link
-                href="/login"
+                href="/register"
                 className="rounded-full bg-linear-to-r from-teal-400 to-cyan-400 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-cyan-200"
               >
-                Agendar
+                Cadastre-se
               </Link>
             </>
           )}
