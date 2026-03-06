@@ -5,7 +5,7 @@ import RegisterForm from "@/components/register/RegisterForm";
 
 export default function RegisterPage() {
   return (
-    <PageWrapper className="gap-16">
+    <PageWrapper gap={16}>
       <MainNav showLinks={false} showActions={false} />
       <div className="grid w-full gap-10 lg:grid-cols-[0.9fr_1.1fr]">
         <RegisterAside />

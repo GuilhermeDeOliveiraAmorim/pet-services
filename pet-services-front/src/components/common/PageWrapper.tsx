@@ -1,21 +1,29 @@
+import { Box, Flex } from "@chakra-ui/react";
 import type { ReactNode } from "react";
 
 type PageWrapperProps = {
   children: ReactNode;
-  className?: string;
+  gap?: number | string;
 };
 
 export default function PageWrapper({
   children,
-  className = "",
+  gap = 10,
 }: PageWrapperProps) {
   return (
-    <div className="min-h-screen bg-[#f7f9ff] text-slate-900">
-      <div
-        className={`mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-10 px-6 py-10 lg:px-8 ${className}`.trim()}
+    <Box minH="100vh" bg="gray.50" color="gray.900">
+      <Flex
+        minH="100vh"
+        w="full"
+        maxW="6xl"
+        mx="auto"
+        direction="column"
+        gap={gap}
+        px={{ base: 6, lg: 8 }}
+        py="10"
       >
         {children}
-      </div>
-    </div>
+      </Flex>
+    </Box>
   );
 }

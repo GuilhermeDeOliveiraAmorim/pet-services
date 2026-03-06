@@ -126,7 +126,7 @@ export default function OwnerDashboardPage() {
   };
 
   return (
-    <PageWrapper className="gap-10">
+    <PageWrapper gap={10}>
       <MainNav />
 
       <section className="flex flex-col gap-6">

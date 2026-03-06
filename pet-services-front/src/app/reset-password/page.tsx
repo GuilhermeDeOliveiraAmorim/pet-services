@@ -186,7 +186,7 @@ function ResetPasswordContent() {
 
 export default function ResetPasswordPage() {
   return (
-    <PageWrapper className="gap-16">
+    <PageWrapper gap={16}>
       <MainNav showLinks={false} showActions={false} />
       <Suspense
         fallback={

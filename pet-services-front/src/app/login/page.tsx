@@ -90,7 +90,7 @@ export default function LoginPage() {
   };
 
   return (
-    <PageWrapper className="gap-16">
+    <PageWrapper gap={16}>
       <MainNav showLinks={false} showActions={false} />
       <div className="grid w-full gap-10 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="hidden flex-col justify-center gap-6 rounded-4xl bg-white p-10 shadow-[0_30px_80px_rgba(124,139,255,0.2)] lg:flex">

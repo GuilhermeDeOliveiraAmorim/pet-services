@@ -8,7 +8,7 @@ import TestimonialsSection from "@/components/home/TestimonialsSection";
 
 export default function Home() {
   return (
-    <PageWrapper className="gap-16">
+    <PageWrapper gap={16}>
       <MainNav />
       <HeroSection />
       <ServicesSection />

@@ -40,7 +40,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <PageWrapper className="gap-16">
+    <PageWrapper gap={16}>
       <MainNav showLinks={false} showActions={false} />
 
       <div className="mx-auto w-full max-w-xl rounded-4xl bg-white p-8 shadow-[0_30px_80px_rgba(124,139,255,0.15)]">

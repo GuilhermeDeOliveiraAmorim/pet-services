@@ -69,7 +69,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <PageWrapper className="gap-10">
+    <PageWrapper gap={10}>
       <MainNav />
 
       <section className="rounded-4xl bg-white p-6 shadow-sm">
