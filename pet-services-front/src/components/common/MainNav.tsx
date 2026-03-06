@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import * as NavigationMenu from "@radix-ui/react-navigation-menu";
+import {
+  Box,
+  Button,
+  Flex,
+  HStack,
+  Link as ChakraLink,
+  Text,
+} from "@chakra-ui/react";
 
 import { useAuthLogout, useAuthSession } from "@/application";
 
@@ -40,65 +47,101 @@ export default function MainNav({
   };
 
   return (
-    <header className={`flex items-center justify-between ${className}`.trim()}>
-      <Link href="/" className="flex items-center gap-2">
+    <Flex
+      as="header"
+      align="center"
+      justify="space-between"
+      className={className}
+    >
+      <ChakraLink
+        as={Link}
+        href="/"
+        display="inline-flex"
+        alignItems="center"
+        gap="2"
+        _hover={{ textDecoration: "none" }}
+      >
         <Image
-  src="/pawIcon.svg"
-  alt="Pet Services Logo"
-  width={32}
-  height={32}
-/>
-        <span className="text-lg font-semibold text-slate-900">Pet Services</span>
-      </Link>
+          src="/pawIcon.svg"
+          alt="Pet Services Logo"
+          width={32}
+          height={32}
+        />
+        <Text fontSize="lg" fontWeight="semibold" color="gray.900">
+          Pet Services
+        </Text>
+      </ChakraLink>
 
       {showLinks ? (
-        <NavigationMenu.Root className="hidden lg:flex">
-          <NavigationMenu.List className="flex items-center gap-6 text-sm font-medium text-slate-600">
+        <HStack
+          display={{ base: "none", lg: "flex" }}
+          gap="6"
+          fontSize="sm"
+          fontWeight="medium"
+          color="gray.600"
+        >
             {navItems.map((item) => (
-              <NavigationMenu.Item key={item.href}>
-                <NavigationMenu.Link asChild>
-                  <Link
-                    href={item.href}
-                    className={item.href === "/" ? "text-slate-900" : undefined}
-                  >
-                    {item.label}
-                  </Link>
-                </NavigationMenu.Link>
-              </NavigationMenu.Item>
+              <ChakraLink key={item.href} as={Link} href={item.href}>
+                {item.label}
+              </ChakraLink>
             ))}
-          </NavigationMenu.List>
-        </NavigationMenu.Root>
+        </HStack>
       ) : null}
 
       {showActions ? (
-        <div className="flex items-center gap-3">
+        <HStack gap="3">
           {isAuthenticated ? (
-            <button
-              type="button"
+            <Button
               onClick={handleLogout}
               disabled={isPending}
-              className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
+              size="sm"
+              variant="outline"
+              borderRadius="full"
+              colorPalette="gray"
             >
               {isPending ? "Saindo..." : "Sair"}
-            </button>
+            </Button>
           ) : (
             <>
-              <Link
+              <ChakraLink
+                as={Link}
                 href="/login"
-                className="hidden rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 lg:inline-flex"
+                display={{ base: "none", lg: "inline-flex" }}
+                alignItems="center"
+                justifyContent="center"
+                h="9"
+                px="4"
+                fontSize="sm"
+                fontWeight="medium"
+                color="gray.700"
+                borderWidth="1px"
+                borderColor="gray.200"
+                borderRadius="full"
+                _hover={{ textDecoration: "none", bg: "gray.50" }}
               >
                 Entrar
-              </Link>
-              <Link
+              </ChakraLink>
+              <ChakraLink
+                as={Link}
                 href="/register"
-                className="rounded-full bg-linear-to-r from-teal-400 to-cyan-400 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-cyan-200"
+                display="inline-flex"
+                alignItems="center"
+                justifyContent="center"
+                h="9"
+                px="5"
+                fontSize="sm"
+                fontWeight="semibold"
+                borderRadius="full"
+                bgGradient="linear(to-r, teal.400, cyan.400)"
+                color="white"
+                _hover={{ opacity: 0.9, textDecoration: "none" }}
               >
                 Cadastre-se
-              </Link>
+              </ChakraLink>
             </>
           )}
-        </div>
+        </HStack>
       ) : null}
-    </header>
+    </Flex>
   );
 }
