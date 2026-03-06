@@ -8,16 +8,7 @@ import {
 } from "@chakra-ui/react";
 
 import Banner from "../../../public/banner.png";
-
-const serviceOptions = [
-  "Clínica Veterinária",
-  "Pet Shop",
-  "Banho e Tosa",
-  "Hotelzinho e Creche",
-  "Passeador(a)",
-  "Pet Sitter",
-  "Adestrador",
-];
+import { serviceOptions } from "./service-options";
 
 export default function HeroSection() {
   return (
@@ -95,8 +86,8 @@ export default function HeroSection() {
           >
             <option value="">Qual serviço seu pet precisa?</option>
             {serviceOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
+              <option key={option.label} value={option.label}>
+                {option.label}
               </option>
             ))}
           </Box>
