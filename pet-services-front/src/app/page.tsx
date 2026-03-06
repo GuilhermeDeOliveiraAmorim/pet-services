@@ -4,7 +4,6 @@ import ContactSection from "@/components/home/ContactSection";
 import HeroSection from "@/components/home/HeroSection";
 import HomeFooter from "@/components/home/HomeFooter";
 import ServicesSection from "@/components/home/ServicesSection";
-import TestimonialsSection from "@/components/home/TestimonialsSection";
 
 export default function Home() {
   return (
@@ -12,7 +11,6 @@ export default function Home() {
       <MainNav />
       <HeroSection />
       <ServicesSection />
-      <TestimonialsSection />
       <ContactSection />
       <HomeFooter />
     </PageWrapper>
