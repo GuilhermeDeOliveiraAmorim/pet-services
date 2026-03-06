@@ -1,54 +1,72 @@
-import { Box, Button, Grid, Heading, HStack, Text, VStack } from "@chakra-ui/react";
+import { Box, HStack, Link, Text } from "@chakra-ui/react";
 
-const services = [
-  {
-    title: "Banho & Tosa",
-    desc: "Profissionais com carinho e técnica.",
-  },
-  { title: "Pet Care", desc: "Planos mensais personalizados." },
-  {
-    title: "Tratamentos",
-    desc: "Exames e acompanhamento clínico.",
-  },
-  { title: "Vacinação", desc: "Calendário completo de vacinas." },
-];
+import { serviceOptions } from "./service-options";
 
 export default function ServicesSection() {
   return (
-    <VStack id="services" align="stretch" gap="8">
-      <HStack justify="space-between" align="center">
-        <Box>
-          <Text fontSize="xs" fontWeight="semibold" textTransform="uppercase" color="teal.400">
-            Serviços
-          </Text>
-          <Heading size="xl" color="gray.900" mt="1">
-            Nossos serviços para o seu pet
-          </Heading>
-        </Box>
-        <Button
-          borderRadius="full"
-          variant="outline"
-          colorPalette="gray"
-          size="sm"
-          fontWeight="medium"
-        >
-          Ver todos
-        </Button>
-      </HStack>
+    <HStack
+      id="services"
+      gap="3"
+      overflowX="auto"
+      overflowY="hidden"
+      flexWrap="nowrap"
+      align="stretch"
+      pb="2"
+      scrollbarWidth="none"
+      css={{
+        "&::-webkit-scrollbar": {
+          height: "0px",
+        },
+        "&:hover::-webkit-scrollbar": {
+          height: "6px",
+        },
+        "&:hover::-webkit-scrollbar-thumb": {
+          background: "rgba(148, 163, 184, 0.6)",
+          borderRadius: "9999px",
+        },
+      }}
+      _hover={{ scrollbarWidth: "thin" }}
+    >
+      {serviceOptions.map((item) => {
+        const ItemIcon = item.icon;
 
-      <Grid gap="4" templateColumns={{ base: "1fr", sm: "1fr 1fr", lg: "repeat(4, 1fr)" }}>
-        {services.map((item) => (
-          <Box key={item.title} borderRadius="3xl" bg="white" p="6" boxShadow="sm">
-            <Box mb="4" h="10" w="10" borderRadius="2xl" bg="teal.100" />
-            <Text fontSize="sm" fontWeight="semibold" color="gray.900">
-              {item.title}
+        return (
+          <Link
+            key={item.label}
+            href={item.href}
+            display="inline-flex"
+            alignItems="center"
+            cursor="pointer"
+            borderRadius="full"
+            bg="gray.100"
+            borderWidth="1px"
+            borderColor="gray.200"
+            px="3"
+            py="2"
+            gap="2"
+            flex="0 0 auto"
+            minW="max-content"
+            transition="all 0.2s ease"
+            _hover={{ bg: "gray.200", textDecoration: "none" }}
+          >
+            <Box
+              display="inline-flex"
+              alignItems="center"
+              justifyContent="center"
+              h="7"
+              w="7"
+              borderRadius="full"
+              bg={item.iconBg}
+              color={item.iconColor}
+            >
+              <ItemIcon size={16} />
+            </Box>
+            <Text fontSize="xs" fontWeight="medium" color="gray.700" whiteSpace="nowrap">
+              {item.label}
             </Text>
-            <Text mt="2" fontSize="sm" color="gray.600">
-              {item.desc}
-            </Text>
-          </Box>
-        ))}
-      </Grid>
-    </VStack>
+          </Link>
+        );
+      })}
+    </HStack>
   );
 }
