@@ -28,9 +28,9 @@ export default function HomeFooter() {
           >
             pet
           </Box>
-          <Text color="gray.700">PetCare</Text>
+          <Text color="gray.700">PetServices</Text>
         </HStack>
-        <Text>© 2026 PetCare. Todos os direitos reservados.</Text>
+        <Text>© 2026 PetServices. Todos os direitos reservados.</Text>
       </HStack>
     </>
   );
