@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Box, Link as ChakraLink, Text } from "@chakra-ui/react";
 
 type RegisterFormFooterProps = {
   error: Error | null;
@@ -10,25 +11,30 @@ export default function RegisterFormFooter({
   isSuccess,
 }: RegisterFormFooterProps) {
   return (
-    <>
+    <Box>
       {error ? (
-        <p className="text-sm text-rose-500">
+        <Text fontSize="sm" color="red.500">
           Não foi possível criar sua conta. Verifique os dados.
-        </p>
+        </Text>
       ) : null}
 
       {isSuccess ? (
-        <p className="text-sm text-emerald-600">
+        <Text fontSize="sm" color="green.600">
           Cadastro realizado com sucesso! Redirecionando...
-        </p>
+        </Text>
       ) : null}
 
-      <p className="text-center text-xs text-slate-500">
+      <Text mt={2} textAlign="center" fontSize="xs" color="gray.500">
         Já tem conta?{" "}
-        <Link href="/login" className="text-cyan-600">
+        <ChakraLink
+          as={Link}
+          href="/login"
+          color="green.500"
+          fontWeight="medium"
+        >
           Entrar
-        </Link>
-      </p>
-    </>
+        </ChakraLink>
+      </Text>
+    </Box>
   );
 }

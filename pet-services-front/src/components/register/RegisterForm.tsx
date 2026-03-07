@@ -2,8 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import * as Form from "@radix-ui/react-form";
-import * as Tabs from "@radix-ui/react-tabs";
+import { Box, Button, HStack, VStack, chakra } from "@chakra-ui/react";
 import { type UserType, UserTypes } from "@/domain";
 import {
   useReferenceCities,
@@ -237,110 +236,139 @@ export default function RegisterForm() {
 
   return (
     <RegisterFormCard>
-      <Form.Root className="space-y-7" onSubmit={handleSubmit}>
-        <Tabs.Root value={step} onValueChange={setStep}>
-          <Tabs.List className="grid grid-cols-2 rounded-full bg-slate-100 p-1 text-sm">
-            <Tabs.Trigger
-              value="account"
-              className="cursor-pointer rounded-full px-3 py-2 font-medium text-slate-500 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+      <chakra.form onSubmit={handleSubmit}>
+        <VStack gap={7} align="stretch">
+          <HStack
+            bg="gray.100"
+            p={1}
+            borderRadius="full"
+            gap={1}
+            align="stretch"
+            borderWidth="1px"
+            borderColor="gray.200"
+          >
+            <Button
+              type="button"
+              flex={1}
+              borderRadius="full"
+              variant={step === "account" ? "solid" : "ghost"}
+              bg={step === "account" ? "white" : "transparent"}
+              color={step === "account" ? "gray.900" : "gray.600"}
+              boxShadow={step === "account" ? "sm" : "none"}
+              onClick={() => setStep("account")}
             >
               Conta
-            </Tabs.Trigger>
-            <Tabs.Trigger
-              value="address"
-              className="cursor-pointer rounded-full px-3 py-2 font-medium text-slate-500 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+            </Button>
+            <Button
+              type="button"
+              flex={1}
+              borderRadius="full"
+              variant={step === "address" ? "solid" : "ghost"}
+              bg={step === "address" ? "white" : "transparent"}
+              color={step === "address" ? "gray.900" : "gray.600"}
+              boxShadow={step === "address" ? "sm" : "none"}
+              onClick={() => setStep("address")}
             >
               Endereço
-            </Tabs.Trigger>
-          </Tabs.List>
+            </Button>
+          </HStack>
 
-          <Tabs.Content value="account" className="mt-8 space-y-7">
-            <RegisterAccountFields
-              name={name}
-              onNameChange={setName}
-              userType={userType}
-              onUserTypeChange={setUserType}
-              email={email}
-              onEmailChange={setEmail}
-              password={password}
-              onPasswordChange={setPassword}
-            />
+          {step === "account" ? (
+            <VStack mt={1} gap={7} align="stretch">
+              <RegisterAccountFields
+                name={name}
+                onNameChange={setName}
+                userType={userType}
+                onUserTypeChange={setUserType}
+                email={email}
+                onEmailChange={setEmail}
+                password={password}
+                onPasswordChange={setPassword}
+              />
 
-            <RegisterPhoneFields
-              countryCode={selectedDialCodeValue}
-              onCountryCodeChange={(value) => {
-                const [digits] = value.split(":");
-                setPhoneCountryCode(digits ?? "");
-              }}
-              countryCodeDisplayValue={selectedDialCodeDisplay}
-              areaCode={areaCode}
-              onAreaCodeChange={setAreaCode}
-              phoneNumber={phoneNumber}
-              onPhoneNumberChange={setPhoneNumber}
-              dialCodeOptions={dialCodeOptions}
-            />
+              <RegisterPhoneFields
+                countryCode={selectedDialCodeValue}
+                onCountryCodeChange={(value) => {
+                  const [digits] = value.split(":");
+                  setPhoneCountryCode(digits ?? "");
+                }}
+                countryCodeDisplayValue={selectedDialCodeDisplay}
+                areaCode={areaCode}
+                onAreaCodeChange={setAreaCode}
+                phoneNumber={phoneNumber}
+                onPhoneNumberChange={setPhoneNumber}
+                dialCodeOptions={dialCodeOptions}
+              />
 
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={() => setStep("address")}
-                className="rounded-full border border-slate-200 px-6 py-2 text-sm font-semibold text-slate-700"
-              >
-                Continuar
-              </button>
-            </div>
-          </Tabs.Content>
+              <Box display="flex" justifyContent="flex-end">
+                <Button
+                  type="button"
+                  onClick={() => setStep("address")}
+                  borderRadius="full"
+                  borderWidth="1px"
+                  borderColor="gray.200"
+                  color="gray.700"
+                  bg="white"
+                  _hover={{ bg: "gray.50", borderColor: "green.300" }}
+                >
+                  Continuar
+                </Button>
+              </Box>
+            </VStack>
+          ) : null}
 
-          <Tabs.Content value="address" className="mt-8 space-y-7">
-            <RegisterAddressFields
-              street={street}
-              onStreetChange={setStreet}
-              addressNumber={addressNumber}
-              onAddressNumberChange={setAddressNumber}
-              neighborhood={neighborhood}
-              onNeighborhoodChange={setNeighborhood}
-              zipCode={zipCode}
-              onZipCodeChange={setZipCode}
-              complement={complement}
-              onComplementChange={setComplement}
-              countryCode={countryCode}
-              onCountryCodeChange={(value) => {
-                setCountryCode(value);
-                setStateId(undefined);
-                setCityId(undefined);
-              }}
-              stateId={stateId}
-              onStateIdChange={(value) => {
-                setStateId(value);
-                setCityId(undefined);
-              }}
-              cityId={cityId}
-              onCityIdChange={setCityId}
-              countryOptions={countryOptions}
-              states={states}
-              cities={cities}
-              cityDisabled={!stateId}
-            />
+          {step === "address" ? (
+            <VStack mt={1} gap={7} align="stretch">
+              <RegisterAddressFields
+                street={street}
+                onStreetChange={setStreet}
+                addressNumber={addressNumber}
+                onAddressNumberChange={setAddressNumber}
+                neighborhood={neighborhood}
+                onNeighborhoodChange={setNeighborhood}
+                zipCode={zipCode}
+                onZipCodeChange={setZipCode}
+                complement={complement}
+                onComplementChange={setComplement}
+                countryCode={countryCode}
+                onCountryCodeChange={(value) => {
+                  setCountryCode(value);
+                  setStateId(undefined);
+                  setCityId(undefined);
+                }}
+                stateId={stateId}
+                onStateIdChange={(value) => {
+                  setStateId(value);
+                  setCityId(undefined);
+                }}
+                cityId={cityId}
+                onCityIdChange={setCityId}
+                countryOptions={countryOptions}
+                states={states}
+                cities={cities}
+                cityDisabled={!stateId}
+              />
 
-            <RegisterAdditionalFields
-              latitude={latitude}
-              onLatitudeChange={setLatitude}
-              longitude={longitude}
-              onLongitudeChange={setLongitude}
-              onGeocode={handleGeocode}
-              isGeocoding={isGeocoding}
-              geocodeError={geocodeError}
-              canGeocode={canGeocode}
-              latitudeDisabled
-              longitudeDisabled
-            />
+              <RegisterAdditionalFields
+                latitude={latitude}
+                onLatitudeChange={setLatitude}
+                longitude={longitude}
+                onLongitudeChange={setLongitude}
+                onGeocode={handleGeocode}
+                isGeocoding={isGeocoding}
+                geocodeError={geocodeError}
+                canGeocode={canGeocode}
+                latitudeDisabled
+                longitudeDisabled
+              />
 
-            <RegisterSubmitRow isPending={isPending} />
+              <RegisterSubmitRow isPending={isPending} />
 
-            <RegisterFormFooter error={error} isSuccess={isSuccess} />
-          </Tabs.Content>
-        </Tabs.Root>
-      </Form.Root>
+              <RegisterFormFooter error={error} isSuccess={isSuccess} />
+            </VStack>
+          ) : null}
+        </VStack>
+      </chakra.form>
     </RegisterFormCard>
   );
 }

@@ -1,7 +1,7 @@
-import * as Form from "@radix-ui/react-form";
+import { type ChangeEvent } from "react";
+import { Box, Grid, Input, NativeSelect, Text } from "@chakra-ui/react";
 
 import { type UserType, UserTypes } from "@/domain";
-import RadixSelectField from "@/components/common/RadixSelectField";
 
 type RegisterAccountFieldsProps = {
   name: string;
@@ -26,98 +26,106 @@ export default function RegisterAccountFields({
 }: RegisterAccountFieldsProps) {
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-[1.3fr_0.7fr]">
-        <Form.Field className="space-y-2" name="name">
-          <div className="flex items-baseline justify-between">
-            <Form.Label className="text-sm font-medium">
-              Nome completo
-            </Form.Label>
-            <Form.Message
-              className="text-xs text-rose-500"
-              match="valueMissing"
-            >
-              Informe o nome
-            </Form.Message>
-          </div>
-          <Form.Control asChild>
-            <input
-              id="name"
-              value={name}
-              onChange={(event) => onNameChange(event.target.value)}
-              className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-              placeholder="Seu nome"
-              required
-            />
-          </Form.Control>
-        </Form.Field>
+      <Grid gap={4} templateColumns={{ base: "1fr", sm: "1.3fr 0.7fr" }}>
+        <Box minW={0}>
+          <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+            Nome completo
+          </Text>
+          <Input
+            id="name"
+            name="name"
+            value={name}
+            onChange={(event: ChangeEvent<HTMLInputElement>) =>
+              onNameChange(event.target.value)
+            }
+            h="11"
+            borderRadius="xl"
+            bg="gray.50"
+            borderColor="gray.200"
+            focusRingColor="teal.200"
+            placeholder="Seu nome"
+            required
+            w="full"
+          />
+        </Box>
 
-        <RadixSelectField
-          name="userType"
-          label="Tipo de usuário"
-          value={userType}
-          onValueChange={(value) => onUserTypeChange(value as UserType)}
-          options={[
-            { value: UserTypes.Owner, label: "Tutor" },
-            { value: UserTypes.Provider, label: "Prestador" },
-          ]}
-          required
-        />
-      </div>
+        <Box minW={0}>
+          <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+            Tipo de usuário
+          </Text>
+          <NativeSelect.Root
+            size="md"
+            h="11"
+            borderRadius="xl"
+            bg="gray.50"
+            borderColor="gray.200"
+            focusRingColor="teal.200"
+            w="full"
+          >
+            <NativeSelect.Field
+              id="userType"
+              name="userType"
+              value={userType}
+              onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+                onUserTypeChange(event.target.value as UserType)
+              }
+            >
+              <option value={UserTypes.Owner}>Tutor</option>
+              <option value={UserTypes.Provider}>Prestador</option>
+            </NativeSelect.Field>
+            <NativeSelect.Indicator />
+          </NativeSelect.Root>
+        </Box>
+      </Grid>
 
-      <div className="grid gap-4 sm:grid-cols-[1.3fr_0.7fr]">
-        <Form.Field className="space-y-2" name="email">
-          <div className="flex items-baseline justify-between">
-            <Form.Label className="text-sm font-medium">Email</Form.Label>
-            <Form.Message
-              className="text-xs text-rose-500"
-              match="valueMissing"
-            >
-              Informe o email
-            </Form.Message>
-            <Form.Message
-              className="text-xs text-rose-500"
-              match="typeMismatch"
-            >
-              Email inválido
-            </Form.Message>
-          </div>
-          <Form.Control asChild>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(event) => onEmailChange(event.target.value)}
-              className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-              placeholder="voce@email.com"
-              required
-            />
-          </Form.Control>
-        </Form.Field>
+      <Grid gap={4} templateColumns={{ base: "1fr", sm: "1.3fr 0.7fr" }}>
+        <Box minW={0}>
+          <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+            Email
+          </Text>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            value={email}
+            onChange={(event: ChangeEvent<HTMLInputElement>) =>
+              onEmailChange(event.target.value)
+            }
+            h="11"
+            borderRadius="xl"
+            bg="gray.50"
+            borderColor="gray.200"
+            focusRingColor="teal.200"
+            placeholder="voce@email.com"
+            required
+            w="full"
+          />
+        </Box>
 
-        <Form.Field className="space-y-2" name="password">
-          <div className="flex items-baseline justify-between">
-            <Form.Label className="text-sm font-medium">Senha</Form.Label>
-            <Form.Message
-              className="text-xs text-rose-500"
-              match="valueMissing"
-            >
-              Informe a senha
-            </Form.Message>
-          </div>
-          <Form.Control asChild>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(event) => onPasswordChange(event.target.value)}
-              className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-              placeholder="********"
-              required
-              autoComplete="new-password"
-            />
-          </Form.Control>
-        </Form.Field>
-      </div>
+        <Box minW={0}>
+          <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+            Senha
+          </Text>
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            value={password}
+            onChange={(event: ChangeEvent<HTMLInputElement>) =>
+              onPasswordChange(event.target.value)
+            }
+            h="11"
+            borderRadius="xl"
+            bg="gray.50"
+            borderColor="gray.200"
+            focusRingColor="teal.200"
+            placeholder="********"
+            required
+            autoComplete="new-password"
+            w="full"
+          />
+        </Box>
+      </Grid>
     </>
   );
 }
