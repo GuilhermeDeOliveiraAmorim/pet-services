@@ -14,26 +14,11 @@ const run = async () => {
   console.log("→ Register user");
   await registerUserUseCase.execute({
     name: "Guilherme de Oliveira Amorim",
-    userType: "owner",
     login: { email, password },
     phone: {
       countryCode: "55",
       areaCode: "82",
       number: "999767761",
-    },
-    address: {
-      street: "Rua Rafael Pereira Rodrigues",
-      number: "28",
-      neighborhood: "Grageru",
-      city: "Aracaju",
-      zipCode: "49027015",
-      state: "SE",
-      country: "Brasil",
-      complement: "Condomínio Verdes Mares, Bloco T, Apartamento 402",
-      location: {
-        latitude: -10.941262807413592,
-        longitude: -37.06499679433729,
-      },
     },
   });
   console.log("Register ok:", email);
