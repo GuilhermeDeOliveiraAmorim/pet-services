@@ -1,4 +1,4 @@
-import { type ChangeEvent, useMemo, useState } from "react";
+import { type ChangeEvent } from "react";
 import { Box, Grid, Input, NativeSelect, Text } from "@chakra-ui/react";
 
 type RegisterPhoneFieldsProps = {
@@ -22,8 +22,6 @@ export default function RegisterPhoneFields({
   onPhoneNumberChange,
   dialCodeOptions,
 }: RegisterPhoneFieldsProps) {
-  const [dialCodeSearch, setDialCodeSearch] = useState("");
-
   const formatPhoneNumber = (value: string) => {
     const digits = value.replace(/\D/g, "");
     if (!digits) {
@@ -38,17 +36,6 @@ export default function RegisterPhoneFields({
     return `${trimmed.slice(0, splitAt)}-${trimmed.slice(splitAt)}`;
   };
 
-  const filteredDialCodeOptions = useMemo(() => {
-    const query = dialCodeSearch.trim().toLowerCase();
-    if (!query) {
-      return dialCodeOptions;
-    }
-
-    return dialCodeOptions.filter((option) =>
-      option.label.toLowerCase().includes(query),
-    );
-  }, [dialCodeOptions, dialCodeSearch]);
-
   return (
     <Grid
       gap={4}
@@ -58,44 +45,30 @@ export default function RegisterPhoneFields({
         <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
           DDI
         </Text>
-        <Input
-          value={dialCodeSearch}
-          onChange={(event: ChangeEvent<HTMLInputElement>) =>
-            setDialCodeSearch(event.target.value)
-          }
-          placeholder="Buscar país"
-          h="9"
-          mb={2}
-          borderRadius="lg"
-          bg="gray.50"
-          borderColor="gray.200"
-          focusRingColor="teal.200"
-          w="full"
-        />
-        <NativeSelect.Root
-          size="md"
-          h="11"
-          borderRadius="xl"
-          bg="gray.50"
-          borderColor="gray.200"
-          focusRingColor="teal.200"
-          w="full"
-          minW={0}
-        >
+        <NativeSelect.Root size="md" w="full" minW={0}>
           <NativeSelect.Field
             name="countryCode"
             value={countryCode}
             onChange={(event: ChangeEvent<HTMLSelectElement>) =>
               onCountryCodeChange(event.target.value)
             }
+            h="11"
+            borderRadius="xl"
+            bg="gray.50"
+            borderColor="gray.200"
+            focusRingColor="teal.200"
+            borderWidth="1px"
+            fontSize="md"
+            color="gray.800"
+            w="full"
           >
-            {filteredDialCodeOptions.map((option) => (
+            {dialCodeOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
           </NativeSelect.Field>
-          <NativeSelect.Indicator />
+          <NativeSelect.Indicator color="gray.500" />
         </NativeSelect.Root>
         {countryCodeDisplayValue ? (
           <Text mt={1.5} fontSize="xs" color="gray.500">

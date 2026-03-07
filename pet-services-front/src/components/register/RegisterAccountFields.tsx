@@ -1,13 +1,9 @@
 import { type ChangeEvent } from "react";
-import { Box, Grid, Input, NativeSelect, Text } from "@chakra-ui/react";
-
-import { type UserType, UserTypes } from "@/domain";
+import { Box, Grid, Input, Text } from "@chakra-ui/react";
 
 type RegisterAccountFieldsProps = {
   name: string;
   onNameChange: (value: string) => void;
-  userType: UserType;
-  onUserTypeChange: (value: UserType) => void;
   email: string;
   onEmailChange: (value: string) => void;
   password: string;
@@ -17,8 +13,6 @@ type RegisterAccountFieldsProps = {
 export default function RegisterAccountFields({
   name,
   onNameChange,
-  userType,
-  onUserTypeChange,
   email,
   onEmailChange,
   password,
@@ -26,7 +20,7 @@ export default function RegisterAccountFields({
 }: RegisterAccountFieldsProps) {
   return (
     <>
-      <Grid gap={4} templateColumns={{ base: "1fr", sm: "1.3fr 0.7fr" }}>
+      <Grid gap={4} templateColumns={{ base: "1fr" }}>
         <Box minW={0}>
           <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
             Nome completo
@@ -48,37 +42,9 @@ export default function RegisterAccountFields({
             w="full"
           />
         </Box>
-
-        <Box minW={0}>
-          <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
-            Tipo de usuário
-          </Text>
-          <NativeSelect.Root
-            size="md"
-            h="11"
-            borderRadius="xl"
-            bg="gray.50"
-            borderColor="gray.200"
-            focusRingColor="teal.200"
-            w="full"
-          >
-            <NativeSelect.Field
-              id="userType"
-              name="userType"
-              value={userType}
-              onChange={(event: ChangeEvent<HTMLSelectElement>) =>
-                onUserTypeChange(event.target.value as UserType)
-              }
-            >
-              <option value={UserTypes.Owner}>Tutor</option>
-              <option value={UserTypes.Provider}>Prestador</option>
-            </NativeSelect.Field>
-            <NativeSelect.Indicator />
-          </NativeSelect.Root>
-        </Box>
       </Grid>
 
-      <Grid gap={4} templateColumns={{ base: "1fr", sm: "1.3fr 0.7fr" }}>
+      <Grid gap={4} templateColumns={{ base: "1fr", sm: "1fr 1fr" }}>
         <Box minW={0}>
           <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
             Email
