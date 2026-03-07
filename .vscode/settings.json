@@ -1,0 +1,4 @@
+{
+  "typescript.tsdk": "pet-services-front/node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true
+}
