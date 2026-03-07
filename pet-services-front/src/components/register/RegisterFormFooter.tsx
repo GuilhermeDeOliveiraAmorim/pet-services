@@ -20,7 +20,7 @@ export default function RegisterFormFooter({
 
       {isSuccess ? (
         <Text fontSize="sm" color="green.600">
-          Cadastro realizado com sucesso! Redirecionando...
+          Cadastro inicial realizado! Entre para completar seu perfil.
         </Text>
       ) : null}
 

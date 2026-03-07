@@ -1,12 +1,10 @@
-import type { Address, Login, Phone, UserType } from "@/domain";
+import type { Login, Phone } from "@/domain";
 import type { UserGateway } from "@/application/ports";
 
 export interface RegisterUserInput {
   name: string;
-  userType: UserType;
   login: Login;
   phone: Phone;
-  address: Address;
 }
 
 export interface RegisterUserOutput {

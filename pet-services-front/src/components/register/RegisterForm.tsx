@@ -204,7 +204,6 @@ export default function RegisterForm() {
 
     await mutateAsync({
       name,
-      userType,
       login: {
         email,
         password,
@@ -213,21 +212,6 @@ export default function RegisterForm() {
         countryCode: phoneCountryCode,
         areaCode,
         number: phoneDigits,
-      },
-      address: {
-        street,
-        number: addressNumber,
-        neighborhood,
-        city: cities.find((item) => item.id === cityId)?.name ?? "",
-        zipCode,
-        state: states.find((item) => item.id === stateId)?.code ?? "",
-        country:
-          countries.find((item) => item.code === countryCode)?.name ?? "",
-        complement,
-        location: {
-          latitude: Number(latitude),
-          longitude: Number(longitude),
-        },
       },
     });
 
