@@ -1,4 +1,4 @@
-import * as Form from "@radix-ui/react-form";
+import { Button, Flex } from "@chakra-ui/react";
 
 type RegisterSubmitRowProps = {
   isPending: boolean;
@@ -8,16 +8,21 @@ export default function RegisterSubmitRow({
   isPending,
 }: RegisterSubmitRowProps) {
   return (
-    <div className="flex justify-center">
-      <Form.Submit asChild>
-        <button
-          type="submit"
-          disabled={isPending}
-          className="inline-flex h-11 w-full max-w-xs items-center justify-center rounded-full bg-linear-to-r from-teal-400 to-cyan-400 px-6 text-sm font-semibold text-white shadow-lg shadow-cyan-200 transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
-        >
-          {isPending ? "Criando..." : "Criar conta"}
-        </button>
-      </Form.Submit>
-    </div>
+    <Flex justify="center">
+      <Button
+        type="submit"
+        disabled={isPending}
+        h="11"
+        w="full"
+        maxW="xs"
+        borderRadius="full"
+        bg="green.400"
+        color="white"
+        _hover={{ bg: "green.500" }}
+        _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
+      >
+        {isPending ? "Criando..." : "Criar conta"}
+      </Button>
+    </Flex>
   );
 }

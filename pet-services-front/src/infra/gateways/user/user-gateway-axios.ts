@@ -32,7 +32,6 @@ export class UserGatewayAxios implements UserGateway {
   async registerUser(input: RegisterUserInput): Promise<RegisterUserOutput> {
     const payload = {
       name: input.name,
-      user_type: input.userType,
       login: {
         email: input.login.email,
         password: input.login.password,
@@ -41,20 +40,6 @@ export class UserGatewayAxios implements UserGateway {
         country_code: input.phone.countryCode,
         area_code: input.phone.areaCode,
         number: input.phone.number,
-      },
-      address: {
-        street: input.address.street,
-        number: input.address.number,
-        neighborhood: input.address.neighborhood,
-        city: input.address.city,
-        zip_code: input.address.zipCode,
-        state: input.address.state,
-        country: input.address.country,
-        complement: input.address.complement,
-        location: {
-          latitude: input.address.location.latitude,
-          longitude: input.address.location.longitude,
-        },
       },
     };
 
