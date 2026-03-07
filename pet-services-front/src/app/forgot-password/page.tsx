@@ -1,8 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { type ChangeEvent, useMemo, useState } from "react";
 import Link from "next/link";
-import * as Form from "@radix-ui/react-form";
+import {
+  Box,
+  Button,
+  Heading,
+  Input,
+  Link as ChakraLink,
+  Text,
+  VStack,
+  chakra,
+} from "@chakra-ui/react";
 import { isAxiosError } from "axios";
 
 import {
@@ -16,6 +25,22 @@ export default function ForgotPasswordPage() {
   const { mutateAsync, isPending, error, isSuccess } =
     useAuthRequestPasswordReset();
   const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
+
+  const validateEmail = (value: string) => {
+    const parsed = value.trim();
+
+    if (!parsed) {
+      return "Informe o email";
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(parsed)) {
+      return "Email inválido";
+    }
+
+    return "";
+  };
 
   const feedback = useMemo(() => {
     if (!error) {
@@ -36,6 +61,14 @@ export default function ForgotPasswordPage() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    const nextEmailError = validateEmail(email);
+    setEmailError(nextEmailError);
+
+    if (nextEmailError) {
+      return;
+    }
+
     await mutateAsync({ email });
   };
 
@@ -43,65 +76,91 @@ export default function ForgotPasswordPage() {
     <PageWrapper gap={16}>
       <MainNav showLinks={false} showActions={false} />
 
-      <div className="mx-auto w-full max-w-xl rounded-4xl bg-white p-8 shadow-[0_30px_80px_rgba(124,139,255,0.15)]">
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold">Redefinir senha</h1>
-          <p className="mt-2 text-sm text-slate-500">
+      <chakra.form
+        onSubmit={handleSubmit}
+        mx="auto"
+        w="full"
+        maxW="xl"
+        borderRadius="3xl"
+        bg="white"
+        p={{ base: 6, md: 8 }}
+        boxShadow="0 30px 80px rgba(35, 49, 82, 0.12)"
+      >
+        <Box mb={6}>
+          <Heading size="2xl" color="gray.900">
+            Redefinir senha
+          </Heading>
+          <Text mt={2} fontSize="sm" color="gray.500">
             Enviaremos um link para redefinir sua senha.
-          </p>
-        </div>
+          </Text>
+        </Box>
 
-        <Form.Root className="space-y-5" onSubmit={handleSubmit}>
-          <Form.Field className="space-y-2" name="email">
-            <div className="flex items-baseline justify-between">
-              <Form.Label className="text-sm font-medium">Email</Form.Label>
-              <Form.Message className="text-xs text-rose-500" match="valueMissing">
-                Informe o email
-              </Form.Message>
-              <Form.Message className="text-xs text-rose-500" match="typeMismatch">
-                Email inválido
-              </Form.Message>
-            </div>
-            <Form.Control asChild>
-              <input
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-                placeholder="voce@email.com"
-                required
-                autoComplete="email"
-              />
-            </Form.Control>
-          </Form.Field>
+        <VStack gap={5} align="stretch">
+          <Box>
+            <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+              Email
+            </Text>
+            <Input
+              type="email"
+              value={email}
+              onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                setEmail(event.target.value);
+                if (emailError) {
+                  setEmailError("");
+                }
+              }}
+              onBlur={() => setEmailError(validateEmail(email))}
+              placeholder="voce@email.com"
+              autoComplete="email"
+              h="11"
+              borderRadius="xl"
+              bg="gray.50"
+              borderColor={emailError ? "red.300" : "gray.200"}
+              focusRingColor={emailError ? "red.200" : "teal.200"}
+            />
+            {emailError ? (
+              <Text mt={1.5} fontSize="xs" color="red.500">
+                {emailError}
+              </Text>
+            ) : null}
+          </Box>
 
           {feedback ? (
-            <div className="rounded-3xl border border-rose-200/80 bg-rose-50/70 px-4 py-3 text-sm text-rose-600 shadow-sm">
-              {feedback}
-            </div>
+            <Box borderRadius="2xl" borderWidth="1px" borderColor="red.200" bg="red.50" p={4}>
+              <Text fontSize="sm" color="red.600">
+                {feedback}
+              </Text>
+            </Box>
           ) : null}
 
           {isSuccess ? (
-            <div className="rounded-3xl border border-emerald-200/80 bg-emerald-50/70 px-4 py-3 text-sm text-emerald-700 shadow-sm">
-              Se o email existir, enviaremos instruções para redefinição.
-            </div>
+            <Box borderRadius="2xl" borderWidth="1px" borderColor="green.200" bg="green.50" p={4}>
+              <Text fontSize="sm" color="green.700">
+                Se o email existir, enviaremos instruções para redefinição.
+              </Text>
+            </Box>
           ) : null}
 
-          <button
+          <Button
             type="submit"
             disabled={isPending}
-            className="inline-flex h-11 w-full items-center justify-center rounded-full bg-linear-to-r from-teal-400 to-cyan-400 px-4 text-sm font-semibold text-white shadow-lg shadow-cyan-200 transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
+            h="11"
+            borderRadius="full"
+            bgGradient="linear(to-r, green.400, teal.400)"
+            color="white"
+            _hover={{ opacity: 0.92 }}
+            _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
           >
             {isPending ? "Enviando..." : "Enviar link"}
-          </button>
-        </Form.Root>
+          </Button>
+        </VStack>
 
-        <div className="mt-6 text-center text-xs text-slate-500">
-          <Link href="/login" className="text-cyan-600">
+        <Text mt={6} textAlign="center" fontSize="xs" color="gray.500">
+          <ChakraLink as={Link} href="/login" color="teal.500" fontWeight="medium">
             Voltar para o login
-          </Link>
-        </div>
-      </div>
+          </ChakraLink>
+        </Text>
+      </chakra.form>
     </PageWrapper>
   );
 }
