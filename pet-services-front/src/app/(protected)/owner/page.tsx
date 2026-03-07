@@ -25,9 +25,9 @@ import {
   useUserAddPhoto,
   useUserProfile,
 } from "@/application";
-import ChangePasswordCard from "@/components/account/ChangePasswordCard";
 import MainNav from "@/components/common/MainNav";
 import PageWrapper from "@/components/common/PageWrapper";
+import ChangePasswordCard from "@/components/account/ChangePasswordCard";
 
 export default function OwnerDashboardPage() {
   const queryClient = useQueryClient();
@@ -260,7 +260,6 @@ export default function OwnerDashboardPage() {
                     borderColor="gray.200"
                     borderWidth="1px"
                     focusRingColor="teal.200"
-                    required
                   >
                     <option value="">
                       {isLoadingSpecies
@@ -411,7 +410,6 @@ export default function OwnerDashboardPage() {
 
             <HStack gap={3} flexWrap="wrap">
               <Button
-                type="file"
                 type="button"
                 borderRadius="full"
                 variant="outline"
