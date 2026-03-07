@@ -1,10 +1,22 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
-import * as Form from "@radix-ui/react-form";
+import {
+  Box,
+  Button,
+  Flex,
+  Grid,
+  HStack,
+  Input,
+  NativeSelect,
+  Text,
+  Textarea,
+  VStack,
+  chakra,
+} from "@chakra-ui/react";
 
 import {
   type ProblemDetailsResponse,
@@ -13,10 +25,9 @@ import {
   useUserAddPhoto,
   useUserProfile,
 } from "@/application";
-import ChangePasswordCard from "@/components/account/ChangePasswordCard";
 import MainNav from "@/components/common/MainNav";
-import RadixSelectField from "@/components/common/RadixSelectField";
 import PageWrapper from "@/components/common/PageWrapper";
+import ChangePasswordCard from "@/components/account/ChangePasswordCard";
 
 export default function OwnerDashboardPage() {
   const queryClient = useQueryClient();
@@ -53,6 +64,7 @@ export default function OwnerDashboardPage() {
   const [petAge, setPetAge] = useState("");
   const [petWeight, setPetWeight] = useState("");
   const [petNotes, setPetNotes] = useState("");
+  const photoInputRef = useRef<HTMLInputElement | null>(null);
   const {
     data: speciesData,
     isLoading: isLoadingSpecies,
@@ -99,8 +111,8 @@ export default function OwnerDashboardPage() {
   }, [addPetError]);
 
   const isPetFormValid =
-    petName.trim() &&
-    petSpeciesId.trim() &&
+    Boolean(petName.trim()) &&
+    Boolean(petSpeciesId.trim()) &&
     Number(petAge) > 0 &&
     Number(petWeight) > 0;
 
@@ -129,208 +141,363 @@ export default function OwnerDashboardPage() {
     <PageWrapper gap={10}>
       <MainNav />
 
-      <section className="flex flex-col gap-6">
-        <div>
-          <p className="text-xs font-semibold uppercase text-cyan-400">
+      <VStack align="stretch" gap={6}>
+        <Box>
+          <Text
+            fontSize="xs"
+            fontWeight="semibold"
+            textTransform="uppercase"
+            color="green.500"
+          >
             Dashboard
-          </p>
-          <h1 className="mt-2 text-2xl font-semibold text-slate-900">
+          </Text>
+          <Text mt={2} fontSize="2xl" fontWeight="semibold" color="gray.900">
             Olá, tutor
-          </h1>
-          <p className="mt-2 text-sm text-slate-600">
+          </Text>
+          <Text mt={2} fontSize="sm" color="gray.600">
             Este é o seu painel inicial. Aqui vão aparecer seus pets e
             agendamentos.
-          </p>
-        </div>
+          </Text>
+        </Box>
 
-        <div className="rounded-4xl border border-dashed border-slate-200 bg-white px-6 py-16 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-50 text-cyan-500">
-            <span className="text-lg font-semibold">🐾</span>
-          </div>
-          <h2 className="mt-4 text-lg font-semibold text-slate-900">
+        <Box
+          borderRadius="3xl"
+          borderWidth="1px"
+          borderStyle="dashed"
+          borderColor="gray.300"
+          bg="white"
+          px={6}
+          py={16}
+          textAlign="center"
+        >
+          <Flex
+            mx="auto"
+            h="12"
+            w="12"
+            align="center"
+            justify="center"
+            borderRadius="2xl"
+            bg="green.50"
+            color="green.500"
+            fontSize="lg"
+            fontWeight="semibold"
+          >
+            🐾
+          </Flex>
+          <Text mt={4} fontSize="lg" fontWeight="semibold" color="gray.900">
             Sem dados ainda
-          </h2>
-          <p className="mt-2 text-sm text-slate-600">
+          </Text>
+          <Text mt={2} fontSize="sm" color="gray.600">
             Quando você cadastrar seu primeiro pet ou agendar um serviço, as
             informações vão aparecer aqui.
-          </p>
-        </div>
-      </section>
+          </Text>
+        </Box>
+      </VStack>
 
-      <section className="rounded-4xl bg-white p-6 shadow-sm">
-        <div className="mb-4">
-          <p className="text-xs font-semibold uppercase text-cyan-400">Pets</p>
-          <h2 className="mt-2 text-xl font-semibold text-slate-900">
+      <Box
+        borderRadius="3xl"
+        bg="white"
+        p={{ base: 5, md: 6 }}
+        borderWidth="1px"
+        borderColor="gray.200"
+        shadow="sm"
+      >
+        <Box mb={4}>
+          <Text
+            fontSize="xs"
+            fontWeight="semibold"
+            textTransform="uppercase"
+            color="green.500"
+          >
+            Pets
+          </Text>
+          <Text mt={2} fontSize="xl" fontWeight="semibold" color="gray.900">
             Cadastrar pet
-          </h2>
-          <p className="mt-2 text-sm text-slate-600">
+          </Text>
+          <Text mt={2} fontSize="sm" color="gray.600">
             Adicione um novo pet ao seu perfil.
-          </p>
-        </div>
+          </Text>
+        </Box>
 
-        <Form.Root onSubmit={handleAddPet} className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <label className="space-y-2 text-sm text-slate-700">
-              <span className="font-medium">Nome</span>
-              <input
-                type="text"
-                value={petName}
-                onChange={(event) => setPetName(event.target.value)}
-                className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-                placeholder="Ex: Thor"
-                required
-              />
-            </label>
-            <RadixSelectField
-              name="specie"
-              label="Espécie"
-              value={petSpeciesId}
-              onValueChange={setPetSpeciesId}
-              options={specieOptions}
-              placeholder={
-                isLoadingSpecies
-                  ? "Carregando espécies..."
-                  : "Selecione a espécie"
-              }
-              required
-              disabled={isLoadingSpecies || Boolean(speciesError)}
-              searchable
-            />
-            <label className="space-y-2 text-sm text-slate-700">
-              <span className="font-medium">Idade</span>
-              <input
-                type="number"
-                inputMode="numeric"
-                value={petAge}
-                onChange={(event) => setPetAge(event.target.value)}
-                className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-                placeholder="Ex: 3"
-                min={0}
-                required
-              />
-            </label>
-            <label className="space-y-2 text-sm text-slate-700">
-              <span className="font-medium">Peso (kg)</span>
-              <input
-                type="number"
-                inputMode="decimal"
-                value={petWeight}
-                onChange={(event) => setPetWeight(event.target.value)}
-                className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-                placeholder="Ex: 12.5"
-                min={0}
-                step="0.1"
-                required
-              />
-            </label>
-          </div>
+        <chakra.form onSubmit={handleAddPet}>
+          <VStack align="stretch" gap={4}>
+            <Grid gap={4} templateColumns={{ base: "1fr", md: "1fr 1fr" }}>
+              <Box minW={0}>
+                <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                  Nome
+                </Text>
+                <Input
+                  type="text"
+                  value={petName}
+                  onChange={(event) => setPetName(event.target.value)}
+                  h="11"
+                  borderRadius="xl"
+                  bg="gray.50"
+                  borderColor="gray.200"
+                  focusRingColor="teal.200"
+                  placeholder="Ex: Thor"
+                  required
+                />
+              </Box>
 
-          <label className="space-y-2 text-sm text-slate-700">
-            <span className="font-medium">Observações</span>
-            <textarea
-              value={petNotes}
-              onChange={(event) => setPetNotes(event.target.value)}
-              className="min-h-24 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-              placeholder="Comportamento, cuidados especiais, etc."
-            />
-          </label>
+              <Box minW={0}>
+                <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                  Espécie
+                </Text>
+                <NativeSelect.Root
+                  size="md"
+                  w="full"
+                  minW={0}
+                  disabled={isLoadingSpecies || Boolean(speciesError)}
+                >
+                  <NativeSelect.Field
+                    name="specie"
+                    value={petSpeciesId}
+                    onChange={(event) => setPetSpeciesId(event.target.value)}
+                    h="11"
+                    borderRadius="xl"
+                    bg="gray.50"
+                    borderColor="gray.200"
+                    borderWidth="1px"
+                    focusRingColor="teal.200"
+                  >
+                    <option value="">
+                      {isLoadingSpecies
+                        ? "Carregando espécies..."
+                        : "Selecione a espécie"}
+                    </option>
+                    {specieOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </NativeSelect.Field>
+                  <NativeSelect.Indicator color="gray.500" />
+                </NativeSelect.Root>
+              </Box>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              type="submit"
-              disabled={!isPetFormValid || isAddingPet}
-              className="rounded-full bg-cyan-500 px-4 py-2 text-xs font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {isAddingPet ? "Cadastrando..." : "Cadastrar pet"}
-            </button>
-            {addPetSuccess ? (
-              <p className="text-xs text-emerald-600">
-                Pet cadastrado com sucesso.
-              </p>
+              <Box minW={0}>
+                <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                  Idade
+                </Text>
+                <Input
+                  type="number"
+                  inputMode="numeric"
+                  value={petAge}
+                  onChange={(event) => setPetAge(event.target.value)}
+                  h="11"
+                  borderRadius="xl"
+                  bg="gray.50"
+                  borderColor="gray.200"
+                  focusRingColor="teal.200"
+                  placeholder="Ex: 3"
+                  min={0}
+                  required
+                />
+              </Box>
+
+              <Box minW={0}>
+                <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                  Peso (kg)
+                </Text>
+                <Input
+                  type="number"
+                  inputMode="decimal"
+                  value={petWeight}
+                  onChange={(event) => setPetWeight(event.target.value)}
+                  h="11"
+                  borderRadius="xl"
+                  bg="gray.50"
+                  borderColor="gray.200"
+                  focusRingColor="teal.200"
+                  placeholder="Ex: 12.5"
+                  min={0}
+                  step="0.1"
+                  required
+                />
+              </Box>
+            </Grid>
+
+            <Box minW={0}>
+              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                Observações
+              </Text>
+              <Textarea
+                value={petNotes}
+                onChange={(event) => setPetNotes(event.target.value)}
+                minH="24"
+                borderRadius="xl"
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
+                placeholder="Comportamento, cuidados especiais, etc."
+              />
+            </Box>
+
+            <HStack gap={3} flexWrap="wrap">
+              <Button
+                type="submit"
+                disabled={!isPetFormValid || isAddingPet}
+                borderRadius="full"
+                bg="green.400"
+                color="white"
+                _hover={{ bg: "green.500" }}
+                _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
+              >
+                {isAddingPet ? "Cadastrando..." : "Cadastrar pet"}
+              </Button>
+              {addPetSuccess ? (
+                <Text fontSize="xs" color="green.600">
+                  Pet cadastrado com sucesso.
+                </Text>
+              ) : null}
+            </HStack>
+
+            {petFeedback ? (
+              <Text fontSize="xs" color="red.600">
+                {petFeedback}
+              </Text>
             ) : null}
-          </div>
+            {speciesError ? (
+              <Text fontSize="xs" color="red.600">
+                Não foi possível carregar as espécies.
+              </Text>
+            ) : null}
+          </VStack>
+        </chakra.form>
+      </Box>
 
-          {petFeedback ? (
-            <p className="text-xs text-rose-600">{petFeedback}</p>
-          ) : null}
-          {speciesError ? (
-            <p className="text-xs text-rose-600">
-              Não foi possível carregar as espécies.
-            </p>
-          ) : null}
-        </Form.Root>
-      </section>
-
-      <section className="rounded-4xl bg-white p-6 shadow-sm">
-        <div className="mb-4">
-          <p className="text-xs font-semibold uppercase text-cyan-400">Fotos</p>
-          <h2 className="mt-2 text-xl font-semibold text-slate-900">
+      <Box
+        borderRadius="3xl"
+        bg="white"
+        p={{ base: 5, md: 6 }}
+        borderWidth="1px"
+        borderColor="gray.200"
+        shadow="sm"
+      >
+        <Box mb={4}>
+          <Text
+            fontSize="xs"
+            fontWeight="semibold"
+            textTransform="uppercase"
+            color="green.500"
+          >
+            Fotos
+          </Text>
+          <Text mt={2} fontSize="xl" fontWeight="semibold" color="gray.900">
             Fotos do perfil
-          </h2>
-          <p className="mt-2 text-sm text-slate-600">
+          </Text>
+          <Text mt={2} fontSize="sm" color="gray.600">
             Envie uma foto para aparecer no seu perfil.
-          </p>
-        </div>
+          </Text>
+        </Box>
 
         {isLoading ? (
-          <p className="text-sm text-slate-500">Carregando fotos...</p>
+          <Text fontSize="sm" color="gray.500">
+            Carregando fotos...
+          </Text>
         ) : (
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(event) =>
-                  setSelectedPhoto(event.target.files?.[0] ?? null)
-                }
-                className="text-sm text-slate-600"
-              />
-              <button
+          <VStack align="stretch" gap={4}>
+            <Input
+              ref={photoInputRef}
+              type="file"
+              accept="image/*"
+              display="none"
+              onChange={(event) =>
+                setSelectedPhoto(event.target.files?.[0] ?? null)
+              }
+            />
+
+            <HStack gap={3} flexWrap="wrap">
+              <Button
+                type="button"
+                borderRadius="full"
+                variant="outline"
+                borderColor="gray.300"
+                color="gray.700"
+                onClick={() => photoInputRef.current?.click()}
+              >
+                Escolher foto
+              </Button>
+              <Text
+                fontSize="xs"
+                color="gray.500"
+                maxW="300px"
+                overflow="hidden"
+                textOverflow="ellipsis"
+                whiteSpace="nowrap"
+              >
+                {selectedPhoto
+                  ? selectedPhoto.name
+                  : "Nenhum arquivo selecionado"}
+              </Text>
+              <Button
                 type="button"
                 onClick={handlePhotoUpload}
                 disabled={!selectedPhoto || isUploadingPhoto}
-                className="rounded-full bg-cyan-500 px-4 py-2 text-xs font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
+                borderRadius="full"
+                bg="green.400"
+                color="white"
+                _hover={{ bg: "green.500" }}
+                _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
               >
                 {isUploadingPhoto ? "Enviando..." : "Enviar foto"}
-              </button>
-            </div>
+              </Button>
+            </HStack>
 
             {uploadSuccess ? (
-              <p className="text-xs text-emerald-600">
+              <Text fontSize="xs" color="green.600">
                 Foto enviada com sucesso.
-              </p>
+              </Text>
             ) : null}
 
             {photoFeedback ? (
-              <p className="text-xs text-rose-600">{photoFeedback}</p>
+              <Text fontSize="xs" color="red.600">
+                {photoFeedback}
+              </Text>
             ) : null}
 
-            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            <Grid
+              gap={3}
+              templateColumns={{
+                base: "1fr 1fr",
+                sm: "repeat(3, 1fr)",
+                lg: "repeat(4, 1fr)",
+              }}
+            >
               {user?.photos?.length ? (
                 user.photos.map((photo) => (
-                  <div
+                  <Box
                     key={photo.id}
-                    className="h-28 w-full overflow-hidden rounded-2xl bg-slate-100"
+                    h="28"
+                    w="full"
+                    overflow="hidden"
+                    borderRadius="2xl"
+                    bg="gray.100"
                   >
                     <Image
                       src={photo.url}
                       alt="Foto do usuário"
                       width={112}
                       height={112}
-                      className="h-full w-full object-cover"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
                       unoptimized
                     />
-                  </div>
+                  </Box>
                 ))
               ) : (
-                <p className="text-sm text-slate-500">
+                <Text fontSize="sm" color="gray.500">
                   Nenhuma foto enviada ainda.
-                </p>
+                </Text>
               )}
-            </div>
-          </div>
+            </Grid>
+          </VStack>
         )}
-      </section>
+      </Box>
 
       <ChangePasswordCard />
     </PageWrapper>
