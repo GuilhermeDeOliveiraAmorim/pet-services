@@ -1,12 +1,24 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { type ChangeEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import * as Checkbox from "@radix-ui/react-checkbox";
-import * as Form from "@radix-ui/react-form";
-import * as Toggle from "@radix-ui/react-toggle";
-import { Check, Eye, EyeOff } from "lucide-react";
+import {
+  Box,
+  Button,
+  Checkbox,
+  chakra,
+  Flex,
+  Grid,
+  Heading,
+  HStack,
+  IconButton,
+  Input,
+  Link as ChakraLink,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
+import { Eye, EyeOff } from "lucide-react";
 import { isAxiosError } from "axios";
 
 import {
@@ -32,6 +44,31 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  const validateEmail = (value: string) => {
+    const parsed = value.trim();
+    if (!parsed) {
+      return "Informe o email";
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(parsed)) {
+      return "Email inválido";
+    }
+
+    return "";
+  };
+
+  const validatePassword = (value: string) => {
+    if (!value.trim()) {
+      return "Informe a senha";
+    }
+
+    return "";
+  };
 
   const feedback = useMemo(() => {
     if (!error) {
@@ -67,6 +104,16 @@ export default function LoginPage() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    const nextEmailError = validateEmail(email);
+    const nextPasswordError = validatePassword(password);
+
+    setEmailError(nextEmailError);
+    setPasswordError(nextPasswordError);
+
+    if (nextEmailError || nextPasswordError) {
+      return;
+    }
+
     const response = await mutateAsync({ email, password });
     const expiresAt = Date.now() + response.expiresIn * 1000;
 
@@ -92,198 +139,266 @@ export default function LoginPage() {
   return (
     <PageWrapper gap={16}>
       <MainNav showLinks={false} showActions={false} />
-      <div className="grid w-full gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="hidden flex-col justify-center gap-6 rounded-4xl bg-white p-10 shadow-[0_30px_80px_rgba(124,139,255,0.2)] lg:flex">
-          <div className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-linear-to-tr from-teal-400 to-cyan-400 text-white font-semibold">
-              pet
-            </div>
-            <span className="text-lg font-semibold">PetCare</span>
-          </div>
-          <h1 className="text-3xl font-semibold leading-tight">
-            Bem-vindo de volta
-          </h1>
-          <p className="text-sm leading-6 text-slate-600">
-            Gerencie seus pets, acompanhe consultas e mantenha o histórico
-            sempre atualizado em um só lugar.
-          </p>
-          <div className="relative mt-4 rounded-4xl bg-linear-to-br from-teal-50 to-cyan-50 p-6">
-            <div className="absolute -right-6 -top-6 h-16 w-16 rounded-full bg-pink-200/60 blur-xl" />
-            <div className="rounded-3xl bg-white p-4 shadow-sm">
-              <p className="text-xs font-semibold text-teal-500">Dica do dia</p>
-              <p className="mt-2 text-sm text-slate-600">
-                Mantenha a carteirinha de vacinação em dia para garantir
-                proteção completa.
-              </p>
-            </div>
-            <div className="mt-4 flex items-center justify-between rounded-2xl bg-white/80 px-4 py-3 text-sm text-slate-600">
-              <span>Pets ativos</span>
-              <span className="font-semibold text-slate-900">85k+</span>
-            </div>
-          </div>
-        </div>
+      <Grid
+        w="full"
+        gap={10}
+        templateColumns={{ base: "1fr", lg: "1.1fr 0.9fr" }}
+      >
+        <Box
+          display={{ base: "none", lg: "flex" }}
+          borderRadius="3xl"
+          overflow="hidden"
+          position="relative"
+          minH="640px"
+          bgImage="url('/banner.png')"
+          bgSize="cover"
+          backgroundPosition="center"
+        >
+          <Box position="absolute" inset={0} bg="blackAlpha.650" />
+          <VStack
+            position="relative"
+            zIndex={1}
+            align="stretch"
+            justify="space-between"
+            p={10}
+            w="full"
+          >
+            <Box>
+              <Heading size="4xl" lineHeight="1.1" color="white">
+                Cuidado Profissional para quem você Ama
+              </Heading>
+              <Text mt={4} color="whiteAlpha.900" fontSize="md" maxW="lg">
+                Conecte-se com os melhores veterinários, pet shops e cuidadores
+                da sua região.
+              </Text>
+            </Box>
 
-        <div className="flex items-center justify-center">
-          <div className="w-full rounded-4xl bg-white p-8 shadow-[0_30px_80px_rgba(124,139,255,0.15)]">
-            <div className="mb-6 flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-semibold">Login</h2>
-                <p className="mt-2 text-sm text-slate-500">
-                  Acesse sua conta para continuar.
-                </p>
-              </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-3xl bg-linear-to-br from-cyan-100 to-blue-100 text-sm font-semibold text-slate-700">
+            <HStack
+              borderRadius="2xl"
+              p={5}
+              bg="whiteAlpha.180"
+              backdropFilter="blur(8px)"
+              justify="space-between"
+            >
+              <Text color="white" fontWeight="medium">
+                Login seguro
+              </Text>
+              <Text color="green.200" fontWeight="bold">
                 24/7
-              </div>
-            </div>
+              </Text>
+            </HStack>
+          </VStack>
+        </Box>
 
-            <Form.Root className="space-y-5" onSubmit={handleSubmit}>
-              <Form.Field className="space-y-2" name="email">
-                <div className="flex items-baseline justify-between">
-                  <Form.Label className="text-sm font-medium">Email</Form.Label>
-                  <Form.Message
-                    className="text-xs text-rose-500"
-                    match="valueMissing"
-                  >
-                    Informe o email
-                  </Form.Message>
-                  <Form.Message
-                    className="text-xs text-rose-500"
-                    match="typeMismatch"
-                  >
-                    Email inválido
-                  </Form.Message>
-                </div>
-                <Form.Control asChild>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-                    placeholder="voce@email.com"
-                    required
-                    autoComplete="email"
+        <Flex align="center" justify="center">
+          <chakra.form
+            onSubmit={handleSubmit}
+            w="full"
+            borderRadius="3xl"
+            bg="white"
+            p={{ base: 6, md: 8 }}
+            boxShadow="0 30px 80px rgba(35, 49, 82, 0.12)"
+          >
+            <Flex align="center" justify="space-between" mb={6}>
+              <Box>
+                <Heading size="2xl" color="gray.900">
+                  Login
+                </Heading>
+                <Text mt={2} fontSize="sm" color="gray.500">
+                  Acesse sua conta para continuar.
+                </Text>
+              </Box>
+              <Flex
+                h="12"
+                w="12"
+                align="center"
+                justify="center"
+                borderRadius="2xl"
+                bgGradient="linear(to-br, teal.100, cyan.100)"
+                color="gray.700"
+                fontSize="sm"
+                fontWeight="semibold"
+              >
+                24/7
+              </Flex>
+            </Flex>
+
+            <VStack gap={5} align="stretch">
+              <Box>
+                <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                  Email
+                </Text>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                    setEmail(event.target.value);
+                    if (emailError) {
+                      setEmailError("");
+                    }
+                  }}
+                  onBlur={() => setEmailError(validateEmail(email))}
+                  placeholder="voce@email.com"
+                  autoComplete="email"
+                  h="11"
+                  borderRadius="xl"
+                  bg="gray.50"
+                  borderColor={emailError ? "red.300" : "gray.200"}
+                  focusRingColor={emailError ? "red.200" : "teal.200"}
+                />
+                {emailError ? (
+                  <Text mt={1.5} fontSize="xs" color="red.500">
+                    {emailError}
+                  </Text>
+                ) : null}
+              </Box>
+
+              <Box>
+                <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                  Senha
+                </Text>
+                <Box position="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                      setPassword(event.target.value);
+                      if (passwordError) {
+                        setPasswordError("");
+                      }
+                    }}
+                    onBlur={() => setPasswordError(validatePassword(password))}
+                    placeholder="********"
+                    autoComplete="current-password"
+                    h="11"
+                    borderRadius="xl"
+                    bg="gray.50"
+                    borderColor={passwordError ? "red.300" : "gray.200"}
+                    focusRingColor={passwordError ? "red.200" : "teal.200"}
+                    pe="12"
                   />
-                </Form.Control>
-              </Form.Field>
-
-              <Form.Field className="space-y-2" name="password">
-                <div className="flex items-baseline justify-between">
-                  <Form.Label className="text-sm font-medium">Senha</Form.Label>
-                  <Form.Message
-                    className="text-xs text-rose-500"
-                    match="valueMissing"
-                  >
-                    Informe a senha
-                  </Form.Message>
-                </div>
-                <div className="relative">
-                  <Form.Control asChild>
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(event) => setPassword(event.target.value)}
-                      className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 pr-12 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-                      placeholder="********"
-                      required
-                      autoComplete="current-password"
-                    />
-                  </Form.Control>
-                  <Toggle.Root
-                    pressed={showPassword}
-                    onPressedChange={setShowPassword}
+                  <IconButton
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
                     aria-label={
                       showPassword ? "Ocultar senha" : "Mostrar senha"
                     }
-                    className="absolute inset-y-0 right-2 flex h-9 w-9 items-center justify-center rounded-full text-slate-400 transition hover:text-slate-600"
+                    variant="ghost"
+                    size="sm"
+                    color="gray.500"
+                    position="absolute"
+                    right="2"
+                    top="50%"
+                    transform="translateY(-50%)"
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </Toggle.Root>
-                </div>
-              </Form.Field>
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </IconButton>
+                </Box>
+                {passwordError ? (
+                  <Text mt={1.5} fontSize="xs" color="red.500">
+                    {passwordError}
+                  </Text>
+                ) : null}
+              </Box>
 
-              <div className="flex items-center justify-between text-xs text-slate-500">
-                <label className="flex items-center gap-2" htmlFor="remember">
-                  <Checkbox.Root
-                    id="remember"
-                    className="flex h-4 w-4 items-center justify-center rounded border border-slate-300 bg-white shadow-sm data-[state=checked]:bg-cyan-500 data-[state=checked]:border-cyan-500"
-                  >
-                    <Checkbox.Indicator className="text-white">
-                      <Check className="h-3 w-3" />
-                    </Checkbox.Indicator>
-                  </Checkbox.Root>
-                  Lembrar de mim
-                </label>
-                <Link href="/forgot-password" className="text-cyan-600">
+              <Flex
+                align="center"
+                justify="space-between"
+                fontSize="xs"
+                color="gray.500"
+              >
+                <Checkbox.Root
+                  checked={rememberMe}
+                  onCheckedChange={() => setRememberMe((prev) => !prev)}
+                >
+                  <Checkbox.HiddenInput />
+                  <Checkbox.Control />
+                  <Checkbox.Label>Lembrar de mim</Checkbox.Label>
+                </Checkbox.Root>
+
+                <ChakraLink
+                  as={Link}
+                  href="/forgot-password"
+                  color="teal.500"
+                  fontWeight="medium"
+                >
                   Esqueci minha senha
-                </Link>
-              </div>
+                </ChakraLink>
+              </Flex>
 
               {error ? (
-                <div className="rounded-3xl border border-rose-200/80 bg-rose-50/70 px-4 py-3 text-sm text-rose-600 shadow-sm">
-                  <div className="flex items-start gap-3">
-                    <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-rose-100 text-xs font-semibold text-rose-600">
-                      !
-                    </span>
-                    <div className="space-y-2">
-                      <p className="leading-5 text-rose-600">
-                        {feedback.message}
-                      </p>
-                      {feedback.canResend ? (
-                        <button
-                          type="button"
-                          disabled={!email || isResendingVerification}
-                          onClick={() => resendVerification({ email })}
-                          className="inline-flex items-center justify-center rounded-full border border-rose-200 bg-white px-3 py-1 text-xs font-semibold text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          {isResendingVerification
-                            ? "Reenviando..."
-                            : "Reenviar email de verificação"}
-                        </button>
-                      ) : null}
-                    </div>
-                  </div>
-                </div>
+                <Box
+                  borderRadius="2xl"
+                  borderWidth="1px"
+                  borderColor="red.200"
+                  bg="red.50"
+                  p={4}
+                >
+                  <Text fontSize="sm" color="red.600">
+                    {feedback.message}
+                  </Text>
+                  {feedback.canResend ? (
+                    <Button
+                      mt={3}
+                      size="xs"
+                      type="button"
+                      variant="outline"
+                      colorPalette="red"
+                      borderRadius="full"
+                      disabled={!email || isResendingVerification}
+                      onClick={() => resendVerification({ email })}
+                    >
+                      {isResendingVerification
+                        ? "Reenviando..."
+                        : "Reenviar email de verificação"}
+                    </Button>
+                  ) : null}
+                </Box>
               ) : null}
 
               {resendVerificationResult?.message ? (
-                <div className="rounded-3xl border border-emerald-200/80 bg-emerald-50/70 px-4 py-3 text-xs text-emerald-600 shadow-sm">
-                  <div className="flex items-start gap-3">
-                    <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-xs font-semibold text-emerald-600">
-                      ✓
-                    </span>
-                    <p className="leading-5">
-                      {resendVerificationResult.detail ??
-                        resendVerificationResult.message}
-                    </p>
-                  </div>
-                </div>
+                <Box
+                  borderRadius="2xl"
+                  borderWidth="1px"
+                  borderColor="green.200"
+                  bg="green.50"
+                  p={4}
+                >
+                  <Text fontSize="sm" color="green.700">
+                    {resendVerificationResult.detail ??
+                      resendVerificationResult.message}
+                  </Text>
+                </Box>
               ) : null}
 
-              <Form.Submit asChild>
-                <button
-                  type="submit"
-                  disabled={isPending}
-                  className="inline-flex h-11 w-full items-center justify-center rounded-full bg-linear-to-r from-teal-400 to-cyan-400 px-4 text-sm font-semibold text-white shadow-lg shadow-cyan-200 transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
-                >
-                  {isPending ? "Entrando..." : "Entrar"}
-                </button>
-              </Form.Submit>
+              <Button
+                type="submit"
+                disabled={isPending}
+                h="11"
+                borderRadius="full"
+                bgGradient="linear(to-r, green.400, teal.400)"
+                color="white"
+                _hover={{ opacity: 0.92 }}
+                _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
+              >
+                {isPending ? "Entrando..." : "Entrar"}
+              </Button>
 
-              <p className="text-center text-xs text-slate-500">
+              <Text textAlign="center" fontSize="xs" color="gray.500">
                 Ainda não tem conta?{" "}
-                <Link href="/register" className="text-cyan-600">
+                <ChakraLink
+                  as={Link}
+                  href="/register"
+                  color="teal.500"
+                  fontWeight="medium"
+                >
                   Criar conta
-                </Link>
-              </p>
-            </Form.Root>
-          </div>
-        </div>
-      </div>
+                </ChakraLink>
+              </Text>
+            </VStack>
+          </chakra.form>
+        </Flex>
+      </Grid>
     </PageWrapper>
   );
 }
