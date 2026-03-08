@@ -4424,6 +4424,9 @@ const docTemplate = `{
         "usecases.GetProfileOutput": {
             "type": "object",
             "properties": {
+                "provider_id": {
+                    "type": "string"
+                },
                 "user": {
                     "$ref": "#/definitions/entities.User"
                 }
