@@ -65,10 +65,13 @@ export class UserGatewayAxios implements UserGateway {
   }
 
   async getProfile(): Promise<GetProfileOutput> {
-    const { data } = await this.http.get<{ user: unknown }>("/users/profile");
+    const { data } = await this.http.get<{ user: unknown; provider_id?: string }>(
+      "/users/profile",
+    );
 
     return {
       user: mapUserFromApi(data.user as Record<string, unknown>),
+      providerId: data.provider_id,
     };
   }
 

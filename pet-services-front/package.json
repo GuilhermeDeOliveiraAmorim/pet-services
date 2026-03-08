@@ -14,7 +14,8 @@
     "test:update-user": "tsx scripts/test-update-user.ts",
     "test:reference": "tsx scripts/reference/test-reference.ts",
     "test:geocode": "tsx scripts/test-geocode.ts",
-    "test:pet": "tsx scripts/pet/test-pet.ts"
+    "test:pet": "tsx scripts/pet/test-pet.ts",
+    "test:provider": "tsx scripts/provider/test-provider.ts"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.34.0",

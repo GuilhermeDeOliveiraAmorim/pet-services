@@ -12,12 +12,9 @@ import {
   VStack,
   chakra,
 } from "@chakra-ui/react";
-import { isAxiosError } from "axios";
 
-import {
-  type ProblemDetailsResponse,
-  useAuthRequestPasswordReset,
-} from "@/application";
+import { useAuthRequestPasswordReset } from "@/application";
+import { getApiErrorMessage } from "@/lib/api-error";
 import MainNav from "@/components/common/MainNav";
 import PageWrapper from "@/components/common/PageWrapper";
 
@@ -47,16 +44,10 @@ export default function ForgotPasswordPage() {
       return "";
     }
 
-    if (isAxiosError<ProblemDetailsResponse>(error)) {
-      const problem = error.response?.data?.errors?.[0];
-      return (
-        problem?.detail ||
-        problem?.title ||
-        "Não foi possível solicitar a redefinição de senha."
-      );
-    }
-
-    return "Não foi possível solicitar a redefinição de senha.";
+    return getApiErrorMessage(
+      error,
+      "Não foi possível solicitar a redefinição de senha.",
+    );
   }, [error]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -126,7 +117,13 @@ export default function ForgotPasswordPage() {
           </Box>
 
           {feedback ? (
-            <Box borderRadius="2xl" borderWidth="1px" borderColor="red.200" bg="red.50" p={4}>
+            <Box
+              borderRadius="2xl"
+              borderWidth="1px"
+              borderColor="red.200"
+              bg="red.50"
+              p={4}
+            >
               <Text fontSize="sm" color="red.600">
                 {feedback}
               </Text>
@@ -134,7 +131,13 @@ export default function ForgotPasswordPage() {
           ) : null}
 
           {isSuccess ? (
-            <Box borderRadius="2xl" borderWidth="1px" borderColor="green.200" bg="green.50" p={4}>
+            <Box
+              borderRadius="2xl"
+              borderWidth="1px"
+              borderColor="green.200"
+              bg="green.50"
+              p={4}
+            >
               <Text fontSize="sm" color="green.700">
                 Se o email existir, enviaremos instruções para redefinição.
               </Text>
@@ -156,7 +159,12 @@ export default function ForgotPasswordPage() {
         </VStack>
 
         <Text mt={6} textAlign="center" fontSize="xs" color="gray.500">
-          <ChakraLink as={Link} href="/login" color="teal.500" fontWeight="medium">
+          <ChakraLink
+            as={Link}
+            href="/login"
+            color="teal.500"
+            fontWeight="medium"
+          >
             Voltar para o login
           </ChakraLink>
         </Text>

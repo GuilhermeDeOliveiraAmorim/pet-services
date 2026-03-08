@@ -14,6 +14,7 @@ import {
 } from "@chakra-ui/react";
 
 import { useUserChangePassword } from "@/application";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 export default function ChangePasswordCard() {
   const { mutateAsync, isPending, error, isSuccess } = useUserChangePassword();
@@ -30,7 +31,10 @@ export default function ChangePasswordCard() {
       return "";
     }
 
-    return "Não foi possível alterar a senha. Verifique os dados e tente novamente.";
+    return getApiErrorMessage(
+      error,
+      "Não foi possível alterar a senha. Verifique os dados e tente novamente.",
+    );
   }, [error]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {

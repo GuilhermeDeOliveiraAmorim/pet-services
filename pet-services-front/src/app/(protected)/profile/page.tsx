@@ -16,10 +16,8 @@ import {
   VStack,
   chakra,
 } from "@chakra-ui/react";
-import { isAxiosError } from "axios";
 
 import {
-  type ProblemDetailsResponse,
   useAuthSession,
   useUserAddPhoto,
   useUserDeactivate,
@@ -28,6 +26,7 @@ import {
   useUserUpdate,
 } from "@/application";
 import type { UpdateUserInput } from "@/application";
+import { getApiErrorMessage } from "@/lib/api-error";
 import MainNav from "@/components/common/MainNav";
 import PageWrapper from "@/components/common/PageWrapper";
 import ChangePasswordCard from "@/components/account/ChangePasswordCard";
@@ -56,16 +55,10 @@ export default function ProfilePage() {
       return "";
     }
 
-    if (isAxiosError<ProblemDetailsResponse>(error)) {
-      const problem = error.response?.data?.errors?.[0];
-      return (
-        problem?.detail ||
-        problem?.title ||
-        "Não foi possível atualizar o status da conta."
-      );
-    }
-
-    return "Não foi possível atualizar o status da conta.";
+    return getApiErrorMessage(
+      error,
+      "Não foi possível atualizar o status da conta.",
+    );
   }, [deactivateError, reactivateError]);
 
   const handleConfirmDeactivate = async () => {
@@ -387,16 +380,10 @@ const ProfileForm = ({ user }: ProfileFormProps) => {
       return "";
     }
 
-    if (isAxiosError<ProblemDetailsResponse>(updateError)) {
-      const problem = updateError.response?.data?.errors?.[0];
-      return (
-        problem?.detail ||
-        problem?.title ||
-        "Não foi possível atualizar o perfil."
-      );
-    }
-
-    return "Não foi possível atualizar o perfil.";
+    return getApiErrorMessage(
+      updateError,
+      "Não foi possível atualizar o perfil.",
+    );
   }, [updateError]);
 
   const photoFeedback = useMemo(() => {
@@ -404,14 +391,7 @@ const ProfileForm = ({ user }: ProfileFormProps) => {
       return "";
     }
 
-    if (isAxiosError<ProblemDetailsResponse>(uploadError)) {
-      const problem = uploadError.response?.data?.errors?.[0];
-      return (
-        problem?.detail || problem?.title || "Não foi possível enviar a foto."
-      );
-    }
-
-    return "Não foi possível enviar a foto.";
+    return getApiErrorMessage(uploadError, "Não foi possível enviar a foto.");
   }, [uploadError]);
 
   const currentPhotoUrl = user.photos?.[0]?.url;

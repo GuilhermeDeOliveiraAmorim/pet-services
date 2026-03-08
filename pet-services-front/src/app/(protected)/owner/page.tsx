@@ -3,7 +3,6 @@
 import { useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
-import { isAxiosError } from "axios";
 import {
   Box,
   Button,
@@ -19,12 +18,12 @@ import {
 } from "@chakra-ui/react";
 
 import {
-  type ProblemDetailsResponse,
   usePetAdd,
   useSpeciesList,
   useUserAddPhoto,
   useUserProfile,
 } from "@/application";
+import { getApiErrorMessage } from "@/lib/api-error";
 import MainNav from "@/components/common/MainNav";
 import PageWrapper from "@/components/common/PageWrapper";
 import ChangePasswordCard from "@/components/account/ChangePasswordCard";
@@ -85,14 +84,7 @@ export default function OwnerDashboardPage() {
       return "";
     }
 
-    if (isAxiosError<ProblemDetailsResponse>(uploadError)) {
-      const problem = uploadError.response?.data?.errors?.[0];
-      return (
-        problem?.detail || problem?.title || "Não foi possível enviar a foto."
-      );
-    }
-
-    return "Não foi possível enviar a foto.";
+    return getApiErrorMessage(uploadError, "Não foi possível enviar a foto.");
   }, [uploadError]);
 
   const petFeedback = useMemo(() => {
@@ -100,14 +92,7 @@ export default function OwnerDashboardPage() {
       return "";
     }
 
-    if (isAxiosError<ProblemDetailsResponse>(addPetError)) {
-      const problem = addPetError.response?.data?.errors?.[0];
-      return (
-        problem?.detail || problem?.title || "Não foi possível cadastrar o pet."
-      );
-    }
-
-    return "Não foi possível cadastrar o pet.";
+    return getApiErrorMessage(addPetError, "Não foi possível cadastrar o pet.");
   }, [addPetError]);
 
   const isPetFormValid =

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Box, Link as ChakraLink, Text } from "@chakra-ui/react";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 type RegisterFormFooterProps = {
   error: Error | null;
@@ -10,11 +11,22 @@ export default function RegisterFormFooter({
   error,
   isSuccess,
 }: RegisterFormFooterProps) {
+  const feedbackMessage = (() => {
+    if (!error) {
+      return "";
+    }
+
+    return getApiErrorMessage(
+      error,
+      "Não foi possível criar sua conta. Verifique os dados.",
+    );
+  })();
+
   return (
     <Box>
-      {error ? (
+      {feedbackMessage ? (
         <Text fontSize="sm" color="red.500">
-          Não foi possível criar sua conta. Verifique os dados.
+          {feedbackMessage}
         </Text>
       ) : null}
 
