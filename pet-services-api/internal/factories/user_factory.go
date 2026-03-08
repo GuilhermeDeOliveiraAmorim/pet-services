@@ -28,13 +28,14 @@ type UserFactory struct {
 
 func NewUserFactory(db *gorm.DB, storageService storage.ObjectStorage, logger logging.LoggerInterface) *UserFactory {
 	userRepo := repository_impl.NewUserRepository(db)
+	providerRepo := repository_impl.NewProviderRepository(db)
 	tokenRepo := repository_impl.NewRefreshTokenRepository(db)
 	photoRepo := repository_impl.NewPhotoRepository(db)
 
 	return &UserFactory{
 		RegisterUser:        usecases.NewRegisterUserUseCase(userRepo, logger),
 		RegisterAdmin:       usecases.NewCreateAdminUseCase(userRepo, logger),
-		GetProfile:          usecases.NewGetProfileUseCase(userRepo, storageService, logger),
+		GetProfile:          usecases.NewGetProfileUseCase(userRepo, providerRepo, storageService, logger),
 		ListUsers:           usecases.NewListUsersUseCase(userRepo, storageService, logger),
 		UpdateUser:          usecases.NewUpdateUserUseCase(userRepo, storageService, logger),
 		DeleteUser:          usecases.NewDeleteUserUseCase(userRepo, logger),
