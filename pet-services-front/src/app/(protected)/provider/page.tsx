@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Box,
@@ -16,7 +16,7 @@ import {
 } from "@chakra-ui/react";
 import {
   useProviderAdd,
-  useProviderList,
+  useProviderGet,
   useServiceAdd,
   useServiceDelete,
   useServiceList,
@@ -39,24 +39,25 @@ const PROVIDER_PRICE_RANGE_MAX_LENGTH = 10;
 export default function ProviderDashboardPage() {
   const queryClient = useQueryClient();
   const { data: userData, isLoading: isLoadingUser } = useUserProfile();
-  const { data: providersData, isLoading: isLoadingProviders } =
-    useProviderList();
+  const [createdProviderId, setCreatedProviderId] = useState<string | null>(
+    null,
+  );
+  const providerId = userData?.providerId ?? createdProviderId ?? undefined;
+  const {
+    data: providerData,
+    isLoading: isLoadingProvider,
+    error: providerError,
+  } = useProviderGet(providerId, {
+    enabled: Boolean(providerId),
+  });
   const { mutateAsync: addProvider, isPending: isAddingProvider } =
     useProviderAdd({
       onSuccess: () =>
-        queryClient.invalidateQueries({ queryKey: ["providers"] }),
+        queryClient.invalidateQueries({ queryKey: ["user-profile"] }),
     });
 
-  const userId = userData?.user?.id;
-  const provider = useMemo(
-    () => providersData?.providers?.find((item) => item.userId === userId),
-    [providersData?.providers, userId],
-  );
-
-  const listInput = useMemo(
-    () => (provider?.id ? { providerId: provider.id } : undefined),
-    [provider?.id],
-  );
+  const provider = providerData?.provider;
+  const listInput = provider?.id ? { providerId: provider.id } : undefined;
 
   const {
     data: servicesData,
@@ -116,7 +117,7 @@ export default function ProviderDashboardPage() {
   const services = servicesData?.services ?? [];
   const isEditing = Boolean(editingServiceId);
   const isSubmitting = isAddingService || isUpdatingService;
-  const isLoadingProviderContext = isLoadingUser || isLoadingProviders;
+  const isLoadingProviderContext = isLoadingUser || isLoadingProvider;
 
   const currentUser = userData?.user;
 
@@ -223,6 +224,13 @@ export default function ProviderDashboardPage() {
           },
         },
       });
+
+      if (response.provider?.id) {
+        setCreatedProviderId(response.provider.id);
+        queryClient.invalidateQueries({
+          queryKey: ["provider", response.provider.id],
+        });
+      }
 
       setProviderFeedback({
         type: "success",
@@ -438,6 +446,14 @@ export default function ProviderDashboardPage() {
                 ? `Provider identificado: ${provider.businessName}`
                 : "Aguardando identificação do provider..."}
             </Text>
+            {providerError ? (
+              <Text mt={1.5} fontSize="xs" color="red.600">
+                {getApiErrorMessage(
+                  providerError,
+                  "Não foi possível carregar os dados do provider.",
+                )}
+              </Text>
+            ) : null}
           </Box>
         </Grid>
 
