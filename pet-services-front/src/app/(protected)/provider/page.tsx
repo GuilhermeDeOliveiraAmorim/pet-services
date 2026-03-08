@@ -5,10 +5,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   Box,
   Button,
+  Dialog,
   Flex,
   Grid,
   HStack,
   Input,
+  Portal,
   Text,
   Textarea,
   VStack,
@@ -92,6 +94,9 @@ export default function ProviderDashboardPage() {
   const [priceMaximum, setPriceMaximum] = useState("");
   const [duration, setDuration] = useState("");
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
+  const [confirmDeleteServiceId, setConfirmDeleteServiceId] = useState<
+    string | null
+  >(null);
   const [deletingServiceId, setDeletingServiceId] = useState<string | null>(
     null,
   );
@@ -118,6 +123,8 @@ export default function ProviderDashboardPage() {
   const isEditing = Boolean(editingServiceId);
   const isSubmitting = isAddingService || isUpdatingService;
   const isLoadingProviderContext = isLoadingUser || isLoadingProvider;
+  const shouldShowAddProviderForm =
+    !isLoadingProviderContext && !provider?.id && !providerId;
 
   const currentUser = userData?.user;
 
@@ -288,24 +295,81 @@ export default function ProviderDashboardPage() {
       return;
     }
 
+    const hasFixedPrice = price.trim() !== "";
+    const hasPriceMinimum = priceMinimum.trim() !== "";
+    const hasPriceMaximum = priceMaximum.trim() !== "";
+    const hasPriceRange = hasPriceMinimum || hasPriceMaximum;
+
     const parsedPrice = Number(price);
     const parsedPriceMinimum = Number(priceMinimum);
     const parsedPriceMaximum = Number(priceMaximum);
     const parsedDuration = Number(duration);
 
-    if (
-      !name.trim() ||
-      !description.trim() ||
-      Number.isNaN(parsedPrice) ||
-      Number.isNaN(parsedPriceMinimum) ||
-      Number.isNaN(parsedPriceMaximum) ||
-      Number.isNaN(parsedDuration)
-    ) {
+    if (!name.trim() || !description.trim() || Number.isNaN(parsedDuration)) {
       setFeedback({
         type: "error",
         message: "Preencha todos os campos obrigatórios do serviço.",
       });
       return;
+    }
+
+    if (hasFixedPrice && hasPriceRange) {
+      setFeedback({
+        type: "error",
+        message:
+          "Use preço fixo ou faixa de preço, não ambos no mesmo serviço.",
+      });
+      return;
+    }
+
+    if (!hasFixedPrice && !hasPriceRange) {
+      setFeedback({
+        type: "error",
+        message:
+          "Informe preço fixo ou faixa de preço para cadastrar o serviço.",
+      });
+      return;
+    }
+
+    if (hasFixedPrice) {
+      if (Number.isNaN(parsedPrice) || parsedPrice < 0) {
+        setFeedback({
+          type: "error",
+          message: "Informe um preço fixo válido para o serviço.",
+        });
+        return;
+      }
+    }
+
+    if (hasPriceRange) {
+      if (!hasPriceMinimum || !hasPriceMaximum) {
+        setFeedback({
+          type: "error",
+          message: "Para faixa de preço, informe preço mínimo e preço máximo.",
+        });
+        return;
+      }
+
+      if (
+        Number.isNaN(parsedPriceMinimum) ||
+        Number.isNaN(parsedPriceMaximum) ||
+        parsedPriceMinimum < 0 ||
+        parsedPriceMaximum < 0
+      ) {
+        setFeedback({
+          type: "error",
+          message: "Informe uma faixa de preço válida para o serviço.",
+        });
+        return;
+      }
+
+      if (parsedPriceMinimum > parsedPriceMaximum) {
+        setFeedback({
+          type: "error",
+          message: "O preço mínimo não pode ser maior que o preço máximo.",
+        });
+        return;
+      }
     }
 
     try {
@@ -314,9 +378,9 @@ export default function ProviderDashboardPage() {
           serviceId: editingServiceId,
           name: name.trim(),
           description: description.trim(),
-          price: parsedPrice,
-          priceMinimum: parsedPriceMinimum,
-          priceMaximum: parsedPriceMaximum,
+          price: hasFixedPrice ? parsedPrice : undefined,
+          priceMinimum: hasPriceRange ? parsedPriceMinimum : undefined,
+          priceMaximum: hasPriceRange ? parsedPriceMaximum : undefined,
           duration: parsedDuration,
         });
 
@@ -332,9 +396,9 @@ export default function ProviderDashboardPage() {
           providerId: provider.id,
           name: name.trim(),
           description: description.trim(),
-          price: parsedPrice,
-          priceMinimum: parsedPriceMinimum,
-          priceMaximum: parsedPriceMaximum,
+          price: hasFixedPrice ? parsedPrice : undefined,
+          priceMinimum: hasPriceRange ? parsedPriceMinimum : undefined,
+          priceMaximum: hasPriceRange ? parsedPriceMaximum : undefined,
           duration: parsedDuration,
         });
 
@@ -360,11 +424,20 @@ export default function ProviderDashboardPage() {
   };
 
   const handleDeleteService = async (serviceId: string) => {
-    const confirmed = window.confirm("Deseja realmente excluir este serviço?");
+    setConfirmDeleteServiceId(serviceId);
+  };
 
-    if (!confirmed) {
+  const handleCancelDeleteService = () => {
+    setConfirmDeleteServiceId(null);
+  };
+
+  const handleConfirmDeleteService = async () => {
+    if (!confirmDeleteServiceId) {
       return;
     }
+
+    const serviceId = confirmDeleteServiceId;
+    setConfirmDeleteServiceId(null);
 
     setDeletingServiceId(serviceId);
     try {
@@ -457,7 +530,7 @@ export default function ProviderDashboardPage() {
           </Box>
         </Grid>
 
-        {!provider?.id ? (
+        {shouldShowAddProviderForm ? (
           <Box
             borderRadius="3xl"
             bg="white"
@@ -953,7 +1026,6 @@ export default function ProviderDashboardPage() {
                     placeholder="Ex: 120"
                     min={0}
                     step="0.01"
-                    required
                   />
                 </Box>
 
@@ -979,7 +1051,6 @@ export default function ProviderDashboardPage() {
                     placeholder="Ex: 100"
                     min={0}
                     step="0.01"
-                    required
                   />
                 </Box>
 
@@ -1005,10 +1076,13 @@ export default function ProviderDashboardPage() {
                     placeholder="Ex: 180"
                     min={0}
                     step="0.01"
-                    required
                   />
                 </Box>
               </Grid>
+
+              <Text fontSize="xs" color="gray.500">
+                Use preço fixo ou faixa (mínimo e máximo), não ambos.
+              </Text>
 
               <Box minW={0}>
                 <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
@@ -1159,7 +1233,11 @@ export default function ProviderDashboardPage() {
                           colorPalette="red"
                           variant="subtle"
                           onClick={() => handleDeleteService(service.id)}
-                          disabled={isDeletingService || isSubmitting}
+                          disabled={
+                            isDeletingService ||
+                            isSubmitting ||
+                            Boolean(confirmDeleteServiceId)
+                          }
                         >
                           {isCurrentDeleting ? "Excluindo..." : "Excluir"}
                         </Button>
@@ -1172,6 +1250,54 @@ export default function ProviderDashboardPage() {
           )}
         </Box>
       </VStack>
+
+      <Dialog.Root
+        open={Boolean(confirmDeleteServiceId)}
+        onOpenChange={(details) => {
+          if (!details.open) {
+            handleCancelDeleteService();
+          }
+        }}
+      >
+        <Portal>
+          <Dialog.Backdrop bg="blackAlpha.500" />
+          <Dialog.Positioner p={4}>
+            <Dialog.Content borderRadius="3xl" maxW="md" w="full">
+              <Dialog.Header>
+                <Dialog.Title>Excluir serviço?</Dialog.Title>
+              </Dialog.Header>
+              <Dialog.Body>
+                <Text fontSize="sm" color="gray.600">
+                  Esta ação remove o serviço permanentemente.
+                </Text>
+              </Dialog.Body>
+              <Dialog.Footer>
+                <Button
+                  type="button"
+                  variant="outline"
+                  borderRadius="full"
+                  onClick={handleCancelDeleteService}
+                  disabled={isDeletingService}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="button"
+                  borderRadius="full"
+                  bg="red.500"
+                  color="white"
+                  onClick={handleConfirmDeleteService}
+                  disabled={isDeletingService}
+                  _hover={{ bg: "red.600" }}
+                  _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
+                >
+                  {isDeletingService ? "Excluindo..." : "Excluir"}
+                </Button>
+              </Dialog.Footer>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root>
 
       <ChangePasswordCard />
     </PageWrapper>
