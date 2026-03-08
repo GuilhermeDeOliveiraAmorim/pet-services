@@ -159,6 +159,14 @@ export default function ProviderDashboardPage() {
   const handleAddProvider = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    if (provider?.id) {
+      setProviderFeedback({
+        type: "error",
+        message: "Você já possui um provider cadastrado.",
+      });
+      return;
+    }
+
     const parsedLatitude = Number(providerLatitude);
     const parsedLongitude = Number(providerLongitude);
 
