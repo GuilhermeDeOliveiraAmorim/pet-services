@@ -22,15 +22,32 @@ export class ServiceGatewayAxios implements ServiceGateway {
   constructor(private readonly http: AxiosInstance) {}
 
   async addService(input: AddServiceInput): Promise<AddServiceOutput> {
-    const payload = {
+    const payload: {
+      provider_id: string;
+      name: string;
+      description: string;
+      duration: number;
+      price?: number;
+      price_minimum?: number;
+      price_maximum?: number;
+    } = {
       provider_id: input.providerId,
       name: input.name,
       description: input.description,
-      price: input.price,
-      price_minimum: input.priceMinimum,
-      price_maximum: input.priceMaximum,
       duration: input.duration,
     };
+
+    if (typeof input.price === "number") {
+      payload.price = input.price;
+    }
+
+    if (typeof input.priceMinimum === "number") {
+      payload.price_minimum = input.priceMinimum;
+    }
+
+    if (typeof input.priceMaximum === "number") {
+      payload.price_maximum = input.priceMaximum;
+    }
 
     const { data } = await this.http.post<AddServiceOutput>(
       "/services",
@@ -50,9 +67,7 @@ export class ServiceGatewayAxios implements ServiceGateway {
     };
   }
 
-  async updateService(
-    input: UpdateServiceInput,
-  ): Promise<UpdateServiceOutput> {
+  async updateService(input: UpdateServiceInput): Promise<UpdateServiceOutput> {
     const payload: {
       name?: string;
       description?: string;

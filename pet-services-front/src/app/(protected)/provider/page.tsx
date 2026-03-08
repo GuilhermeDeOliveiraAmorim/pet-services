@@ -290,24 +290,81 @@ export default function ProviderDashboardPage() {
       return;
     }
 
+    const hasFixedPrice = price.trim() !== "";
+    const hasPriceMinimum = priceMinimum.trim() !== "";
+    const hasPriceMaximum = priceMaximum.trim() !== "";
+    const hasPriceRange = hasPriceMinimum || hasPriceMaximum;
+
     const parsedPrice = Number(price);
     const parsedPriceMinimum = Number(priceMinimum);
     const parsedPriceMaximum = Number(priceMaximum);
     const parsedDuration = Number(duration);
 
-    if (
-      !name.trim() ||
-      !description.trim() ||
-      Number.isNaN(parsedPrice) ||
-      Number.isNaN(parsedPriceMinimum) ||
-      Number.isNaN(parsedPriceMaximum) ||
-      Number.isNaN(parsedDuration)
-    ) {
+    if (!name.trim() || !description.trim() || Number.isNaN(parsedDuration)) {
       setFeedback({
         type: "error",
         message: "Preencha todos os campos obrigatórios do serviço.",
       });
       return;
+    }
+
+    if (hasFixedPrice && hasPriceRange) {
+      setFeedback({
+        type: "error",
+        message:
+          "Use preço fixo ou faixa de preço, não ambos no mesmo serviço.",
+      });
+      return;
+    }
+
+    if (!hasFixedPrice && !hasPriceRange) {
+      setFeedback({
+        type: "error",
+        message:
+          "Informe preço fixo ou faixa de preço para cadastrar o serviço.",
+      });
+      return;
+    }
+
+    if (hasFixedPrice) {
+      if (Number.isNaN(parsedPrice) || parsedPrice < 0) {
+        setFeedback({
+          type: "error",
+          message: "Informe um preço fixo válido para o serviço.",
+        });
+        return;
+      }
+    }
+
+    if (hasPriceRange) {
+      if (!hasPriceMinimum || !hasPriceMaximum) {
+        setFeedback({
+          type: "error",
+          message: "Para faixa de preço, informe preço mínimo e preço máximo.",
+        });
+        return;
+      }
+
+      if (
+        Number.isNaN(parsedPriceMinimum) ||
+        Number.isNaN(parsedPriceMaximum) ||
+        parsedPriceMinimum < 0 ||
+        parsedPriceMaximum < 0
+      ) {
+        setFeedback({
+          type: "error",
+          message: "Informe uma faixa de preço válida para o serviço.",
+        });
+        return;
+      }
+
+      if (parsedPriceMinimum > parsedPriceMaximum) {
+        setFeedback({
+          type: "error",
+          message: "O preço mínimo não pode ser maior que o preço máximo.",
+        });
+        return;
+      }
     }
 
     try {
@@ -316,9 +373,9 @@ export default function ProviderDashboardPage() {
           serviceId: editingServiceId,
           name: name.trim(),
           description: description.trim(),
-          price: parsedPrice,
-          priceMinimum: parsedPriceMinimum,
-          priceMaximum: parsedPriceMaximum,
+          price: hasFixedPrice ? parsedPrice : undefined,
+          priceMinimum: hasPriceRange ? parsedPriceMinimum : undefined,
+          priceMaximum: hasPriceRange ? parsedPriceMaximum : undefined,
           duration: parsedDuration,
         });
 
@@ -334,9 +391,9 @@ export default function ProviderDashboardPage() {
           providerId: provider.id,
           name: name.trim(),
           description: description.trim(),
-          price: parsedPrice,
-          priceMinimum: parsedPriceMinimum,
-          priceMaximum: parsedPriceMaximum,
+          price: hasFixedPrice ? parsedPrice : undefined,
+          priceMinimum: hasPriceRange ? parsedPriceMinimum : undefined,
+          priceMaximum: hasPriceRange ? parsedPriceMaximum : undefined,
           duration: parsedDuration,
         });
 
@@ -955,7 +1012,6 @@ export default function ProviderDashboardPage() {
                     placeholder="Ex: 120"
                     min={0}
                     step="0.01"
-                    required
                   />
                 </Box>
 
@@ -981,7 +1037,6 @@ export default function ProviderDashboardPage() {
                     placeholder="Ex: 100"
                     min={0}
                     step="0.01"
-                    required
                   />
                 </Box>
 
@@ -1007,10 +1062,13 @@ export default function ProviderDashboardPage() {
                     placeholder="Ex: 180"
                     min={0}
                     step="0.01"
-                    required
                   />
                 </Box>
               </Grid>
+
+              <Text fontSize="xs" color="gray.500">
+                Use preço fixo ou faixa (mínimo e máximo), não ambos.
+              </Text>
 
               <Box minW={0}>
                 <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
