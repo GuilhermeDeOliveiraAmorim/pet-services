@@ -5,10 +5,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   Box,
   Button,
+  Dialog,
   Flex,
   Grid,
   HStack,
   Input,
+  Portal,
   Text,
   Textarea,
   VStack,
@@ -92,6 +94,9 @@ export default function ProviderDashboardPage() {
   const [priceMaximum, setPriceMaximum] = useState("");
   const [duration, setDuration] = useState("");
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
+  const [confirmDeleteServiceId, setConfirmDeleteServiceId] = useState<
+    string | null
+  >(null);
   const [deletingServiceId, setDeletingServiceId] = useState<string | null>(
     null,
   );
@@ -419,11 +424,20 @@ export default function ProviderDashboardPage() {
   };
 
   const handleDeleteService = async (serviceId: string) => {
-    const confirmed = window.confirm("Deseja realmente excluir este serviço?");
+    setConfirmDeleteServiceId(serviceId);
+  };
 
-    if (!confirmed) {
+  const handleCancelDeleteService = () => {
+    setConfirmDeleteServiceId(null);
+  };
+
+  const handleConfirmDeleteService = async () => {
+    if (!confirmDeleteServiceId) {
       return;
     }
+
+    const serviceId = confirmDeleteServiceId;
+    setConfirmDeleteServiceId(null);
 
     setDeletingServiceId(serviceId);
     try {
@@ -1219,7 +1233,11 @@ export default function ProviderDashboardPage() {
                           colorPalette="red"
                           variant="subtle"
                           onClick={() => handleDeleteService(service.id)}
-                          disabled={isDeletingService || isSubmitting}
+                          disabled={
+                            isDeletingService ||
+                            isSubmitting ||
+                            Boolean(confirmDeleteServiceId)
+                          }
                         >
                           {isCurrentDeleting ? "Excluindo..." : "Excluir"}
                         </Button>
@@ -1232,6 +1250,54 @@ export default function ProviderDashboardPage() {
           )}
         </Box>
       </VStack>
+
+      <Dialog.Root
+        open={Boolean(confirmDeleteServiceId)}
+        onOpenChange={(details) => {
+          if (!details.open) {
+            handleCancelDeleteService();
+          }
+        }}
+      >
+        <Portal>
+          <Dialog.Backdrop bg="blackAlpha.500" />
+          <Dialog.Positioner p={4}>
+            <Dialog.Content borderRadius="3xl" maxW="md" w="full">
+              <Dialog.Header>
+                <Dialog.Title>Excluir serviço?</Dialog.Title>
+              </Dialog.Header>
+              <Dialog.Body>
+                <Text fontSize="sm" color="gray.600">
+                  Esta ação remove o serviço permanentemente.
+                </Text>
+              </Dialog.Body>
+              <Dialog.Footer>
+                <Button
+                  type="button"
+                  variant="outline"
+                  borderRadius="full"
+                  onClick={handleCancelDeleteService}
+                  disabled={isDeletingService}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="button"
+                  borderRadius="full"
+                  bg="red.500"
+                  color="white"
+                  onClick={handleConfirmDeleteService}
+                  disabled={isDeletingService}
+                  _hover={{ bg: "red.600" }}
+                  _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
+                >
+                  {isDeletingService ? "Excluindo..." : "Excluir"}
+                </Button>
+              </Dialog.Footer>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root>
 
       <ChangePasswordCard />
     </PageWrapper>
