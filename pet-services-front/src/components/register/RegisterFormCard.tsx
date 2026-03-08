@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Box, Flex } from "@chakra-ui/react";
 import RegisterFormHeader from "./RegisterFormHeader";
 
 type RegisterFormCardProps = {
@@ -7,11 +8,20 @@ type RegisterFormCardProps = {
 
 export default function RegisterFormCard({ children }: RegisterFormCardProps) {
   return (
-    <div className="flex items-center justify-center">
-      <div className="w-full max-w-2xl rounded-4xl bg-white p-10 shadow-[0_30px_80px_rgba(124,139,255,0.15)]">
+    <Flex align="center" justify="center">
+      <Box
+        w="full"
+        maxW="2xl"
+        borderRadius="3xl"
+        bg="white"
+        p={{ base: 6, md: 10 }}
+        borderWidth="1px"
+        borderColor="gray.100"
+        shadow="sm"
+      >
         <RegisterFormHeader />
         {children}
-      </div>
-    </div>
+      </Box>
+    </Flex>
   );
 }

@@ -1,6 +1,5 @@
-import * as Form from "@radix-ui/react-form";
-
-import RadixSelectField from "@/components/common/RadixSelectField";
+import { type ChangeEvent, useMemo, useState } from "react";
+import { Box, Grid, Input, NativeSelect, Text } from "@chakra-ui/react";
 
 type RegisterAddressFieldsProps = {
   street: string;
@@ -47,161 +46,296 @@ export default function RegisterAddressFields({
   complement,
   onComplementChange,
 }: RegisterAddressFieldsProps) {
+  const [countrySearch, setCountrySearch] = useState("");
+  const [stateSearch, setStateSearch] = useState("");
+  const [citySearch, setCitySearch] = useState("");
+
+  const filteredCountries = useMemo(() => {
+    const query = countrySearch.trim().toLowerCase();
+    if (!query) return countryOptions;
+    return countryOptions.filter((country) =>
+      country.label.toLowerCase().includes(query),
+    );
+  }, [countryOptions, countrySearch]);
+
+  const filteredStates = useMemo(() => {
+    const query = stateSearch.trim().toLowerCase();
+    if (!query) return states;
+    return states.filter((state) => state.name.toLowerCase().includes(query));
+  }, [states, stateSearch]);
+
+  const filteredCities = useMemo(() => {
+    const query = citySearch.trim().toLowerCase();
+    if (!query) return cities;
+    return cities.filter((city) => city.name.toLowerCase().includes(query));
+  }, [cities, citySearch]);
+
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-[1.3fr_0.7fr]">
-        <Form.Field className="space-y-2" name="street">
-          <div className="flex items-baseline justify-between">
-            <Form.Label className="text-sm font-medium">Rua</Form.Label>
-            <Form.Message
-              className="text-xs text-rose-500"
-              match="valueMissing"
-            >
-              Obrigatório
-            </Form.Message>
-          </div>
-          <Form.Control asChild>
-            <input
-              id="street"
-              value={street}
-              onChange={(event) => onStreetChange(event.target.value)}
-              className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-              placeholder="Rua Exemplo"
-              required
-            />
-          </Form.Control>
-        </Form.Field>
-
-        <Form.Field className="space-y-2" name="addressNumber">
-          <div className="flex items-baseline justify-between">
-            <Form.Label className="text-sm font-medium">Número</Form.Label>
-            <Form.Message
-              className="text-xs text-rose-500"
-              match="valueMissing"
-            >
-              Obrigatório
-            </Form.Message>
-          </div>
-          <Form.Control asChild>
-            <input
-              id="addressNumber"
-              value={addressNumber}
-              onChange={(event) => onAddressNumberChange(event.target.value)}
-              className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-              placeholder="123"
-              required
-            />
-          </Form.Control>
-        </Form.Field>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Form.Field className="space-y-2" name="neighborhood">
-          <div className="flex items-baseline justify-between">
-            <Form.Label className="text-sm font-medium">Bairro</Form.Label>
-            <Form.Message
-              className="text-xs text-rose-500"
-              match="valueMissing"
-            >
-              Obrigatório
-            </Form.Message>
-          </div>
-          <Form.Control asChild>
-            <input
-              id="neighborhood"
-              value={neighborhood}
-              onChange={(event) => onNeighborhoodChange(event.target.value)}
-              className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-              placeholder="Centro"
-              required
-            />
-          </Form.Control>
-        </Form.Field>
-
-        <RadixSelectField
-          name="cityId"
-          label="Cidade"
-          value={cityId ? String(cityId) : ""}
-          onValueChange={(value) =>
-            onCityIdChange(value ? Number(value) : undefined)
-          }
-          options={cities.map((city) => ({
-            value: String(city.id),
-            label: city.name,
-          }))}
-          placeholder="Selecione"
-          searchable
-          searchPlaceholder="Buscar cidade"
-          required
-          disabled={cityDisabled}
-        />
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-3">
-        <RadixSelectField
-          name="stateId"
-          label="Estado"
-          value={stateId ? String(stateId) : ""}
-          onValueChange={(value) =>
-            onStateIdChange(value ? Number(value) : undefined)
-          }
-          options={states.map((state) => ({
-            value: String(state.id),
-            label: state.name,
-          }))}
-          placeholder="Selecione"
-          searchable
-          searchPlaceholder="Buscar estado"
-          required
-        />
-
-        <Form.Field className="space-y-2" name="zipCode">
-          <div className="flex items-baseline justify-between">
-            <Form.Label className="text-sm font-medium">CEP</Form.Label>
-            <Form.Message
-              className="text-xs text-rose-500"
-              match="valueMissing"
-            >
-              Obrigatório
-            </Form.Message>
-          </div>
-          <Form.Control asChild>
-            <input
-              id="zipCode"
-              value={zipCode}
-              onChange={(event) => onZipCodeChange(event.target.value)}
-              className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-              placeholder="00000-000"
-              inputMode="numeric"
-              required
-            />
-          </Form.Control>
-        </Form.Field>
-
-        <RadixSelectField
-          name="countryCode"
-          label="País"
-          value={countryCode}
-          onValueChange={onCountryCodeChange}
-          options={countryOptions}
-          searchable
-          searchPlaceholder="Buscar país"
-          required
-        />
-      </div>
-
-      <Form.Field className="space-y-2" name="complement">
-        <Form.Label className="text-sm font-medium">Complemento</Form.Label>
-        <Form.Control asChild>
-          <input
-            id="complement"
-            value={complement}
-            onChange={(event) => onComplementChange(event.target.value)}
-            className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-            placeholder="Apartamento, bloco, etc"
+      <Grid gap={4} templateColumns={{ base: "1fr", sm: "1.3fr 0.7fr" }}>
+        <Box minW={0}>
+          <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+            Rua
+          </Text>
+          <Input
+            id="street"
+            name="street"
+            value={street}
+            onChange={(event: ChangeEvent<HTMLInputElement>) =>
+              onStreetChange(event.target.value)
+            }
+            h="11"
+            borderRadius="xl"
+            bg="gray.50"
+            borderColor="gray.200"
+            focusRingColor="teal.200"
+            placeholder="Rua Exemplo"
+            required
+            w="full"
           />
-        </Form.Control>
-      </Form.Field>
+        </Box>
+
+        <Box minW={0}>
+          <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+            Número
+          </Text>
+          <Input
+            id="addressNumber"
+            name="addressNumber"
+            value={addressNumber}
+            onChange={(event: ChangeEvent<HTMLInputElement>) =>
+              onAddressNumberChange(event.target.value)
+            }
+            h="11"
+            borderRadius="xl"
+            bg="gray.50"
+            borderColor="gray.200"
+            focusRingColor="teal.200"
+            placeholder="123"
+            required
+            w="full"
+          />
+        </Box>
+      </Grid>
+
+      <Grid gap={4} templateColumns={{ base: "1fr", sm: "1fr 1fr" }}>
+        <Box minW={0}>
+          <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+            Bairro
+          </Text>
+          <Input
+            id="neighborhood"
+            name="neighborhood"
+            value={neighborhood}
+            onChange={(event: ChangeEvent<HTMLInputElement>) =>
+              onNeighborhoodChange(event.target.value)
+            }
+            h="11"
+            borderRadius="xl"
+            bg="gray.50"
+            borderColor="gray.200"
+            focusRingColor="teal.200"
+            placeholder="Centro"
+            required
+            w="full"
+          />
+        </Box>
+
+        <Box minW={0}>
+          <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+            Cidade
+          </Text>
+          <Input
+            value={citySearch}
+            onChange={(event: ChangeEvent<HTMLInputElement>) =>
+              setCitySearch(event.target.value)
+            }
+            placeholder="Buscar cidade"
+            h="9"
+            mb={2}
+            borderRadius="lg"
+            bg="gray.50"
+            borderColor="gray.200"
+            focusRingColor="teal.200"
+            disabled={cityDisabled}
+            w="full"
+          />
+          <NativeSelect.Root
+            size="md"
+            h="11"
+            borderRadius="xl"
+            bg="gray.50"
+            borderColor="gray.200"
+            focusRingColor="teal.200"
+            disabled={cityDisabled}
+            w="full"
+            minW={0}
+          >
+            <NativeSelect.Field
+              id="cityId"
+              name="cityId"
+              value={cityId ? String(cityId) : ""}
+              onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+                onCityIdChange(
+                  event.target.value ? Number(event.target.value) : undefined,
+                )
+              }
+            >
+              <option value="">Selecione</option>
+              {filteredCities.map((city) => (
+                <option key={city.id} value={String(city.id)}>
+                  {city.name}
+                </option>
+              ))}
+            </NativeSelect.Field>
+            <NativeSelect.Indicator />
+          </NativeSelect.Root>
+        </Box>
+      </Grid>
+
+      <Grid
+        gap={4}
+        templateColumns={{ base: "1fr", sm: "repeat(3, minmax(0, 1fr))" }}
+      >
+        <Box minW={0}>
+          <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+            Estado
+          </Text>
+          <Input
+            value={stateSearch}
+            onChange={(event: ChangeEvent<HTMLInputElement>) =>
+              setStateSearch(event.target.value)
+            }
+            placeholder="Buscar estado"
+            h="9"
+            mb={2}
+            borderRadius="lg"
+            bg="gray.50"
+            borderColor="gray.200"
+            focusRingColor="teal.200"
+            w="full"
+          />
+          <NativeSelect.Root
+            size="md"
+            h="11"
+            borderRadius="xl"
+            bg="gray.50"
+            borderColor="gray.200"
+            focusRingColor="teal.200"
+            w="full"
+            minW={0}
+          >
+            <NativeSelect.Field
+              id="stateId"
+              name="stateId"
+              value={stateId ? String(stateId) : ""}
+              onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+                onStateIdChange(
+                  event.target.value ? Number(event.target.value) : undefined,
+                )
+              }
+            >
+              <option value="">Selecione</option>
+              {filteredStates.map((state) => (
+                <option key={state.id} value={String(state.id)}>
+                  {state.name}
+                </option>
+              ))}
+            </NativeSelect.Field>
+            <NativeSelect.Indicator />
+          </NativeSelect.Root>
+        </Box>
+
+        <Box minW={0}>
+          <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+            CEP
+          </Text>
+          <Input
+            id="zipCode"
+            name="zipCode"
+            value={zipCode}
+            onChange={(event: ChangeEvent<HTMLInputElement>) =>
+              onZipCodeChange(event.target.value)
+            }
+            h="11"
+            borderRadius="xl"
+            bg="white"
+            borderColor="gray.200"
+            focusRingColor="teal.200"
+            placeholder="00000-000"
+            inputMode="numeric"
+            required
+            w="full"
+          />
+        </Box>
+
+        <Box minW={0}>
+          <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+            País
+          </Text>
+          <Input
+            value={countrySearch}
+            onChange={(event: ChangeEvent<HTMLInputElement>) =>
+              setCountrySearch(event.target.value)
+            }
+            placeholder="Buscar país"
+            h="9"
+            mb={2}
+            borderRadius="lg"
+            bg="gray.50"
+            borderColor="gray.200"
+            focusRingColor="teal.200"
+            w="full"
+          />
+          <NativeSelect.Root
+            size="md"
+            h="11"
+            borderRadius="xl"
+            bg="gray.50"
+            borderColor="gray.200"
+            focusRingColor="teal.200"
+            w="full"
+            minW={0}
+          >
+            <NativeSelect.Field
+              id="countryCode"
+              name="countryCode"
+              value={countryCode}
+              onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+                onCountryCodeChange(event.target.value)
+              }
+            >
+              {filteredCountries.map((country) => (
+                <option key={country.value} value={country.value}>
+                  {country.label}
+                </option>
+              ))}
+            </NativeSelect.Field>
+            <NativeSelect.Indicator />
+          </NativeSelect.Root>
+        </Box>
+      </Grid>
+
+      <Box minW={0}>
+        <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+          Complemento
+        </Text>
+        <Input
+          id="complement"
+          name="complement"
+          value={complement}
+          onChange={(event: ChangeEvent<HTMLInputElement>) =>
+            onComplementChange(event.target.value)
+          }
+          h="11"
+          borderRadius="xl"
+          bg="white"
+          borderColor="gray.200"
+          focusRingColor="teal.200"
+          placeholder="Apartamento, bloco, etc"
+          w="full"
+        />
+      </Box>
     </>
   );
 }

@@ -1,11 +1,21 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import * as Dialog from "@radix-ui/react-dialog";
-import * as Form from "@radix-ui/react-form";
+import {
+  Badge,
+  Box,
+  Button,
+  Flex,
+  Grid,
+  HStack,
+  Input,
+  Text,
+  VStack,
+  chakra,
+} from "@chakra-ui/react";
 import { isAxiosError } from "axios";
 
 import {
@@ -18,9 +28,9 @@ import {
   useUserUpdate,
 } from "@/application";
 import type { UpdateUserInput } from "@/application";
-import ChangePasswordCard from "@/components/account/ChangePasswordCard";
 import MainNav from "@/components/common/MainNav";
 import PageWrapper from "@/components/common/PageWrapper";
+import ChangePasswordCard from "@/components/account/ChangePasswordCard";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -69,121 +79,194 @@ export default function ProfilePage() {
   };
 
   return (
-    <PageWrapper className="gap-10">
+    <PageWrapper gap={10}>
       <MainNav />
 
-      <section className="rounded-4xl bg-white p-6 shadow-sm">
-        <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase text-cyan-400">
+      <Box
+        borderRadius="3xl"
+        bg="white"
+        p={{ base: 5, md: 7 }}
+        borderWidth="1px"
+        borderColor="gray.200"
+        shadow="sm"
+      >
+        <Flex mb={6} wrap="wrap" align="start" justify="space-between" gap={4}>
+          <Box>
+            <Text
+              fontSize="xs"
+              fontWeight="semibold"
+              textTransform="uppercase"
+              color="green.500"
+            >
               Perfil
-            </p>
-            <h1 className="mt-2 text-2xl font-semibold text-slate-900">
+            </Text>
+            <Text mt={2} fontSize="2xl" fontWeight="semibold" color="gray.900">
               Seus dados
-            </h1>
-            <p className="mt-2 text-sm text-slate-600">
-              Atualize suas informações de contato.
-            </p>
-          </div>
+            </Text>
+            <Text mt={2} fontSize="sm" color="gray.600">
+              Atualize suas informações para manter seu perfil completo.
+            </Text>
+          </Box>
           {user ? (
-            <span
-              className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${
-                user.active
-                  ? "bg-emerald-50 text-emerald-600"
-                  : "bg-amber-50 text-amber-600"
-              }`}
+            <Badge
+              borderRadius="full"
+              px={3}
+              py={1}
+              fontSize="xs"
+              colorPalette={user.active ? "green" : "orange"}
+              variant="subtle"
             >
               {user.active ? "Conta ativa" : "Conta desativada"}
-            </span>
+            </Badge>
           ) : null}
-        </div>
+        </Flex>
 
         {isLoading ? (
-          <p className="text-sm text-slate-500">Carregando perfil...</p>
+          <Text fontSize="sm" color="gray.500">
+            Carregando perfil...
+          </Text>
         ) : user ? (
           <ProfileForm key={user.id} user={user} />
         ) : (
-          <p className="text-sm text-slate-500">
+          <Text fontSize="sm" color="gray.500">
             Não foi possível carregar o perfil.
-          </p>
+          </Text>
         )}
-      </section>
+      </Box>
 
       <ChangePasswordCard />
 
-      <section className="rounded-4xl border border-rose-200/70 bg-white p-6 shadow-sm">
-        <div className="mb-4">
-          <p className="text-xs font-semibold uppercase text-rose-400">Conta</p>
-          <h2 className="mt-2 text-xl font-semibold text-slate-900">
+      <Box
+        borderRadius="3xl"
+        borderWidth="1px"
+        borderColor="gray.200"
+        bg="white"
+        p={{ base: 5, md: 6 }}
+        shadow="sm"
+      >
+        <Box mb={4}>
+          <Text
+            fontSize="xs"
+            fontWeight="semibold"
+            textTransform="uppercase"
+            color="gray.500"
+          >
+            Conta
+          </Text>
+          <Text mt={2} fontSize="xl" fontWeight="semibold" color="gray.900">
             Status da conta
-          </h2>
-          <p className="mt-2 text-sm text-slate-600">
+          </Text>
+          <Text mt={2} fontSize="sm" color="gray.600">
             Você pode desativar sua conta e reativá-la depois.
-          </p>
-        </div>
+          </Text>
+        </Box>
 
         {accountFeedback ? (
-          <div className="mb-4 rounded-3xl border border-rose-200/80 bg-rose-50/70 px-4 py-3 text-sm text-rose-600 shadow-sm">
-            {accountFeedback}
-          </div>
+          <Box
+            mb={4}
+            borderRadius="2xl"
+            borderWidth="1px"
+            borderColor="red.200"
+            bg="red.50"
+            px={4}
+            py={3}
+          >
+            <Text fontSize="sm" color="red.600">
+              {accountFeedback}
+            </Text>
+          </Box>
         ) : null}
 
-        <div className="flex flex-wrap gap-3">
-          <Dialog.Root
-            open={isDeactivateOpen}
-            onOpenChange={setIsDeactivateOpen}
+        <HStack gap={3} flexWrap="wrap">
+          <Button
+            type="button"
+            onClick={() => setIsDeactivateOpen(true)}
+            disabled={isDeactivating || !user || !user.active}
+            borderRadius="full"
+            borderWidth="1px"
+            borderColor="red.200"
+            color="red.600"
+            bg="white"
+            _hover={{ bg: "red.50" }}
+            _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
           >
-            <Dialog.Trigger asChild>
-              <button
-                type="button"
-                disabled={isDeactivating || !user || !user.active}
-                className="rounded-full border border-rose-200 px-4 py-2 text-sm font-medium text-rose-600 transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {isDeactivating ? "Desativando..." : "Desativar conta"}
-              </button>
-            </Dialog.Trigger>
-            <Dialog.Portal>
-              <Dialog.Overlay className="fixed inset-0 bg-slate-900/30" />
-              <Dialog.Content className="fixed left-1/2 top-1/2 w-[92vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-3xl bg-white p-6 shadow-xl">
-                <Dialog.Title className="text-lg font-semibold text-slate-900">
-                  Desativar conta?
-                </Dialog.Title>
-                <Dialog.Description className="mt-2 text-sm text-slate-600">
-                  Ao desativar sua conta, você será desconectado e precisará
-                  reativá-la para acessar novamente.
-                </Dialog.Description>
+            {isDeactivating ? "Desativando..." : "Desativar conta"}
+          </Button>
 
-                <div className="mt-6 flex flex-wrap justify-end gap-3">
-                  <Dialog.Close asChild>
-                    <button
-                      type="button"
-                      className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700"
-                    >
-                      Cancelar
-                    </button>
-                  </Dialog.Close>
-                  <button
-                    type="button"
-                    onClick={handleConfirmDeactivate}
-                    disabled={isDeactivating}
-                    className="rounded-full bg-rose-500 px-4 py-2 text-sm font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
-                  >
-                    {isDeactivating ? "Desativando..." : "Confirmar"}
-                  </button>
-                </div>
-              </Dialog.Content>
-            </Dialog.Portal>
-          </Dialog.Root>
-          <button
+          <Button
             type="button"
             onClick={handleReactivate}
             disabled={isReactivating || !user || user.active}
-            className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
+            borderRadius="full"
+            borderWidth="1px"
+            borderColor="gray.200"
+            color="gray.700"
+            bg="white"
+            _hover={{ bg: "gray.50" }}
+            _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
           >
             {isReactivating ? "Reativando..." : "Reativar conta"}
-          </button>
-        </div>
-      </section>
+          </Button>
+        </HStack>
+      </Box>
+
+      {isDeactivateOpen ? (
+        <Box
+          position="fixed"
+          inset={0}
+          bg="blackAlpha.500"
+          zIndex={1400}
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          p={4}
+        >
+          <Box
+            role="dialog"
+            aria-modal="true"
+            maxW="md"
+            w="full"
+            borderRadius="3xl"
+            bg="white"
+            p={6}
+            shadow="xl"
+          >
+            <Text fontSize="lg" fontWeight="semibold" color="gray.900">
+              Desativar conta?
+            </Text>
+            <Text mt={2} fontSize="sm" color="gray.600">
+              Ao desativar sua conta, você será desconectado e precisará
+              reativá-la para acessar novamente.
+            </Text>
+
+            <Flex mt={6} justify="flex-end" gap={3} wrap="wrap">
+              <Button
+                type="button"
+                borderRadius="full"
+                borderWidth="1px"
+                borderColor="gray.200"
+                bg="white"
+                color="gray.700"
+                onClick={() => setIsDeactivateOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="button"
+                borderRadius="full"
+                bg="red.500"
+                color="white"
+                onClick={handleConfirmDeactivate}
+                disabled={isDeactivating}
+                _hover={{ bg: "red.600" }}
+                _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
+              >
+                {isDeactivating ? "Desativando..." : "Confirmar"}
+              </Button>
+            </Flex>
+          </Box>
+        </Box>
+      ) : null}
     </PageWrapper>
   );
 }
@@ -259,6 +342,7 @@ const ProfileForm = ({ user }: ProfileFormProps) => {
   const [latitude, setLatitude] = useState(initialValues.latitude);
   const [longitude, setLongitude] = useState(initialValues.longitude);
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
+  const photoInputRef = useRef<HTMLInputElement | null>(null);
 
   const hasChanges = useMemo(() => {
     const normalize = (value: string) => value.trim();
@@ -391,266 +475,418 @@ const ProfileForm = ({ user }: ProfileFormProps) => {
   };
 
   return (
-    <Form.Root className="space-y-6" onSubmit={handleSubmit}>
-      <div className="rounded-3xl border border-slate-100 bg-slate-50/60 p-4">
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="h-20 w-20 overflow-hidden rounded-3xl bg-slate-200">
-            {currentPhotoUrl ? (
-              <Image
-                src={currentPhotoUrl}
-                alt="Foto do usuário"
-                width={80}
-                height={80}
-                className="h-full w-full object-cover"
-                unoptimized
-              />
-            ) : null}
-          </div>
-          <div className="flex flex-1 flex-col gap-2">
-            <p className="text-sm font-medium text-slate-800">Foto do perfil</p>
-            <div className="flex flex-wrap items-center gap-3">
-              <input
+    <chakra.form onSubmit={handleSubmit}>
+      <VStack align="stretch" gap={6}>
+        <Box
+          borderRadius="2xl"
+          borderWidth="1px"
+          borderColor="gray.200"
+          bg="white"
+          p={4}
+        >
+          <Flex wrap="wrap" align="center" gap={4}>
+            <Box
+              h="20"
+              w="20"
+              overflow="hidden"
+              borderRadius="2xl"
+              bg="gray.200"
+            >
+              {currentPhotoUrl ? (
+                <Image
+                  src={currentPhotoUrl}
+                  alt="Foto do usuário"
+                  width={80}
+                  height={80}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  unoptimized
+                />
+              ) : null}
+            </Box>
+            <VStack align="start" gap={2} flex={1} minW="260px">
+              <Text fontSize="sm" fontWeight="medium" color="gray.800">
+                Foto do perfil
+              </Text>
+              <Input
+                ref={photoInputRef}
                 type="file"
                 accept="image/*"
+                display="none"
                 onChange={(event) =>
                   setSelectedPhoto(event.target.files?.[0] ?? null)
                 }
-                className="text-sm text-slate-600"
               />
-              <button
-                type="button"
-                onClick={handlePhotoUpload}
-                disabled={!selectedPhoto || isUploadingPhoto}
-                className="rounded-full bg-cyan-500 px-4 py-2 text-xs font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {isUploadingPhoto ? "Enviando..." : "Enviar foto"}
-              </button>
-            </div>
-            {uploadSuccess ? (
-              <p className="text-xs text-emerald-600">
-                Foto enviada com sucesso.
-              </p>
-            ) : null}
-            {photoFeedback ? (
-              <p className="text-xs text-rose-600">{photoFeedback}</p>
-            ) : null}
-          </div>
-        </div>
-      </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        <Form.Field className="space-y-2" name="name">
-          <Form.Label className="text-sm font-medium">Nome</Form.Label>
-          <Form.Control asChild>
-            <input
+              <HStack gap={3} flexWrap="wrap">
+                <Button
+                  type="button"
+                  borderRadius="full"
+                  size="sm"
+                  variant="outline"
+                  borderColor="gray.300"
+                  color="gray.700"
+                  onClick={() => photoInputRef.current?.click()}
+                >
+                  Escolher foto
+                </Button>
+                <Text
+                  fontSize="xs"
+                  color="gray.500"
+                  maxW="300px"
+                  overflow="hidden"
+                  textOverflow="ellipsis"
+                  whiteSpace="nowrap"
+                >
+                  {selectedPhoto
+                    ? selectedPhoto.name
+                    : "Nenhum arquivo selecionado"}
+                </Text>
+                <Button
+                  type="button"
+                  onClick={handlePhotoUpload}
+                  disabled={!selectedPhoto || isUploadingPhoto}
+                  borderRadius="full"
+                  size="sm"
+                  bg="green.400"
+                  color="white"
+                  _hover={{ bg: "green.500" }}
+                  _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
+                >
+                  {isUploadingPhoto ? "Enviando..." : "Enviar foto"}
+                </Button>
+              </HStack>
+              {uploadSuccess ? (
+                <Text fontSize="xs" color="green.600">
+                  Foto enviada com sucesso.
+                </Text>
+              ) : null}
+              {photoFeedback ? (
+                <Text fontSize="xs" color="red.600">
+                  {photoFeedback}
+                </Text>
+              ) : null}
+            </VStack>
+          </Flex>
+        </Box>
+
+        <Grid gap={4} templateColumns={{ base: "1fr", md: "1fr 1fr" }}>
+          <Box minW={0}>
+            <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+              Nome
+            </Text>
+            <Input
               value={name}
               onChange={(event) => setName(event.target.value)}
-              className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+              h="11"
+              borderRadius="xl"
+              bg="gray.50"
+              borderColor="gray.200"
+              focusRingColor="teal.200"
               placeholder="Seu nome"
               required
             />
-          </Form.Control>
-        </Form.Field>
+          </Box>
 
-        <Form.Field className="space-y-2" name="email">
-          <Form.Label className="text-sm font-medium">Email</Form.Label>
-          <Form.Control asChild>
-            <input
+          <Box minW={0}>
+            <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+              Email
+            </Text>
+            <Input
               value={email}
               readOnly
-              className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-100 px-4 text-sm text-slate-500"
+              h="11"
+              borderRadius="xl"
+              bg="gray.100"
+              borderColor="gray.200"
+              color="gray.500"
             />
-          </Form.Control>
-          <p className="text-xs text-slate-400">
-            O email é fixo e não pode ser alterado aqui.
-          </p>
-        </Form.Field>
-      </div>
+            <Text mt={1.5} fontSize="xs" color="gray.400">
+              O email é fixo e não pode ser alterado aqui.
+            </Text>
+          </Box>
+        </Grid>
 
-      <div>
-        <p className="text-sm font-semibold text-slate-900">Telefone</p>
-        <div className="mt-3 grid gap-4 md:grid-cols-3">
-          <Form.Field className="space-y-2" name="countryCode">
-            <Form.Label className="text-sm font-medium">DDI</Form.Label>
-            <Form.Control asChild>
-              <input
+        <Box
+          borderRadius="2xl"
+          borderWidth="1px"
+          borderColor="gray.200"
+          bg="gray.50"
+          p={4}
+        >
+          <Text fontSize="sm" fontWeight="semibold" color="gray.900">
+            Telefone
+          </Text>
+          <Grid
+            mt={3}
+            gap={4}
+            templateColumns={{ base: "1fr", md: "repeat(3, minmax(0, 1fr))" }}
+          >
+            <Box minW={0}>
+              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                DDI
+              </Text>
+              <Input
                 value={phoneCountryCode}
                 onChange={(event) => setPhoneCountryCode(event.target.value)}
-                className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+                h="11"
+                borderRadius="xl"
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
                 placeholder="55"
               />
-            </Form.Control>
-          </Form.Field>
+            </Box>
 
-          <Form.Field className="space-y-2" name="areaCode">
-            <Form.Label className="text-sm font-medium">DDD</Form.Label>
-            <Form.Control asChild>
-              <input
+            <Box minW={0}>
+              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                DDD
+              </Text>
+              <Input
                 value={phoneAreaCode}
                 onChange={(event) => setPhoneAreaCode(event.target.value)}
-                className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+                h="11"
+                borderRadius="xl"
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
                 placeholder="82"
               />
-            </Form.Control>
-          </Form.Field>
+            </Box>
 
-          <Form.Field className="space-y-2" name="phoneNumber">
-            <Form.Label className="text-sm font-medium">Número</Form.Label>
-            <Form.Control asChild>
-              <input
+            <Box minW={0}>
+              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                Número
+              </Text>
+              <Input
                 value={phoneNumber}
                 onChange={(event) => setPhoneNumber(event.target.value)}
-                className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+                h="11"
+                borderRadius="xl"
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
                 placeholder="999999999"
               />
-            </Form.Control>
-          </Form.Field>
-        </div>
-      </div>
+            </Box>
+          </Grid>
+        </Box>
 
-      <div>
-        <p className="text-sm font-semibold text-slate-900">Endereço</p>
-        <div className="mt-3 grid gap-4 md:grid-cols-2">
-          <Form.Field className="space-y-2" name="street">
-            <Form.Label className="text-sm font-medium">Rua</Form.Label>
-            <Form.Control asChild>
-              <input
+        <Box
+          borderRadius="2xl"
+          borderWidth="1px"
+          borderColor="gray.200"
+          bg="gray.50"
+          p={4}
+        >
+          <Text fontSize="sm" fontWeight="semibold" color="gray.900">
+            Endereço
+          </Text>
+          <Grid mt={3} gap={4} templateColumns={{ base: "1fr", md: "1fr 1fr" }}>
+            <Box minW={0}>
+              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                Rua
+              </Text>
+              <Input
                 value={street}
                 onChange={(event) => setStreet(event.target.value)}
-                className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+                h="11"
+                borderRadius="xl"
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
                 placeholder="Rua"
               />
-            </Form.Control>
-          </Form.Field>
+            </Box>
 
-          <Form.Field className="space-y-2" name="addressNumber">
-            <Form.Label className="text-sm font-medium">Número</Form.Label>
-            <Form.Control asChild>
-              <input
+            <Box minW={0}>
+              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                Número
+              </Text>
+              <Input
                 value={addressNumber}
                 onChange={(event) => setAddressNumber(event.target.value)}
-                className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+                h="11"
+                borderRadius="xl"
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
                 placeholder="123"
               />
-            </Form.Control>
-          </Form.Field>
+            </Box>
 
-          <Form.Field className="space-y-2" name="neighborhood">
-            <Form.Label className="text-sm font-medium">Bairro</Form.Label>
-            <Form.Control asChild>
-              <input
+            <Box minW={0}>
+              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                Bairro
+              </Text>
+              <Input
                 value={neighborhood}
                 onChange={(event) => setNeighborhood(event.target.value)}
-                className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+                h="11"
+                borderRadius="xl"
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
                 placeholder="Centro"
               />
-            </Form.Control>
-          </Form.Field>
+            </Box>
 
-          <Form.Field className="space-y-2" name="city">
-            <Form.Label className="text-sm font-medium">Cidade</Form.Label>
-            <Form.Control asChild>
-              <input
+            <Box minW={0}>
+              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                Cidade
+              </Text>
+              <Input
                 value={city}
                 onChange={(event) => setCity(event.target.value)}
-                className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+                h="11"
+                borderRadius="xl"
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
                 placeholder="Maceió"
               />
-            </Form.Control>
-          </Form.Field>
+            </Box>
 
-          <Form.Field className="space-y-2" name="zipCode">
-            <Form.Label className="text-sm font-medium">CEP</Form.Label>
-            <Form.Control asChild>
-              <input
+            <Box minW={0}>
+              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                CEP
+              </Text>
+              <Input
                 value={zipCode}
                 onChange={(event) => setZipCode(event.target.value)}
-                className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+                h="11"
+                borderRadius="xl"
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
                 placeholder="00000-000"
               />
-            </Form.Control>
-          </Form.Field>
+            </Box>
 
-          <Form.Field className="space-y-2" name="state">
-            <Form.Label className="text-sm font-medium">Estado</Form.Label>
-            <Form.Control asChild>
-              <input
+            <Box minW={0}>
+              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                Estado
+              </Text>
+              <Input
                 value={state}
                 onChange={(event) => setState(event.target.value)}
-                className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+                h="11"
+                borderRadius="xl"
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
                 placeholder="AL"
               />
-            </Form.Control>
-          </Form.Field>
+            </Box>
 
-          <Form.Field className="space-y-2" name="country">
-            <Form.Label className="text-sm font-medium">País</Form.Label>
-            <Form.Control asChild>
-              <input
+            <Box minW={0}>
+              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                País
+              </Text>
+              <Input
                 value={country}
                 onChange={(event) => setCountry(event.target.value)}
-                className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+                h="11"
+                borderRadius="xl"
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
                 placeholder="Brasil"
               />
-            </Form.Control>
-          </Form.Field>
+            </Box>
 
-          <Form.Field className="space-y-2" name="complement">
-            <Form.Label className="text-sm font-medium">Complemento</Form.Label>
-            <Form.Control asChild>
-              <input
+            <Box minW={0}>
+              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                Complemento
+              </Text>
+              <Input
                 value={complement}
                 onChange={(event) => setComplement(event.target.value)}
-                className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+                h="11"
+                borderRadius="xl"
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
                 placeholder="Apartamento"
               />
-            </Form.Control>
-          </Form.Field>
+            </Box>
 
-          <Form.Field className="space-y-2" name="latitude">
-            <Form.Label className="text-sm font-medium">Latitude</Form.Label>
-            <Form.Control asChild>
-              <input
+            <Box minW={0}>
+              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                Latitude
+              </Text>
+              <Input
                 value={latitude}
                 onChange={(event) => setLatitude(event.target.value)}
-                className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+                h="11"
+                borderRadius="xl"
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
                 placeholder="-10.000"
               />
-            </Form.Control>
-          </Form.Field>
+            </Box>
 
-          <Form.Field className="space-y-2" name="longitude">
-            <Form.Label className="text-sm font-medium">Longitude</Form.Label>
-            <Form.Control asChild>
-              <input
+            <Box minW={0}>
+              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                Longitude
+              </Text>
+              <Input
                 value={longitude}
                 onChange={(event) => setLongitude(event.target.value)}
-                className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+                h="11"
+                borderRadius="xl"
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
                 placeholder="-37.000"
               />
-            </Form.Control>
-          </Form.Field>
-        </div>
-      </div>
+            </Box>
+          </Grid>
+        </Box>
 
-      {feedback ? (
-        <div className="rounded-3xl border border-rose-200/80 bg-rose-50/70 px-4 py-3 text-sm text-rose-600 shadow-sm">
-          {feedback}
-        </div>
-      ) : null}
+        {feedback ? (
+          <Box
+            borderRadius="2xl"
+            borderWidth="1px"
+            borderColor="red.200"
+            bg="red.50"
+            px={4}
+            py={3}
+          >
+            <Text fontSize="sm" color="red.600">
+              {feedback}
+            </Text>
+          </Box>
+        ) : null}
 
-      {updateSuccess ? (
-        <div className="rounded-3xl border border-emerald-200/80 bg-emerald-50/70 px-4 py-3 text-sm text-emerald-700 shadow-sm">
-          Perfil atualizado com sucesso.
-        </div>
-      ) : null}
+        {updateSuccess ? (
+          <Box
+            borderRadius="2xl"
+            borderWidth="1px"
+            borderColor="green.200"
+            bg="green.50"
+            px={4}
+            py={3}
+          >
+            <Text fontSize="sm" color="green.700">
+              Perfil atualizado com sucesso.
+            </Text>
+          </Box>
+        ) : null}
 
-      <button
-        type="submit"
-        disabled={isSaving || !hasChanges}
-        className="inline-flex h-11 w-full items-center justify-center rounded-full bg-linear-to-r from-teal-400 to-cyan-400 px-4 text-sm font-semibold text-white shadow-lg shadow-cyan-200 transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
-      >
-        {isSaving ? "Salvando..." : "Salvar alterações"}
-      </button>
-    </Form.Root>
+        <Button
+          type="submit"
+          disabled={isSaving || !hasChanges}
+          h="11"
+          w="full"
+          borderRadius="full"
+          bg="green.400"
+          color="white"
+          _hover={{ bg: "green.500" }}
+          _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
+        >
+          {isSaving ? "Salvando..." : "Salvar alterações"}
+        </Button>
+      </VStack>
+    </chakra.form>
   );
 };

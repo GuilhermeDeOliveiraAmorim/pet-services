@@ -1,10 +1,19 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { type ChangeEvent, Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import * as Form from "@radix-ui/react-form";
-import * as Toggle from "@radix-ui/react-toggle";
+import {
+  Box,
+  Button,
+  Heading,
+  IconButton,
+  Input,
+  Link as ChakraLink,
+  Text,
+  VStack,
+  chakra,
+} from "@chakra-ui/react";
 import { Eye, EyeOff } from "lucide-react";
 import { isAxiosError } from "axios";
 
@@ -24,6 +33,28 @@ function ResetPasswordContent() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [newPasswordError, setNewPasswordError] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
+
+  const validateNewPassword = (value: string) => {
+    if (!value.trim()) {
+      return "Informe a nova senha";
+    }
+
+    return "";
+  };
+
+  const validateConfirmPassword = (newPass: string, confirmPass: string) => {
+    if (!confirmPass.trim()) {
+      return "Confirme a nova senha";
+    }
+
+    if (newPass !== confirmPass) {
+      return "As senhas não coincidem.";
+    }
+
+    return "";
+  };
 
   const feedback = useMemo(() => {
     if (!error) {
@@ -45,7 +76,16 @@ function ResetPasswordContent() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!token || newPassword !== confirmPassword) {
+    const nextNewPasswordError = validateNewPassword(newPassword);
+    const nextConfirmPasswordError = validateConfirmPassword(
+      newPassword,
+      confirmPassword,
+    );
+
+    setNewPasswordError(nextNewPasswordError);
+    setConfirmPasswordError(nextConfirmPasswordError);
+
+    if (!token || nextNewPasswordError || nextConfirmPasswordError) {
       return;
     }
 
@@ -54,148 +94,209 @@ function ResetPasswordContent() {
     setConfirmPassword("");
   };
 
-  const isConfirmInvalid =
-    confirmPassword.length > 0 && newPassword !== confirmPassword;
+  const isConfirmInvalid = Boolean(confirmPasswordError);
 
   return (
-    <div className="mx-auto w-full max-w-xl rounded-4xl bg-white p-8 shadow-[0_30px_80px_rgba(124,139,255,0.15)]">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Definir nova senha</h1>
-        <p className="mt-2 text-sm text-slate-500">
+    <Box
+      mx="auto"
+      w="full"
+      maxW="xl"
+      borderRadius="3xl"
+      bg="white"
+      p={{ base: 6, md: 8 }}
+      boxShadow="0 30px 80px rgba(35, 49, 82, 0.12)"
+    >
+      <Box mb={6}>
+        <Heading size="2xl" color="gray.900">
+          Definir nova senha
+        </Heading>
+        <Text mt={2} fontSize="sm" color="gray.500">
           Crie uma nova senha para acessar sua conta.
-        </p>
-      </div>
+        </Text>
+      </Box>
 
       {!token ? (
-        <div className="rounded-3xl border border-rose-200/80 bg-rose-50/70 px-4 py-3 text-sm text-rose-600 shadow-sm">
-          Token inválido ou ausente. Solicite uma nova redefinição.
-        </div>
+        <Box borderRadius="2xl" borderWidth="1px" borderColor="red.200" bg="red.50" p={4}>
+          <Text fontSize="sm" color="red.600">
+            Token inválido ou ausente. Solicite uma nova redefinição.
+          </Text>
+        </Box>
       ) : (
-        <Form.Root className="space-y-5" onSubmit={handleSubmit}>
-          <Form.Field className="space-y-2" name="newPassword">
-            <div className="flex items-baseline justify-between">
-              <Form.Label className="text-sm font-medium">
+        <chakra.form onSubmit={handleSubmit}>
+          <VStack gap={5} align="stretch">
+            <Box>
+              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
                 Nova senha
-              </Form.Label>
-              <Form.Message
-                className="text-xs text-rose-500"
-                match="valueMissing"
-              >
-                Informe a nova senha
-              </Form.Message>
-            </div>
-            <div className="relative">
-              <Form.Control asChild>
-                <input
+              </Text>
+              <Box position="relative">
+                <Input
                   type={showNew ? "text" : "password"}
                   value={newPassword}
-                  onChange={(event) => setNewPassword(event.target.value)}
-                  className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 pr-12 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+                  onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                    setNewPassword(event.target.value);
+                    if (newPasswordError) {
+                      setNewPasswordError("");
+                    }
+                    if (confirmPasswordError && confirmPassword) {
+                      setConfirmPasswordError(
+                        validateConfirmPassword(
+                          event.target.value,
+                          confirmPassword,
+                        ),
+                      );
+                    }
+                  }}
+                  onBlur={() =>
+                    setNewPasswordError(validateNewPassword(newPassword))
+                  }
                   placeholder="********"
-                  required
                   autoComplete="new-password"
+                  h="11"
+                  borderRadius="xl"
+                  bg="gray.50"
+                  borderColor={newPasswordError ? "red.300" : "gray.200"}
+                  focusRingColor={newPasswordError ? "red.200" : "teal.200"}
+                  pe="12"
                 />
-              </Form.Control>
-              <Toggle.Root
-                pressed={showNew}
-                onPressedChange={setShowNew}
-                aria-label={showNew ? "Ocultar senha" : "Mostrar senha"}
-                className="absolute inset-y-0 right-2 flex h-9 w-9 items-center justify-center rounded-full text-slate-400 transition hover:text-slate-600"
-              >
-                {showNew ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-              </Toggle.Root>
-            </div>
-          </Form.Field>
+                <IconButton
+                  type="button"
+                  onClick={() => setShowNew((prev) => !prev)}
+                  aria-label={showNew ? "Ocultar senha" : "Mostrar senha"}
+                  variant="ghost"
+                  size="sm"
+                  color="gray.500"
+                  position="absolute"
+                  right="2"
+                  top="50%"
+                  transform="translateY(-50%)"
+                >
+                  {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
+                </IconButton>
+              </Box>
+              {newPasswordError ? (
+                <Text mt={1.5} fontSize="xs" color="red.500">
+                  {newPasswordError}
+                </Text>
+              ) : null}
+            </Box>
 
-          <Form.Field className="space-y-2" name="confirmPassword">
-            <div className="flex items-baseline justify-between">
-              <Form.Label className="text-sm font-medium">
+            <Box>
+              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
                 Confirmar nova senha
-              </Form.Label>
-              <Form.Message
-                className="text-xs text-rose-500"
-                match="valueMissing"
-              >
-                Confirme a nova senha
-              </Form.Message>
-            </div>
-            <div className="relative">
-              <Form.Control asChild>
-                <input
+              </Text>
+              <Box position="relative">
+                <Input
                   type={showConfirm ? "text" : "password"}
                   value={confirmPassword}
-                  onChange={(event) => setConfirmPassword(event.target.value)}
-                  className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 pr-12 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+                  onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                    setConfirmPassword(event.target.value);
+                    if (confirmPasswordError) {
+                      setConfirmPasswordError("");
+                    }
+                  }}
+                  onBlur={() =>
+                    setConfirmPasswordError(
+                      validateConfirmPassword(newPassword, confirmPassword),
+                    )
+                  }
                   placeholder="********"
-                  required
                   autoComplete="new-password"
+                  h="11"
+                  borderRadius="xl"
+                  bg="gray.50"
+                  borderColor={confirmPasswordError ? "red.300" : "gray.200"}
+                  focusRingColor={
+                    confirmPasswordError ? "red.200" : "teal.200"
+                  }
+                  pe="12"
                 />
-              </Form.Control>
-              <Toggle.Root
-                pressed={showConfirm}
-                onPressedChange={setShowConfirm}
-                aria-label={showConfirm ? "Ocultar senha" : "Mostrar senha"}
-                className="absolute inset-y-0 right-2 flex h-9 w-9 items-center justify-center rounded-full text-slate-400 transition hover:text-slate-600"
-              >
-                {showConfirm ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-              </Toggle.Root>
-            </div>
-            {isConfirmInvalid ? (
-              <p className="text-xs text-rose-500">As senhas não coincidem.</p>
+                <IconButton
+                  type="button"
+                  onClick={() => setShowConfirm((prev) => !prev)}
+                  aria-label={
+                    showConfirm ? "Ocultar senha" : "Mostrar senha"
+                  }
+                  variant="ghost"
+                  size="sm"
+                  color="gray.500"
+                  position="absolute"
+                  right="2"
+                  top="50%"
+                  transform="translateY(-50%)"
+                >
+                  {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                </IconButton>
+              </Box>
+              {confirmPasswordError ? (
+                <Text mt={1.5} fontSize="xs" color="red.500">
+                  {confirmPasswordError}
+                </Text>
+              ) : null}
+            </Box>
+
+            {feedback ? (
+              <Box borderRadius="2xl" borderWidth="1px" borderColor="red.200" bg="red.50" p={4}>
+                <Text fontSize="sm" color="red.600">
+                  {feedback}
+                </Text>
+              </Box>
             ) : null}
-          </Form.Field>
 
-          {feedback ? (
-            <div className="rounded-3xl border border-rose-200/80 bg-rose-50/70 px-4 py-3 text-sm text-rose-600 shadow-sm">
-              {feedback}
-            </div>
-          ) : null}
+            {isSuccess ? (
+              <Box borderRadius="2xl" borderWidth="1px" borderColor="green.200" bg="green.50" p={4}>
+                <Text fontSize="sm" color="green.700">
+                  Senha redefinida com sucesso. Faça login novamente.
+                </Text>
+              </Box>
+            ) : null}
 
-          {isSuccess ? (
-            <div className="rounded-3xl border border-emerald-200/80 bg-emerald-50/70 px-4 py-3 text-sm text-emerald-700 shadow-sm">
-              Senha redefinida com sucesso. Faça login novamente.
-            </div>
-          ) : null}
-
-          <button
-            type="submit"
-            disabled={isPending || isConfirmInvalid}
-            className="inline-flex h-11 w-full items-center justify-center rounded-full bg-linear-to-r from-teal-400 to-cyan-400 px-4 text-sm font-semibold text-white shadow-lg shadow-cyan-200 transition-opacity disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {isPending ? "Atualizando..." : "Atualizar senha"}
-          </button>
-        </Form.Root>
+            <Button
+              type="submit"
+              disabled={isPending || isConfirmInvalid}
+              h="11"
+              borderRadius="full"
+              bgGradient="linear(to-r, green.400, teal.400)"
+              color="white"
+              _hover={{ opacity: 0.92 }}
+              _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
+            >
+              {isPending ? "Atualizando..." : "Atualizar senha"}
+            </Button>
+          </VStack>
+        </chakra.form>
       )}
 
-      <div className="mt-6 text-center text-xs text-slate-500">
-        <Link href="/login" className="text-cyan-600">
+      <Text mt={6} textAlign="center" fontSize="xs" color="gray.500">
+        <ChakraLink as={Link} href="/login" color="teal.500" fontWeight="medium">
           Voltar para o login
-        </Link>
-      </div>
-    </div>
+        </ChakraLink>
+      </Text>
+    </Box>
   );
 }
 
 export default function ResetPasswordPage() {
   return (
-    <PageWrapper className="gap-16">
+    <PageWrapper gap={16}>
       <MainNav showLinks={false} showActions={false} />
       <Suspense
         fallback={
-          <div className="mx-auto w-full max-w-xl rounded-4xl bg-white p-8 shadow-[0_30px_80px_rgba(124,139,255,0.15)]">
-            <div className="mb-6">
-              <h1 className="text-2xl font-semibold">Definir nova senha</h1>
-              <p className="mt-2 text-sm text-slate-500">Carregando...</p>
-            </div>
-          </div>
+          <Box
+            mx="auto"
+            w="full"
+            maxW="xl"
+            borderRadius="3xl"
+            bg="white"
+            p={{ base: 6, md: 8 }}
+            boxShadow="0 30px 80px rgba(35, 49, 82, 0.12)"
+          >
+            <Heading size="2xl" color="gray.900">
+              Definir nova senha
+            </Heading>
+            <Text mt={2} fontSize="sm" color="gray.500">
+              Carregando...
+            </Text>
+          </Box>
         }
       >
         <ResetPasswordContent />
