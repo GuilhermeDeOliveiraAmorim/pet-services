@@ -118,6 +118,8 @@ export default function ProviderDashboardPage() {
   const isEditing = Boolean(editingServiceId);
   const isSubmitting = isAddingService || isUpdatingService;
   const isLoadingProviderContext = isLoadingUser || isLoadingProvider;
+  const shouldShowAddProviderForm =
+    !isLoadingProviderContext && !provider?.id && !providerId;
 
   const currentUser = userData?.user;
 
@@ -457,7 +459,7 @@ export default function ProviderDashboardPage() {
           </Box>
         </Grid>
 
-        {!provider?.id ? (
+        {shouldShowAddProviderForm ? (
           <Box
             borderRadius="3xl"
             bg="white"
