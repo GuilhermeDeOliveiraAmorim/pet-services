@@ -20,7 +20,9 @@ import {
   useProviderAdd,
   useProviderGet,
   useServiceAdd,
+  useServiceAddPhoto,
   useServiceDelete,
+  useServiceDeletePhoto,
   useServiceList,
   useServiceUpdate,
   useUserProfile,
@@ -86,6 +88,16 @@ export default function ProviderDashboardPage() {
       onSuccess: () =>
         queryClient.invalidateQueries({ queryKey: ["services"] }),
     });
+  const { mutateAsync: addServicePhoto, isPending: isAddingServicePhoto } =
+    useServiceAddPhoto({
+      onSuccess: () =>
+        queryClient.invalidateQueries({ queryKey: ["services"] }),
+    });
+  const { mutateAsync: deleteServicePhoto, isPending: isDeletingServicePhoto } =
+    useServiceDeletePhoto({
+      onSuccess: () =>
+        queryClient.invalidateQueries({ queryKey: ["services"] }),
+    });
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -104,6 +116,13 @@ export default function ProviderDashboardPage() {
   const [providerFeedback, setProviderFeedback] = useState<Feedback | null>(
     null,
   );
+  const [photoFilesByService, setPhotoFilesByService] = useState<
+    Record<string, File | null>
+  >({});
+  const [uploadingPhotoServiceId, setUploadingPhotoServiceId] = useState<
+    string | null
+  >(null);
+  const [deletingPhotoKey, setDeletingPhotoKey] = useState<string | null>(null);
 
   const [providerBusinessName, setProviderBusinessName] = useState("");
   const [providerDescription, setProviderDescription] = useState("");
@@ -463,6 +482,89 @@ export default function ProviderDashboardPage() {
       });
     } finally {
       setDeletingServiceId(null);
+    }
+  };
+
+  const handlePhotoFileChange = (
+    serviceId: string,
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0] ?? null;
+    setPhotoFilesByService((prev) => ({
+      ...prev,
+      [serviceId]: file,
+    }));
+  };
+
+  const handleUploadServicePhoto = async (serviceId: string) => {
+    const photo = photoFilesByService[serviceId];
+
+    if (!photo) {
+      setFeedback({
+        type: "error",
+        message: "Selecione uma imagem antes de enviar a foto do serviço.",
+      });
+      return;
+    }
+
+    setUploadingPhotoServiceId(serviceId);
+    try {
+      const response = await addServicePhoto({
+        serviceId,
+        photo,
+      });
+
+      setFeedback({
+        type: "success",
+        message:
+          response.detail || response.message || "Foto enviada com sucesso.",
+      });
+
+      setPhotoFilesByService((prev) => ({
+        ...prev,
+        [serviceId]: null,
+      }));
+    } catch (error) {
+      setFeedback({
+        type: "error",
+        message: getApiErrorMessage(
+          error,
+          "Não foi possível enviar a foto do serviço.",
+        ),
+      });
+    } finally {
+      setUploadingPhotoServiceId(null);
+    }
+  };
+
+  const handleDeleteServicePhoto = async (
+    serviceId: string,
+    photoId: string,
+  ) => {
+    const currentDeletingPhotoKey = `${serviceId}:${photoId}`;
+    setDeletingPhotoKey(currentDeletingPhotoKey);
+
+    try {
+      const response = await deleteServicePhoto({
+        serviceId,
+        photoId,
+      });
+
+      setFeedback({
+        type: "success",
+        message:
+          response.detail || response.message || "Foto removida com sucesso.",
+      });
+    } catch (error) {
+      setFeedback({
+        type: "error",
+        message: getApiErrorMessage(
+          error,
+          "Não foi possível remover a foto do serviço.",
+        ),
+      });
+    } finally {
+      setDeletingPhotoKey(null);
     }
   };
 
@@ -1182,6 +1284,10 @@ export default function ProviderDashboardPage() {
             <VStack align="stretch" gap={3}>
               {services.map((service) => {
                 const isCurrentDeleting = deletingServiceId === service.id;
+                const currentPhotoFile =
+                  photoFilesByService[service.id] ?? null;
+                const isCurrentUploadingPhoto =
+                  uploadingPhotoServiceId === service.id;
 
                 return (
                   <Box
@@ -1243,6 +1349,112 @@ export default function ProviderDashboardPage() {
                         </Button>
                       </HStack>
                     </Flex>
+
+                    <Box mt={4}>
+                      <Text fontSize="sm" fontWeight="medium" color="gray.700">
+                        Fotos do serviço
+                      </Text>
+
+                      {service.photos.length === 0 ? (
+                        <Text mt={1.5} fontSize="xs" color="gray.500">
+                          Nenhuma foto cadastrada.
+                        </Text>
+                      ) : (
+                        <Flex mt={2} gap={2} wrap="wrap">
+                          {service.photos.map((photo) => {
+                            const photoDeleteKey = `${service.id}:${photo.id}`;
+                            const isCurrentDeletingPhoto =
+                              deletingPhotoKey === photoDeleteKey;
+
+                            return (
+                              <Box
+                                key={photo.id}
+                                borderWidth="1px"
+                                borderColor="gray.200"
+                                borderRadius="lg"
+                                bg="white"
+                                p={2}
+                              >
+                                <chakra.img
+                                  src={photo.url}
+                                  alt={`Foto do serviço ${service.name}`}
+                                  w="84px"
+                                  h="84px"
+                                  objectFit="cover"
+                                  borderRadius="md"
+                                />
+                                <Button
+                                  mt={2}
+                                  size="xs"
+                                  borderRadius="full"
+                                  colorPalette="red"
+                                  variant="subtle"
+                                  onClick={() =>
+                                    handleDeleteServicePhoto(
+                                      service.id,
+                                      photo.id,
+                                    )
+                                  }
+                                  disabled={
+                                    isDeletingServicePhoto ||
+                                    isCurrentDeletingPhoto ||
+                                    isAddingServicePhoto
+                                  }
+                                >
+                                  {isCurrentDeletingPhoto
+                                    ? "Removendo..."
+                                    : "Remover"}
+                                </Button>
+                              </Box>
+                            );
+                          })}
+                        </Flex>
+                      )}
+
+                      <HStack mt={3} align="end" gap={2} flexWrap="wrap">
+                        <Box>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={(event) =>
+                              handlePhotoFileChange(service.id, event)
+                            }
+                            h="10"
+                            bg="white"
+                            borderRadius="xl"
+                            borderColor="gray.200"
+                            p={1}
+                            disabled={
+                              isAddingServicePhoto || isCurrentUploadingPhoto
+                            }
+                          />
+                          {currentPhotoFile ? (
+                            <Text mt={1} fontSize="xs" color="gray.500">
+                              Arquivo selecionado: {currentPhotoFile.name}
+                            </Text>
+                          ) : null}
+                        </Box>
+
+                        <Button
+                          size="sm"
+                          borderRadius="full"
+                          bg="green.400"
+                          color="white"
+                          _hover={{ bg: "green.500" }}
+                          onClick={() => handleUploadServicePhoto(service.id)}
+                          disabled={
+                            isAddingServicePhoto ||
+                            isCurrentUploadingPhoto ||
+                            !currentPhotoFile ||
+                            isDeletingServicePhoto
+                          }
+                        >
+                          {isCurrentUploadingPhoto
+                            ? "Enviando..."
+                            : "Enviar foto"}
+                        </Button>
+                      </HStack>
+                    </Box>
                   </Box>
                 );
               })}
