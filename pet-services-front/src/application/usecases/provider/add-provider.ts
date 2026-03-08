@@ -1,13 +1,10 @@
 import type { ProviderGateway } from "../../ports/provider-gateway";
+import type { Provider } from "@/domain";
 
 export interface AddProviderInput {
-  name: string;
-  email: string;
-  phone: {
-    countryCode: string;
-    areaCode: string;
-    number: string;
-  };
+  businessName: string;
+  description: string;
+  priceRange: string;
   address: {
     street: string;
     number: string;
@@ -25,9 +22,9 @@ export interface AddProviderInput {
 }
 
 export interface AddProviderOutput {
-  id: string;
   message?: string;
   detail?: string;
+  provider?: Provider;
 }
 
 export class AddProviderUseCase {
