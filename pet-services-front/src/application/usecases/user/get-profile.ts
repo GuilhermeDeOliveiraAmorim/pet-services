@@ -3,6 +3,7 @@ import type { UserGateway } from "@/application/ports";
 
 export interface GetProfileOutput {
   user: User;
+  providerId?: string;
 }
 
 export class GetProfileUseCase {

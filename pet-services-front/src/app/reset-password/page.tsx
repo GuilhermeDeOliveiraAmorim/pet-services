@@ -15,12 +15,9 @@ import {
   chakra,
 } from "@chakra-ui/react";
 import { Eye, EyeOff } from "lucide-react";
-import { isAxiosError } from "axios";
 
-import {
-  type ProblemDetailsResponse,
-  useAuthResetPassword,
-} from "@/application";
+import { useAuthResetPassword } from "@/application";
+import { getApiErrorMessage } from "@/lib/api-error";
 import MainNav from "@/components/common/MainNav";
 import PageWrapper from "@/components/common/PageWrapper";
 
@@ -61,16 +58,7 @@ function ResetPasswordContent() {
       return "";
     }
 
-    if (isAxiosError<ProblemDetailsResponse>(error)) {
-      const problem = error.response?.data?.errors?.[0];
-      return (
-        problem?.detail ||
-        problem?.title ||
-        "Não foi possível redefinir a senha."
-      );
-    }
-
-    return "Não foi possível redefinir a senha.";
+    return getApiErrorMessage(error, "Não foi possível redefinir a senha.");
   }, [error]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -116,7 +104,13 @@ function ResetPasswordContent() {
       </Box>
 
       {!token ? (
-        <Box borderRadius="2xl" borderWidth="1px" borderColor="red.200" bg="red.50" p={4}>
+        <Box
+          borderRadius="2xl"
+          borderWidth="1px"
+          borderColor="red.200"
+          bg="red.50"
+          p={4}
+        >
           <Text fontSize="sm" color="red.600">
             Token inválido ou ausente. Solicite uma nova redefinição.
           </Text>
@@ -205,17 +199,13 @@ function ResetPasswordContent() {
                   borderRadius="xl"
                   bg="gray.50"
                   borderColor={confirmPasswordError ? "red.300" : "gray.200"}
-                  focusRingColor={
-                    confirmPasswordError ? "red.200" : "teal.200"
-                  }
+                  focusRingColor={confirmPasswordError ? "red.200" : "teal.200"}
                   pe="12"
                 />
                 <IconButton
                   type="button"
                   onClick={() => setShowConfirm((prev) => !prev)}
-                  aria-label={
-                    showConfirm ? "Ocultar senha" : "Mostrar senha"
-                  }
+                  aria-label={showConfirm ? "Ocultar senha" : "Mostrar senha"}
                   variant="ghost"
                   size="sm"
                   color="gray.500"
@@ -235,7 +225,13 @@ function ResetPasswordContent() {
             </Box>
 
             {feedback ? (
-              <Box borderRadius="2xl" borderWidth="1px" borderColor="red.200" bg="red.50" p={4}>
+              <Box
+                borderRadius="2xl"
+                borderWidth="1px"
+                borderColor="red.200"
+                bg="red.50"
+                p={4}
+              >
                 <Text fontSize="sm" color="red.600">
                   {feedback}
                 </Text>
@@ -243,7 +239,13 @@ function ResetPasswordContent() {
             ) : null}
 
             {isSuccess ? (
-              <Box borderRadius="2xl" borderWidth="1px" borderColor="green.200" bg="green.50" p={4}>
+              <Box
+                borderRadius="2xl"
+                borderWidth="1px"
+                borderColor="green.200"
+                bg="green.50"
+                p={4}
+              >
                 <Text fontSize="sm" color="green.700">
                   Senha redefinida com sucesso. Faça login novamente.
                 </Text>
@@ -267,7 +269,12 @@ function ResetPasswordContent() {
       )}
 
       <Text mt={6} textAlign="center" fontSize="xs" color="gray.500">
-        <ChakraLink as={Link} href="/login" color="teal.500" fontWeight="medium">
+        <ChakraLink
+          as={Link}
+          href="/login"
+          color="teal.500"
+          fontWeight="medium"
+        >
           Voltar para o login
         </ChakraLink>
       </Text>

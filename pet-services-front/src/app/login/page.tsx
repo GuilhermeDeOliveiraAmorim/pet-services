@@ -19,15 +19,14 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { Eye, EyeOff } from "lucide-react";
-import { isAxiosError } from "axios";
 
 import {
-  type ProblemDetailsResponse,
   useAuthLogin,
   useAuthResendVerificationEmail,
   useAuthSession,
 } from "@/application";
 import { UserTypes } from "@/domain";
+import { getApiErrorMessage, isUnverifiedEmailError } from "@/lib/api-error";
 import MainNav from "@/components/common/MainNav";
 import PageWrapper from "@/components/common/PageWrapper";
 
@@ -75,29 +74,12 @@ export default function LoginPage() {
       return { message: "", canResend: false };
     }
 
-    if (isAxiosError<ProblemDetailsResponse>(error)) {
-      const errorPayload = error.response?.data;
-      const problem = errorPayload?.errors?.[0];
-      const title = problem?.title?.toLowerCase() ?? "";
-      const detail = problem?.detail ?? "";
-      const status = problem?.status ?? error.response?.status;
-
-      const isUnverifiedEmail =
-        status === 403 &&
-        (title.includes("email não verificado") ||
-          detail.toLowerCase().includes("email") ||
-          detail.toLowerCase().includes("verifica"));
-
-      return {
-        message:
-          detail || "Não foi possível fazer login. Verifique suas credenciais.",
-        canResend: isUnverifiedEmail,
-      };
-    }
-
     return {
-      message: "Não foi possível fazer login. Verifique suas credenciais.",
-      canResend: false,
+      message: getApiErrorMessage(
+        error,
+        "Não foi possível fazer login. Verifique suas credenciais.",
+      ),
+      canResend: isUnverifiedEmailError(error),
     };
   }, [error]);
 

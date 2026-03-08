@@ -18,13 +18,9 @@ export class ProviderGatewayAxios implements ProviderGateway {
 
   async addProvider(input: AddProviderInput): Promise<AddProviderOutput> {
     const payload = {
-      name: input.name,
-      email: input.email,
-      phone: {
-        country_code: input.phone.countryCode,
-        area_code: input.phone.areaCode,
-        number: input.phone.number,
-      },
+      business_name: input.businessName,
+      description: input.description,
+      price_range: input.priceRange,
       address: {
         street: input.address.street,
         number: input.address.number,
@@ -41,12 +37,19 @@ export class ProviderGatewayAxios implements ProviderGateway {
       },
     };
 
-    const { data } = await this.http.post<AddProviderOutput>(
-      "/providers",
-      payload,
-    );
+    const { data } = await this.http.post<{
+      message?: string;
+      detail?: string;
+      provider?: unknown;
+    }>("/providers", payload);
 
-    return data;
+    return {
+      message: data.message,
+      detail: data.detail,
+      provider: data.provider
+        ? mapProviderFromApi(data.provider as Record<string, unknown>)
+        : undefined,
+    };
   }
 
   async getProvider(providerId: string | number): Promise<GetProviderOutput> {
