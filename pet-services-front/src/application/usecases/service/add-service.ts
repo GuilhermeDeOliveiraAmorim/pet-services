@@ -4,9 +4,9 @@ export interface AddServiceInput {
   providerId: string;
   name: string;
   description: string;
-  price: number;
-  priceMinimum: number;
-  priceMaximum: number;
+  price?: number;
+  priceMinimum?: number;
+  priceMaximum?: number;
   duration: number;
 }
 
