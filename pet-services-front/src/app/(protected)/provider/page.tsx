@@ -19,11 +19,15 @@ import {
   chakra,
 } from "@chakra-ui/react";
 import {
+  type ListTagsOutput,
   useProviderAdd,
   useCategoryList,
   useProviderGet,
+  type ListServicesOutput,
   useServiceAdd,
   useServiceAddCategory,
+  useServiceDeleteCategory,
+  useServiceDeleteTag,
   useServiceAddPhoto,
   useServiceAddTag,
   useServiceDelete,
@@ -121,6 +125,17 @@ export default function ProviderDashboardPage() {
   } = useServiceAddCategory({
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["services"] }),
   });
+  const {
+    mutateAsync: deleteServiceCategory,
+    isPending: isDeletingServiceCategory,
+  } = useServiceDeleteCategory({
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["services"] }),
+  });
+  const { mutateAsync: deleteServiceTag, isPending: isDeletingServiceTag } =
+    useServiceDeleteTag({
+      onSuccess: () =>
+        queryClient.invalidateQueries({ queryKey: ["services"] }),
+    });
   const { mutateAsync: addServiceTag, isPending: isAddingServiceTag } =
     useServiceAddTag({
       onSuccess: () =>
@@ -157,9 +172,16 @@ export default function ProviderDashboardPage() {
   const [selectedTagByService, setSelectedTagByService] = useState<
     Record<string, string>
   >({});
+  const [newTagNameByService, setNewTagNameByService] = useState<
+    Record<string, string>
+  >({});
   const [addingCategoryServiceId, setAddingCategoryServiceId] = useState<
     string | null
   >(null);
+  const [removingCategoryKey, setRemovingCategoryKey] = useState<string | null>(
+    null,
+  );
+  const [removingTagKey, setRemovingTagKey] = useState<string | null>(null);
   const [addingTagServiceId, setAddingTagServiceId] = useState<string | null>(
     null,
   );
@@ -211,6 +233,13 @@ export default function ProviderDashboardPage() {
 
   const handleTagSelectionChange = (serviceId: string, value: string) => {
     setSelectedTagByService((previous) => ({
+      ...previous,
+      [serviceId]: value,
+    }));
+  };
+
+  const handleNewTagNameChange = (serviceId: string, value: string) => {
+    setNewTagNameByService((previous) => ({
       ...previous,
       [serviceId]: value,
     }));
@@ -270,18 +299,25 @@ export default function ProviderDashboardPage() {
 
   const handleAddTagToService = async (service: Service) => {
     const tagId = selectedTagByService[service.id];
+    const tagName = newTagNameByService[service.id]?.trim() ?? "";
 
-    if (!tagId) {
+    if (!tagId && !tagName) {
       setTaxonomyFeedback(service.id, {
         type: "error",
-        message: "Selecione uma tag para associar.",
+        message: "Selecione uma tag existente ou informe uma nova tag.",
       });
       return;
     }
 
-    const alreadyLinked = service.tags.some((tag) => tag.id === tagId);
+    const alreadyLinkedById =
+      Boolean(tagId) && service.tags.some((tag) => tag.id === tagId);
+    const alreadyLinkedByName =
+      Boolean(tagName) &&
+      service.tags.some(
+        (tag) => tag.name.trim().toLowerCase() === tagName.toLowerCase(),
+      );
 
-    if (alreadyLinked) {
+    if (alreadyLinkedById || alreadyLinkedByName) {
       setTaxonomyFeedback(service.id, {
         type: "error",
         message: "Essa tag já está associada ao serviço.",
@@ -294,16 +330,82 @@ export default function ProviderDashboardPage() {
     try {
       const response = await addServiceTag({
         serviceId: service.id,
-        tagId,
+        payload: {
+          tagId: tagId || undefined,
+          tagName: tagName || undefined,
+        },
       });
+
+      if (response.tag) {
+        const addedTag = response.tag;
+        queryClient.setQueriesData<ListServicesOutput>(
+          { queryKey: ["services"] },
+          (previous) => {
+            if (!previous) {
+              return previous;
+            }
+
+            return {
+              ...previous,
+              services: previous.services.map((currentService) => {
+                if (currentService.id !== service.id) {
+                  return currentService;
+                }
+
+                const alreadyExists = currentService.tags.some(
+                  (existingTag) => existingTag.id === addedTag.id,
+                );
+
+                if (alreadyExists) {
+                  return currentService;
+                }
+
+                return {
+                  ...currentService,
+                  tags: [...currentService.tags, addedTag],
+                };
+              }),
+            };
+          },
+        );
+
+        queryClient.setQueriesData<ListTagsOutput>(
+          { queryKey: ["tags"] },
+          (previous) => {
+            if (!previous) {
+              return previous;
+            }
+
+            const alreadyExists = previous.tags.some(
+              (currentTag) => currentTag.id === addedTag.id,
+            );
+
+            if (alreadyExists) {
+              return previous;
+            }
+
+            return {
+              ...previous,
+              tags: [addedTag, ...previous.tags],
+              total: previous.total + 1,
+            };
+          },
+        );
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["tags"] });
 
       setSelectedTagByService((previous) => ({
         ...previous,
         [service.id]: "",
       }));
+      setNewTagNameByService((previous) => ({
+        ...previous,
+        [service.id]: "",
+      }));
       setTaxonomyFeedback(service.id, {
         type: "success",
-        message: response.message || "Tag associada com sucesso.",
+        message: response.message || "Tag adicionada/associada com sucesso.",
       });
     } catch (error) {
       setTaxonomyFeedback(service.id, {
@@ -312,6 +414,63 @@ export default function ProviderDashboardPage() {
       });
     } finally {
       setAddingTagServiceId(null);
+    }
+  };
+
+  const handleRemoveCategoryFromService = async (
+    service: Service,
+    categoryId: string,
+  ) => {
+    const categoryKey = `${service.id}:${categoryId}`;
+    setRemovingCategoryKey(categoryKey);
+
+    try {
+      const response = await deleteServiceCategory({
+        serviceId: service.id,
+        categoryId,
+      });
+
+      setTaxonomyFeedback(service.id, {
+        type: "success",
+        message: response.message || "Categoria removida com sucesso.",
+      });
+    } catch (error) {
+      setTaxonomyFeedback(service.id, {
+        type: "error",
+        message: getApiErrorMessage(
+          error,
+          "Não foi possível remover a categoria.",
+        ),
+      });
+    } finally {
+      setRemovingCategoryKey(null);
+    }
+  };
+
+  const handleRemoveTagFromService = async (
+    service: Service,
+    tagId: string,
+  ) => {
+    const tagKey = `${service.id}:${tagId}`;
+    setRemovingTagKey(tagKey);
+
+    try {
+      const response = await deleteServiceTag({
+        serviceId: service.id,
+        tagId,
+      });
+
+      setTaxonomyFeedback(service.id, {
+        type: "success",
+        message: response.message || "Tag removida com sucesso.",
+      });
+    } catch (error) {
+      setTaxonomyFeedback(service.id, {
+        type: "error",
+        message: getApiErrorMessage(error, "Não foi possível remover a tag."),
+      });
+    } finally {
+      setRemovingTagKey(null);
     }
   };
 
@@ -1464,6 +1623,7 @@ export default function ProviderDashboardPage() {
                 const isCurrentAddingTag = addingTagServiceId === service.id;
                 const taxonomyFeedback =
                   taxonomyFeedbackByService[service.id] ?? null;
+                const newTagName = newTagNameByService[service.id] ?? "";
 
                 return (
                   <Box
@@ -1661,13 +1821,57 @@ export default function ProviderDashboardPage() {
                             <Text fontSize="xs" color="gray.500" mb={1}>
                               Categorias atuais
                             </Text>
-                            <Text fontSize="sm" color="gray.700">
-                              {service.categories.length > 0
-                                ? service.categories
-                                    .map((category) => category.name)
-                                    .join(", ")
-                                : "Nenhuma categoria associada."}
-                            </Text>
+                            {service.categories.length > 0 ? (
+                              <VStack align="stretch" gap={1}>
+                                {service.categories.map((category) => {
+                                  const categoryKey = `${service.id}:${category.id}`;
+                                  const isCurrentRemovingCategory =
+                                    removingCategoryKey === categoryKey;
+
+                                  return (
+                                    <HStack
+                                      key={category.id}
+                                      justify="space-between"
+                                      borderWidth="1px"
+                                      borderColor="gray.200"
+                                      bg="white"
+                                      borderRadius="md"
+                                      px={2}
+                                      py={1}
+                                    >
+                                      <Text fontSize="sm" color="gray.700">
+                                        {category.name}
+                                      </Text>
+                                      <Button
+                                        size="xs"
+                                        borderRadius="full"
+                                        colorPalette="red"
+                                        variant="subtle"
+                                        onClick={() =>
+                                          handleRemoveCategoryFromService(
+                                            service,
+                                            category.id,
+                                          )
+                                        }
+                                        disabled={
+                                          isCurrentRemovingCategory ||
+                                          isDeletingServiceCategory ||
+                                          isAddingServiceCategory
+                                        }
+                                      >
+                                        {isCurrentRemovingCategory
+                                          ? "Removendo..."
+                                          : "Remover"}
+                                      </Button>
+                                    </HStack>
+                                  );
+                                })}
+                              </VStack>
+                            ) : (
+                              <Text fontSize="sm" color="gray.700">
+                                Nenhuma categoria associada.
+                              </Text>
+                            )}
 
                             <HStack mt={2} align="end" gap={2} flexWrap="wrap">
                               <NativeSelect.Root
@@ -1721,6 +1925,7 @@ export default function ProviderDashboardPage() {
                                   !selectedCategoryId ||
                                   isCurrentAddingCategory ||
                                   isAddingServiceCategory ||
+                                  isDeletingServiceCategory ||
                                   isLoadingCategories ||
                                   Boolean(categoriesError)
                                 }
@@ -1745,11 +1950,57 @@ export default function ProviderDashboardPage() {
                             <Text fontSize="xs" color="gray.500" mb={1}>
                               Tags atuais
                             </Text>
-                            <Text fontSize="sm" color="gray.700">
-                              {service.tags.length > 0
-                                ? service.tags.map((tag) => tag.name).join(", ")
-                                : "Nenhuma tag associada."}
-                            </Text>
+                            {service.tags.length > 0 ? (
+                              <VStack align="stretch" gap={1}>
+                                {service.tags.map((tag) => {
+                                  const tagKey = `${service.id}:${tag.id}`;
+                                  const isCurrentRemovingTag =
+                                    removingTagKey === tagKey;
+
+                                  return (
+                                    <HStack
+                                      key={tag.id}
+                                      justify="space-between"
+                                      borderWidth="1px"
+                                      borderColor="gray.200"
+                                      bg="white"
+                                      borderRadius="md"
+                                      px={2}
+                                      py={1}
+                                    >
+                                      <Text fontSize="sm" color="gray.700">
+                                        {tag.name}
+                                      </Text>
+                                      <Button
+                                        size="xs"
+                                        borderRadius="full"
+                                        colorPalette="red"
+                                        variant="subtle"
+                                        onClick={() =>
+                                          handleRemoveTagFromService(
+                                            service,
+                                            tag.id,
+                                          )
+                                        }
+                                        disabled={
+                                          isCurrentRemovingTag ||
+                                          isDeletingServiceTag ||
+                                          isAddingServiceTag
+                                        }
+                                      >
+                                        {isCurrentRemovingTag
+                                          ? "Removendo..."
+                                          : "Remover"}
+                                      </Button>
+                                    </HStack>
+                                  );
+                                })}
+                              </VStack>
+                            ) : (
+                              <Text fontSize="sm" color="gray.700">
+                                Nenhuma tag associada.
+                              </Text>
+                            )}
 
                             <HStack mt={2} align="end" gap={2} flexWrap="wrap">
                               <NativeSelect.Root
@@ -1760,7 +2011,8 @@ export default function ProviderDashboardPage() {
                                   Boolean(tagsError) ||
                                   isCurrentAddingTag ||
                                   isAddingServiceTag ||
-                                  isAddingServiceCategory
+                                  isAddingServiceCategory ||
+                                  isDeletingServiceTag
                                 }
                               >
                                 <NativeSelect.Field
@@ -1778,7 +2030,7 @@ export default function ProviderDashboardPage() {
                                   <option value="">
                                     {isLoadingTags
                                       ? "Carregando tags..."
-                                      : "Selecione uma tag"}
+                                      : "Selecione uma tag (ou adicione)"}
                                   </option>
                                   {tags.map((tag) => (
                                     <option key={tag.id} value={tag.id}>
@@ -1789,22 +2041,45 @@ export default function ProviderDashboardPage() {
                                 <NativeSelect.Indicator color="gray.500" />
                               </NativeSelect.Root>
 
+                              <Input
+                                value={newTagName}
+                                onChange={(event) =>
+                                  handleNewTagNameChange(
+                                    service.id,
+                                    event.target.value,
+                                  )
+                                }
+                                placeholder="Nova tag (ex: urgente)"
+                                h="9"
+                                minW="220px"
+                                borderRadius="xl"
+                                bg="white"
+                                borderColor="gray.200"
+                                disabled={
+                                  isCurrentAddingTag ||
+                                  isAddingServiceTag ||
+                                  isLoadingTags ||
+                                  isDeletingServiceTag
+                                }
+                              />
+
                               <Button
                                 size="sm"
                                 borderRadius="full"
                                 variant="outline"
                                 onClick={() => handleAddTagToService(service)}
                                 disabled={
-                                  !selectedTagId ||
+                                  (!selectedTagId && !newTagName.trim()) ||
                                   isCurrentAddingTag ||
                                   isAddingServiceTag ||
+                                  isDeletingServiceTag ||
                                   isLoadingTags ||
                                   Boolean(tagsError)
                                 }
                               >
                                 {isCurrentAddingTag
                                   ? "Associando..."
-                                  : "Associar tag"}
+                                  : "Adicionar/associar tag"}
                               </Button>
                             </HStack>
 

@@ -11,7 +11,10 @@ import type {
   AddServiceOutput,
   AddServiceCategoryOutput,
   AddServicePhotoOutput,
+  AddServiceTagPayload,
   AddServiceTagOutput,
+  DeleteServiceCategoryOutput,
+  DeleteServiceTagOutput,
   DeleteServiceOutput,
   DeleteServicePhotoOutput,
   GetServiceOutput,
@@ -96,6 +99,24 @@ type AddServiceCategoryOptions = Omit<
 type AddServiceTagOptions = Omit<
   UseMutationOptions<
     AddServiceTagOutput,
+    Error,
+    { serviceId: string | number; payload: AddServiceTagPayload }
+  >,
+  "mutationFn"
+>;
+
+type DeleteServiceCategoryOptions = Omit<
+  UseMutationOptions<
+    DeleteServiceCategoryOutput,
+    Error,
+    { serviceId: string | number; categoryId: string | number }
+  >,
+  "mutationFn"
+>;
+
+type DeleteServiceTagOptions = Omit<
+  UseMutationOptions<
+    DeleteServiceTagOutput,
     Error,
     { serviceId: string | number; tagId: string | number }
   >,
@@ -199,7 +220,29 @@ export const useServiceAddTag = (options?: AddServiceTagOptions) => {
 
   return useMutation({
     mutationFn: (input) =>
-      addServiceTag.execute(input.serviceId, input.tagId),
+      addServiceTag.execute(input.serviceId, input.payload),
+    ...options,
+  });
+};
+
+export const useServiceDeleteCategory = (
+  options?: DeleteServiceCategoryOptions,
+) => {
+  const { deleteServiceCategory } = useServiceUseCases();
+
+  return useMutation({
+    mutationFn: (input) =>
+      deleteServiceCategory.execute(input.serviceId, input.categoryId),
+    ...options,
+  });
+};
+
+export const useServiceDeleteTag = (options?: DeleteServiceTagOptions) => {
+  const { deleteServiceTag } = useServiceUseCases();
+
+  return useMutation({
+    mutationFn: (input) =>
+      deleteServiceTag.execute(input.serviceId, input.tagId),
     ...options,
   });
 };
