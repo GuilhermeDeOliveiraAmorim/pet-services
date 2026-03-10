@@ -8,8 +8,7 @@ import { createApiContext } from "../../src/infra";
 
 const email = process.env.TEST_PROVIDER_EMAIL ?? "provider@bol.com";
 const password = process.env.TEST_PROVIDER_PASSWORD ?? "123QWEasd@";
-const apiBaseUrl =
-  process.env.API_URL ?? "https://pet-services-j7x3.onrender.com";
+const apiBaseUrl = process.env.API_URL ?? "http://localhost:8080";
 
 const { authGateway, userGateway, tagGateway, http } =
   createApiContext(apiBaseUrl);
