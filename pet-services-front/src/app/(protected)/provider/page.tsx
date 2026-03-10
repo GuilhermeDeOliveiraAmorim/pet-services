@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   Box,
   Button,
+  Link as ChakraLink,
   Dialog,
   Flex,
   Grid,
@@ -1324,6 +1325,15 @@ export default function ProviderDashboardPage() {
                       </Box>
 
                       <HStack gap={2}>
+                        <Button
+                          as={ChakraLink}
+                          href={`/services/${service.id}?from=/provider`}
+                          size="sm"
+                          borderRadius="full"
+                          variant="subtle"
+                        >
+                          Ver detalhes
+                        </Button>
                         <Button
                           size="sm"
                           borderRadius="full"
