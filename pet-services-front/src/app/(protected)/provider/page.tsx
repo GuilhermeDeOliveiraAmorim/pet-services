@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Box,
   Button,
-  Link as ChakraLink,
   Dialog,
   Flex,
   Grid,
@@ -42,6 +42,7 @@ type Feedback = {
 const PROVIDER_PRICE_RANGE_MAX_LENGTH = 10;
 
 export default function ProviderDashboardPage() {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const { data: userData, isLoading: isLoadingUser } = useUserProfile();
   const [createdProviderId, setCreatedProviderId] = useState<string | null>(
@@ -1326,11 +1327,14 @@ export default function ProviderDashboardPage() {
 
                       <HStack gap={2}>
                         <Button
-                          as={ChakraLink}
-                          href={`/services/${service.id}?from=/provider`}
                           size="sm"
                           borderRadius="full"
                           variant="subtle"
+                          onClick={() =>
+                            router.push(
+                              `/services/${service.id}?from=/provider`,
+                            )
+                          }
                         >
                           Ver detalhes
                         </Button>
