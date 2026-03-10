@@ -20,7 +20,10 @@ import type { AddServicePhotoOutput } from "../usecases/service/add-service-phot
 import type { DeleteServicePhotoOutput } from "../usecases/service/delete-service-photo";
 import type { DeleteServiceCategoryOutput } from "../usecases/service/delete-service-category";
 import type { AddServiceCategoryOutput } from "../usecases/service/add-service-category";
-import type { AddServiceTagOutput } from "../usecases/service/add-service-tag";
+import type {
+  AddServiceTagOutput,
+  AddServiceTagPayload,
+} from "../usecases/service/add-service-tag";
 
 export interface ServiceGateway {
   addService(input: AddServiceInput): Promise<AddServiceOutput>;
@@ -47,6 +50,6 @@ export interface ServiceGateway {
   ): Promise<DeleteServiceCategoryOutput>;
   addServiceTag(
     serviceId: string | number,
-    tagId: string | number,
+    payload: AddServiceTagPayload,
   ): Promise<AddServiceTagOutput>;
 }

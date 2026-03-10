@@ -1,8 +1,15 @@
 import { ServiceGateway } from "@/application/ports";
+import type { Tag } from "@/domain";
 
 export interface AddServiceTagOutput {
   message?: string;
   detail?: string;
+  tag?: Tag;
+}
+
+export interface AddServiceTagPayload {
+  tagId?: string | number;
+  tagName?: string;
 }
 
 export class AddServiceTagUseCase {
@@ -10,8 +17,8 @@ export class AddServiceTagUseCase {
 
   execute(
     serviceId: string | number,
-    tagId: string | number,
+    payload: AddServiceTagPayload,
   ): Promise<AddServiceTagOutput> {
-    return this.serviceGateway.addServiceTag(serviceId, tagId);
+    return this.serviceGateway.addServiceTag(serviceId, payload);
   }
 }

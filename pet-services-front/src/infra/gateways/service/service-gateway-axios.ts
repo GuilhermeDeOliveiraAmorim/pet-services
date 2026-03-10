@@ -3,6 +3,7 @@ import type {
   AddServiceOutput,
   AddServiceCategoryOutput,
   AddServicePhotoOutput,
+  AddServiceTagPayload,
   AddServiceTagOutput,
   DeleteServiceCategoryOutput,
   DeleteServiceOutput,
@@ -17,6 +18,7 @@ import type {
   UpdateServiceOutput,
 } from "@/application";
 import { mapServiceFromApi } from "@/infra/mappers/service-mapper";
+import { mapTagFromApi } from "@/infra/mappers/tag-mapper";
 import type { AxiosInstance } from "axios";
 
 export class ServiceGatewayAxios implements ServiceGateway {
@@ -250,18 +252,37 @@ export class ServiceGatewayAxios implements ServiceGateway {
 
   async addServiceTag(
     serviceId: string | number,
-    tagId: string | number,
+    payload: AddServiceTagPayload,
   ): Promise<AddServiceTagOutput> {
+    const requestPayload: {
+      tag_id?: string | number;
+      tag_name?: string;
+    } = {};
+
+    if (
+      payload.tagId !== undefined &&
+      payload.tagId !== null &&
+      payload.tagId !== ""
+    ) {
+      requestPayload.tag_id = payload.tagId;
+    }
+
+    if (payload.tagName && payload.tagName.trim()) {
+      requestPayload.tag_name = payload.tagName.trim();
+    }
+
     const { data } = await this.http.post<{
       message?: string;
       detail?: string;
+      tag?: Record<string, unknown>;
     }>(`/services/${serviceId}/tags`, {
-      tag_id: tagId,
+      ...requestPayload,
     });
 
     return {
       message: data.message,
       detail: data.detail,
+      tag: data.tag ? mapTagFromApi(data.tag) : undefined,
     };
   }
 }
