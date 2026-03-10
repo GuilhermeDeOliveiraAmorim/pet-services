@@ -7,5 +7,6 @@ export * from "./search-services";
 export * from "./add-service-photo";
 export * from "./delete-service-photo";
 export * from "./delete-service-category";
+export * from "./delete-service-tag";
 export * from "./add-service-category";
 export * from "./add-service-tag";
