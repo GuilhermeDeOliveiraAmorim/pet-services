@@ -85,21 +85,9 @@ func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 // @Failure 401 {object} exceptions.ProblemDetails
 // @Failure 403 {object} exceptions.ProblemDetails
 // @Failure 500 {object} exceptions.ProblemDetails
-// @Security Bearer
 // @Router /categories [get]
 func (h *CategoryHandler) ListCategories(c *gin.Context) {
 	ctx := c.Request.Context()
-
-	userType, exists := c.Get("user_type")
-	if !exists || userType != "provider" {
-		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
-			Title:  "Acesso negado",
-			Detail: "Acesso permitido apenas para usuários do tipo provider",
-		})
-		h.Logger.LogError(ctx, "CategoryHandler.ListCategories", problem.Title+": "+problem.Detail, nil)
-		c.AbortWithStatusJSON(http.StatusForbidden, problem)
-		return
-	}
 
 	page := 1
 	pageSize := 10
@@ -115,12 +103,10 @@ func (h *CategoryHandler) ListCategories(c *gin.Context) {
 		}
 	}
 
-	providerID, _ := c.Get("user_id")
 	input := usecases.ListCategoriesInput{
-		Page:       page,
-		PageSize:   pageSize,
-		Name:       name,
-		ProviderID: providerID.(string),
+		Page:     page,
+		PageSize: pageSize,
+		Name:     name,
 	}
 
 	output, err := h.CategoryFactory.ListCategories.Execute(ctx, input)

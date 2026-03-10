@@ -1484,8 +1484,6 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
-      security:
-      - Bearer: []
       summary: Lista categorias com paginação
       tags:
       - Categorias

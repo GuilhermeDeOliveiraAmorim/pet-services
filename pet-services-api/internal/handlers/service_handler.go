@@ -360,17 +360,6 @@ func (h *ServiceHandler) DeleteService(c *gin.Context) {
 func (h *ServiceHandler) ListTags(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	userType, exists := c.Get("user_type")
-	if !exists || userType != "provider" {
-		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
-			Title:  "Acesso negado",
-			Detail: "Acesso permitido apenas para usuários do tipo provider",
-		})
-		h.Logger.LogError(ctx, "ServiceHandler.ListTags", problem.Title+": "+problem.Detail, nil)
-		c.AbortWithStatusJSON(http.StatusForbidden, problem)
-		return
-	}
-
 	page := 1
 	pageSize := 10
 	name := c.Query("name")
@@ -385,12 +374,10 @@ func (h *ServiceHandler) ListTags(c *gin.Context) {
 		}
 	}
 
-	providerID, _ := c.Get("user_id")
 	input := usecases.ListTagsInput{
-		Page:       page,
-		PageSize:   pageSize,
-		Name:       name,
-		ProviderID: providerID.(string),
+		Page:     page,
+		PageSize: pageSize,
+		Name:     name,
 	}
 
 	output, err := h.ServiceFactory.ListTags.Execute(ctx, input)
