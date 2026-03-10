@@ -74,7 +74,7 @@ func OwnerOnlyMiddleware(logger logging.LoggerInterface) gin.HandlerFunc {
 				Detail: "Acesso permitido apenas para usuários do tipo owner",
 			})
 			logger.LogError(c.Request.Context(), "AuthMiddleware", problem.Title+": "+problem.Detail, errors.New(problem.Detail))
-			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": problem})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": problem})
 			return
 		}
 		c.Next()

@@ -940,6 +940,20 @@ definitions:
       request:
         $ref: '#/definitions/entities.Request'
     type: object
+  usecases.RemoveServiceCategoryOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+    type: object
+  usecases.RemoveServiceTagOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+    type: object
   usecases.RequestListItem:
     properties:
       business_name:
@@ -1484,8 +1498,6 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
-      security:
-      - Bearer: []
       summary: Lista categorias com paginação
       tags:
       - Categorias
@@ -2751,6 +2763,57 @@ paths:
       summary: Adiciona categoria ao serviço
       tags:
       - Serviços
+  /services/{service_id}/categories/{category_id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID do serviço
+        in: path
+        name: service_id
+        required: true
+        type: string
+      - description: ID da categoria
+        in: path
+        name: category_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.RemoveServiceCategoryOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Remove categoria do serviço
+      tags:
+      - Serviços
   /services/{service_id}/photos:
     post:
       consumes:
@@ -2895,6 +2958,57 @@ paths:
       security:
       - Bearer: []
       summary: Adiciona tag ao serviço
+      tags:
+      - Serviços
+  /services/{service_id}/tags/{tag_id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID do serviço
+        in: path
+        name: service_id
+        required: true
+        type: string
+      - description: ID da tag
+        in: path
+        name: tag_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.RemoveServiceTagOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Remove tag do serviço
       tags:
       - Serviços
   /services/search:

@@ -37,6 +37,14 @@ export const getApiProblemDetails = (
     return isProblemDetails(first) ? first : undefined;
   }
 
+  if (
+    "error" in data &&
+    data.error &&
+    isProblemDetails(data.error as unknown)
+  ) {
+    return data.error as ProblemDetails;
+  }
+
   return isProblemDetails(data) ? data : undefined;
 };
 

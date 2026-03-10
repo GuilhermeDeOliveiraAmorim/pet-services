@@ -61,6 +61,12 @@ func (r *serviceRepository) AddTag(serviceID, tagID string) error {
 	return r.db.Model(&service).Association("Tags").Append(&tag)
 }
 
+func (r *serviceRepository) RemoveTag(serviceID, tagID string) error {
+	service := models.Service{ID: serviceID}
+	tag := models.Tag{ID: tagID}
+	return r.db.Model(&service).Association("Tags").Delete(&tag)
+}
+
 func (r *serviceRepository) HasCategory(serviceID, categoryID string) (bool, error) {
 	var count int64
 	err := r.db.Table("service_categories").
@@ -73,6 +79,12 @@ func (r *serviceRepository) AddCategory(serviceID, categoryID string) error {
 	service := models.Service{ID: serviceID}
 	category := models.Category{ID: categoryID}
 	return r.db.Model(&service).Association("Categories").Append(&category)
+}
+
+func (r *serviceRepository) RemoveCategory(serviceID, categoryID string) error {
+	service := models.Service{ID: serviceID}
+	category := models.Category{ID: categoryID}
+	return r.db.Model(&service).Association("Categories").Delete(&category)
 }
 
 func (r *serviceRepository) List(providerID, categoryID, tagID string, priceMin, priceMax float64, page, pageSize int) ([]*entities.Service, int64, error) {

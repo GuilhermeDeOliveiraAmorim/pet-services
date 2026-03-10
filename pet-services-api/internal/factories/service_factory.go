@@ -10,17 +10,19 @@ import (
 )
 
 type ServiceFactory struct {
-	AddService         *usecases.AddServiceUseCase
-	AddServicePhoto    *usecases.AddServicePhotoUseCase
-	DeleteServicePhoto *usecases.DeleteServicePhotoUseCase
-	AddServiceTag      *usecases.AddServiceTagUseCase
-	ListTags           *usecases.ListTagsUseCase
-	AddServiceCategory *usecases.AddServiceCategoryUseCase
-	ListServices       *usecases.ListServicesUseCase
-	SearchServices     *usecases.SearchServicesUseCase
-	GetService         *usecases.GetServiceUseCase
-	UpdateService      *usecases.UpdateServiceUseCase
-	DeleteService      *usecases.DeleteServiceUseCase
+	AddService            *usecases.AddServiceUseCase
+	AddServicePhoto       *usecases.AddServicePhotoUseCase
+	DeleteServicePhoto    *usecases.DeleteServicePhotoUseCase
+	AddServiceTag         *usecases.AddServiceTagUseCase
+	ListTags              *usecases.ListTagsUseCase
+	AddServiceCategory    *usecases.AddServiceCategoryUseCase
+	RemoveServiceCategory *usecases.RemoveServiceCategoryUseCase
+	RemoveServiceTag      *usecases.RemoveServiceTagUseCase
+	ListServices          *usecases.ListServicesUseCase
+	SearchServices        *usecases.SearchServicesUseCase
+	GetService            *usecases.GetServiceUseCase
+	UpdateService         *usecases.UpdateServiceUseCase
+	DeleteService         *usecases.DeleteServiceUseCase
 }
 
 func NewServiceFactory(db *gorm.DB, storageService storage.ObjectStorage, logger logging.LoggerInterface) *ServiceFactory {
@@ -32,16 +34,18 @@ func NewServiceFactory(db *gorm.DB, storageService storage.ObjectStorage, logger
 	categoryRepo := repository_impl.NewCategoryRepository(db)
 
 	return &ServiceFactory{
-		AddService:         usecases.NewAddServiceUseCase(userRepo, providerRepo, serviceRepo, logger),
-		AddServicePhoto:    usecases.NewAddServicePhotoUseCase(userRepo, serviceRepo, providerRepo, photoRepo, storageService, logger),
-		DeleteServicePhoto: usecases.NewDeleteServicePhotoUseCase(userRepo, serviceRepo, providerRepo, photoRepo, storageService, logger),
-		AddServiceTag:      usecases.NewAddServiceTagUseCase(userRepo, serviceRepo, providerRepo, tagRepo, logger),
-		ListTags:           usecases.NewListTagsUseCase(tagRepo),
-		AddServiceCategory: usecases.NewAddServiceCategoryUseCase(userRepo, serviceRepo, providerRepo, categoryRepo, logger),
-		ListServices:       usecases.NewListServicesUseCase(serviceRepo, providerRepo, storageService, logger),
-		SearchServices:     usecases.NewSearchServicesUseCase(serviceRepo, providerRepo, storageService, logger),
-		GetService:         usecases.NewGetServiceUseCase(serviceRepo, storageService, logger),
-		UpdateService:      usecases.NewUpdateServiceUseCase(userRepo, providerRepo, serviceRepo, storageService, logger),
-		DeleteService:      usecases.NewDeleteServiceUseCase(userRepo, providerRepo, serviceRepo, logger),
+		AddService:            usecases.NewAddServiceUseCase(userRepo, providerRepo, serviceRepo, logger),
+		AddServicePhoto:       usecases.NewAddServicePhotoUseCase(userRepo, serviceRepo, providerRepo, photoRepo, storageService, logger),
+		DeleteServicePhoto:    usecases.NewDeleteServicePhotoUseCase(userRepo, serviceRepo, providerRepo, photoRepo, storageService, logger),
+		AddServiceTag:         usecases.NewAddServiceTagUseCase(userRepo, serviceRepo, providerRepo, tagRepo, logger),
+		ListTags:              usecases.NewListTagsUseCase(tagRepo),
+		AddServiceCategory:    usecases.NewAddServiceCategoryUseCase(userRepo, serviceRepo, providerRepo, categoryRepo, logger),
+		RemoveServiceCategory: usecases.NewRemoveServiceCategoryUseCase(userRepo, serviceRepo, providerRepo, categoryRepo, logger),
+		RemoveServiceTag:      usecases.NewRemoveServiceTagUseCase(userRepo, serviceRepo, providerRepo, tagRepo, logger),
+		ListServices:          usecases.NewListServicesUseCase(serviceRepo, providerRepo, storageService, logger),
+		SearchServices:        usecases.NewSearchServicesUseCase(serviceRepo, providerRepo, storageService, logger),
+		GetService:            usecases.NewGetServiceUseCase(serviceRepo, storageService, logger),
+		UpdateService:         usecases.NewUpdateServiceUseCase(userRepo, providerRepo, serviceRepo, storageService, logger),
+		DeleteService:         usecases.NewDeleteServiceUseCase(userRepo, providerRepo, serviceRepo, logger),
 	}
 }
