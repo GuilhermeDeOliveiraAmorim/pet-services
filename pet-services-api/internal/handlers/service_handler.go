@@ -790,3 +790,70 @@ func (h *ServiceHandler) RemoveServiceCategory(c *gin.Context) {
 
 	c.JSON(http.StatusOK, output)
 }
+
+// RemoveServiceTag godoc
+// @Summary Remove tag do serviço
+// @Tags Serviços
+// @Accept json
+// @Produce json
+// @Param service_id path string true "ID do serviço"
+// @Param tag_id path string true "ID da tag"
+// @Success 200 {object} usecases.RemoveServiceTagOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Failure 401 {object} exceptions.ProblemDetails
+// @Failure 403 {object} exceptions.ProblemDetails
+// @Failure 404 {object} exceptions.ProblemDetails
+// @Failure 409 {object} exceptions.ProblemDetails
+// @Failure 500 {object} exceptions.ProblemDetails
+// @Security Bearer
+// @Router /services/{service_id}/tags/{tag_id} [delete]
+func (h *ServiceHandler) RemoveServiceTag(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	userID, exists := c.Get("user_id")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Usuário não autenticado",
+			Detail: "Não foi possível obter o ID do usuário autenticado",
+		})
+		h.Logger.LogBadRequest(ctx, "ServiceHandler.RemoveServiceTag", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
+		return
+	}
+
+	serviceID := c.Param("service_id")
+	if serviceID == "" {
+		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "ID do serviço ausente",
+			Detail: "O ID do serviço é obrigatório",
+		})
+		h.Logger.LogBadRequest(ctx, "ServiceHandler.RemoveServiceTag", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		return
+	}
+
+	tagID := c.Param("tag_id")
+	if tagID == "" {
+		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "ID da tag ausente",
+			Detail: "O ID da tag é obrigatório",
+		})
+		h.Logger.LogBadRequest(ctx, "ServiceHandler.RemoveServiceTag", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		return
+	}
+
+	input := usecases.RemoveServiceTagInput{
+		UserID:    userID.(string),
+		ServiceID: serviceID,
+		TagID:     tagID,
+	}
+
+	output, errs := h.ServiceFactory.RemoveServiceTag.Execute(ctx, input)
+	if len(errs) > 0 {
+		exceptions.HandleErrors(c, errs)
+		return
+	}
+
+	c.JSON(http.StatusOK, output)
+}

@@ -61,6 +61,12 @@ func (r *serviceRepository) AddTag(serviceID, tagID string) error {
 	return r.db.Model(&service).Association("Tags").Append(&tag)
 }
 
+func (r *serviceRepository) RemoveTag(serviceID, tagID string) error {
+	service := models.Service{ID: serviceID}
+	tag := models.Tag{ID: tagID}
+	return r.db.Model(&service).Association("Tags").Delete(&tag)
+}
+
 func (r *serviceRepository) HasCategory(serviceID, categoryID string) (bool, error) {
 	var count int64
 	err := r.db.Table("service_categories").

@@ -27,6 +27,7 @@ type ServiceRepository interface {
 	Search(query, categoryID, tagID string, latitude, longitude, radiusKm, priceMin, priceMax float64, page, pageSize int) ([]*Service, int64, error)
 	HasTag(serviceID, tagID string) (bool, error)
 	AddTag(serviceID, tagID string) error
+	RemoveTag(serviceID, tagID string) error
 	HasCategory(serviceID, categoryID string) (bool, error)
 	AddCategory(serviceID, categoryID string) error
 	RemoveCategory(serviceID, categoryID string) error
