@@ -16,6 +16,8 @@
     "test:geocode": "tsx scripts/test-geocode.ts",
     "test:pet": "tsx scripts/pet/test-pet.ts",
     "test:provider": "tsx scripts/provider/test-provider.ts",
+    "test:provider-categories": "tsx scripts/provider/test-provider-categories-access.ts",
+    "test:provider-tags": "tsx scripts/provider/test-provider-tags-access.ts",
     "test:profile-provider": "tsx scripts/provider/test-get-profile-provider-id.ts",
     "test:profile-owner": "tsx scripts/provider/test-get-profile-owner-no-provider-id.ts"
   },
