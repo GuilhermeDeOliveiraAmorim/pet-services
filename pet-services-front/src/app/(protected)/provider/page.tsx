@@ -24,6 +24,7 @@ import {
   useProviderGet,
   useServiceAdd,
   useServiceAddCategory,
+  useServiceDeleteCategory,
   useServiceAddPhoto,
   useServiceAddTag,
   useServiceDelete,
@@ -121,6 +122,12 @@ export default function ProviderDashboardPage() {
   } = useServiceAddCategory({
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["services"] }),
   });
+  const {
+    mutateAsync: deleteServiceCategory,
+    isPending: isDeletingServiceCategory,
+  } = useServiceDeleteCategory({
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["services"] }),
+  });
   const { mutateAsync: addServiceTag, isPending: isAddingServiceTag } =
     useServiceAddTag({
       onSuccess: () =>
@@ -160,6 +167,9 @@ export default function ProviderDashboardPage() {
   const [addingCategoryServiceId, setAddingCategoryServiceId] = useState<
     string | null
   >(null);
+  const [removingCategoryKey, setRemovingCategoryKey] = useState<string | null>(
+    null,
+  );
   const [addingTagServiceId, setAddingTagServiceId] = useState<string | null>(
     null,
   );
@@ -312,6 +322,36 @@ export default function ProviderDashboardPage() {
       });
     } finally {
       setAddingTagServiceId(null);
+    }
+  };
+
+  const handleRemoveCategoryFromService = async (
+    service: Service,
+    categoryId: string,
+  ) => {
+    const categoryKey = `${service.id}:${categoryId}`;
+    setRemovingCategoryKey(categoryKey);
+
+    try {
+      const response = await deleteServiceCategory({
+        serviceId: service.id,
+        categoryId,
+      });
+
+      setTaxonomyFeedback(service.id, {
+        type: "success",
+        message: response.message || "Categoria removida com sucesso.",
+      });
+    } catch (error) {
+      setTaxonomyFeedback(service.id, {
+        type: "error",
+        message: getApiErrorMessage(
+          error,
+          "Não foi possível remover a categoria.",
+        ),
+      });
+    } finally {
+      setRemovingCategoryKey(null);
     }
   };
 
@@ -1661,13 +1701,57 @@ export default function ProviderDashboardPage() {
                             <Text fontSize="xs" color="gray.500" mb={1}>
                               Categorias atuais
                             </Text>
-                            <Text fontSize="sm" color="gray.700">
-                              {service.categories.length > 0
-                                ? service.categories
-                                    .map((category) => category.name)
-                                    .join(", ")
-                                : "Nenhuma categoria associada."}
-                            </Text>
+                            {service.categories.length > 0 ? (
+                              <VStack align="stretch" gap={1}>
+                                {service.categories.map((category) => {
+                                  const categoryKey = `${service.id}:${category.id}`;
+                                  const isCurrentRemovingCategory =
+                                    removingCategoryKey === categoryKey;
+
+                                  return (
+                                    <HStack
+                                      key={category.id}
+                                      justify="space-between"
+                                      borderWidth="1px"
+                                      borderColor="gray.200"
+                                      bg="white"
+                                      borderRadius="md"
+                                      px={2}
+                                      py={1}
+                                    >
+                                      <Text fontSize="sm" color="gray.700">
+                                        {category.name}
+                                      </Text>
+                                      <Button
+                                        size="xs"
+                                        borderRadius="full"
+                                        colorPalette="red"
+                                        variant="subtle"
+                                        onClick={() =>
+                                          handleRemoveCategoryFromService(
+                                            service,
+                                            category.id,
+                                          )
+                                        }
+                                        disabled={
+                                          isCurrentRemovingCategory ||
+                                          isDeletingServiceCategory ||
+                                          isAddingServiceCategory
+                                        }
+                                      >
+                                        {isCurrentRemovingCategory
+                                          ? "Removendo..."
+                                          : "Remover"}
+                                      </Button>
+                                    </HStack>
+                                  );
+                                })}
+                              </VStack>
+                            ) : (
+                              <Text fontSize="sm" color="gray.700">
+                                Nenhuma categoria associada.
+                              </Text>
+                            )}
 
                             <HStack mt={2} align="end" gap={2} flexWrap="wrap">
                               <NativeSelect.Root
@@ -1721,6 +1805,7 @@ export default function ProviderDashboardPage() {
                                   !selectedCategoryId ||
                                   isCurrentAddingCategory ||
                                   isAddingServiceCategory ||
+                                  isDeletingServiceCategory ||
                                   isLoadingCategories ||
                                   Boolean(categoriesError)
                                 }

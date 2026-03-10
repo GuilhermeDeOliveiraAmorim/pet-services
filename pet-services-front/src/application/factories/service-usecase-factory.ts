@@ -5,6 +5,7 @@ import {
   AddServicePhotoUseCase,
   AddServiceTagUseCase,
   DeleteServiceUseCase,
+  DeleteServiceCategoryUseCase,
   DeleteServicePhotoUseCase,
   GetServiceUseCase,
   ListServicesUseCase,
@@ -23,6 +24,7 @@ export const createServiceCases = (gateway: ServiceGateway) => {
     addServicePhoto: new AddServicePhotoUseCase(gateway),
     deleteServicePhoto: new DeleteServicePhotoUseCase(gateway),
     addServiceCategory: new AddServiceCategoryUseCase(gateway),
+    deleteServiceCategory: new DeleteServiceCategoryUseCase(gateway),
     addServiceTag: new AddServiceTagUseCase(gateway),
   };
 };

@@ -4,6 +4,7 @@ import type {
   AddServiceCategoryOutput,
   AddServicePhotoOutput,
   AddServiceTagOutput,
+  DeleteServiceCategoryOutput,
   DeleteServiceOutput,
   DeleteServicePhotoOutput,
   GetServiceOutput,
@@ -225,6 +226,21 @@ export class ServiceGatewayAxios implements ServiceGateway {
     }>(`/services/${serviceId}/categories`, {
       category_id: categoryId,
     });
+
+    return {
+      message: data.message,
+      detail: data.detail,
+    };
+  }
+
+  async deleteServiceCategory(
+    serviceId: string | number,
+    categoryId: string | number,
+  ): Promise<DeleteServiceCategoryOutput> {
+    const { data } = await this.http.delete<{
+      message?: string;
+      detail?: string;
+    }>(`/services/${serviceId}/categories/${categoryId}`);
 
     return {
       message: data.message,

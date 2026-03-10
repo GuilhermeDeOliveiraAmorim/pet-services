@@ -18,6 +18,7 @@ import type {
 } from "../usecases/service/search-services";
 import type { AddServicePhotoOutput } from "../usecases/service/add-service-photo";
 import type { DeleteServicePhotoOutput } from "../usecases/service/delete-service-photo";
+import type { DeleteServiceCategoryOutput } from "../usecases/service/delete-service-category";
 import type { AddServiceCategoryOutput } from "../usecases/service/add-service-category";
 import type { AddServiceTagOutput } from "../usecases/service/add-service-tag";
 
@@ -40,6 +41,10 @@ export interface ServiceGateway {
     serviceId: string | number,
     categoryId: string | number,
   ): Promise<AddServiceCategoryOutput>;
+  deleteServiceCategory(
+    serviceId: string | number,
+    categoryId: string | number,
+  ): Promise<DeleteServiceCategoryOutput>;
   addServiceTag(
     serviceId: string | number,
     tagId: string | number,
