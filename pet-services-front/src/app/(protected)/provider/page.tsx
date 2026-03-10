@@ -11,6 +11,7 @@ import {
   Grid,
   HStack,
   Input,
+  NativeSelect,
   Portal,
   Text,
   Textarea,
@@ -19,13 +20,17 @@ import {
 } from "@chakra-ui/react";
 import {
   useProviderAdd,
+  useCategoryList,
   useProviderGet,
   useServiceAdd,
+  useServiceAddCategory,
   useServiceAddPhoto,
+  useServiceAddTag,
   useServiceDelete,
   useServiceDeletePhoto,
   useServiceList,
   useServiceUpdate,
+  useTagList,
   useUserProfile,
 } from "@/application";
 import type { Service } from "@/domain";
@@ -73,6 +78,16 @@ export default function ProviderDashboardPage() {
     input: listInput,
     enabled: Boolean(provider?.id),
   });
+  const {
+    data: categoriesData,
+    isLoading: isLoadingCategories,
+    error: categoriesError,
+  } = useCategoryList();
+  const {
+    data: tagsData,
+    isLoading: isLoadingTags,
+    error: tagsError,
+  } = useTagList();
 
   const { mutateAsync: addService, isPending: isAddingService } = useServiceAdd(
     {
@@ -97,6 +112,17 @@ export default function ProviderDashboardPage() {
     });
   const { mutateAsync: deleteServicePhoto, isPending: isDeletingServicePhoto } =
     useServiceDeletePhoto({
+      onSuccess: () =>
+        queryClient.invalidateQueries({ queryKey: ["services"] }),
+    });
+  const {
+    mutateAsync: addServiceCategory,
+    isPending: isAddingServiceCategory,
+  } = useServiceAddCategory({
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["services"] }),
+  });
+  const { mutateAsync: addServiceTag, isPending: isAddingServiceTag } =
+    useServiceAddTag({
       onSuccess: () =>
         queryClient.invalidateQueries({ queryKey: ["services"] }),
     });
@@ -125,6 +151,21 @@ export default function ProviderDashboardPage() {
     string | null
   >(null);
   const [deletingPhotoKey, setDeletingPhotoKey] = useState<string | null>(null);
+  const [selectedCategoryByService, setSelectedCategoryByService] = useState<
+    Record<string, string>
+  >({});
+  const [selectedTagByService, setSelectedTagByService] = useState<
+    Record<string, string>
+  >({});
+  const [addingCategoryServiceId, setAddingCategoryServiceId] = useState<
+    string | null
+  >(null);
+  const [addingTagServiceId, setAddingTagServiceId] = useState<string | null>(
+    null,
+  );
+  const [taxonomyFeedbackByService, setTaxonomyFeedbackByService] = useState<
+    Record<string, Feedback | null>
+  >({});
 
   const [providerBusinessName, setProviderBusinessName] = useState("");
   const [providerDescription, setProviderDescription] = useState("");
@@ -141,6 +182,8 @@ export default function ProviderDashboardPage() {
   const [providerLongitude, setProviderLongitude] = useState("");
 
   const services = servicesData?.services ?? [];
+  const categories = categoriesData?.categories ?? [];
+  const tags = tagsData?.tags ?? [];
   const isEditing = Boolean(editingServiceId);
   const isSubmitting = isAddingService || isUpdatingService;
   const isLoadingProviderContext = isLoadingUser || isLoadingProvider;
@@ -148,6 +191,129 @@ export default function ProviderDashboardPage() {
     !isLoadingProviderContext && !provider?.id && !providerId;
 
   const currentUser = userData?.user;
+
+  const setTaxonomyFeedback = (
+    serviceId: string,
+    nextFeedback: Feedback | null,
+  ) => {
+    setTaxonomyFeedbackByService((previous) => ({
+      ...previous,
+      [serviceId]: nextFeedback,
+    }));
+  };
+
+  const handleCategorySelectionChange = (serviceId: string, value: string) => {
+    setSelectedCategoryByService((previous) => ({
+      ...previous,
+      [serviceId]: value,
+    }));
+  };
+
+  const handleTagSelectionChange = (serviceId: string, value: string) => {
+    setSelectedTagByService((previous) => ({
+      ...previous,
+      [serviceId]: value,
+    }));
+  };
+
+  const handleAddCategoryToService = async (service: Service) => {
+    const categoryId = selectedCategoryByService[service.id];
+
+    if (!categoryId) {
+      setTaxonomyFeedback(service.id, {
+        type: "error",
+        message: "Selecione uma categoria para associar.",
+      });
+      return;
+    }
+
+    const alreadyLinked = service.categories.some(
+      (category) => category.id === categoryId,
+    );
+
+    if (alreadyLinked) {
+      setTaxonomyFeedback(service.id, {
+        type: "error",
+        message: "Essa categoria já está associada ao serviço.",
+      });
+      return;
+    }
+
+    setAddingCategoryServiceId(service.id);
+
+    try {
+      const response = await addServiceCategory({
+        serviceId: service.id,
+        categoryId,
+      });
+
+      setSelectedCategoryByService((previous) => ({
+        ...previous,
+        [service.id]: "",
+      }));
+      setTaxonomyFeedback(service.id, {
+        type: "success",
+        message: response.message || "Categoria associada com sucesso.",
+      });
+    } catch (error) {
+      setTaxonomyFeedback(service.id, {
+        type: "error",
+        message: getApiErrorMessage(
+          error,
+          "Não foi possível associar a categoria.",
+        ),
+      });
+    } finally {
+      setAddingCategoryServiceId(null);
+    }
+  };
+
+  const handleAddTagToService = async (service: Service) => {
+    const tagId = selectedTagByService[service.id];
+
+    if (!tagId) {
+      setTaxonomyFeedback(service.id, {
+        type: "error",
+        message: "Selecione uma tag para associar.",
+      });
+      return;
+    }
+
+    const alreadyLinked = service.tags.some((tag) => tag.id === tagId);
+
+    if (alreadyLinked) {
+      setTaxonomyFeedback(service.id, {
+        type: "error",
+        message: "Essa tag já está associada ao serviço.",
+      });
+      return;
+    }
+
+    setAddingTagServiceId(service.id);
+
+    try {
+      const response = await addServiceTag({
+        serviceId: service.id,
+        tagId,
+      });
+
+      setSelectedTagByService((previous) => ({
+        ...previous,
+        [service.id]: "",
+      }));
+      setTaxonomyFeedback(service.id, {
+        type: "success",
+        message: response.message || "Tag associada com sucesso.",
+      });
+    } catch (error) {
+      setTaxonomyFeedback(service.id, {
+        type: "error",
+        message: getApiErrorMessage(error, "Não foi possível associar a tag."),
+      });
+    } finally {
+      setAddingTagServiceId(null);
+    }
+  };
 
   const applyUserDefaultsToProviderForm = () => {
     if (!currentUser) {
@@ -1290,6 +1456,14 @@ export default function ProviderDashboardPage() {
                   photoFilesByService[service.id] ?? null;
                 const isCurrentUploadingPhoto =
                   uploadingPhotoServiceId === service.id;
+                const selectedCategoryId =
+                  selectedCategoryByService[service.id] ?? "";
+                const selectedTagId = selectedTagByService[service.id] ?? "";
+                const isCurrentAddingCategory =
+                  addingCategoryServiceId === service.id;
+                const isCurrentAddingTag = addingTagServiceId === service.id;
+                const taxonomyFeedback =
+                  taxonomyFeedbackByService[service.id] ?? null;
 
                 return (
                   <Box
@@ -1468,6 +1642,197 @@ export default function ProviderDashboardPage() {
                             : "Enviar foto"}
                         </Button>
                       </HStack>
+
+                      <Box mt={4}>
+                        <Text
+                          fontSize="sm"
+                          fontWeight="medium"
+                          color="gray.700"
+                          mb={2}
+                        >
+                          Categorias e tags
+                        </Text>
+
+                        <Grid
+                          templateColumns={{ base: "1fr", md: "1fr 1fr" }}
+                          gap={3}
+                        >
+                          <Box>
+                            <Text fontSize="xs" color="gray.500" mb={1}>
+                              Categorias atuais
+                            </Text>
+                            <Text fontSize="sm" color="gray.700">
+                              {service.categories.length > 0
+                                ? service.categories
+                                    .map((category) => category.name)
+                                    .join(", ")
+                                : "Nenhuma categoria associada."}
+                            </Text>
+
+                            <HStack mt={2} align="end" gap={2} flexWrap="wrap">
+                              <NativeSelect.Root
+                                size="sm"
+                                minW="220px"
+                                disabled={
+                                  isLoadingCategories ||
+                                  Boolean(categoriesError) ||
+                                  isCurrentAddingCategory ||
+                                  isAddingServiceTag ||
+                                  isAddingServiceCategory
+                                }
+                              >
+                                <NativeSelect.Field
+                                  value={selectedCategoryId}
+                                  onChange={(event) =>
+                                    handleCategorySelectionChange(
+                                      service.id,
+                                      event.target.value,
+                                    )
+                                  }
+                                  borderRadius="xl"
+                                  bg="white"
+                                  borderColor="gray.200"
+                                >
+                                  <option value="">
+                                    {isLoadingCategories
+                                      ? "Carregando categorias..."
+                                      : "Selecione uma categoria"}
+                                  </option>
+                                  {categories.map((category) => (
+                                    <option
+                                      key={category.id}
+                                      value={category.id}
+                                    >
+                                      {category.name}
+                                    </option>
+                                  ))}
+                                </NativeSelect.Field>
+                                <NativeSelect.Indicator color="gray.500" />
+                              </NativeSelect.Root>
+
+                              <Button
+                                size="sm"
+                                borderRadius="full"
+                                variant="outline"
+                                onClick={() =>
+                                  handleAddCategoryToService(service)
+                                }
+                                disabled={
+                                  !selectedCategoryId ||
+                                  isCurrentAddingCategory ||
+                                  isAddingServiceCategory ||
+                                  isLoadingCategories ||
+                                  Boolean(categoriesError)
+                                }
+                              >
+                                {isCurrentAddingCategory
+                                  ? "Associando..."
+                                  : "Associar categoria"}
+                              </Button>
+                            </HStack>
+
+                            {categoriesError ? (
+                              <Text mt={1} fontSize="xs" color="red.600">
+                                {getApiErrorMessage(
+                                  categoriesError,
+                                  "Não foi possível carregar as categorias.",
+                                )}
+                              </Text>
+                            ) : null}
+                          </Box>
+
+                          <Box>
+                            <Text fontSize="xs" color="gray.500" mb={1}>
+                              Tags atuais
+                            </Text>
+                            <Text fontSize="sm" color="gray.700">
+                              {service.tags.length > 0
+                                ? service.tags.map((tag) => tag.name).join(", ")
+                                : "Nenhuma tag associada."}
+                            </Text>
+
+                            <HStack mt={2} align="end" gap={2} flexWrap="wrap">
+                              <NativeSelect.Root
+                                size="sm"
+                                minW="220px"
+                                disabled={
+                                  isLoadingTags ||
+                                  Boolean(tagsError) ||
+                                  isCurrentAddingTag ||
+                                  isAddingServiceTag ||
+                                  isAddingServiceCategory
+                                }
+                              >
+                                <NativeSelect.Field
+                                  value={selectedTagId}
+                                  onChange={(event) =>
+                                    handleTagSelectionChange(
+                                      service.id,
+                                      event.target.value,
+                                    )
+                                  }
+                                  borderRadius="xl"
+                                  bg="white"
+                                  borderColor="gray.200"
+                                >
+                                  <option value="">
+                                    {isLoadingTags
+                                      ? "Carregando tags..."
+                                      : "Selecione uma tag"}
+                                  </option>
+                                  {tags.map((tag) => (
+                                    <option key={tag.id} value={tag.id}>
+                                      {tag.name}
+                                    </option>
+                                  ))}
+                                </NativeSelect.Field>
+                                <NativeSelect.Indicator color="gray.500" />
+                              </NativeSelect.Root>
+
+                              <Button
+                                size="sm"
+                                borderRadius="full"
+                                variant="outline"
+                                onClick={() => handleAddTagToService(service)}
+                                disabled={
+                                  !selectedTagId ||
+                                  isCurrentAddingTag ||
+                                  isAddingServiceTag ||
+                                  isLoadingTags ||
+                                  Boolean(tagsError)
+                                }
+                              >
+                                {isCurrentAddingTag
+                                  ? "Associando..."
+                                  : "Associar tag"}
+                              </Button>
+                            </HStack>
+
+                            {tagsError ? (
+                              <Text mt={1} fontSize="xs" color="red.600">
+                                {getApiErrorMessage(
+                                  tagsError,
+                                  "Não foi possível carregar as tags.",
+                                )}
+                              </Text>
+                            ) : null}
+                          </Box>
+                        </Grid>
+
+                        {taxonomyFeedback ? (
+                          <Text
+                            mt={2}
+                            fontSize="xs"
+                            color={
+                              taxonomyFeedback.type === "error"
+                                ? "red.600"
+                                : "green.600"
+                            }
+                          >
+                            {taxonomyFeedback.message}
+                          </Text>
+                        ) : null}
+                      </Box>
                     </Box>
                   </Box>
                 );

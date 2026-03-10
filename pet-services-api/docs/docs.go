@@ -427,11 +427,6 @@ const docTemplate = `{
         },
         "/categories": {
             "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
