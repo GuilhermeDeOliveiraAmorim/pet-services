@@ -1,9 +1,6 @@
 import { AxiosInstance } from "axios";
 import { TagGateway } from "@/application/ports/tag-gateway";
-import {
-  ListTagsInput,
-  ListTagsOutput,
-} from "@/application/usecases/tag";
+import { ListTagsInput, ListTagsOutput } from "@/application/usecases/tag";
 import { mapTagFromApi } from "@/infra/mappers/tag-mapper";
 
 export class TagGatewayAxios implements TagGateway {
@@ -21,14 +18,17 @@ export class TagGatewayAxios implements TagGateway {
 
     const response = await this.httpClient.get<{
       tags?: Record<string, unknown>[];
+      Tags?: Record<string, unknown>[];
       total?: number;
+      Total?: number;
     }>(url);
 
-    const tags = (response.data.tags || []).map(mapTagFromApi);
+    const rawTags = response.data.tags ?? response.data.Tags ?? [];
+    const tags = rawTags.map(mapTagFromApi);
 
     return {
       tags,
-      total: response.data.total || 0,
+      total: response.data.total ?? response.data.Total ?? 0,
       page: input?.page || 1,
       pageSize: input?.pageSize || 10,
     };

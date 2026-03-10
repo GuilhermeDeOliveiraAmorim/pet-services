@@ -19,6 +19,7 @@ import {
   chakra,
 } from "@chakra-ui/react";
 import {
+  type ListTagsOutput,
   useProviderAdd,
   useCategoryList,
   useProviderGet,
@@ -360,7 +361,32 @@ export default function ProviderDashboardPage() {
             };
           },
         );
+
+        queryClient.setQueriesData<ListTagsOutput>(
+          { queryKey: ["tags"] },
+          (previous) => {
+            if (!previous) {
+              return previous;
+            }
+
+            const alreadyExists = previous.tags.some(
+              (currentTag) => currentTag.id === addedTag.id,
+            );
+
+            if (alreadyExists) {
+              return previous;
+            }
+
+            return {
+              ...previous,
+              tags: [addedTag, ...previous.tags],
+              total: previous.total + 1,
+            };
+          },
+        );
       }
+
+      queryClient.invalidateQueries({ queryKey: ["tags"] });
 
       setSelectedTagByService((previous) => ({
         ...previous,
