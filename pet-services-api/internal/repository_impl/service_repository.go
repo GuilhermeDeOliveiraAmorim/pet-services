@@ -75,6 +75,12 @@ func (r *serviceRepository) AddCategory(serviceID, categoryID string) error {
 	return r.db.Model(&service).Association("Categories").Append(&category)
 }
 
+func (r *serviceRepository) RemoveCategory(serviceID, categoryID string) error {
+	service := models.Service{ID: serviceID}
+	category := models.Category{ID: categoryID}
+	return r.db.Model(&service).Association("Categories").Delete(&category)
+}
+
 func (r *serviceRepository) List(providerID, categoryID, tagID string, priceMin, priceMax float64, page, pageSize int) ([]*entities.Service, int64, error) {
 	var services []models.Service
 	var total int64
