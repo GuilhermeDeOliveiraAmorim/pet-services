@@ -28,6 +28,7 @@ import (
 	"pet-services-api/internal/logging"
 	"pet-services-api/internal/routes"
 
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
@@ -35,8 +36,20 @@ func init() {
 	_ = godotenv.Load()
 }
 
+func configureGinMode() {
+	if os.Getenv("ENV") == "production" {
+		gin.SetMode(gin.ReleaseMode)
+		slog.Info("[Start] Gin mode configurado", "mode", gin.ReleaseMode, "env", "production")
+		return
+	}
+
+	gin.SetMode(gin.DebugMode)
+	slog.Info("[Start] Gin mode configurado", "mode", gin.DebugMode, "env", os.Getenv("ENV"))
+}
+
 func main() {
 	logger := &logging.DefaultLogger{}
+	configureGinMode()
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
