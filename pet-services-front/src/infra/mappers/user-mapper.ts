@@ -46,6 +46,7 @@ interface RawUser {
   address?: RawAddress;
   emailVerified?: boolean;
   email_verified?: boolean;
+  profile_complete?: boolean;
   photos?: unknown[];
   pets?: unknown[];
 }
@@ -80,11 +81,14 @@ export const mapUserFromApi = (user?: RawUser | null): User => {
       country: raw.address?.country ?? "",
       complement: raw.address?.complement ?? "",
       location: {
-        latitude: raw.address?.location?.latitude ?? raw.address?.location?.lat ?? 0,
-        longitude: raw.address?.location?.longitude ?? raw.address?.location?.lng ?? 0,
+        latitude:
+          raw.address?.location?.latitude ?? raw.address?.location?.lat ?? 0,
+        longitude:
+          raw.address?.location?.longitude ?? raw.address?.location?.lng ?? 0,
       },
     },
     emailVerified: raw.emailVerified ?? raw.email_verified ?? false,
+    profileComplete: raw.profile_complete ?? false,
     photos: Array.isArray(raw.photos) ? raw.photos : [],
     pets: Array.isArray(raw.pets) ? raw.pets : [],
   } as User;

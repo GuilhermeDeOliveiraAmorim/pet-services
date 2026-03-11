@@ -26,7 +26,9 @@ export const AuthGuard = ({
 
   const isOwnerArea = pathname?.startsWith("/owner");
   const isProviderArea = pathname?.startsWith("/provider");
+  const isProfileArea = pathname?.startsWith("/profile");
   const userType = profileData?.user?.userType;
+  const profileComplete = profileData?.user?.profileComplete;
 
   useEffect(() => {
     if (!isHydrated) {
@@ -38,7 +40,16 @@ export const AuthGuard = ({
       return;
     }
 
-    if (!isAuthenticated || (!isOwnerArea && !isProviderArea)) {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    if (!isLoadingProfile && profileComplete === false && !isProfileArea) {
+      router.replace("/profile");
+      return;
+    }
+
+    if (!isOwnerArea && !isProviderArea) {
       return;
     }
 
@@ -57,9 +68,12 @@ export const AuthGuard = ({
   }, [
     isAuthenticated,
     isHydrated,
+    isLoadingProfile,
     isOwnerArea,
+    isProfileArea,
     isProviderArea,
     pathname,
+    profileComplete,
     redirectTo,
     router,
     userType,
@@ -73,7 +87,15 @@ export const AuthGuard = ({
     return null;
   }
 
-  if ((isOwnerArea || isProviderArea) && (isLoadingProfile || !userType)) {
+  if (isLoadingProfile) {
+    return null;
+  }
+
+  if (profileComplete === false && !isProfileArea) {
+    return null;
+  }
+
+  if ((isOwnerArea || isProviderArea) && !userType) {
     return null;
   }
 
