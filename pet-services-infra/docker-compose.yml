@@ -64,7 +64,7 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     command: server /data --console-address ":9001"
     volumes:
-      - "/media/guilherme/HD 1TB1/minio:/data"
+      - "${VOLUME_PATH}:/data"
 
   postgres:
     image: postgres:16-alpine
@@ -91,4 +91,4 @@ services:
 
 volumes:
   postgres_data:
-  # minio_data removido - agora usa bind mount configurável via MINIO_DATA_PATH
+  # minio_data removido - agora usa bind mount configurável via VOLUME_PATH
