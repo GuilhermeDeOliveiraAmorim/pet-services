@@ -42,32 +42,47 @@ func (s *SMTPEmailService) SendVerificationEmail(to, token string) error {
 <html>
 <head>
 	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<style>
-		body { font-family: Arial, sans-serif; }
-		.container { max-width: 600px; margin: 0 auto; padding: 20px; }
-		.header { background-color: #007bff; color: white; padding: 20px; text-align: center; }
-		.content { padding: 20px; border: 1px solid #ddd; }
-		.button { display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; }
-		.footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; }
+		body { margin: 0; padding: 0; background-color: #f4f7fb; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif; color: #1f2937; }
+		.wrapper { width: 100%%; padding: 28px 12px; }
+		.container { max-width: 620px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; }
+		.header { padding: 28px 24px; text-align: center; color: #ffffff; background: linear-gradient(135deg, #0f766e 0%%, #06b6d4 100%%); }
+		.header h1 { margin: 0; font-size: 28px; line-height: 1.2; }
+		.content { padding: 28px 24px; font-size: 16px; line-height: 1.6; }
+		.content p { margin: 0 0 14px 0; }
+		.callout { background-color: #f0fdfa; border: 1px solid #99f6e4; border-radius: 10px; padding: 14px; margin: 18px 0; }
+		.button-wrap { text-align: center; margin: 24px 0; }
+		.button { display: inline-block; padding: 12px 26px; background-color: #0f766e; color: #ffffff !important; text-decoration: none; border-radius: 999px; font-weight: 600; }
+		.link-box { word-break: break-all; background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px; font-size: 14px; }
+		.footer { text-align: center; padding: 20px 16px 26px 16px; font-size: 12px; color: #6b7280; }
 	</style>
 </head>
 <body>
-	<div class="container">
-		<div class="header">
-			<h1>Bem-vindo ao Pet Services!</h1>
-		</div>
-		<div class="content">
-			<p>Olá,</p>
-			<p>Obrigado por se cadastrar no Pet Services. Para completar seu registro, você precisa verificar seu endereço de email.</p>
-			<p>Clique no botão abaixo para verificar seu email:</p>
-			<a href="%s" class="button">Verificar Email</a>
-			<p>Ou copie e cole este link no seu navegador:</p>
-			<p>%s</p>
-			<p>Este link expira em 24 horas.</p>
-			<p>Se você não criou esta conta, por favor ignore este email.</p>
-		</div>
-		<div class="footer">
-			<p>&copy; 2026 Pet Services. Todos os direitos reservados.</p>
+	<div class="wrapper">
+		<div class="container">
+			<div class="header">
+				<h1>Bem-vindo ao Pet Services</h1>
+			</div>
+			<div class="content">
+				<p>Ola,</p>
+				<p>Obrigado por se cadastrar. Para ativar sua conta, confirme seu endereco de email clicando no botao abaixo.</p>
+
+				<div class="button-wrap">
+					<a href="%s" class="button">Verificar e-mail</a>
+				</div>
+
+				<div class="callout">
+					<p><strong>Importante:</strong> este link expira em 24 horas.</p>
+					<p>Se voce nao criou esta conta, pode ignorar este email com seguranca.</p>
+				</div>
+
+				<p>Se o botao nao funcionar, copie e cole este link no navegador:</p>
+				<div class="link-box">%s</div>
+			</div>
+			<div class="footer">
+				&copy; 2026 Pet Services. Todos os direitos reservados.
+			</div>
 		</div>
 	</div>
 </body>
@@ -86,33 +101,47 @@ func (s *SMTPEmailService) SendPasswordResetEmail(to, token string) error {
 <html>
 <head>
 	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<style>
-		body { font-family: Arial, sans-serif; }
-		.container { max-width: 600px; margin: 0 auto; padding: 20px; }
-		.header { background-color: #dc3545; color: white; padding: 20px; text-align: center; }
-		.content { padding: 20px; border: 1px solid #ddd; }
-		.button { display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; }
-		.footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; }
-		.warning { color: #dc3545; font-weight: bold; }
+		body { margin: 0; padding: 0; background-color: #f4f7fb; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif; color: #1f2937; }
+		.wrapper { width: 100%%; padding: 28px 12px; }
+		.container { max-width: 620px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; }
+		.header { padding: 28px 24px; text-align: center; color: #ffffff; background: linear-gradient(135deg, #b91c1c 0%%, #ef4444 100%%); }
+		.header h1 { margin: 0; font-size: 28px; line-height: 1.2; }
+		.content { padding: 28px 24px; font-size: 16px; line-height: 1.6; }
+		.content p { margin: 0 0 14px 0; }
+		.callout { background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; padding: 14px; margin: 18px 0; }
+		.button-wrap { text-align: center; margin: 24px 0; }
+		.button { display: inline-block; padding: 12px 26px; background-color: #b91c1c; color: #ffffff !important; text-decoration: none; border-radius: 999px; font-weight: 600; }
+		.link-box { word-break: break-all; background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px; font-size: 14px; }
+		.footer { text-align: center; padding: 20px 16px 26px 16px; font-size: 12px; color: #6b7280; }
 	</style>
 </head>
 <body>
-	<div class="container">
-		<div class="header">
-			<h1>Redefinição de Senha</h1>
-		</div>
-		<div class="content">
-			<p>Olá,</p>
-			<p>Recebemos uma solicitação para redefinir a senha da sua conta Pet Services.</p>
-			<p>Clique no botão abaixo para criar uma nova senha:</p>
-			<a href="%s" class="button">Redefinir Senha</a>
-			<p>Ou copie e cole este link no seu navegador:</p>
-			<p>%s</p>
-			<p><span class="warning">Importante:</span> Este link expira em 1 hora. Se você não solicitou uma redefinição de senha, por favor ignore este email.</p>
-			<p>Sua conta está segura enquanto você não clicar no link acima.</p>
-		</div>
-		<div class="footer">
-			<p>&copy; 2026 Pet Services. Todos os direitos reservados.</p>
+	<div class="wrapper">
+		<div class="container">
+			<div class="header">
+				<h1>Redefinicao de senha</h1>
+			</div>
+			<div class="content">
+				<p>Ola,</p>
+				<p>Recebemos uma solicitacao para redefinir a senha da sua conta Pet Services.</p>
+
+				<div class="button-wrap">
+					<a href="%s" class="button">Redefinir senha</a>
+				</div>
+
+				<div class="callout">
+					<p><strong>Importante:</strong> este link expira em 1 hora.</p>
+					<p>Se voce nao solicitou a redefinicao, ignore este email. Sua conta permanece segura.</p>
+				</div>
+
+				<p>Se o botao nao funcionar, copie e cole este link no navegador:</p>
+				<div class="link-box">%s</div>
+			</div>
+			<div class="footer">
+				&copy; 2026 Pet Services. Todos os direitos reservados.
+			</div>
 		</div>
 	</div>
 </body>

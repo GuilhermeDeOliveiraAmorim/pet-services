@@ -1102,20 +1102,6 @@ definitions:
           $ref: '#/definitions/entities.Tag'
         type: array
     type: object
-  usecases.UpdateEmailVerifiedInput:
-    properties:
-      user_id:
-        type: string
-      verified:
-        type: boolean
-    type: object
-  usecases.UpdateEmailVerifiedOutput:
-    properties:
-      detail:
-        type: string
-      message:
-        type: string
-    type: object
   usecases.UpdatePetInputBody:
     properties:
       age:
@@ -3427,31 +3413,6 @@ paths:
           schema:
             $ref: '#/definitions/exceptions.ProblemDetails'
       summary: Registra um novo usuário
-      tags:
-      - Usuários
-  /users/update-email-verified:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dados de verificação
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/usecases.UpdateEmailVerifiedInput'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/usecases.UpdateEmailVerifiedOutput'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/exceptions.ProblemDetails'
-      summary: Atualiza verificação de email
       tags:
       - Usuários
 securityDefinitions:

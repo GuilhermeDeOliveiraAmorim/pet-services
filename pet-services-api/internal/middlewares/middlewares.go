@@ -122,15 +122,6 @@ func ProfileCompleteMiddleware(logger logging.LoggerInterface, userRepository en
 			return
 		}
 
-		fullPath := c.FullPath()
-		method := c.Request.Method
-		if (method == http.MethodGet && fullPath == "/users/profile") ||
-			(method == http.MethodPut && (fullPath == "/users" || fullPath == "/users/")) ||
-			(method == http.MethodPost && fullPath == "/auth/logout") {
-			c.Next()
-			return
-		}
-
 		user, err := userRepository.FindByID(userID.(string))
 		if err != nil {
 			if err.Error() == consts.UserNotFoundError {

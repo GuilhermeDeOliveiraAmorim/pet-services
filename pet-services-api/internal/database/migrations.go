@@ -237,7 +237,7 @@ func Migration20260311000000(db *gorm.DB) error {
 	}
 
 	owner := models.User{
-		ID:              "01KPETSEEDOWNER00000000000",
+		ID:              "01KPV3M8F8A1B2C3D4E5F6G7H8",
 		Name:            "Owner Seed",
 		UserType:        "owner",
 		Email:           "owner.seed@petservices.local",
@@ -288,7 +288,7 @@ func Migration20260311000000(db *gorm.DB) error {
 	}
 
 	providerUser := models.User{
-		ID:              "01KPETSEEDPROVIDER00000000",
+		ID:              "01KPV3M8F8J1K2L3M4N5P6Q7R8",
 		Name:            "Provider Seed",
 		UserType:        "provider",
 		Email:           "provider.seed@petservices.local",
@@ -344,7 +344,7 @@ func Migration20260311000000(db *gorm.DB) error {
 	}
 
 	provider := models.Provider{
-		ID:            "01KPETSEEDPROVIDERPROFILE000",
+		ID:            "01KPV3M8F8S1T2U3V4W5X6Y7Z8",
 		UserID:        persistedProviderUser.ID,
 		BusinessName:  "Provider Seed Pet Care",
 		Description:   "Perfil seed de provider para desenvolvimento local",
@@ -384,6 +384,55 @@ func Migration20260311000000(db *gorm.DB) error {
 		}),
 	}).Create(&provider).Error; err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func Migration20260311000001(db *gorm.DB) error {
+	var ownerUser models.User
+	if err := db.Where("email = ?", "owner.seed@petservices.local").First(&ownerUser).Error; err != nil {
+		return err
+	}
+
+	pets := []models.Pet{
+		{
+			ID:        "01KPV6J8A1B2C3D4E5F6G7H8J9",
+			UserID:    ownerUser.ID,
+			Name:      "Thor",
+			SpeciesID: "01KG7BG1XN0BQ4KHKPHY5V5ZEW", // Cachorro
+			Age:       3,
+			Weight:    18.40,
+			Notes:     "Pet seed owner - cachorro",
+			Active:    true,
+		},
+		{
+			ID:        "01KPV6J8A1K2L3M4N5P6Q7R8S9",
+			UserID:    ownerUser.ID,
+			Name:      "Mia",
+			SpeciesID: "01KG7BG1XR2FA63J6N46CPVCKS", // Gato
+			Age:       2,
+			Weight:    4.70,
+			Notes:     "Pet seed owner - gato",
+			Active:    true,
+		},
+	}
+
+	for _, pet := range pets {
+		if err := db.Clauses(clause.OnConflict{
+			Columns: []clause.Column{{Name: "id"}},
+			DoUpdates: clause.AssignmentColumns([]string{
+				"user_id",
+				"name",
+				"species_id",
+				"age",
+				"weight",
+				"notes",
+				"active",
+			}),
+		}).Create(&pet).Error; err != nil {
+			return err
+		}
 	}
 
 	return nil

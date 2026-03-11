@@ -105,6 +105,11 @@ export default function LoginPage() {
       expiresAt,
     });
 
+    if (!response.user.profileComplete) {
+      router.replace("/profile");
+      return;
+    }
+
     if (response.user.userType === UserTypes.Owner) {
       router.replace("/owner");
       return;
