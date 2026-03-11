@@ -58,6 +58,45 @@ pets-services/
   - Senha: `postgres`
   - Banco: `pet_services`
 
+### Configurações de Ambiente (Infra)
+
+No arquivo `.env` dentro de `pet-services-infra/`, mantenha pelo menos estas variáveis ajustadas:
+
+- `ENV=development` no desenvolvimento local
+- `ENV=production` em produção
+- `VOLUME_PATH=/caminho/no/seu/disco` para persistência de dados do MinIO
+
+#### Modo do Gin por ambiente
+
+A API define o modo do Gin automaticamente com base em `ENV`:
+
+- `ENV=production` → Gin em `release`
+- qualquer outro valor (ex.: `development`) → Gin em `debug`
+
+#### MinIO com volume configurável
+
+O MinIO usa bind mount com `VOLUME_PATH`, permitindo escolher o disco/pasta de persistência sem alterar o compose.
+
+Exemplo:
+
+```sh
+VOLUME_PATH=/media/seu-usuario/SeuDisco/minio
+```
+
+### Seeds automáticos no startup
+
+Ao subir a API com migrações, são garantidos 2 usuários de desenvolvimento (idempotente):
+
+- Owner:
+  - Email: `owner.seed@petservices.local`
+  - Senha: `Owner@123`
+- Provider:
+  - Email: `provider.seed@petservices.local`
+  - Senha: `Provider@123`
+  - Perfil de provider já criado e vinculado
+
+Se você subir novamente os containers, os seeds são ignorados/atualizados sem duplicar registros.
+
 ### Desenvolvimento da API
 
 1. Acesse a pasta da API:

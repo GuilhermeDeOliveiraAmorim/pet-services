@@ -3454,45 +3454,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/update-email-verified": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Usuários"
-                ],
-                "summary": "Atualiza verificação de email",
-                "parameters": [
-                    {
-                        "description": "Dados de verificação",
-                        "name": "input",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/usecases.UpdateEmailVerifiedInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/usecases.UpdateEmailVerifiedOutput"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/exceptions.ProblemDetails"
-                        }
-                    }
-                }
-            }
-        },
         "/users/{user_id}": {
             "get": {
                 "security": [
@@ -5240,28 +5201,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/entities.Tag"
                     }
-                }
-            }
-        },
-        "usecases.UpdateEmailVerifiedInput": {
-            "type": "object",
-            "properties": {
-                "user_id": {
-                    "type": "string"
-                },
-                "verified": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "usecases.UpdateEmailVerifiedOutput": {
-            "type": "object",
-            "properties": {
-                "detail": {
-                    "type": "string"
-                },
-                "message": {
-                    "type": "string"
                 }
             }
         },

@@ -317,37 +317,6 @@ func (h *UserHandler) CheckPhoneExists(c *gin.Context) {
 	c.JSON(http.StatusOK, output)
 }
 
-// UpdateEmailVerified godoc
-// @Summary Atualiza verificação de email
-// @Tags Usuários
-// @Accept json
-// @Produce json
-// @Param input body usecases.UpdateEmailVerifiedInput true "Dados de verificação"
-// @Success 200 {object} usecases.UpdateEmailVerifiedOutput
-// @Failure 400 {object} exceptions.ProblemDetails
-// @Router /users/update-email-verified [post]
-func (h *UserHandler) UpdateEmailVerified(c *gin.Context) {
-	ctx := c.Request.Context()
-
-	var input usecases.UpdateEmailVerifiedInput
-	if err := c.ShouldBindJSON(&input); err != nil {
-		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
-			Title:  "Erro ao fazer o parser",
-			Detail: "Erro ao fazer o parser dos dados de verificação de email",
-		})
-		h.Logger.LogBadRequest(ctx, "UserHandler", problem.Detail, err)
-		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
-		return
-	}
-
-	output, errs := h.UserFactory.UpdateEmailVerified.Execute(ctx, input)
-	if len(errs) > 0 {
-		exceptions.HandleErrors(c, errs)
-		return
-	}
-	c.JSON(http.StatusOK, output)
-}
-
 // ChangePassword godoc
 // @Summary Altera a senha do usuário autenticado
 // @Tags Usuários

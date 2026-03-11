@@ -126,19 +126,23 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		authorizedAuth.POST("logout", handlerFactory.TokenHandler.Logout)
 	}
 
+	onboardingUser := r.Group("/users")
+	onboardingUser.Use(middlewareFactory.AuthMiddleware())
+	{
+		onboardingUser.GET("/profile", handlerFactory.UserHandler.GetProfile)
+		onboardingUser.PUT("", handlerFactory.UserHandler.UpdateUser)
+		onboardingUser.POST("/change-password", handlerFactory.UserHandler.ChangePassword)
+		onboardingUser.POST("/photos", handlerFactory.UserHandler.AddUserPhoto)
+	}
+
 	authorizedUser := r.Group("/users")
 	authorizedUser.Use(middlewareFactory.AuthMiddleware(), profileComplete)
 	{
-		authorizedUser.GET("/profile", handlerFactory.UserHandler.GetProfile)
 		authorizedUser.GET("/:user_id", handlerFactory.UserHandler.GetUserByID)
 		authorizedUser.GET("", handlerFactory.UserHandler.ListUsers)
-		authorizedUser.PUT("", handlerFactory.UserHandler.UpdateUser)
 		authorizedUser.DELETE("", handlerFactory.UserHandler.DeleteUser)
 		authorizedUser.POST("/reactivate", handlerFactory.UserHandler.ReactivateUser)
 		authorizedUser.POST("/deactivate", handlerFactory.UserHandler.DeactivateUser)
-		authorizedUser.POST("/change-password", handlerFactory.UserHandler.ChangePassword)
-		authorizedUser.POST("/update-email-verified", handlerFactory.UserHandler.UpdateEmailVerified)
-		authorizedUser.POST("/photos", handlerFactory.UserHandler.AddUserPhoto)
 	}
 
 	publicReference := r.Group("/reference")

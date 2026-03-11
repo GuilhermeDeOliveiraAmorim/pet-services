@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test:auth": "tsx scripts/test-auth.ts",
+    "test:email-delivery": "tsx scripts/test-email-delivery.ts",
     "test:verify-email": "tsx scripts/test-verify-email.ts",
     "test:auth-flow": "tsx scripts/test-auth-flow.ts",
     "test:change-password": "tsx scripts/test-change-password.ts",

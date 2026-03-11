@@ -99,5 +99,15 @@ func getMigrations() []Migration {
 			Description: "Seed inicial da tabela categories",
 			Up:          Migration20260218000001,
 		},
+		{
+			Version:     "20260311000000",
+			Description: "Seed inicial de usuários owner/provider e provider vinculado",
+			Up:          Migration20260311000000,
+		},
+		{
+			Version:     "20260311000001",
+			Description: "Seed inicial de pets para usuário owner",
+			Up:          Migration20260311000001,
+		},
 	}
 }

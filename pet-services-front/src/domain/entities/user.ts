@@ -20,6 +20,7 @@ export interface User extends Base {
   phone: Phone;
   address: Address;
   emailVerified: boolean;
+  profileComplete: boolean;
   photos: Photo[];
   pets: Pet[];
 }
