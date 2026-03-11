@@ -3,7 +3,9 @@ package database
 import (
 	"pet-services-api/internal/models"
 
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 func Migration20260110000000(db *gorm.DB) error {
@@ -221,4 +223,168 @@ ON CONFLICT (id) DO NOTHING;
 `
 
 	return db.Exec(seed).Error
+}
+
+func Migration20260311000000(db *gorm.DB) error {
+	ownerPassword, err := bcrypt.GenerateFromPassword([]byte("Owner@123"), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	providerPassword, err := bcrypt.GenerateFromPassword([]byte("Provider@123"), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	owner := models.User{
+		ID:              "01KPETSEEDOWNER00000000000",
+		Name:            "Owner Seed",
+		UserType:        "owner",
+		Email:           "owner.seed@petservices.local",
+		Password:        string(ownerPassword),
+		CountryCode:     "+55",
+		AreaCode:        "11",
+		PhoneNumber:     "999999111",
+		EmailVerified:   true,
+		ProfileComplete: true,
+		Active:          true,
+		Street:          "Rua das Flores",
+		Number:          "100",
+		Neighborhood:    "Centro",
+		City:            "Sao Paulo",
+		ZipCode:         "01001-000",
+		State:           "SP",
+		Country:         "BR",
+		Complement:      "Apto 12",
+		Latitude:        -23.550520,
+		Longitude:       -46.633308,
+	}
+
+	if err := db.Clauses(clause.OnConflict{
+		Columns: []clause.Column{{Name: "email"}},
+		DoUpdates: clause.AssignmentColumns([]string{
+			"name",
+			"user_type",
+			"password",
+			"country_code",
+			"area_code",
+			"phone_number",
+			"email_verified",
+			"profile_complete",
+			"active",
+			"street",
+			"number",
+			"neighborhood",
+			"city",
+			"zip_code",
+			"state",
+			"country",
+			"complement",
+			"latitude",
+			"longitude",
+		}),
+	}).Create(&owner).Error; err != nil {
+		return err
+	}
+
+	providerUser := models.User{
+		ID:              "01KPETSEEDPROVIDER00000000",
+		Name:            "Provider Seed",
+		UserType:        "provider",
+		Email:           "provider.seed@petservices.local",
+		Password:        string(providerPassword),
+		CountryCode:     "+55",
+		AreaCode:        "11",
+		PhoneNumber:     "999999222",
+		EmailVerified:   true,
+		ProfileComplete: true,
+		Active:          true,
+		Street:          "Avenida Paulista",
+		Number:          "1578",
+		Neighborhood:    "Bela Vista",
+		City:            "Sao Paulo",
+		ZipCode:         "01310-200",
+		State:           "SP",
+		Country:         "BR",
+		Complement:      "Sala 305",
+		Latitude:        -23.561400,
+		Longitude:       -46.655881,
+	}
+
+	if err := db.Clauses(clause.OnConflict{
+		Columns: []clause.Column{{Name: "email"}},
+		DoUpdates: clause.AssignmentColumns([]string{
+			"name",
+			"user_type",
+			"password",
+			"country_code",
+			"area_code",
+			"phone_number",
+			"email_verified",
+			"profile_complete",
+			"active",
+			"street",
+			"number",
+			"neighborhood",
+			"city",
+			"zip_code",
+			"state",
+			"country",
+			"complement",
+			"latitude",
+			"longitude",
+		}),
+	}).Create(&providerUser).Error; err != nil {
+		return err
+	}
+
+	var persistedProviderUser models.User
+	if err := db.Where("email = ?", providerUser.Email).First(&persistedProviderUser).Error; err != nil {
+		return err
+	}
+
+	provider := models.Provider{
+		ID:            "01KPETSEEDPROVIDERPROFILE000",
+		UserID:        persistedProviderUser.ID,
+		BusinessName:  "Provider Seed Pet Care",
+		Description:   "Perfil seed de provider para desenvolvimento local",
+		PriceRange:    "medium",
+		AverageRating: 4.8,
+		Active:        true,
+		Street:        "Avenida Paulista",
+		Number:        "1578",
+		Neighborhood:  "Bela Vista",
+		City:          "Sao Paulo",
+		ZipCode:       "01310-200",
+		State:         "SP",
+		Country:       "BR",
+		Complement:    "Sala 305",
+		Latitude:      -23.561400,
+		Longitude:     -46.655881,
+	}
+
+	if err := db.Clauses(clause.OnConflict{
+		Columns: []clause.Column{{Name: "user_id"}},
+		DoUpdates: clause.AssignmentColumns([]string{
+			"business_name",
+			"description",
+			"price_range",
+			"average_rating",
+			"active",
+			"street",
+			"number",
+			"neighborhood",
+			"city",
+			"zip_code",
+			"state",
+			"country",
+			"complement",
+			"latitude",
+			"longitude",
+		}),
+	}).Create(&provider).Error; err != nil {
+		return err
+	}
+
+	return nil
 }
