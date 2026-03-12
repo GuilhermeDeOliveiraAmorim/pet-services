@@ -153,7 +153,7 @@ export class ProviderGatewayAxios implements ProviderGateway {
   }
 
   async addProviderPhoto(
-    providerId: string | number,
+    _providerId: string | number,
     photo: File,
   ): Promise<AddProviderPhotoOutput> {
     const formData = new FormData();
@@ -163,7 +163,7 @@ export class ProviderGatewayAxios implements ProviderGateway {
       message?: string;
       detail?: string;
       photo?: { id: string; url: string };
-    }>(`/providers/${providerId}/photos`, formData, {
+    }>("/providers/photos", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },

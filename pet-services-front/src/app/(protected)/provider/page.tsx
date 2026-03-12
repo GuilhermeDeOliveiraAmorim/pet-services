@@ -10,14 +10,19 @@ import {
   Dialog,
   Flex,
   Grid,
+  HStack,
+  Input,
   Portal,
   Text,
   VStack,
+  chakra,
 } from "@chakra-ui/react";
 import {
   type ListTagsOutput,
   useProviderAdd,
+  useProviderAddPhoto,
   useCategoryList,
+  useProviderDeletePhoto,
   useProviderGet,
   type ListServicesOutput,
   useServiceAdd,
@@ -69,6 +74,17 @@ export default function ProviderDashboardPage() {
       onSuccess: () =>
         queryClient.invalidateQueries({ queryKey: ["user-profile"] }),
     });
+  const { mutateAsync: addProviderPhoto, isPending: isAddingProviderPhoto } =
+    useProviderAddPhoto({
+      onSuccess: () =>
+        queryClient.invalidateQueries({ queryKey: ["provider"] }),
+    });
+  const {
+    mutateAsync: deleteProviderPhoto,
+    isPending: isDeletingProviderPhoto,
+  } = useProviderDeletePhoto({
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["provider"] }),
+  });
 
   const provider = providerData?.provider;
   const listInput = provider?.id ? { providerId: provider.id } : undefined;
@@ -158,6 +174,12 @@ export default function ProviderDashboardPage() {
   const [providerFeedback, setProviderFeedback] = useState<Feedback | null>(
     null,
   );
+  const [providerPhotoFeedback, setProviderPhotoFeedback] =
+    useState<Feedback | null>(null);
+  const [providerPhotoFile, setProviderPhotoFile] = useState<File | null>(null);
+  const [deletingProviderPhotoId, setDeletingProviderPhotoId] = useState<
+    string | null
+  >(null);
   const [photoFilesByService, setPhotoFilesByService] = useState<
     Record<string, File | null>
   >({});
@@ -894,6 +916,83 @@ export default function ProviderDashboardPage() {
     }
   };
 
+  const handleProviderPhotoFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0] ?? null;
+    setProviderPhotoFile(file);
+  };
+
+  const handleUploadProviderPhoto = async () => {
+    if (!provider?.id) {
+      setProviderPhotoFeedback({
+        type: "error",
+        message: "Não foi possível identificar o provider para envio da foto.",
+      });
+      return;
+    }
+
+    if (!providerPhotoFile) {
+      setProviderPhotoFeedback({
+        type: "error",
+        message: "Selecione uma imagem antes de enviar a foto do provider.",
+      });
+      return;
+    }
+
+    try {
+      const response = await addProviderPhoto({
+        providerId: provider.id,
+        photo: providerPhotoFile,
+      });
+
+      setProviderPhotoFeedback({
+        type: "success",
+        message:
+          response.detail || response.message || "Foto enviada com sucesso.",
+      });
+      setProviderPhotoFile(null);
+    } catch (error) {
+      setProviderPhotoFeedback({
+        type: "error",
+        message: getApiErrorMessage(
+          error,
+          "Não foi possível enviar a foto do provider.",
+        ),
+      });
+    }
+  };
+
+  const handleDeleteProviderPhoto = async (photoId: string) => {
+    if (!provider?.id) {
+      return;
+    }
+
+    setDeletingProviderPhotoId(photoId);
+    try {
+      const response = await deleteProviderPhoto({
+        providerId: provider.id,
+        photoId,
+      });
+
+      setProviderPhotoFeedback({
+        type: "success",
+        message:
+          response.detail || response.message || "Foto removida com sucesso.",
+      });
+    } catch (error) {
+      setProviderPhotoFeedback({
+        type: "error",
+        message: getApiErrorMessage(
+          error,
+          "Não foi possível remover a foto do provider.",
+        ),
+      });
+    } finally {
+      setDeletingProviderPhotoId(null);
+    }
+  };
+
   const listServicesErrorMessage = listServicesError
     ? getApiErrorMessage(
         listServicesError,
@@ -1006,6 +1105,20 @@ export default function ProviderDashboardPage() {
                   )}
                 </Text>
               ) : null}
+
+              <Button
+                mt={3}
+                size="sm"
+                borderRadius="full"
+                variant="outline"
+                disabled={!provider?.id}
+                onClick={() => {
+                  if (!provider?.id) return;
+                  router.push(`/providers/${provider.id}`);
+                }}
+              >
+                Ver página do provider
+              </Button>
             </Box>
           </Grid>
         </Box>
@@ -1046,6 +1159,136 @@ export default function ProviderDashboardPage() {
             complement={providerComplement}
             onComplementChange={setProviderComplement}
           />
+        ) : null}
+
+        {provider?.id ? (
+          <Box
+            borderRadius="3xl"
+            bg="white"
+            p={{ base: 5, md: 6 }}
+            borderWidth="1px"
+            borderColor="gray.200"
+            shadow="sm"
+          >
+            <Box mb={4}>
+              <Text
+                fontSize="xs"
+                fontWeight="semibold"
+                textTransform="uppercase"
+                color="green.500"
+              >
+                Provider
+              </Text>
+              <Text mt={2} fontSize="xl" fontWeight="semibold" color="gray.900">
+                Fotos do provider
+              </Text>
+              <Text mt={2} fontSize="sm" color="gray.600">
+                Gerencie as imagens que aparecem na vitrine do seu perfil.
+              </Text>
+            </Box>
+
+            {provider.photos.length ? (
+              <Flex mt={3} gap={3} wrap="wrap">
+                {provider.photos.map((photo) => {
+                  const photoId = String(photo.id);
+                  const isCurrentDeletingPhoto =
+                    deletingProviderPhotoId === photoId;
+
+                  return (
+                    <Box
+                      key={photoId}
+                      borderWidth="1px"
+                      borderColor="gray.200"
+                      borderRadius="xl"
+                      bg="gray.50"
+                      p={2}
+                      w="140px"
+                    >
+                      <chakra.img
+                        src={photo.url}
+                        alt={`Foto do provider ${provider.businessName || ""}`}
+                        w="124px"
+                        h="124px"
+                        objectFit="cover"
+                        borderRadius="lg"
+                      />
+                      <Button
+                        mt={2}
+                        size="xs"
+                        borderRadius="full"
+                        colorPalette="red"
+                        variant="subtle"
+                        w="full"
+                        onClick={() => handleDeleteProviderPhoto(photoId)}
+                        disabled={
+                          isDeletingProviderPhoto ||
+                          isCurrentDeletingPhoto ||
+                          isAddingProviderPhoto
+                        }
+                      >
+                        {isCurrentDeletingPhoto ? "Removendo..." : "Remover"}
+                      </Button>
+                    </Box>
+                  );
+                })}
+              </Flex>
+            ) : (
+              <Text mt={3} fontSize="sm" color="gray.500">
+                Nenhuma foto cadastrada.
+              </Text>
+            )}
+
+            <HStack mt={4} align="end" gap={3} flexWrap="wrap">
+              <Box minW={{ base: "full", md: "420px" }}>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleProviderPhotoFileChange}
+                  h="10"
+                  bg="white"
+                  borderRadius="xl"
+                  borderColor="gray.200"
+                  p={1}
+                  disabled={isAddingProviderPhoto || isDeletingProviderPhoto}
+                />
+                {providerPhotoFile ? (
+                  <Text mt={1} fontSize="xs" color="gray.500">
+                    Arquivo selecionado: {providerPhotoFile.name}
+                  </Text>
+                ) : null}
+              </Box>
+
+              <Button
+                size="sm"
+                borderRadius="full"
+                bg="green.400"
+                color="white"
+                _hover={{ bg: "green.500" }}
+                onClick={handleUploadProviderPhoto}
+                disabled={
+                  isAddingProviderPhoto ||
+                  isDeletingProviderPhoto ||
+                  !providerPhotoFile
+                }
+              >
+                {isAddingProviderPhoto ? "Enviando..." : "Enviar foto"}
+              </Button>
+            </HStack>
+
+            {providerPhotoFeedback ? (
+              <Text
+                mt={3}
+                fontSize="xs"
+                color={
+                  providerPhotoFeedback.type === "error"
+                    ? "red.600"
+                    : "green.600"
+                }
+              >
+                {providerPhotoFeedback.message}
+              </Text>
+            ) : null}
+          </Box>
         ) : null}
 
         {provider?.id ? (
