@@ -85,7 +85,7 @@ VOLUME_PATH=/media/seu-usuario/SeuDisco/minio
 
 ### Seeds automáticos no startup
 
-Ao subir a API com migrações, são garantidos 2 usuários de desenvolvimento (idempotente):
+Ao subir a API com migrações, são garantidos 2 users de desenvolvimento (idempotente):
 
 - Owner:
   - Email: `owner.seed@petservices.local`
