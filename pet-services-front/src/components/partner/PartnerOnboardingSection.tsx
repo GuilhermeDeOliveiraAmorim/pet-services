@@ -78,21 +78,21 @@ export default function PartnerOnboardingSection() {
         ))}
       </SimpleGrid>
 
-      <Button
-        as={Link}
-        href="/register?user_type=provider"
-        alignSelf={{ base: "stretch", md: "flex-start" }}
-        borderRadius="full"
-        bgGradient="linear(to-r, teal.400, cyan.400)"
-        px="6"
-        py="3"
-        fontSize="sm"
-        fontWeight="semibold"
-        color="white"
-        _hover={{ opacity: 0.9 }}
-      >
-        Iniciar onboarding
-      </Button>
+      <Link href="/register?user_type=provider">
+        <Button
+          alignSelf={{ base: "stretch", md: "flex-start" }}
+          borderRadius="full"
+          bgGradient="linear(to-r, teal.400, cyan.400)"
+          px="6"
+          py="3"
+          fontSize="sm"
+          fontWeight="semibold"
+          color="white"
+          _hover={{ opacity: 0.9 }}
+        >
+          Iniciar onboarding
+        </Button>
+      </Link>
     </VStack>
   );
 }

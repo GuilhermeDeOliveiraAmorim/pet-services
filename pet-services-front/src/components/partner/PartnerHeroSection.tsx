@@ -51,34 +51,34 @@ export default function PartnerHeroSection() {
           justify="center"
           flexWrap={{ base: "wrap", md: "nowrap" }}
         >
-          <Button
-            as={Link}
-            href="/register?user_type=provider"
-            borderRadius="full"
-            px="6"
-            bg="teal.400"
-            color="white"
-            fontSize="sm"
-            fontWeight="semibold"
-            _hover={{ bg: "teal.500" }}
-          >
-            Quero me cadastrar
-          </Button>
+          <Link href="/register?user_type=provider">
+            <Button
+              borderRadius="full"
+              px="6"
+              bg="teal.400"
+              color="white"
+              fontSize="sm"
+              fontWeight="semibold"
+              _hover={{ bg: "teal.500" }}
+            >
+              Quero me cadastrar
+            </Button>
+          </Link>
 
-          <Button
-            as={Link}
-            href="/login"
-            borderRadius="full"
-            px="6"
-            variant="outline"
-            borderColor="whiteAlpha.700"
-            color="white"
-            fontSize="sm"
-            fontWeight="semibold"
-            _hover={{ bg: "whiteAlpha.200" }}
-          >
-            Já tenho conta
-          </Button>
+          <Link href="/login">
+            <Button
+              borderRadius="full"
+              px="6"
+              variant="outline"
+              borderColor="whiteAlpha.700"
+              color="white"
+              fontSize="sm"
+              fontWeight="semibold"
+              _hover={{ bg: "whiteAlpha.200" }}
+            >
+              Já tenho conta
+            </Button>
+          </Link>
         </HStack>
 
         <Text fontSize="xs" color="whiteAlpha.800">
