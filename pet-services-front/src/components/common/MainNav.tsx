@@ -10,11 +10,12 @@ import {
   Text,
 } from "@chakra-ui/react";
 
-import { useAuthLogout, useAuthSession } from "@/application";
+import { useAuthLogout, useAuthSession, useUserProfile } from "@/application";
+import { UserTypes } from "@/domain";
 
 import Image from "next/image";
 
-const navItems = [
+const baseNavItems = [
   { label: "Encontre Serviços", href: "/services" },
   { label: "Seja um Parceiro", href: "/partner" },
 ];
@@ -33,10 +34,19 @@ export default function MainNav({
   const router = useRouter();
   const pathname = usePathname();
   const { session, isAuthenticated, clearSession } = useAuthSession();
+  const { data: profileData } = useUserProfile({ enabled: isAuthenticated });
   const { mutateAsync: logout, isPending } = useAuthLogout();
   const registerHref = pathname?.startsWith("/partner")
     ? "/register?user_type=provider"
     : "/register";
+  const isActive = (href: string) =>
+    pathname === href || pathname?.startsWith(`${href}/`);
+  const isProviderUser = profileData?.user?.userType === UserTypes.Provider;
+  const navItems = [
+    ...baseNavItems,
+    ...(isAuthenticated ? [{ label: "Perfil", href: "/profile" }] : []),
+    ...(isProviderUser ? [{ label: "Provider", href: "/provider" }] : []),
+  ];
 
   const handleLogout = async () => {
     try {
@@ -54,6 +64,7 @@ export default function MainNav({
       as="header"
       align="center"
       justify="space-between"
+      py={{ base: "2", md: "3" }}
       className={className}
     >
       <ChakraLink
@@ -84,7 +95,17 @@ export default function MainNav({
           color="gray.600"
         >
           {navItems.map((item) => (
-            <ChakraLink key={item.href} as={Link} href={item.href}>
+            <ChakraLink
+              key={item.href}
+              as={Link}
+              href={item.href}
+              color={isActive(item.href) ? "teal.600" : "gray.600"}
+              fontWeight={isActive(item.href) ? "semibold" : "medium"}
+              _hover={{
+                textDecoration: "none",
+                color: "gray.800",
+              }}
+            >
               {item.label}
             </ChakraLink>
           ))}
@@ -100,7 +121,9 @@ export default function MainNav({
               size="sm"
               variant="outline"
               borderRadius="full"
-              colorPalette="gray"
+              borderColor="gray.300"
+              color="gray.700"
+              _hover={{ bg: "gray.50" }}
             >
               {isPending ? "Saindo..." : "Sair"}
             </Button>
@@ -137,7 +160,7 @@ export default function MainNav({
                 borderRadius="full"
                 bgGradient="linear(to-r, teal.400, cyan.400)"
                 color="white"
-                _hover={{ opacity: 0.9, textDecoration: "none" }}
+                _hover={{ opacity: 0.92, textDecoration: "none" }}
               >
                 Cadastre-se
               </ChakraLink>

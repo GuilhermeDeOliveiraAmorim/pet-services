@@ -4,9 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  Badge,
   Box,
   Button,
   Dialog,
+  Flex,
   Grid,
   Portal,
   Text,
@@ -915,64 +917,98 @@ export default function ProviderDashboardPage() {
       <MainNav />
 
       <VStack align="stretch" gap={6}>
-        <Box>
-          <Text
-            fontSize="xs"
-            fontWeight="semibold"
-            textTransform="uppercase"
-            color="green.500"
+        <Box
+          borderRadius={{ base: "2xl", md: "3xl" }}
+          bg="white"
+          p={{ base: 4, sm: 5, md: 7 }}
+          borderWidth="1px"
+          borderColor="gray.200"
+          shadow="sm"
+        >
+          <Flex
+            mb={6}
+            wrap="wrap"
+            align="start"
+            justify="space-between"
+            gap={4}
+            direction={{ base: "column", sm: "row" }}
           >
-            Dashboard
-          </Text>
-          <Text mt={2} fontSize="2xl" fontWeight="semibold" color="gray.900">
-            Olá, prestador
-          </Text>
-          <Text mt={2} fontSize="sm" color="gray.600">
-            Gerencie os serviços que sua empresa oferece para os clientes.
-          </Text>
-        </Box>
-
-        <Grid gap={4} templateColumns={{ base: "1fr", md: "1fr 1fr" }}>
-          <Box
-            borderRadius="2xl"
-            borderWidth="1px"
-            borderColor="gray.200"
-            bg="white"
-            p={4}
-          >
-            <Text fontSize="sm" fontWeight="semibold" color="gray.900">
-              Serviços cadastrados
-            </Text>
-            <Text mt={2} fontSize="2xl" fontWeight="bold" color="gray.900">
-              {services.length}
-            </Text>
-          </Box>
-
-          <Box
-            borderRadius="2xl"
-            borderWidth="1px"
-            borderColor="gray.200"
-            bg="white"
-            p={4}
-          >
-            <Text fontSize="sm" fontWeight="semibold" color="gray.900">
-              Contexto do provider
-            </Text>
-            <Text mt={2} fontSize="sm" color="gray.600">
-              {provider?.businessName
-                ? `Provider identificado: ${provider.businessName}`
-                : "Aguardando identificação do provider..."}
-            </Text>
-            {providerError ? (
-              <Text mt={1.5} fontSize="xs" color="red.600">
-                {getApiErrorMessage(
-                  providerError,
-                  "Não foi possível carregar os dados do provider.",
-                )}
+            <Box>
+              <Text
+                fontSize={{ base: "xs" }}
+                fontWeight="semibold"
+                textTransform="uppercase"
+                color="green.500"
+              >
+                Dashboard
               </Text>
-            ) : null}
-          </Box>
-        </Grid>
+              <Text
+                mt={2}
+                fontSize={{ base: "xl", sm: "2xl" }}
+                fontWeight="semibold"
+                color="gray.900"
+              >
+                Olá, prestador
+              </Text>
+              <Text mt={2} fontSize={{ base: "xs", sm: "sm" }} color="gray.600">
+                Gerencie os serviços que sua empresa oferece para os clientes.
+              </Text>
+            </Box>
+
+            <Badge
+              borderRadius="full"
+              px={3}
+              py={1}
+              fontSize={{ base: "xs" }}
+              colorPalette={provider?.id ? "green" : "orange"}
+              variant="subtle"
+            >
+              {provider?.id ? "Provider ativo" : "Sem provider"}
+            </Badge>
+          </Flex>
+
+          <Grid gap={4} templateColumns={{ base: "1fr", md: "1fr 1fr" }}>
+            <Box
+              borderRadius="2xl"
+              borderWidth="1px"
+              borderColor="gray.200"
+              bg="gray.50"
+              p={4}
+            >
+              <Text fontSize="sm" fontWeight="semibold" color="gray.900">
+                Serviços cadastrados
+              </Text>
+              <Text mt={2} fontSize="2xl" fontWeight="bold" color="gray.900">
+                {services.length}
+              </Text>
+            </Box>
+
+            <Box
+              borderRadius="2xl"
+              borderWidth="1px"
+              borderColor="gray.200"
+              bg="gray.50"
+              p={4}
+            >
+              <Text fontSize="sm" fontWeight="semibold" color="gray.900">
+                Contexto do provider
+              </Text>
+              <Text mt={2} fontSize="sm" color="gray.600">
+                {provider?.businessName
+                  ? `Provider identificado: ${provider.businessName}`
+                  : "Aguardando identificação do provider..."}
+              </Text>
+              {providerError ? (
+                <Text mt={1.5} fontSize="xs" color="red.600">
+                  {getApiErrorMessage(
+                    providerError,
+                    "Não foi possível carregar os dados do provider.",
+                  )}
+                </Text>
+              ) : null}
+            </Box>
+          </Grid>
+        </Box>
 
         {shouldShowAddProviderForm ? (
           <AddProviderForm
@@ -1012,26 +1048,28 @@ export default function ProviderDashboardPage() {
           />
         ) : null}
 
-        <ServiceFormCard
-          isEditing={isEditing}
-          onSubmit={handleSubmit}
-          name={name}
-          onNameChange={setName}
-          duration={duration}
-          onDurationChange={setDuration}
-          price={price}
-          onPriceChange={setPrice}
-          priceMinimum={priceMinimum}
-          onPriceMinimumChange={setPriceMinimum}
-          priceMaximum={priceMaximum}
-          onPriceMaximumChange={setPriceMaximum}
-          description={description}
-          onDescriptionChange={setDescription}
-          isSubmitting={isSubmitting}
-          canSubmit={Boolean(provider?.id) && !isLoadingProviderContext}
-          onCancelEdit={handleCancelEdit}
-          feedback={feedback}
-        />
+        {provider?.id ? (
+          <ServiceFormCard
+            isEditing={isEditing}
+            onSubmit={handleSubmit}
+            name={name}
+            onNameChange={setName}
+            duration={duration}
+            onDurationChange={setDuration}
+            price={price}
+            onPriceChange={setPrice}
+            priceMinimum={priceMinimum}
+            onPriceMinimumChange={setPriceMinimum}
+            priceMaximum={priceMaximum}
+            onPriceMaximumChange={setPriceMaximum}
+            description={description}
+            onDescriptionChange={setDescription}
+            isSubmitting={isSubmitting}
+            canSubmit={Boolean(provider?.id) && !isLoadingProviderContext}
+            onCancelEdit={handleCancelEdit}
+            feedback={feedback}
+          />
+        ) : null}
 
         <ServicesListSection
           isLoadingProviderContext={isLoadingProviderContext}
