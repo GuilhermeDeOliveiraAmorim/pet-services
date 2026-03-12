@@ -1105,6 +1105,20 @@ export default function ProviderDashboardPage() {
                   )}
                 </Text>
               ) : null}
+
+              <Button
+                mt={3}
+                size="sm"
+                borderRadius="full"
+                variant="outline"
+                disabled={!provider?.id}
+                onClick={() => {
+                  if (!provider?.id) return;
+                  router.push(`/providers/${provider.id}`);
+                }}
+              >
+                Ver página do provider
+              </Button>
             </Box>
           </Grid>
         </Box>

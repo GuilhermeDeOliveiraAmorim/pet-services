@@ -552,6 +552,26 @@ export default function ServiceDetailsPage() {
                     </Box>
                   </Grid>
 
+                  <ChakraLink
+                    as={Link}
+                    href={`/providers/${provider.id}`}
+                    alignSelf="flex-start"
+                    display="inline-flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    borderRadius="full"
+                    borderWidth="1px"
+                    borderColor="gray.300"
+                    bg="white"
+                    color="gray.700"
+                    _hover={{ bg: "gray.50", textDecoration: "none" }}
+                    h={{ base: "8", sm: "9" }}
+                    px={{ base: 3, sm: 4 }}
+                    fontSize={{ base: "xs", sm: "sm" }}
+                  >
+                    Ver perfil completo do provider
+                  </ChakraLink>
+
                   {providerPhotos.length ? (
                     <Box>
                       <Text
