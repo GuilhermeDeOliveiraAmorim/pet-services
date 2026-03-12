@@ -123,11 +123,11 @@ export default function ServiceDetailsPage() {
     <PageWrapper gap={8}>
       <MainNav />
 
-      <VStack align="stretch" gap={6}>
+      <VStack align="stretch" gap={{ base: 4, md: 6 }}>
         <ChakraLink
           as={Link}
           href={returnTo ?? "/"}
-          fontSize="sm"
+          fontSize={{ base: "xs", sm: "sm" }}
           color="teal.600"
           onClick={(event) => {
             event.preventDefault();
@@ -145,7 +145,7 @@ export default function ServiceDetailsPage() {
 
         {isLoadingService ? (
           <Flex
-            borderRadius="2xl"
+            borderRadius={{ base: "xl", md: "2xl" }}
             borderWidth="1px"
             borderColor="gray.200"
             bg="white"
@@ -153,69 +153,91 @@ export default function ServiceDetailsPage() {
             justify="center"
             align="center"
             gap={3}
+            px={4}
           >
             <Spinner color="teal.500" size="sm" />
-            <Text color="gray.600">Carregando detalhes do serviço...</Text>
+            <Text fontSize={{ base: "xs", sm: "sm" }} color="gray.600">
+              Carregando...
+            </Text>
           </Flex>
         ) : null}
 
         {!isLoadingService && serviceErrorMessage ? (
           <Box
-            borderRadius="2xl"
+            borderRadius={{ base: "xl", md: "2xl" }}
             borderWidth="1px"
             borderColor="red.200"
             bg="red.50"
-            p={5}
+            p={{ base: 3, md: 5 }}
           >
-            <Text fontSize="sm" color="red.700">
+            <Text fontSize={{ base: "xs", sm: "sm" }} color="red.700">
               {serviceErrorMessage}
             </Text>
           </Box>
         ) : null}
 
         {!isLoadingService && !serviceErrorMessage && service ? (
-          <VStack align="stretch" gap={6}>
+          <VStack align="stretch" gap={{ base: 4, md: 6 }}>
             <Box
-              borderRadius="3xl"
+              borderRadius={{ base: "2xl", md: "3xl" }}
               bg="white"
               borderWidth="1px"
               borderColor="gray.200"
-              p={{ base: 5, md: 7 }}
+              p={{ base: 4, sm: 5, md: 7 }}
             >
               <Text
-                fontSize="xs"
+                fontSize={{ base: "xs" }}
                 fontWeight="semibold"
                 textTransform="uppercase"
                 color="teal.600"
               >
                 Serviço
               </Text>
-              <Heading as="h1" size="xl" mt={2} color="gray.900">
+              <Heading
+                as="h1"
+                size={{ base: "lg", md: "xl" }}
+                mt={2}
+                color="gray.900"
+              >
                 {service.name || "Serviço sem nome"}
               </Heading>
-              <Text mt={3} color="gray.600" lineHeight="tall">
+              <Text
+                mt={3}
+                fontSize={{ base: "xs", sm: "sm" }}
+                color="gray.600"
+                lineHeight="tall"
+              >
                 {service.description || "Sem descrição informada."}
               </Text>
 
               <Grid
                 mt={6}
-                templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }}
-                gap={3}
+                templateColumns={{
+                  base: "1fr",
+                  sm: "repeat(2, 1fr)",
+                  md: "repeat(3, 1fr)",
+                }}
+                gap={{ base: 2, md: 3 }}
               >
                 <Box
                   borderWidth="1px"
                   borderColor="gray.200"
-                  borderRadius="xl"
-                  p={4}
+                  borderRadius={{ base: "lg", md: "xl" }}
+                  p={{ base: 3, md: 4 }}
                 >
                   <Text
-                    fontSize="xs"
+                    fontSize={{ base: "xs" }}
                     color="gray.500"
                     textTransform="uppercase"
                   >
                     Preço
                   </Text>
-                  <Text mt={1} fontWeight="semibold" color="gray.900">
+                  <Text
+                    mt={1}
+                    fontWeight="semibold"
+                    color="gray.900"
+                    fontSize={{ base: "xs", sm: "sm" }}
+                  >
                     {formatMoney(service.price)}
                   </Text>
                 </Box>
@@ -223,17 +245,22 @@ export default function ServiceDetailsPage() {
                 <Box
                   borderWidth="1px"
                   borderColor="gray.200"
-                  borderRadius="xl"
-                  p={4}
+                  borderRadius={{ base: "lg", md: "xl" }}
+                  p={{ base: 3, md: 4 }}
                 >
                   <Text
-                    fontSize="xs"
+                    fontSize={{ base: "xs" }}
                     color="gray.500"
                     textTransform="uppercase"
                   >
                     Faixa
                   </Text>
-                  <Text mt={1} fontWeight="semibold" color="gray.900">
+                  <Text
+                    mt={1}
+                    fontWeight="semibold"
+                    color="gray.900"
+                    fontSize={{ base: "xs", sm: "sm" }}
+                  >
                     {formatMoney(service.priceMinimum)} -{" "}
                     {formatMoney(service.priceMaximum)}
                   </Text>
@@ -242,17 +269,22 @@ export default function ServiceDetailsPage() {
                 <Box
                   borderWidth="1px"
                   borderColor="gray.200"
-                  borderRadius="xl"
-                  p={4}
+                  borderRadius={{ base: "lg", md: "xl" }}
+                  p={{ base: 3, md: 4 }}
                 >
                   <Text
-                    fontSize="xs"
+                    fontSize={{ base: "xs" }}
                     color="gray.500"
                     textTransform="uppercase"
                   >
                     Duração
                   </Text>
-                  <Text mt={1} fontWeight="semibold" color="gray.900">
+                  <Text
+                    mt={1}
+                    fontWeight="semibold"
+                    color="gray.900"
+                    fontSize={{ base: "xs", sm: "sm" }}
+                  >
                     {service.duration > 0
                       ? `${service.duration} min`
                       : "Não informada"}
@@ -262,14 +294,19 @@ export default function ServiceDetailsPage() {
             </Box>
 
             <Box
-              borderRadius="3xl"
+              borderRadius={{ base: "2xl", md: "3xl" }}
               bg="white"
               borderWidth="1px"
               borderColor="gray.200"
-              p={{ base: 5, md: 7 }}
+              p={{ base: 4, sm: 5, md: 7 }}
             >
-              <Heading as="h2" size="md" color="gray.900">
-                Fotos do serviço
+              <Heading
+                as="h2"
+                size={{ base: "sm", md: "md" }}
+                color="gray.900"
+                fontSize={{ base: "sm", md: "md" }}
+              >
+                Fotos
               </Heading>
 
               {servicePhotos.length ? (
@@ -280,12 +317,12 @@ export default function ServiceDetailsPage() {
                     sm: "repeat(2, 1fr)",
                     lg: "repeat(3, 1fr)",
                   }}
-                  gap={3}
+                  gap={{ base: 2, md: 3 }}
                 >
                   {servicePhotos.map((photo) => (
                     <Box
                       key={photo.id}
-                      borderRadius="xl"
+                      borderRadius={{ base: "lg", md: "xl" }}
                       overflow="hidden"
                       borderWidth="1px"
                       borderColor="gray.200"
@@ -295,28 +332,40 @@ export default function ServiceDetailsPage() {
                         src={photo.url}
                         alt={`Foto do serviço ${service.name || ""}`}
                         w="full"
-                        h="220px"
+                        h={{ base: "160px", sm: "200px", md: "220px" }}
                         objectFit="cover"
                       />
                     </Box>
                   ))}
                 </Grid>
               ) : (
-                <Text mt={4} fontSize="sm" color="gray.500">
+                <Text
+                  mt={4}
+                  fontSize={{ base: "xs", sm: "sm" }}
+                  color="gray.500"
+                >
                   Este serviço ainda não possui fotos.
                 </Text>
               )}
             </Box>
 
-            <Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }} gap={6}>
+            <Grid
+              templateColumns={{ base: "1fr", lg: "1fr 1fr" }}
+              gap={{ base: 4, md: 6 }}
+            >
               <Box
-                borderRadius="3xl"
+                borderRadius={{ base: "2xl", md: "3xl" }}
                 bg="white"
                 borderWidth="1px"
                 borderColor="gray.200"
-                p={{ base: 5, md: 7 }}
+                p={{ base: 4, sm: 5, md: 7 }}
               >
-                <Heading as="h2" size="md" color="gray.900">
+                <Heading
+                  as="h2"
+                  size={{ base: "sm", md: "md" }}
+                  color="gray.900"
+                  fontSize={{ base: "sm", md: "md" }}
+                >
                   Categorias
                 </Heading>
 
@@ -329,26 +378,36 @@ export default function ServiceDetailsPage() {
                         px={3}
                         py={1}
                         colorPalette="cyan"
+                        fontSize={{ base: "xs" }}
                       >
                         {category.name}
                       </Badge>
                     ))}
                   </HStack>
                 ) : (
-                  <Text mt={4} fontSize="sm" color="gray.500">
+                  <Text
+                    mt={4}
+                    fontSize={{ base: "xs", sm: "sm" }}
+                    color="gray.500"
+                  >
                     Nenhuma categoria vinculada.
                   </Text>
                 )}
               </Box>
 
               <Box
-                borderRadius="3xl"
+                borderRadius={{ base: "2xl", md: "3xl" }}
                 bg="white"
                 borderWidth="1px"
                 borderColor="gray.200"
-                p={{ base: 5, md: 7 }}
+                p={{ base: 4, sm: 5, md: 7 }}
               >
-                <Heading as="h2" size="md" color="gray.900">
+                <Heading
+                  as="h2"
+                  size={{ base: "sm", md: "md" }}
+                  color="gray.900"
+                  fontSize={{ base: "sm", md: "md" }}
+                >
                   Tags
                 </Heading>
 
@@ -361,13 +420,18 @@ export default function ServiceDetailsPage() {
                         px={3}
                         py={1}
                         colorPalette="purple"
+                        fontSize={{ base: "xs" }}
                       >
                         #{tag.name}
                       </Badge>
                     ))}
                   </HStack>
                 ) : (
-                  <Text mt={4} fontSize="sm" color="gray.500">
+                  <Text
+                    mt={4}
+                    fontSize={{ base: "xs", sm: "sm" }}
+                    color="gray.500"
+                  >
                     Nenhuma tag vinculada.
                   </Text>
                 )}
@@ -375,20 +439,27 @@ export default function ServiceDetailsPage() {
             </Grid>
 
             <Box
-              borderRadius="3xl"
+              borderRadius={{ base: "2xl", md: "3xl" }}
               bg="white"
               borderWidth="1px"
               borderColor="gray.200"
-              p={{ base: 5, md: 7 }}
+              p={{ base: 4, sm: 5, md: 7 }}
             >
               <Flex align="center" justify="space-between" wrap="wrap" gap={3}>
-                <Heading as="h2" size="md" color="gray.900">
+                <Heading
+                  as="h2"
+                  size={{ base: "sm", md: "md" }}
+                  color="gray.900"
+                  fontSize={{ base: "sm", md: "md" }}
+                >
                   Provider
                 </Heading>
                 {isLoadingProvider ? (
                   <HStack gap={2} color="gray.500">
                     <Spinner size="xs" />
-                    <Text fontSize="sm">Carregando provider...</Text>
+                    <Text fontSize={{ base: "xs", sm: "sm" }}>
+                      Carregando...
+                    </Text>
                   </HStack>
                 ) : null}
               </Flex>
@@ -396,13 +467,13 @@ export default function ServiceDetailsPage() {
               {providerErrorMessage ? (
                 <Box
                   mt={4}
-                  borderRadius="xl"
+                  borderRadius={{ base: "lg", md: "xl" }}
                   borderWidth="1px"
                   borderColor="orange.200"
                   bg="orange.50"
-                  p={4}
+                  p={{ base: 3, md: 4 }}
                 >
-                  <Text fontSize="sm" color="orange.700">
+                  <Text fontSize={{ base: "xs", sm: "sm" }} color="orange.700">
                     {providerErrorMessage}
                   </Text>
                 </Box>
@@ -411,45 +482,66 @@ export default function ServiceDetailsPage() {
               {!isLoadingProvider && provider ? (
                 <VStack align="stretch" gap={4} mt={4}>
                   <Box>
-                    <Text fontSize="lg" fontWeight="semibold" color="gray.900">
+                    <Text
+                      fontSize={{ base: "base", md: "lg" }}
+                      fontWeight="semibold"
+                      color="gray.900"
+                    >
                       {provider.businessName || "Provider sem nome"}
                     </Text>
-                    <Text mt={1} color="gray.600">
+                    <Text
+                      mt={1}
+                      fontSize={{ base: "xs", sm: "sm" }}
+                      color="gray.600"
+                    >
                       {provider.description || "Sem descrição informada."}
                     </Text>
                   </Box>
 
                   <Grid
                     templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
-                    gap={3}
+                    gap={{ base: 2, md: 3 }}
                   >
                     <Box>
                       <Text
-                        fontSize="xs"
+                        fontSize={{ base: "xs" }}
                         textTransform="uppercase"
                         color="gray.500"
                       >
                         Faixa de preço
                       </Text>
-                      <Text mt={1} color="gray.800" fontWeight="medium">
+                      <Text
+                        mt={1}
+                        color="gray.800"
+                        fontWeight="medium"
+                        fontSize={{ base: "xs", sm: "sm" }}
+                      >
                         {provider.priceRange || "Não informada"}
                       </Text>
                     </Box>
                     <Box>
                       <Text
-                        fontSize="xs"
+                        fontSize={{ base: "xs" }}
                         textTransform="uppercase"
                         color="gray.500"
                       >
                         Endereço
                       </Text>
-                      <Text mt={1} color="gray.800" fontWeight="medium">
+                      <Text
+                        mt={1}
+                        color="gray.800"
+                        fontWeight="medium"
+                        fontSize={{ base: "xs", sm: "sm" }}
+                      >
                         {provider.address.street
                           ? `${provider.address.street}, ${provider.address.number}`
                           : "Não informado"}
                       </Text>
                       {provider.address.city || provider.address.state ? (
-                        <Text fontSize="sm" color="gray.600">
+                        <Text
+                          fontSize={{ base: "xs", sm: "xs" }}
+                          color="gray.600"
+                        >
                           {provider.address.city}
                           {provider.address.city && provider.address.state
                             ? " - "
@@ -462,17 +554,21 @@ export default function ServiceDetailsPage() {
 
                   {providerPhotos.length ? (
                     <Box>
-                      <Text fontSize="sm" color="gray.600" mb={2}>
-                        Fotos do provider
+                      <Text
+                        fontSize={{ base: "xs", sm: "sm" }}
+                        color="gray.600"
+                        mb={2}
+                      >
+                        Fotos
                       </Text>
-                      <HStack gap={3} overflowX="auto" pb={1}>
+                      <HStack gap={{ base: 2, md: 3 }} overflowX="auto" pb={1}>
                         {providerPhotos.map((photo) => (
                           <Box
                             key={photo.id}
-                            minW="180px"
-                            w="180px"
-                            h="120px"
-                            borderRadius="lg"
+                            minW={{ base: "140px", sm: "160px", md: "180px" }}
+                            w={{ base: "140px", sm: "160px", md: "180px" }}
+                            h={{ base: "100px", sm: "110px", md: "120px" }}
+                            borderRadius={{ base: "md", md: "lg" }}
                             overflow="hidden"
                             borderWidth="1px"
                             borderColor="gray.200"
