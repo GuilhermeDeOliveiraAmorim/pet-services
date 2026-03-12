@@ -145,57 +145,80 @@ function ServicesCatalogPageContent() {
     <PageWrapper gap={8}>
       <MainNav />
 
-      <VStack align="stretch" gap={6}>
+      <VStack align="stretch" gap={{ base: 4, md: 6, lg: 8 }}>
         {/* Cabeçalho */}
         <Box>
           <Text
-            fontSize="xs"
+            fontSize={{ base: "xs" }}
             fontWeight="semibold"
             textTransform="uppercase"
             color="teal.600"
           >
             Catálogo
           </Text>
-          <Heading as="h1" size="xl" mt={1} color="gray.900">
+          <Heading
+            as="h1"
+            size={{ base: "lg", md: "xl" }}
+            mt={1}
+            color="gray.900"
+          >
             Encontre Serviços
           </Heading>
-          <Text mt={1} color="gray.500">
+          <Text mt={1} fontSize={{ base: "xs", sm: "sm" }} color="gray.500">
             Encontre o cuidado ideal para o seu pet
           </Text>
         </Box>
 
         {/* Busca + filtros */}
         <Box
-          borderRadius="3xl"
+          borderRadius={{ base: "2xl", md: "3xl" }}
           bg="white"
           borderWidth="1px"
           borderColor="gray.200"
-          p={{ base: 5, md: 7 }}
+          p={{ base: 4, sm: 5, md: 7 }}
         >
           <form onSubmit={handleSearch}>
-            <HStack gap={3} mb={4}>
-              <Input
-                name="q"
-                defaultValue={q}
-                placeholder="Buscar por nome ou descrição..."
-                size="md"
-                flex={1}
-                borderRadius="xl"
-              />
-              <Button type="submit" colorPalette="teal" borderRadius="xl">
-                Buscar
-              </Button>
-            </HStack>
+            <VStack gap={{ base: 3, md: 4 }} align="stretch" mb={4}>
+              <HStack gap={2}>
+                <Input
+                  name="q"
+                  defaultValue={q}
+                  placeholder="Buscar por nome..."
+                  size={{ base: "sm", md: "md" }}
+                  flex={1}
+                  borderRadius={{ base: "lg", md: "xl" }}
+                  fontSize={{ base: "sm" }}
+                />
+                <Button
+                  type="submit"
+                  colorPalette="teal"
+                  borderRadius={{ base: "lg", md: "xl" }}
+                  h={{ base: "9", md: "10" }}
+                  fontSize={{ base: "sm" }}
+                >
+                  Buscar
+                </Button>
+              </HStack>
+            </VStack>
           </form>
 
-          <Flex gap={3} wrap="wrap" align="center">
-            <NativeSelect.Root size="sm" minW="180px">
+          <Flex
+            gap={{ base: 2, md: 3 }}
+            wrap="wrap"
+            align="center"
+            justify={{ base: "stretch", md: "flex-start" }}
+          >
+            <NativeSelect.Root
+              size={{ base: "sm", md: "md" }}
+              minW={{ base: "100%", sm: "180px" }}
+            >
               <NativeSelect.Field
                 value={categoryId}
                 onChange={(e) => setParam({ category_id: e.target.value })}
-                borderRadius="lg"
+                borderRadius={{ base: "lg", md: "lg" }}
+                fontSize={{ base: "sm" }}
               >
-                <option value="">Todas as categorias</option>
+                <option value="">Categorias</option>
                 {categories.map((cat) => (
                   <option key={String(cat.id)} value={String(cat.id)}>
                     {cat.name}
@@ -205,13 +228,17 @@ function ServicesCatalogPageContent() {
               <NativeSelect.Indicator />
             </NativeSelect.Root>
 
-            <NativeSelect.Root size="sm" minW="160px">
+            <NativeSelect.Root
+              size={{ base: "sm", md: "md" }}
+              minW={{ base: "100%", sm: "160px" }}
+            >
               <NativeSelect.Field
                 value={tagId}
                 onChange={(e) => setParam({ tag_id: e.target.value })}
-                borderRadius="lg"
+                borderRadius={{ base: "lg", md: "lg" }}
+                fontSize={{ base: "sm" }}
               >
-                <option value="">Todas as tags</option>
+                <option value="">Tags</option>
                 {tags.map((tag) => (
                   <option key={String(tag.id)} value={String(tag.id)}>
                     {tag.name}
@@ -223,33 +250,39 @@ function ServicesCatalogPageContent() {
 
             <Input
               type="number"
-              placeholder="Preço mín (R$)"
-              size="sm"
-              w="140px"
-              borderRadius="lg"
+              placeholder="Mín"
+              size={{ base: "sm", md: "md" }}
+              flex={{ base: 1, sm: "auto" }}
+              minW={{ base: "auto", sm: "120px" }}
+              borderRadius={{ base: "lg", md: "lg" }}
               defaultValue={priceMin > 0 ? String(priceMin) : ""}
               onBlur={(e) => setParam({ price_min: e.target.value })}
+              fontSize={{ base: "sm" }}
             />
 
             <Input
               type="number"
-              placeholder="Preço máx (R$)"
-              size="sm"
-              w="140px"
-              borderRadius="lg"
+              placeholder="Máx"
+              size={{ base: "sm", md: "md" }}
+              flex={{ base: 1, sm: "auto" }}
+              minW={{ base: "auto", sm: "120px" }}
+              borderRadius={{ base: "lg", md: "lg" }}
               defaultValue={priceMax > 0 ? String(priceMax) : ""}
               onBlur={(e) => setParam({ price_max: e.target.value })}
+              fontSize={{ base: "sm" }}
             />
 
             {(q || categoryId || tagId || priceMin > 0 || priceMax > 0) && (
               <Button
-                size="sm"
+                size={{ base: "sm", md: "md" }}
                 variant="ghost"
                 colorPalette="gray"
-                borderRadius="lg"
+                borderRadius={{ base: "lg", md: "lg" }}
                 onClick={() => router.push("/services")}
+                fontSize={{ base: "xs", sm: "sm" }}
+                flex={{ base: 1, sm: "auto" }}
               >
-                Limpar filtros
+                Limpar
               </Button>
             )}
           </Flex>
@@ -258,7 +291,7 @@ function ServicesCatalogPageContent() {
         {/* Estado de carregamento */}
         {isLoading && (
           <Flex
-            borderRadius="2xl"
+            borderRadius={{ base: "xl", md: "2xl" }}
             borderWidth="1px"
             borderColor="gray.200"
             bg="white"
@@ -268,20 +301,22 @@ function ServicesCatalogPageContent() {
             gap={3}
           >
             <Spinner color="teal.500" size="sm" />
-            <Text color="gray.600">Carregando serviços...</Text>
+            <Text fontSize={{ base: "xs", sm: "sm" }} color="gray.600">
+              Carregando...
+            </Text>
           </Flex>
         )}
 
         {/* Estado de erro */}
         {isError && !isLoading && (
           <Box
-            borderRadius="2xl"
+            borderRadius={{ base: "xl", md: "2xl" }}
             borderWidth="1px"
             borderColor="red.200"
             bg="red.50"
-            p={5}
+            p={{ base: 3, md: 5 }}
           >
-            <Text fontSize="sm" color="red.700">
+            <Text fontSize={{ base: "xs", sm: "sm" }} color="red.700">
               Não foi possível carregar os serviços. Tente novamente.
             </Text>
           </Box>
@@ -290,7 +325,7 @@ function ServicesCatalogPageContent() {
         {/* Lista vazia */}
         {!isLoading && !isError && services.length === 0 && (
           <Flex
-            borderRadius="2xl"
+            borderRadius={{ base: "xl", md: "2xl" }}
             borderWidth="1px"
             borderColor="gray.200"
             bg="white"
@@ -299,11 +334,16 @@ function ServicesCatalogPageContent() {
             align="center"
             direction="column"
             gap={1}
+            px={4}
           >
-            <Text fontSize="md" fontWeight="medium" color="gray.700">
+            <Text
+              fontSize={{ base: "sm", md: "md" }}
+              fontWeight="medium"
+              color="gray.700"
+            >
               Nenhum serviço encontrado
             </Text>
-            <Text fontSize="sm" color="gray.500">
+            <Text fontSize={{ base: "xs", sm: "sm" }} color="gray.500">
               Tente ajustar os filtros de busca
             </Text>
           </Flex>
@@ -312,7 +352,7 @@ function ServicesCatalogPageContent() {
         {/* Grid de cards */}
         {!isLoading && !isError && services.length > 0 && (
           <>
-            <Text fontSize="sm" color="gray.500">
+            <Text fontSize={{ base: "xs", sm: "sm" }} color="gray.500">
               {total} serviço{total !== 1 ? "s" : ""} encontrado
               {total !== 1 ? "s" : ""}
             </Text>
@@ -320,10 +360,11 @@ function ServicesCatalogPageContent() {
             <Grid
               templateColumns={{
                 base: "1fr",
+                sm: "repeat(2, 1fr)",
                 md: "repeat(2, 1fr)",
                 lg: "repeat(3, 1fr)",
               }}
-              gap={4}
+              gap={{ base: 3, md: 4 }}
             >
               {services.map((service) => (
                 <ChakraLink
@@ -335,9 +376,9 @@ function ServicesCatalogPageContent() {
                   <Box
                     borderWidth="1px"
                     borderColor="gray.200"
-                    borderRadius="3xl"
+                    borderRadius={{ base: "2xl", md: "3xl" }}
                     bg="white"
-                    p={{ base: 5, md: 6 }}
+                    p={{ base: 3, sm: 4, md: 6 }}
                     h="full"
                     _hover={{ shadow: "sm", borderColor: "teal.300" }}
                     transition="all 0.15s"
@@ -345,7 +386,7 @@ function ServicesCatalogPageContent() {
                     <VStack align="start" gap={3} h="full">
                       <Box flex={1}>
                         <Text
-                          fontSize="xs"
+                          fontSize={{ base: "xs" }}
                           fontWeight="semibold"
                           textTransform="uppercase"
                           color="teal.600"
@@ -355,15 +396,16 @@ function ServicesCatalogPageContent() {
                         </Text>
                         <Heading
                           as="h3"
-                          size="sm"
+                          size={{ base: "sm", md: "sm" }}
                           color="gray.900"
                           lineClamp={2}
+                          fontSize={{ base: "sm", md: "md" }}
                         >
                           {service.name}
                         </Heading>
                         <Text
                           mt={2}
-                          fontSize="sm"
+                          fontSize={{ base: "xs", sm: "sm" }}
                           color="gray.600"
                           lineClamp={3}
                           lineHeight="tall"
@@ -375,13 +417,13 @@ function ServicesCatalogPageContent() {
                       <Box
                         borderWidth="1px"
                         borderColor="gray.200"
-                        borderRadius="xl"
+                        borderRadius={{ base: "lg", md: "xl" }}
                         px={3}
                         py={2}
                         w="full"
                       >
                         <Text
-                          fontSize="xs"
+                          fontSize={{ base: "xs" }}
                           color="gray.500"
                           textTransform="uppercase"
                         >
@@ -391,7 +433,7 @@ function ServicesCatalogPageContent() {
                           mt={0.5}
                           fontWeight="semibold"
                           color="gray.900"
-                          fontSize="sm"
+                          fontSize={{ base: "xs", sm: "sm" }}
                         >
                           {priceLabel(
                             service.price,
@@ -410,7 +452,7 @@ function ServicesCatalogPageContent() {
                               borderRadius="full"
                               px={2}
                               py={0.5}
-                              fontSize="xs"
+                              fontSize={{ base: "xs" }}
                             >
                               {cat.name}
                             </Badge>
@@ -427,7 +469,7 @@ function ServicesCatalogPageContent() {
                               borderRadius="full"
                               px={2}
                               py={0.5}
-                              fontSize="xs"
+                              fontSize={{ base: "xs" }}
                             >
                               #{tag.name}
                             </Badge>
@@ -442,15 +484,22 @@ function ServicesCatalogPageContent() {
 
             {/* Paginação */}
             {totalPages > 1 && (
-              <Flex justify="center" gap={2} wrap="wrap" mt={2}>
+              <Flex
+                justify="center"
+                gap={{ base: 1, md: 2 }}
+                wrap="wrap"
+                mt={4}
+                flexShrink={0}
+              >
                 <Button
-                  size="sm"
+                  size={{ base: "xs", md: "sm" }}
                   variant="outline"
                   borderRadius="full"
                   disabled={page <= 1}
                   onClick={() => setPage(page - 1)}
+                  fontSize={{ base: "xs", md: "sm" }}
                 >
-                  ← Anterior
+                  ← Ant
                 </Button>
 
                 {Array.from({ length: totalPages }, (_, i) => i + 1)
@@ -472,17 +521,19 @@ function ServicesCatalogPageContent() {
                         alignSelf="center"
                         px={1}
                         color="gray.400"
+                        fontSize={{ base: "xs", md: "sm" }}
                       >
                         …
                       </Text>
                     ) : (
                       <Button
                         key={item}
-                        size="sm"
+                        size={{ base: "xs", md: "sm" }}
                         borderRadius="full"
                         variant={item === page ? "solid" : "outline"}
                         colorPalette={item === page ? "teal" : "gray"}
                         onClick={() => setPage(item as number)}
+                        fontSize={{ base: "xs", md: "sm" }}
                       >
                         {item}
                       </Button>
@@ -490,13 +541,14 @@ function ServicesCatalogPageContent() {
                   )}
 
                 <Button
-                  size="sm"
+                  size={{ base: "xs", md: "sm" }}
                   variant="outline"
                   borderRadius="full"
                   disabled={page >= totalPages}
                   onClick={() => setPage(page + 1)}
+                  fontSize={{ base: "xs", md: "sm" }}
                 >
-                  Próxima →
+                  Prox →
                 </Button>
               </Flex>
             )}
@@ -514,7 +566,7 @@ export default function ServicesCatalogPage() {
         <PageWrapper gap={8}>
           <MainNav />
           <Flex
-            borderRadius="2xl"
+            borderRadius={{ base: "xl", md: "2xl" }}
             borderWidth="1px"
             borderColor="gray.200"
             bg="white"
@@ -524,7 +576,9 @@ export default function ServicesCatalogPage() {
             gap={3}
           >
             <Spinner color="teal.500" size="sm" />
-            <Text color="gray.600">Carregando serviços...</Text>
+            <Text fontSize={{ base: "xs", sm: "sm" }} color="gray.600">
+              Carregando...
+            </Text>
           </Flex>
         </PageWrapper>
       }
