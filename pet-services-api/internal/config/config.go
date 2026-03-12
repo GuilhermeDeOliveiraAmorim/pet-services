@@ -132,7 +132,10 @@ func GetEmailServiceVerify() string {
 }
 
 func GetServerPort() string {
-	port := os.Getenv("SERVER_PORT")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = os.Getenv("SERVER_PORT")
+	}
 	if port == "" {
 		return ":8080"
 	}
