@@ -1,15 +1,30 @@
-import type { FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   Box,
   Button,
+  Flex,
   Grid,
   HStack,
   Input,
+  Portal,
+  Select,
   Text,
   Textarea,
   VStack,
   chakra,
+  createListCollection,
 } from "@chakra-ui/react";
+import {
+  useReferenceCities,
+  useReferenceCountries,
+  useReferenceStates,
+} from "@/application";
+import {
+  BRAZIL_COUNTRY_CODE,
+  fetchAddressByZipCode,
+  fetchCoordinatesByZipCode,
+  isBrazilCountry,
+} from "@/lib/address-lookup";
 
 type Feedback = {
   type: "success" | "error";
@@ -87,6 +102,162 @@ export default function AddProviderForm({
   complement,
   onComplementChange,
 }: AddProviderFormProps) {
+  const [isResolvingCoordinates, setIsResolvingCoordinates] = useState(false);
+  const [geocodeStatus, setGeocodeStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
+  const [geocodeMessage, setGeocodeMessage] = useState("");
+  const [isResolvingAddress, setIsResolvingAddress] = useState(false);
+  const [addressLookupStatus, setAddressLookupStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
+  const [addressLookupMessage, setAddressLookupMessage] = useState("");
+  const [selectedStateId, setSelectedStateId] = useState<number | undefined>(
+    undefined,
+  );
+
+  const { data: countriesData } = useReferenceCountries();
+  const { data: statesData } = useReferenceStates();
+  const { data: citiesData } = useReferenceCities(
+    { stateId: selectedStateId },
+    {
+      enabled: isBrazilCountry(country) && selectedStateId !== undefined,
+    },
+  );
+
+  const countries = useMemo(() => {
+    const seen = new Set<string>();
+    return (countriesData?.countries ?? []).filter((item) => {
+      if (seen.has(item.code)) {
+        return false;
+      }
+      seen.add(item.code);
+      return true;
+    });
+  }, [countriesData]);
+  const states = useMemo(() => statesData?.states ?? [], [statesData]);
+  const cities = useMemo(() => citiesData?.cities ?? [], [citiesData]);
+
+  const countryCollection = useMemo(
+    () =>
+      createListCollection({
+        items: countries.map((item) => ({
+          label: `${item.flag} ${item.name}`,
+          value: item.code,
+        })),
+      }),
+    [countries],
+  );
+
+  const stateCollection = useMemo(
+    () =>
+      createListCollection({
+        items: states.map((item) => ({
+          label: item.name,
+          value: item.code,
+        })),
+      }),
+    [states],
+  );
+
+  const cityCollection = useMemo(
+    () =>
+      createListCollection({
+        items: cities.map((item) => ({
+          label: item.name,
+          value: item.name,
+        })),
+      }),
+    [cities],
+  );
+
+  useEffect(() => {
+    if (isBrazilCountry(country) && country.trim().toUpperCase() !== "BR") {
+      onCountryChange(BRAZIL_COUNTRY_CODE);
+    }
+  }, [country, onCountryChange]);
+
+  useEffect(() => {
+    if (!states.length || !state) {
+      return;
+    }
+    const match = states.find(
+      (item) => item.code.toUpperCase() === state.toUpperCase(),
+    );
+    setSelectedStateId(match?.id ?? undefined);
+  }, [state, states]);
+
+  const handleResolveAddressFromZipCode = async () => {
+    const normalizedZipCode = zipCode.trim();
+
+    if (!normalizedZipCode) {
+      setAddressLookupStatus("error");
+      setAddressLookupMessage("Informe o CEP para buscar o endereço.");
+      return;
+    }
+
+    setIsResolvingAddress(true);
+    setAddressLookupStatus("idle");
+    setAddressLookupMessage("");
+
+    try {
+      const nextAddress = await fetchAddressByZipCode(normalizedZipCode);
+      onStreetChange(nextAddress.street);
+      onNeighborhoodChange(nextAddress.neighborhood);
+      onCityChange(nextAddress.city);
+      onStateChange(nextAddress.state);
+      onCountryChange(nextAddress.country);
+
+      const match = states.find((item) => item.code === nextAddress.state);
+      setSelectedStateId(match?.id ?? undefined);
+
+      setAddressLookupStatus("success");
+      setAddressLookupMessage("Endereço preenchido automaticamente pelo CEP.");
+    } catch (error) {
+      setAddressLookupStatus("error");
+      setAddressLookupMessage(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível buscar o endereço pelo CEP.",
+      );
+    } finally {
+      setIsResolvingAddress(false);
+    }
+  };
+
+  const handleResolveCoordinatesFromZipCode = async () => {
+    const normalizedZipCode = zipCode.trim();
+
+    if (!normalizedZipCode) {
+      setGeocodeStatus("error");
+      setGeocodeMessage("Informe o CEP para buscar as coordenadas.");
+      return;
+    }
+
+    setIsResolvingCoordinates(true);
+    setGeocodeStatus("idle");
+    setGeocodeMessage("");
+
+    try {
+      const coords = await fetchCoordinatesByZipCode(normalizedZipCode);
+      onLatitudeChange(String(coords.latitude));
+      onLongitudeChange(String(coords.longitude));
+      setGeocodeStatus("success");
+      setGeocodeMessage("Coordenadas preenchidas automaticamente pelo CEP.");
+    } catch (error) {
+      setGeocodeStatus("error");
+      setGeocodeMessage(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível buscar coordenadas pelo CEP.",
+      );
+    } finally {
+      setIsResolvingCoordinates(false);
+    }
+  };
+
+  const isBrazil = isBrazilCountry(country);
+
   return (
     <Box
       borderRadius="3xl"
@@ -209,17 +380,65 @@ export default function AddProviderForm({
                 <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
                   CEP
                 </Text>
-                <Input
-                  value={zipCode}
-                  onChange={(event) => onZipCodeChange(event.target.value)}
-                  h="11"
-                  borderRadius="xl"
-                  bg="white"
-                  borderColor="gray.200"
-                  focusRingColor="teal.200"
-                  placeholder="57000-000"
-                  required
-                />
+                <Flex gap={2} direction={{ base: "column", sm: "row" }}>
+                  <Input
+                    value={zipCode}
+                    onChange={(event) => onZipCodeChange(event.target.value)}
+                    h="11"
+                    borderRadius="xl"
+                    bg="white"
+                    borderColor="gray.200"
+                    focusRingColor="teal.200"
+                    placeholder="57000-000"
+                    required
+                    flex={1}
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleResolveAddressFromZipCode}
+                    disabled={isResolvingAddress || !zipCode.trim()}
+                    borderRadius="full"
+                    borderWidth="1px"
+                    borderColor="gray.300"
+                    bg="white"
+                    color="gray.700"
+                    _hover={{ bg: "gray.50" }}
+                    _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
+                    h="11"
+                    px={4}
+                    flexShrink={0}
+                  >
+                    {isResolvingAddress ? "Buscando..." : "Buscar"}
+                  </Button>
+                </Flex>
+                {addressLookupStatus !== "idle" && addressLookupMessage ? (
+                  <Box
+                    mt={2}
+                    borderRadius="xl"
+                    borderWidth="1px"
+                    borderColor={
+                      addressLookupStatus === "success"
+                        ? "green.200"
+                        : "red.200"
+                    }
+                    bg={
+                      addressLookupStatus === "success" ? "green.50" : "red.50"
+                    }
+                    px={3}
+                    py={2}
+                  >
+                    <Text
+                      fontSize="xs"
+                      color={
+                        addressLookupStatus === "success"
+                          ? "green.700"
+                          : "red.600"
+                      }
+                    >
+                      {addressLookupMessage}
+                    </Text>
+                  </Box>
+                ) : null}
               </Box>
 
               <Box minW={0} gridColumn={{ base: "auto", md: "2 / 4" }}>
@@ -278,51 +497,153 @@ export default function AddProviderForm({
                 <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
                   País
                 </Text>
-                <Input
-                  value={country}
-                  onChange={(event) => onCountryChange(event.target.value)}
-                  h="11"
-                  borderRadius="xl"
-                  bg="white"
-                  borderColor="gray.200"
-                  focusRingColor="teal.200"
-                  placeholder="Brasil"
-                  required
-                />
+                <Select.Root
+                  collection={countryCollection}
+                  value={country ? [country] : []}
+                  onValueChange={({ value }) => {
+                    const nextCountry = value[0] ?? "";
+                    onCountryChange(nextCountry);
+
+                    if (!isBrazilCountry(nextCountry)) {
+                      onStateChange("");
+                      onCityChange("");
+                      setSelectedStateId(undefined);
+                    }
+                  }}
+                >
+                  <Select.HiddenSelect />
+                  <Select.Trigger
+                    h="11"
+                    borderRadius="xl"
+                    bg="white"
+                    borderColor="gray.200"
+                    focusRingColor="teal.200"
+                  >
+                    <Select.ValueText placeholder="Selecione o país" />
+                    <Select.Indicator />
+                  </Select.Trigger>
+                  <Portal>
+                    <Select.Positioner>
+                      <Select.Content zIndex={1500}>
+                        {countryCollection.items.map((item) => (
+                          <Select.Item key={item.value} item={item}>
+                            <Select.ItemText>{item.label}</Select.ItemText>
+                          </Select.Item>
+                        ))}
+                      </Select.Content>
+                    </Select.Positioner>
+                  </Portal>
+                </Select.Root>
               </Box>
 
               <Box minW={0}>
                 <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
                   Estado
                 </Text>
-                <Input
-                  value={state}
-                  onChange={(event) => onStateChange(event.target.value)}
-                  h="11"
-                  borderRadius="xl"
-                  bg="white"
-                  borderColor="gray.200"
-                  focusRingColor="teal.200"
-                  placeholder="AL"
-                  required
-                />
+                {isBrazil ? (
+                  <Select.Root
+                    collection={stateCollection}
+                    value={state ? [state] : []}
+                    onValueChange={({ value }) => {
+                      const code = value[0] ?? "";
+                      onStateChange(code);
+
+                      const match = states.find((item) => item.code === code);
+                      setSelectedStateId(match?.id ?? undefined);
+                      onCityChange("");
+                    }}
+                  >
+                    <Select.HiddenSelect />
+                    <Select.Trigger
+                      h="11"
+                      borderRadius="xl"
+                      bg="white"
+                      borderColor="gray.200"
+                      focusRingColor="teal.200"
+                    >
+                      <Select.ValueText placeholder="Selecione o estado" />
+                      <Select.Indicator />
+                    </Select.Trigger>
+                    <Portal>
+                      <Select.Positioner>
+                        <Select.Content zIndex={1500}>
+                          {stateCollection.items.map((item) => (
+                            <Select.Item key={item.value} item={item}>
+                              <Select.ItemText>{item.label}</Select.ItemText>
+                            </Select.Item>
+                          ))}
+                        </Select.Content>
+                      </Select.Positioner>
+                    </Portal>
+                  </Select.Root>
+                ) : (
+                  <Input
+                    value={state}
+                    onChange={(event) => onStateChange(event.target.value)}
+                    h="11"
+                    borderRadius="xl"
+                    bg="white"
+                    borderColor="gray.200"
+                    focusRingColor="teal.200"
+                    placeholder="AL"
+                    required
+                  />
+                )}
               </Box>
 
               <Box minW={0}>
                 <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
                   Cidade
                 </Text>
-                <Input
-                  value={city}
-                  onChange={(event) => onCityChange(event.target.value)}
-                  h="11"
-                  borderRadius="xl"
-                  bg="white"
-                  borderColor="gray.200"
-                  focusRingColor="teal.200"
-                  placeholder="Cidade"
-                  required
-                />
+                {isBrazil ? (
+                  <Select.Root
+                    collection={cityCollection}
+                    value={city ? [city] : []}
+                    onValueChange={({ value }) => onCityChange(value[0] ?? "")}
+                    disabled={selectedStateId === undefined}
+                  >
+                    <Select.HiddenSelect />
+                    <Select.Trigger
+                      h="11"
+                      borderRadius="xl"
+                      bg="white"
+                      borderColor="gray.200"
+                      focusRingColor="teal.200"
+                    >
+                      <Select.ValueText
+                        placeholder={
+                          selectedStateId !== undefined
+                            ? "Selecione a cidade"
+                            : "Selecione um estado primeiro"
+                        }
+                      />
+                      <Select.Indicator />
+                    </Select.Trigger>
+                    <Portal>
+                      <Select.Positioner>
+                        <Select.Content zIndex={1500}>
+                          {cityCollection.items.map((item) => (
+                            <Select.Item key={item.value} item={item}>
+                              <Select.ItemText>{item.label}</Select.ItemText>
+                            </Select.Item>
+                          ))}
+                        </Select.Content>
+                      </Select.Positioner>
+                    </Portal>
+                  </Select.Root>
+                ) : (
+                  <Input
+                    value={city}
+                    onChange={(event) => onCityChange(event.target.value)}
+                    h="11"
+                    borderRadius="xl"
+                    bg="white"
+                    borderColor="gray.200"
+                    focusRingColor="teal.200"
+                    placeholder="Cidade"
+                    required
+                  />
+                )}
               </Box>
 
               <Box minW={0} gridColumn={{ base: "auto", md: "1 / -1" }}>
@@ -351,7 +672,10 @@ export default function AddProviderForm({
                 >
                   Coordenadas
                 </Text>
-                <Grid gap={4} templateColumns={{ base: "1fr", md: "1fr 1fr" }}>
+                <Grid
+                  gap={4}
+                  templateColumns={{ base: "1fr", md: "1fr 1fr auto" }}
+                >
                   <Box minW={0}>
                     <Text
                       fontSize="sm"
@@ -403,7 +727,52 @@ export default function AddProviderForm({
                       required
                     />
                   </Box>
+
+                  <Flex align="end">
+                    <Button
+                      type="button"
+                      onClick={handleResolveCoordinatesFromZipCode}
+                      disabled={isResolvingCoordinates || !zipCode.trim()}
+                      borderRadius="full"
+                      borderWidth="1px"
+                      borderColor="gray.300"
+                      bg="white"
+                      color="gray.700"
+                      _hover={{ bg: "gray.50" }}
+                      _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
+                      h="11"
+                      px={4}
+                      w={{ base: "full", md: "auto" }}
+                    >
+                      {isResolvingCoordinates
+                        ? "Buscando..."
+                        : "Atualizar pelo CEP"}
+                    </Button>
+                  </Flex>
                 </Grid>
+
+                {geocodeStatus !== "idle" && geocodeMessage ? (
+                  <Box
+                    mt={2}
+                    borderRadius="xl"
+                    borderWidth="1px"
+                    borderColor={
+                      geocodeStatus === "success" ? "green.200" : "red.200"
+                    }
+                    bg={geocodeStatus === "success" ? "green.50" : "red.50"}
+                    px={3}
+                    py={2}
+                  >
+                    <Text
+                      fontSize="xs"
+                      color={
+                        geocodeStatus === "success" ? "green.700" : "red.600"
+                      }
+                    >
+                      {geocodeMessage}
+                    </Text>
+                  </Box>
+                ) : null}
               </Box>
             </Grid>
           </Box>
