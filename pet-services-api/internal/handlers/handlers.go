@@ -7,6 +7,7 @@ import (
 	"pet-services-api/internal/logging"
 	"pet-services-api/internal/mail"
 	"pet-services-api/internal/storage"
+	"time"
 
 	"github.com/oklog/ulid/v2"
 )
@@ -28,9 +29,9 @@ type HandlerFactory struct {
 
 func NewHandlerFactory(inputFactory database.StorageInput, logger logging.LoggerInterface) *HandlerFactory {
 	storageService := initializeStorageService(logger)
-
-	userFactory := factories.NewUserFactory(inputFactory.DB, storageService, logger)
 	mailService := mail.GetEmailServiceFromEnv()
+
+	userFactory := factories.NewUserFactory(inputFactory.DB, storageService, mailService, 24*time.Hour, logger)
 	tokenFactory := factories.NewTokenFactory(inputFactory.DB, mailService, 0, storageService, logger)
 	healthFactory := factories.NewHealthFactory(inputFactory.DB, logger)
 	referenceFactory := factories.NewReferenceFactory(logger)
