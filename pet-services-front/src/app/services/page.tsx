@@ -1,12 +1,13 @@
 "use client";
 
-import { Suspense, useCallback, useMemo } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Badge,
   Box,
   Button,
+  chakra,
   Flex,
   Grid,
   Heading,
@@ -47,13 +48,27 @@ const priceLabel = (price: number, min: number, max: number): string => {
   return "Consulte";
 };
 
+const getMapZoom = (radiusKm: number): number => {
+  if (radiusKm <= 0) return 14;
+  if (radiusKm <= 3) return 15;
+  if (radiusKm <= 10) return 13;
+  if (radiusKm <= 25) return 11;
+  return 10;
+};
+
 function ServicesCatalogPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [zipCode, setZipCode] = useState(searchParams.get("zip_code") ?? "");
+  const [locationFeedback, setLocationFeedback] = useState("");
+  const [isResolvingZipCode, setIsResolvingZipCode] = useState(false);
 
   const q = searchParams.get("q") ?? "";
   const categoryId = searchParams.get("category_id") ?? "";
   const tagId = searchParams.get("tag_id") ?? "";
+  const latitude = searchParams.get("latitude") ?? "";
+  const longitude = searchParams.get("longitude") ?? "";
+  const radiusKm = Number(searchParams.get("radius_km") ?? 0);
   const priceMin = Number(searchParams.get("price_min") ?? 0);
   const priceMax = Number(searchParams.get("price_max") ?? 0);
   const page = Math.max(1, Number(searchParams.get("page") ?? 1));
@@ -65,6 +80,32 @@ function ServicesCatalogPageContent() {
   const tags = tagsData?.tags ?? [];
 
   const hasTextQuery = q.trim().length > 0;
+  const normalizedLatitude = latitude.replace(",", ".").trim();
+  const normalizedLongitude = longitude.replace(",", ".").trim();
+  const hasLatitude = normalizedLatitude.length > 0;
+  const hasLongitude = normalizedLongitude.length > 0;
+  const parsedLatitude = Number(normalizedLatitude);
+  const parsedLongitude = Number(normalizedLongitude);
+  const hasCoordinateInput = hasLatitude || hasLongitude;
+  const hasValidCoordinates =
+    hasLatitude &&
+    hasLongitude &&
+    Number.isFinite(parsedLatitude) &&
+    Number.isFinite(parsedLongitude) &&
+    parsedLatitude >= -90 &&
+    parsedLatitude <= 90 &&
+    parsedLongitude >= -180 &&
+    parsedLongitude <= 180;
+  const shouldUseSearch = hasTextQuery || hasValidCoordinates;
+  const mapsQuery = hasValidCoordinates
+    ? `${parsedLatitude},${parsedLongitude}`
+    : "";
+  const mapsUrl = mapsQuery
+    ? `https://www.google.com/maps?q=${encodeURIComponent(mapsQuery)}`
+    : "";
+  const mapsEmbedUrl = mapsQuery
+    ? `https://www.google.com/maps?q=${encodeURIComponent(mapsQuery)}&z=${getMapZoom(radiusKm)}&output=embed`
+    : "";
 
   const listInput = useMemo(
     () => ({
@@ -83,29 +124,49 @@ function ServicesCatalogPageContent() {
       query: q.trim(),
       categoryId: categoryId || undefined,
       tagId: tagId || undefined,
+      latitude: hasValidCoordinates ? parsedLatitude : undefined,
+      longitude: hasValidCoordinates ? parsedLongitude : undefined,
+      radiusKm: hasValidCoordinates && radiusKm > 0 ? radiusKm : undefined,
       priceMin: priceMin > 0 ? priceMin : undefined,
       priceMax: priceMax > 0 ? priceMax : undefined,
       page,
       pageSize: PAGE_SIZE,
     }),
-    [q, categoryId, tagId, priceMin, priceMax, page],
+    [
+      q,
+      categoryId,
+      tagId,
+      hasValidCoordinates,
+      parsedLatitude,
+      parsedLongitude,
+      radiusKm,
+      priceMin,
+      priceMax,
+      page,
+    ],
   );
 
   const listResult = useServiceList({
     input: listInput,
-    enabled: !hasTextQuery,
+    enabled: !shouldUseSearch,
   });
 
   const searchResult = useServiceSearch({
     input: searchInput,
-    enabled: hasTextQuery,
+    enabled: shouldUseSearch,
   });
 
-  const { data, isLoading, isError } = hasTextQuery ? searchResult : listResult;
+  const { data, isLoading, isError } = shouldUseSearch
+    ? searchResult
+    : listResult;
 
   const services = data?.services ?? [];
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  useEffect(() => {
+    setZipCode(searchParams.get("zip_code") ?? "");
+  }, [searchParams]);
 
   const setParam = useCallback(
     (updates: Record<string, string>) => {
@@ -140,6 +201,85 @@ function ServicesCatalogPageContent() {
     },
     [setParam],
   );
+
+  const fetchCoordinatesByZipCode = useCallback(
+    async (zipCodeValue: string) => {
+      const response = await fetch(
+        `/api/geocode?address=${encodeURIComponent(zipCodeValue)}`,
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        const message =
+          typeof data?.error === "string"
+            ? data.error
+            : "Não foi possível buscar coordenadas pelo CEP.";
+        throw new Error(message);
+      }
+
+      const nextLatitude = Number(data?.latitude);
+      const nextLongitude = Number(data?.longitude);
+
+      const hasValidCoordinates =
+        Number.isFinite(nextLatitude) &&
+        Number.isFinite(nextLongitude) &&
+        nextLatitude >= -90 &&
+        nextLatitude <= 90 &&
+        nextLongitude >= -180 &&
+        nextLongitude <= 180;
+
+      if (!hasValidCoordinates) {
+        throw new Error(
+          "Coordenadas inválidas retornadas para o CEP informado.",
+        );
+      }
+
+      return { latitude: nextLatitude, longitude: nextLongitude };
+    },
+    [],
+  );
+
+  const handleSearchByZipCode = useCallback(async () => {
+    const normalizedZipCode = zipCode.trim();
+
+    if (!normalizedZipCode) {
+      setLocationFeedback("Informe o CEP para buscar as coordenadas.");
+      return;
+    }
+
+    setIsResolvingZipCode(true);
+    setLocationFeedback("");
+
+    try {
+      const coords = await fetchCoordinatesByZipCode(normalizedZipCode);
+      setParam({
+        zip_code: normalizedZipCode,
+        latitude: String(coords.latitude),
+        longitude: String(coords.longitude),
+        radius_km: radiusKm > 0 ? String(radiusKm) : "10",
+      });
+      setLocationFeedback("Coordenadas preenchidas automaticamente pelo CEP.");
+    } catch (error) {
+      setLocationFeedback(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível buscar coordenadas pelo CEP.",
+      );
+    } finally {
+      setIsResolvingZipCode(false);
+    }
+  }, [fetchCoordinatesByZipCode, radiusKm, setParam, zipCode]);
+
+  const handleClearLocationForm = useCallback(() => {
+    setZipCode("");
+    setLocationFeedback("");
+    setParam({
+      zip_code: "",
+      latitude: "",
+      longitude: "",
+      radius_km: "",
+    });
+  }, [setParam]);
 
   return (
     <PageWrapper gap={8}>
@@ -286,6 +426,219 @@ function ServicesCatalogPageContent() {
               </Button>
             )}
           </Flex>
+
+          <Box
+            mt={{ base: 5, md: 6 }}
+            pt={{ base: 5, md: 6 }}
+            borderTopWidth="1px"
+            borderColor="gray.100"
+          >
+            <Flex
+              gap={{ base: 3, md: 4 }}
+              align={{ base: "stretch", md: "center" }}
+              justify="space-between"
+              direction={{ base: "column", md: "row" }}
+            >
+              <Box>
+                <Text
+                  fontSize={{ base: "xs" }}
+                  fontWeight="semibold"
+                  textTransform="uppercase"
+                  color="teal.600"
+                >
+                  Mapa
+                </Text>
+                <Text
+                  mt={1}
+                  fontSize={{ base: "sm", md: "md" }}
+                  fontWeight="medium"
+                  color="gray.900"
+                >
+                  Buscar serviços próximos
+                </Text>
+                <Text
+                  mt={1}
+                  fontSize={{ base: "xs", sm: "sm" }}
+                  color="gray.500"
+                >
+                  Informe um CEP para centralizar a busca ou preencha as
+                  coordenadas manualmente.
+                </Text>
+              </Box>
+
+              <HStack gap={2} align="stretch" flexWrap="wrap">
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="Buscar por CEP"
+                  size={{ base: "sm", md: "md" }}
+                  borderRadius={{ base: "lg", md: "xl" }}
+                  value={zipCode}
+                  onChange={(e) => setZipCode(e.target.value)}
+                  maxW={{ base: "100%", md: "180px" }}
+                  fontSize={{ base: "sm" }}
+                />
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  colorPalette="teal"
+                  borderRadius={{ base: "lg", md: "xl" }}
+                  onClick={handleSearchByZipCode}
+                  loading={isResolvingZipCode}
+                  fontSize={{ base: "sm" }}
+                >
+                  Buscar por CEP
+                </Button>
+
+                {(zipCode || latitude || longitude || radiusKm > 0) && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    colorPalette="gray"
+                    borderRadius={{ base: "lg", md: "xl" }}
+                    onClick={handleClearLocationForm}
+                    fontSize={{ base: "sm" }}
+                  >
+                    Limpar
+                  </Button>
+                )}
+              </HStack>
+            </Flex>
+
+            <Grid
+              mt={4}
+              templateColumns={{
+                base: "1fr",
+                sm: "repeat(2, 1fr)",
+                lg: "repeat(3, 1fr)",
+              }}
+              gap={{ base: 3, md: 4 }}
+            >
+              <Input
+                type="text"
+                placeholder="Latitude"
+                size={{ base: "sm", md: "md" }}
+                borderRadius={{ base: "lg", md: "xl" }}
+                defaultValue={latitude}
+                onBlur={(e) => setParam({ latitude: e.target.value })}
+                fontSize={{ base: "sm" }}
+              />
+
+              <Input
+                type="text"
+                placeholder="Longitude"
+                size={{ base: "sm", md: "md" }}
+                borderRadius={{ base: "lg", md: "xl" }}
+                defaultValue={longitude}
+                onBlur={(e) => setParam({ longitude: e.target.value })}
+                fontSize={{ base: "sm" }}
+              />
+
+              <Input
+                type="number"
+                min={1}
+                placeholder="Raio (km)"
+                size={{ base: "sm", md: "md" }}
+                borderRadius={{ base: "lg", md: "xl" }}
+                defaultValue={radiusKm > 0 ? String(radiusKm) : ""}
+                onBlur={(e) => setParam({ radius_km: e.target.value })}
+                fontSize={{ base: "sm" }}
+              />
+            </Grid>
+
+            {locationFeedback ? (
+              <Box
+                mt={4}
+                borderRadius={{ base: "lg", md: "xl" }}
+                borderWidth="1px"
+                borderColor="red.200"
+                bg="red.50"
+                px={{ base: 3, md: 4 }}
+                py={3}
+              >
+                <Text fontSize={{ base: "xs", sm: "sm" }} color="red.700">
+                  {locationFeedback}
+                </Text>
+              </Box>
+            ) : null}
+
+            {hasValidCoordinates ? (
+              <VStack mt={4} align="stretch" gap={3}>
+                <Box
+                  borderRadius={{ base: "xl", md: "2xl" }}
+                  borderWidth="1px"
+                  borderColor="gray.200"
+                  overflow="hidden"
+                  bg="gray.100"
+                  h={{ base: "220px", md: "280px" }}
+                >
+                  <chakra.iframe
+                    title="Mapa da busca por serviços"
+                    src={mapsEmbedUrl}
+                    w="full"
+                    h="full"
+                    border={0}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                </Box>
+
+                <Flex
+                  gap={3}
+                  direction={{ base: "column", md: "row" }}
+                  align={{ base: "stretch", md: "center" }}
+                  justify="space-between"
+                >
+                  <Text fontSize={{ base: "xs", sm: "sm" }} color="gray.600">
+                    {radiusKm > 0
+                      ? `Buscando serviços em até ${radiusKm} km deste ponto.`
+                      : "Buscando serviços próximos deste ponto."}
+                  </Text>
+
+                  <ChakraLink
+                    href={mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    alignSelf={{ base: "flex-start", md: "auto" }}
+                    display="inline-flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    borderRadius="full"
+                    borderWidth="1px"
+                    borderColor="gray.300"
+                    bg="white"
+                    color="gray.700"
+                    _hover={{ bg: "gray.50", textDecoration: "none" }}
+                    h={{ base: "8", sm: "9" }}
+                    px={{ base: 3, sm: 4 }}
+                    fontSize={{ base: "xs", sm: "sm" }}
+                  >
+                    Abrir no Google Maps
+                  </ChakraLink>
+                </Flex>
+              </VStack>
+            ) : hasCoordinateInput ? (
+              <Box
+                mt={4}
+                borderRadius={{ base: "lg", md: "xl" }}
+                borderWidth="1px"
+                borderColor="orange.200"
+                bg="orange.50"
+                px={{ base: 3, md: 4 }}
+                py={3}
+              >
+                <Text fontSize={{ base: "xs", sm: "sm" }} color="orange.700">
+                  Informe latitude entre -90 e 90 e longitude entre -180 e 180
+                  para visualizar o mapa e filtrar por proximidade.
+                </Text>
+              </Box>
+            ) : (
+              <Text mt={4} fontSize={{ base: "xs", sm: "sm" }} color="gray.500">
+                Defina um ponto no mapa para encontrar serviços próximos.
+              </Text>
+            )}
+          </Box>
         </Box>
 
         {/* Estado de carregamento */}
