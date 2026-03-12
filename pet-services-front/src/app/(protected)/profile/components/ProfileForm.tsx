@@ -8,7 +8,6 @@ import {
   Button,
   Flex,
   Grid,
-  HStack,
   Input,
   Portal,
   createListCollection,
@@ -104,6 +103,11 @@ export default function ProfileForm({ user }: ProfileFormProps) {
     "idle" | "success" | "error"
   >("idle");
   const [geocodeMessage, setGeocodeMessage] = useState("");
+  const [isResolvingAddress, setIsResolvingAddress] = useState(false);
+  const [addressLookupStatus, setAddressLookupStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
+  const [addressLookupMessage, setAddressLookupMessage] = useState("");
   const [selectedStateId, setSelectedStateId] = useState<number | undefined>(
     undefined,
   );
@@ -158,16 +162,14 @@ export default function ProfileForm({ user }: ProfileFormProps) {
   );
 
   useEffect(() => {
-    if (!states.length || !initialValues.state) {
+    if (!states.length || !state) {
       return;
     }
     const match = states.find(
-      (s) => s.code.toUpperCase() === initialValues.state.toUpperCase(),
+      (s) => s.code.toUpperCase() === state.toUpperCase(),
     );
-    if (match) {
-      setSelectedStateId(match.id);
-    }
-  }, [states, initialValues.state]);
+    setSelectedStateId(match?.id ?? undefined);
+  }, [state, states]);
 
   const hasChanges = useMemo(() => {
     const normalize = (value: string) => value.trim();
@@ -288,6 +290,69 @@ export default function ProfileForm({ user }: ProfileFormProps) {
     }
 
     return { latitude: nextLatitude, longitude: nextLongitude };
+  };
+
+  const fetchAddressByZipCode = async (zipCodeValue: string) => {
+    const digits = zipCodeValue.replace(/\D/g, "");
+
+    if (digits.length !== 8) {
+      throw new Error("Informe um CEP v\u00e1lido com 8 d\u00edgitos.");
+    }
+
+    const response = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+    const data = await response.json();
+
+    if (!response.ok || data?.erro) {
+      throw new Error(
+        "N\u00e3o foi poss\u00edvel localizar o endere\u00e7o pelo CEP.",
+      );
+    }
+
+    return {
+      street: String(data?.logradouro ?? "").trim(),
+      neighborhood: String(data?.bairro ?? "").trim(),
+      city: String(data?.localidade ?? "").trim(),
+      state: String(data?.uf ?? "").trim(),
+      country: "BR",
+    };
+  };
+
+  const handleResolveAddressFromZipCode = async () => {
+    const normalizedZipCode = zipCode.trim();
+
+    if (!normalizedZipCode) {
+      setAddressLookupStatus("error");
+      setAddressLookupMessage("Informe o CEP para buscar o endere\u00e7o.");
+      return;
+    }
+
+    setIsResolvingAddress(true);
+    setAddressLookupStatus("idle");
+    setAddressLookupMessage("");
+
+    try {
+      const address = await fetchAddressByZipCode(normalizedZipCode);
+      setStreet(address.street);
+      setNeighborhood(address.neighborhood);
+      setCity(address.city);
+      setState(address.state);
+      setCountry(address.country);
+      const match = states.find((item) => item.code === address.state);
+      setSelectedStateId(match?.id ?? undefined);
+      setAddressLookupStatus("success");
+      setAddressLookupMessage(
+        "Endere\u00e7o preenchido automaticamente pelo CEP.",
+      );
+    } catch (error) {
+      setAddressLookupStatus("error");
+      setAddressLookupMessage(
+        error instanceof Error
+          ? error.message
+          : "N\u00e3o foi poss\u00edvel buscar o endere\u00e7o pelo CEP.",
+      );
+    } finally {
+      setIsResolvingAddress(false);
+    }
   };
 
   const handleResolveCoordinatesFromZipCode = async () => {
@@ -676,8 +741,78 @@ export default function ProfileForm({ user }: ProfileFormProps) {
           <Grid
             mt={3}
             gap={{ base: 2, md: 4 }}
-            templateColumns={{ base: "1fr", sm: "1fr 1fr", md: "1fr 1fr" }}
+            templateColumns={{ base: "1fr", sm: "1fr 1fr", md: "1fr 1fr 1fr" }}
           >
+            <Box minW={0}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
+                CEP
+              </Text>
+              <Flex
+                gap={{ base: 2, md: 3 }}
+                direction={{ base: "column", sm: "row" }}
+              >
+                <Input
+                  value={zipCode}
+                  onChange={(event) => setZipCode(event.target.value)}
+                  h={{ base: "10", md: "11" }}
+                  borderRadius={{ base: "lg", md: "xl" }}
+                  bg="gray.50"
+                  borderColor="gray.200"
+                  focusRingColor="teal.200"
+                  placeholder="00000-000"
+                  fontSize={{ base: "sm" }}
+                  flex={1}
+                />
+                <Button
+                  type="button"
+                  onClick={handleResolveAddressFromZipCode}
+                  disabled={isResolvingAddress || !zipCode.trim()}
+                  borderRadius="full"
+                  borderWidth="1px"
+                  borderColor="gray.300"
+                  bg="white"
+                  color="gray.700"
+                  _hover={{ bg: "gray.50" }}
+                  _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
+                  fontSize={{ base: "xs", sm: "sm" }}
+                  h={{ base: "10", md: "11" }}
+                  px={{ base: 4, sm: 5 }}
+                  flexShrink={0}
+                >
+                  {isResolvingAddress ? "Buscando..." : "Buscar"}
+                </Button>
+              </Flex>
+              {addressLookupStatus !== "idle" && addressLookupMessage ? (
+                <Box
+                  mt={3}
+                  borderRadius={{ base: "lg", md: "xl" }}
+                  borderWidth="1px"
+                  borderColor={
+                    addressLookupStatus === "success" ? "green.200" : "red.200"
+                  }
+                  bg={addressLookupStatus === "success" ? "green.50" : "red.50"}
+                  px={{ base: 3, md: 4 }}
+                  py={2}
+                >
+                  <Text
+                    fontSize={{ base: "xs", sm: "sm" }}
+                    color={
+                      addressLookupStatus === "success"
+                        ? "green.700"
+                        : "red.600"
+                    }
+                  >
+                    {addressLookupMessage}
+                  </Text>
+                </Box>
+              ) : null}
+            </Box>
+
             <Box minW={0}>
               <Text
                 fontSize={{ base: "xs", sm: "sm" }}
@@ -695,29 +830,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                 bg="gray.50"
                 borderColor="gray.200"
                 focusRingColor="teal.200"
-                placeholder="Rua"
-                fontSize={{ base: "sm" }}
-              />
-            </Box>
-
-            <Box minW={0}>
-              <Text
-                fontSize={{ base: "xs", sm: "sm" }}
-                fontWeight="medium"
-                color="gray.700"
-                mb={2}
-              >
-                Número
-              </Text>
-              <Input
-                value={addressNumber}
-                onChange={(event) => setAddressNumber(event.target.value)}
-                h={{ base: "10", md: "11" }}
-                borderRadius={{ base: "lg", md: "xl" }}
-                bg="gray.50"
-                borderColor="gray.200"
-                focusRingColor="teal.200"
-                placeholder="123"
+                placeholder="Rua José Deodoro dos Santos"
                 fontSize={{ base: "sm" }}
               />
             </Box>
@@ -739,12 +852,166 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                 bg="gray.50"
                 borderColor="gray.200"
                 focusRingColor="teal.200"
-                placeholder="Centro"
+                placeholder="Luzia"
                 fontSize={{ base: "sm" }}
               />
             </Box>
 
             <Box minW={0}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
+                Número
+              </Text>
+              <Input
+                value={addressNumber}
+                onChange={(event) => setAddressNumber(event.target.value)}
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
+                placeholder="28"
+                fontSize={{ base: "sm" }}
+              />
+            </Box>
+
+            <Box minW={0}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
+                Complemento
+              </Text>
+              <Input
+                value={complement}
+                onChange={(event) => setComplement(event.target.value)}
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
+                placeholder="Apartamento 104"
+                fontSize={{ base: "sm" }}
+              />
+            </Box>
+
+            <Box minW={0} gridColumn={{ base: "auto", md: "1 / 2" }}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
+                País
+              </Text>
+              <Select.Root
+                collection={countryCollection}
+                value={country ? [country] : []}
+                onValueChange={({ value }) => {
+                  const next = value[0] ?? "";
+                  setCountry(next);
+                  if (next.toUpperCase() !== "BR") {
+                    setState("");
+                    setCity("");
+                    setSelectedStateId(undefined);
+                  }
+                }}
+              >
+                <Select.HiddenSelect />
+                <Select.Trigger
+                  h={{ base: "10", md: "11" }}
+                  borderRadius={{ base: "lg", md: "xl" }}
+                  bg="gray.50"
+                  borderColor="gray.200"
+                  focusRingColor="teal.200"
+                  fontSize={{ base: "sm" }}
+                  w="full"
+                >
+                  <Select.ValueText placeholder="Selecione o país" />
+                  <Select.Indicator />
+                </Select.Trigger>
+                <Portal>
+                  <Select.Positioner>
+                    <Select.Content zIndex={1500}>
+                      {countryCollection.items.map((item) => (
+                        <Select.Item key={item.value} item={item}>
+                          <Select.ItemText>{item.label}</Select.ItemText>
+                        </Select.Item>
+                      ))}
+                    </Select.Content>
+                  </Select.Positioner>
+                </Portal>
+              </Select.Root>
+            </Box>
+
+            <Box minW={0} gridColumn={{ base: "auto", md: "2 / 3" }}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
+                Estado
+              </Text>
+              {isBrazil ? (
+                <Select.Root
+                  collection={stateCollection}
+                  value={state ? [state] : []}
+                  onValueChange={({ value }) => {
+                    const code = value[0] ?? "";
+                    setState(code);
+                    const match = states.find((s) => s.code === code);
+                    setSelectedStateId(match?.id ?? undefined);
+                    setCity("");
+                  }}
+                >
+                  <Select.HiddenSelect />
+                  <Select.Trigger
+                    h={{ base: "10", md: "11" }}
+                    borderRadius={{ base: "lg", md: "xl" }}
+                    bg="gray.50"
+                    borderColor="gray.200"
+                    focusRingColor="teal.200"
+                    fontSize={{ base: "sm" }}
+                    w="full"
+                  >
+                    <Select.ValueText placeholder="Selecione o estado" />
+                    <Select.Indicator />
+                  </Select.Trigger>
+                  <Portal>
+                    <Select.Positioner>
+                      <Select.Content zIndex={1500}>
+                        {stateCollection.items.map((item) => (
+                          <Select.Item key={item.value} item={item}>
+                            <Select.ItemText>{item.label}</Select.ItemText>
+                          </Select.Item>
+                        ))}
+                      </Select.Content>
+                    </Select.Positioner>
+                  </Portal>
+                </Select.Root>
+              ) : (
+                <Input
+                  value={state}
+                  onChange={(event) => setState(event.target.value)}
+                  h={{ base: "10", md: "11" }}
+                  borderRadius={{ base: "lg", md: "xl" }}
+                  bg="gray.50"
+                  borderColor="gray.200"
+                  focusRingColor="teal.200"
+                  placeholder="Sergipe"
+                  fontSize={{ base: "sm" }}
+                />
+              )}
+            </Box>
+
+            <Box minW={0} gridColumn={{ base: "auto", md: "3 / 4" }}>
               <Text
                 fontSize={{ base: "xs", sm: "sm" }}
                 fontWeight="medium"
@@ -800,169 +1067,26 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                   bg="gray.50"
                   borderColor="gray.200"
                   focusRingColor="teal.200"
-                  placeholder="Maceió"
+                  placeholder="Aracaju"
                   fontSize={{ base: "sm" }}
                 />
               )}
-            </Box>
-
-            <Box minW={0}>
-              <Text
-                fontSize={{ base: "xs", sm: "sm" }}
-                fontWeight="medium"
-                color="gray.700"
-                mb={2}
-              >
-                CEP
-              </Text>
-              <Input
-                value={zipCode}
-                onChange={(event) => setZipCode(event.target.value)}
-                h={{ base: "10", md: "11" }}
-                borderRadius={{ base: "lg", md: "xl" }}
-                bg="gray.50"
-                borderColor="gray.200"
-                focusRingColor="teal.200"
-                placeholder="00000-000"
-                fontSize={{ base: "sm" }}
-              />
-            </Box>
-
-            <Box minW={0}>
-              <Text
-                fontSize={{ base: "xs", sm: "sm" }}
-                fontWeight="medium"
-                color="gray.700"
-                mb={2}
-              >
-                Estado
-              </Text>
-              {isBrazil ? (
-                <Select.Root
-                  collection={stateCollection}
-                  value={state ? [state] : []}
-                  onValueChange={({ value }) => {
-                    const code = value[0] ?? "";
-                    setState(code);
-                    const match = states.find((s) => s.code === code);
-                    setSelectedStateId(match?.id ?? undefined);
-                    setCity("");
-                  }}
-                >
-                  <Select.HiddenSelect />
-                  <Select.Trigger
-                    h={{ base: "10", md: "11" }}
-                    borderRadius={{ base: "lg", md: "xl" }}
-                    bg="gray.50"
-                    borderColor="gray.200"
-                    focusRingColor="teal.200"
-                    fontSize={{ base: "sm" }}
-                    w="full"
-                  >
-                    <Select.ValueText placeholder="Selecione o estado" />
-                    <Select.Indicator />
-                  </Select.Trigger>
-                  <Portal>
-                    <Select.Positioner>
-                      <Select.Content zIndex={1500}>
-                        {stateCollection.items.map((item) => (
-                          <Select.Item key={item.value} item={item}>
-                            <Select.ItemText>{item.label}</Select.ItemText>
-                          </Select.Item>
-                        ))}
-                      </Select.Content>
-                    </Select.Positioner>
-                  </Portal>
-                </Select.Root>
-              ) : (
-                <Input
-                  value={state}
-                  onChange={(event) => setState(event.target.value)}
-                  h={{ base: "10", md: "11" }}
-                  borderRadius={{ base: "lg", md: "xl" }}
-                  bg="gray.50"
-                  borderColor="gray.200"
-                  focusRingColor="teal.200"
-                  placeholder="AL"
-                  fontSize={{ base: "sm" }}
-                />
-              )}
-            </Box>
-
-            <Box minW={0}>
-              <Text
-                fontSize={{ base: "xs", sm: "sm" }}
-                fontWeight="medium"
-                color="gray.700"
-                mb={2}
-              >
-                País
-              </Text>
-              <Select.Root
-                collection={countryCollection}
-                value={country ? [country] : []}
-                onValueChange={({ value }) => {
-                  const next = value[0] ?? "";
-                  setCountry(next);
-                  if (next.toUpperCase() !== "BR") {
-                    setState("");
-                    setCity("");
-                    setSelectedStateId(undefined);
-                  }
-                }}
-              >
-                <Select.HiddenSelect />
-                <Select.Trigger
-                  h={{ base: "10", md: "11" }}
-                  borderRadius={{ base: "lg", md: "xl" }}
-                  bg="gray.50"
-                  borderColor="gray.200"
-                  focusRingColor="teal.200"
-                  fontSize={{ base: "sm" }}
-                  w="full"
-                >
-                  <Select.ValueText placeholder="Selecione o país" />
-                  <Select.Indicator />
-                </Select.Trigger>
-                <Portal>
-                  <Select.Positioner>
-                    <Select.Content zIndex={1500}>
-                      {countryCollection.items.map((item) => (
-                        <Select.Item key={item.value} item={item}>
-                          <Select.ItemText>{item.label}</Select.ItemText>
-                        </Select.Item>
-                      ))}
-                    </Select.Content>
-                  </Select.Positioner>
-                </Portal>
-              </Select.Root>
-            </Box>
-
-            <Box minW={0}>
-              <Text
-                fontSize={{ base: "xs", sm: "sm" }}
-                fontWeight="medium"
-                color="gray.700"
-                mb={2}
-              >
-                Complemento
-              </Text>
-              <Input
-                value={complement}
-                onChange={(event) => setComplement(event.target.value)}
-                h={{ base: "10", md: "11" }}
-                borderRadius={{ base: "lg", md: "xl" }}
-                bg="gray.50"
-                borderColor="gray.200"
-                focusRingColor="teal.200"
-                placeholder="Apto"
-                fontSize={{ base: "sm" }}
-              />
             </Box>
 
             <Box minW={0} gridColumn={{ base: "auto", sm: "1 / -1" }}>
-              <Flex gap={{ base: 2, md: 4 }} wrap="wrap" align="end">
-                <Box flex="1" minW="120px">
+              <Text
+                fontSize={{ base: "sm", md: "sm" }}
+                fontWeight="semibold"
+                color="gray.900"
+                mb={1}
+              >
+                Coordenadas (opcional)
+              </Text>
+              <Grid
+                gap={{ base: 2, md: 4 }}
+                templateColumns={{ base: "1fr", sm: "1fr 1fr" }}
+              >
+                <Box minW={0}>
                   <Text
                     fontSize={{ base: "xs", sm: "sm" }}
                     fontWeight="medium"
@@ -979,12 +1103,12 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                     bg="gray.50"
                     borderColor="gray.200"
                     focusRingColor="teal.200"
-                    placeholder="-10.000"
+                    placeholder="-10.9404841"
                     fontSize={{ base: "sm" }}
                   />
                 </Box>
 
-                <Box flex="1" minW="120px">
+                <Box minW={0}>
                   <Text
                     fontSize={{ base: "xs", sm: "sm" }}
                     fontWeight="medium"
@@ -1001,32 +1125,30 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                     bg="gray.50"
                     borderColor="gray.200"
                     focusRingColor="teal.200"
-                    placeholder="-37.000"
+                    placeholder="-37.0712244"
                     fontSize={{ base: "sm" }}
                   />
                 </Box>
+              </Grid>
 
-                <Button
-                  type="button"
-                  onClick={handleResolveCoordinatesFromZipCode}
-                  disabled={isResolvingCoordinates || !zipCode.trim()}
-                  borderRadius="full"
-                  borderWidth="1px"
-                  borderColor="gray.300"
-                  bg="white"
-                  color="gray.700"
-                  _hover={{ bg: "gray.50" }}
-                  _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
-                  fontSize={{ base: "xs", sm: "sm" }}
-                  h={{ base: "10", md: "11" }}
-                  px={{ base: 3, sm: 4 }}
-                  flexShrink={0}
-                >
-                  {isResolvingCoordinates
-                    ? "Buscando..."
-                    : "Buscar coordenadas pelo CEP"}
-                </Button>
-              </Flex>
+              <Button
+                mt={3}
+                type="button"
+                onClick={handleResolveCoordinatesFromZipCode}
+                disabled={isResolvingCoordinates || !zipCode.trim()}
+                borderRadius="full"
+                borderWidth="1px"
+                borderColor="gray.300"
+                bg="white"
+                color="gray.700"
+                _hover={{ bg: "gray.50" }}
+                _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
+                fontSize={{ base: "xs", sm: "sm" }}
+                h={{ base: "10", md: "11" }}
+                px={{ base: 3, sm: 4 }}
+              >
+                {isResolvingCoordinates ? "Buscando..." : "Atualizar pelo CEP"}
+              </Button>
             </Box>
 
             {geocodeStatus !== "idle" ? (
