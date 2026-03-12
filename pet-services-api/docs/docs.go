@@ -4919,6 +4919,9 @@ const docTemplate = `{
                 },
                 "phone": {
                     "$ref": "#/definitions/entities.Phone"
+                },
+                "user_type": {
+                    "type": "string"
                 }
             }
         },
