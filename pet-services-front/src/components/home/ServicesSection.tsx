@@ -7,6 +7,8 @@ export default function ServicesSection() {
     <HStack
       id="services"
       gap="3"
+      w="full"
+      justify={{ base: "flex-start", md: "center" }}
       overflowX="auto"
       overflowY="hidden"
       flexWrap="nowrap"
@@ -48,6 +50,9 @@ export default function ServicesSection() {
             minW="max-content"
             transition="all 0.2s ease"
             _hover={{ bg: "gray.200", textDecoration: "none" }}
+            _focus={{ outline: "none", boxShadow: "none" }}
+            _focusVisible={{ outline: "none", boxShadow: "none" }}
+            _active={{ bg: "gray.200", borderColor: "gray.200" }}
           >
             <Box
               display="inline-flex"
