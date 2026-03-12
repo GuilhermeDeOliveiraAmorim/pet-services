@@ -90,6 +90,11 @@ export default function ProfileForm({ user }: ProfileFormProps) {
   const [complement, setComplement] = useState(initialValues.complement);
   const [latitude, setLatitude] = useState(initialValues.latitude);
   const [longitude, setLongitude] = useState(initialValues.longitude);
+  const [isResolvingCoordinates, setIsResolvingCoordinates] = useState(false);
+  const [geocodeStatus, setGeocodeStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
+  const [geocodeMessage, setGeocodeMessage] = useState("");
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const photoInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -184,6 +189,68 @@ export default function ProfileForm({ user }: ProfileFormProps) {
     setSelectedPhoto(null);
   };
 
+  const fetchCoordinatesByZipCode = async (zipCodeValue: string) => {
+    const response = await fetch(
+      `/api/geocode?address=${encodeURIComponent(zipCodeValue)}`,
+    );
+    const data = await response.json();
+
+    if (!response.ok) {
+      const message =
+        typeof data?.error === "string"
+          ? data.error
+          : "Não foi possível buscar coordenadas pelo CEP.";
+      throw new Error(message);
+    }
+
+    const nextLatitude = Number(data?.latitude);
+    const nextLongitude = Number(data?.longitude);
+
+    const hasValidCoordinates =
+      Number.isFinite(nextLatitude) &&
+      Number.isFinite(nextLongitude) &&
+      nextLatitude >= -90 &&
+      nextLatitude <= 90 &&
+      nextLongitude >= -180 &&
+      nextLongitude <= 180;
+
+    if (!hasValidCoordinates) {
+      throw new Error("Coordenadas inválidas retornadas para o CEP informado.");
+    }
+
+    return { latitude: nextLatitude, longitude: nextLongitude };
+  };
+
+  const handleResolveCoordinatesFromZipCode = async () => {
+    const normalizedZipCode = zipCode.trim();
+    if (!normalizedZipCode) {
+      setGeocodeStatus("error");
+      setGeocodeMessage("Informe o CEP para buscar as coordenadas.");
+      return;
+    }
+
+    setIsResolvingCoordinates(true);
+    setGeocodeStatus("idle");
+    setGeocodeMessage("");
+
+    try {
+      const coords = await fetchCoordinatesByZipCode(normalizedZipCode);
+      setLatitude(String(coords.latitude));
+      setLongitude(String(coords.longitude));
+      setGeocodeStatus("success");
+      setGeocodeMessage("Coordenadas preenchidas automaticamente pelo CEP.");
+    } catch (error) {
+      setGeocodeStatus("error");
+      setGeocodeMessage(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível buscar coordenadas pelo CEP.",
+      );
+    } finally {
+      setIsResolvingCoordinates(false);
+    }
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -214,6 +281,48 @@ export default function ProfileForm({ user }: ProfileFormProps) {
       longitude;
 
     if (hasAddressField) {
+      let resolvedLatitude = Number(latitude.replace(",", ".").trim());
+      let resolvedLongitude = Number(longitude.replace(",", ".").trim());
+
+      const hasValidManualCoordinates =
+        Number.isFinite(resolvedLatitude) &&
+        Number.isFinite(resolvedLongitude) &&
+        resolvedLatitude >= -90 &&
+        resolvedLatitude <= 90 &&
+        resolvedLongitude >= -180 &&
+        resolvedLongitude <= 180;
+
+      const normalizedZipCode = zipCode.trim();
+
+      if (!hasValidManualCoordinates && normalizedZipCode) {
+        setIsResolvingCoordinates(true);
+        setGeocodeStatus("idle");
+        setGeocodeMessage("");
+
+        try {
+          const coords = await fetchCoordinatesByZipCode(normalizedZipCode);
+          resolvedLatitude = coords.latitude;
+          resolvedLongitude = coords.longitude;
+          setLatitude(String(coords.latitude));
+          setLongitude(String(coords.longitude));
+          setGeocodeStatus("success");
+          setGeocodeMessage(
+            "Coordenadas preenchidas automaticamente pelo CEP.",
+          );
+        } catch (error) {
+          setGeocodeStatus("error");
+          setGeocodeMessage(
+            error instanceof Error
+              ? error.message
+              : "Não foi possível buscar coordenadas pelo CEP.",
+          );
+          setIsResolvingCoordinates(false);
+          return;
+        } finally {
+          setIsResolvingCoordinates(false);
+        }
+      }
+
       payload.address = {
         street: street.trim(),
         number: addressNumber.trim(),
@@ -224,8 +333,8 @@ export default function ProfileForm({ user }: ProfileFormProps) {
         country: country.trim(),
         complement: complement.trim(),
         location: {
-          latitude: Number(latitude || 0),
-          longitude: Number(longitude || 0),
+          latitude: Number.isFinite(resolvedLatitude) ? resolvedLatitude : 0,
+          longitude: Number.isFinite(resolvedLongitude) ? resolvedLongitude : 0,
         },
       };
     }
@@ -615,6 +724,27 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                 placeholder="00000-000"
                 fontSize={{ base: "sm" }}
               />
+
+              <Button
+                mt={2}
+                type="button"
+                onClick={handleResolveCoordinatesFromZipCode}
+                disabled={isResolvingCoordinates || !zipCode.trim()}
+                borderRadius="full"
+                borderWidth="1px"
+                borderColor="gray.300"
+                bg="white"
+                color="gray.700"
+                _hover={{ bg: "gray.50" }}
+                _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
+                fontSize={{ base: "xs", sm: "sm" }}
+                h={{ base: "8", sm: "9" }}
+                px={{ base: 3, sm: 4 }}
+              >
+                {isResolvingCoordinates
+                  ? "Buscando..."
+                  : "Buscar coordenadas pelo CEP"}
+              </Button>
             </Box>
 
             <Box minW={0}>
@@ -736,6 +866,29 @@ export default function ProfileForm({ user }: ProfileFormProps) {
               >
                 Localização no mapa
               </Text>
+
+              {geocodeStatus !== "idle" && geocodeMessage ? (
+                <Box
+                  mb={3}
+                  borderRadius={{ base: "lg", md: "xl" }}
+                  borderWidth="1px"
+                  borderColor={
+                    geocodeStatus === "success" ? "green.200" : "red.200"
+                  }
+                  bg={geocodeStatus === "success" ? "green.50" : "red.50"}
+                  px={{ base: 3, md: 4 }}
+                  py={2}
+                >
+                  <Text
+                    fontSize={{ base: "xs", sm: "sm" }}
+                    color={
+                      geocodeStatus === "success" ? "green.700" : "red.600"
+                    }
+                  >
+                    {geocodeMessage}
+                  </Text>
+                </Box>
+              ) : null}
 
               {hasValidCoordinates ? (
                 <VStack align="stretch" gap={2}>
