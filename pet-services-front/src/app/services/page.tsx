@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { Suspense, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -47,7 +47,7 @@ const priceLabel = (price: number, min: number, max: number): string => {
   return "Consulte";
 };
 
-export default function ServicesCatalogPage() {
+function ServicesCatalogPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -504,5 +504,32 @@ export default function ServicesCatalogPage() {
         )}
       </VStack>
     </PageWrapper>
+  );
+}
+
+export default function ServicesCatalogPage() {
+  return (
+    <Suspense
+      fallback={
+        <PageWrapper gap={8}>
+          <MainNav />
+          <Flex
+            borderRadius="2xl"
+            borderWidth="1px"
+            borderColor="gray.200"
+            bg="white"
+            py={20}
+            justify="center"
+            align="center"
+            gap={3}
+          >
+            <Spinner color="teal.500" size="sm" />
+            <Text color="gray.600">Carregando serviços...</Text>
+          </Flex>
+        </PageWrapper>
+      }
+    >
+      <ServicesCatalogPageContent />
+    </Suspense>
   );
 }
