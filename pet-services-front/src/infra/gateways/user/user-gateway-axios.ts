@@ -32,6 +32,7 @@ export class UserGatewayAxios implements UserGateway {
   async registerUser(input: RegisterUserInput): Promise<RegisterUserOutput> {
     const payload = {
       name: input.name,
+      user_type: input.userType,
       login: {
         email: input.login.email,
         password: input.login.password,
@@ -65,9 +66,10 @@ export class UserGatewayAxios implements UserGateway {
   }
 
   async getProfile(): Promise<GetProfileOutput> {
-    const { data } = await this.http.get<{ user: unknown; provider_id?: string }>(
-      "/users/profile",
-    );
+    const { data } = await this.http.get<{
+      user: unknown;
+      provider_id?: string;
+    }>("/users/profile");
 
     return {
       user: mapUserFromApi(data.user as Record<string, unknown>),

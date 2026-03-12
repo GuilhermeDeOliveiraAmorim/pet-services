@@ -9,9 +9,10 @@ import (
 )
 
 type RegisterUserInput struct {
-	Name  string         `json:"name"`
-	Login entities.Login `json:"login"`
-	Phone entities.Phone `json:"phone"`
+	Name     string         `json:"name"`
+	UserType string         `json:"user_type"`
+	Login    entities.Login `json:"login"`
+	Phone    entities.Phone `json:"phone"`
 }
 
 type RegisterUserOutput struct {
@@ -72,8 +73,14 @@ func (uc *RegisterUserUseCase) Execute(ctx context.Context, input RegisterUserIn
 		return nil, problems
 	}
 
+	userType := input.UserType
+	if userType == "" {
+		userType = entities.UserTypes.Owner
+	}
+
 	user, errs := entities.NewIncompleteUser(
 		input.Name,
+		userType,
 		*login,
 		*phone,
 	)

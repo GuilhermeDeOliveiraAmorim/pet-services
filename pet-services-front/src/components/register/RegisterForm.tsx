@@ -2,8 +2,9 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Text, VStack, chakra } from "@chakra-ui/react";
+import { Checkbox, Text, VStack, chakra } from "@chakra-ui/react";
 import { useReferenceCountries, useUserRegister } from "@/application";
+import { UserTypes } from "@/domain";
 import RegisterAccountFields from "./RegisterAccountFields";
 import RegisterFormCard from "./RegisterFormCard";
 import RegisterFormFooter from "./RegisterFormFooter";
@@ -23,6 +24,7 @@ export default function RegisterForm() {
   const [selectedDialCodeValue, setSelectedDialCodeValue] = useState("");
   const [areaCode, setAreaCode] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [isPartnerAccount, setIsPartnerAccount] = useState(false);
 
   const { data: countriesData } = useReferenceCountries();
 
@@ -106,6 +108,7 @@ export default function RegisterForm() {
 
     await mutateAsync({
       name,
+      userType: isPartnerAccount ? UserTypes.Provider : UserTypes.Owner,
       login: {
         email,
         password,
@@ -149,6 +152,22 @@ export default function RegisterForm() {
               onPhoneNumberChange={setPhoneNumber}
               dialCodeOptions={dialCodeOptions}
             />
+
+            <VStack align="stretch" gap={1}>
+              <Checkbox.Root
+                checked={isPartnerAccount}
+                onCheckedChange={() => setIsPartnerAccount((prev) => !prev)}
+              >
+                <Checkbox.HiddenInput />
+                <Checkbox.Control />
+                <Checkbox.Label>
+                  Quero me cadastrar como parceiro
+                </Checkbox.Label>
+              </Checkbox.Root>
+              <Text fontSize="xs" color="gray.500" pl={6}>
+                Desmarcado = cliente comum, marcado = parceiro (provider).
+              </Text>
+            </VStack>
 
             <RegisterSubmitRow isPending={isPending} />
 
