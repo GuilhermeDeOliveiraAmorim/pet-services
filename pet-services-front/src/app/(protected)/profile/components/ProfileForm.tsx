@@ -152,6 +152,29 @@ export default function ProfileForm({ user }: ProfileFormProps) {
 
   const currentPhotoUrl = user.photos?.[0]?.url;
 
+  const normalizedLatitude = latitude.replace(",", ".").trim();
+  const normalizedLongitude = longitude.replace(",", ".").trim();
+  const parsedLatitude = Number(normalizedLatitude);
+  const parsedLongitude = Number(normalizedLongitude);
+  const hasCoordinateInput =
+    normalizedLatitude.length > 0 || normalizedLongitude.length > 0;
+  const hasValidCoordinates =
+    Number.isFinite(parsedLatitude) &&
+    Number.isFinite(parsedLongitude) &&
+    parsedLatitude >= -90 &&
+    parsedLatitude <= 90 &&
+    parsedLongitude >= -180 &&
+    parsedLongitude <= 180;
+  const mapsQuery = hasValidCoordinates
+    ? `${parsedLatitude},${parsedLongitude}`
+    : "";
+  const mapsUrl = mapsQuery
+    ? `https://www.google.com/maps?q=${encodeURIComponent(mapsQuery)}`
+    : "";
+  const mapsEmbedUrl = mapsQuery
+    ? `https://www.google.com/maps?q=${encodeURIComponent(mapsQuery)}&z=15&output=embed`
+    : "";
+
   const handlePhotoUpload = async () => {
     if (!selectedPhoto) {
       return;
@@ -702,6 +725,79 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                 placeholder="-37.000"
                 fontSize={{ base: "sm" }}
               />
+            </Box>
+
+            <Box minW={0} gridColumn={{ base: "auto", sm: "1 / -1" }}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
+                Localização no mapa
+              </Text>
+
+              {hasValidCoordinates ? (
+                <VStack align="stretch" gap={2}>
+                  <Box
+                    borderRadius={{ base: "lg", md: "xl" }}
+                    borderWidth="1px"
+                    borderColor="gray.200"
+                    overflow="hidden"
+                    bg="gray.100"
+                    h={{ base: "220px", md: "260px" }}
+                  >
+                    <chakra.iframe
+                      title="Mapa com as coordenadas do perfil"
+                      src={mapsEmbedUrl}
+                      w="full"
+                      h="full"
+                      border={0}
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
+                  </Box>
+
+                  <chakra.a
+                    href={mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    alignSelf="flex-start"
+                    display="inline-flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    borderRadius="full"
+                    borderWidth="1px"
+                    borderColor="gray.300"
+                    bg="white"
+                    color="gray.700"
+                    _hover={{ bg: "gray.50", textDecoration: "none" }}
+                    h={{ base: "8", sm: "9" }}
+                    px={{ base: 3, sm: 4 }}
+                    fontSize={{ base: "xs", sm: "sm" }}
+                  >
+                    Abrir no Google Maps
+                  </chakra.a>
+                </VStack>
+              ) : hasCoordinateInput ? (
+                <Box
+                  borderRadius={{ base: "lg", md: "xl" }}
+                  borderWidth="1px"
+                  borderColor="orange.200"
+                  bg="orange.50"
+                  px={{ base: 3, md: 4 }}
+                  py={3}
+                >
+                  <Text fontSize={{ base: "xs", sm: "sm" }} color="orange.700">
+                    Informe latitude entre -90 e 90 e longitude entre -180 e 180
+                    para visualizar no mapa.
+                  </Text>
+                </Box>
+              ) : (
+                <Text fontSize={{ base: "xs", sm: "sm" }} color="gray.500">
+                  Preencha latitude e longitude para visualizar no mapa.
+                </Text>
+              )}
             </Box>
           </Grid>
         </Box>
