@@ -421,98 +421,98 @@ export default function ProfileForm({ user }: ProfileFormProps) {
           bg="white"
           p={{ base: 3, sm: 4, md: 4 }}
         >
-          <Flex
-            wrap="wrap"
-            align="center"
-            gap={{ base: 3, md: 4 }}
-            direction={{ base: "column", sm: "row" }}
-            justify={{ base: "center", sm: "flex-start" }}
+          <Input
+            ref={photoInputRef}
+            type="file"
+            accept="image/*"
+            display="none"
+            onChange={(event) =>
+              setSelectedPhoto(event.target.files?.[0] ?? null)
+            }
+          />
+
+          <Grid
+            gap={{ base: 4, md: 5 }}
+            templateColumns={{ base: "1fr", lg: "180px 1fr" }}
+            alignItems="start"
           >
-            <Box
-              h={{ base: "24", sm: "20" }}
-              w={{ base: "24", sm: "20" }}
-              overflow="hidden"
-              borderRadius={{ base: "xl", md: "2xl" }}
-              bg="gray.200"
-              flexShrink={0}
-            >
-              {currentPhotoUrl ? (
-                <Image
-                  src={currentPhotoUrl}
-                  alt="Foto do usuário"
-                  width={96}
-                  height={96}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  unoptimized
-                />
-              ) : null}
-            </Box>
-            <VStack
-              align={{ base: "center", sm: "start" }}
-              gap={2}
-              flex={1}
-              minW={0}
-            >
+            <VStack align={{ base: "center", lg: "start" }} gap={3} minW={0}>
+              <Box
+                h={{ base: "24", sm: "20" }}
+                w={{ base: "24", sm: "20" }}
+                overflow="hidden"
+                borderRadius={{ base: "xl", md: "2xl" }}
+                bg="gray.200"
+                flexShrink={0}
+              >
+                {currentPhotoUrl ? (
+                  <Image
+                    src={currentPhotoUrl}
+                    alt="Foto do usuário"
+                    width={96}
+                    height={96}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                    unoptimized
+                  />
+                ) : null}
+              </Box>
+
               <Text
                 fontSize={{ base: "xs", sm: "sm" }}
                 fontWeight="medium"
                 color="gray.800"
+                textAlign={{ base: "center", lg: "left" }}
               >
                 Foto do perfil
               </Text>
-              <Input
-                ref={photoInputRef}
-                type="file"
-                accept="image/*"
-                display="none"
-                onChange={(event) =>
-                  setSelectedPhoto(event.target.files?.[0] ?? null)
-                }
-              />
-              <HStack
-                gap={{ base: 2, sm: 3 }}
-                flexWrap="wrap"
-                justify={{ base: "center", sm: "flex-start" }}
+
+              <Button
+                type="button"
+                borderRadius="full"
+                size={{ base: "xs", sm: "sm" }}
+                variant="outline"
+                borderColor="gray.300"
+                color="gray.700"
+                onClick={() => photoInputRef.current?.click()}
+                fontSize={{ base: "xs", sm: "sm" }}
+                w={{ base: "full", lg: "auto" }}
               >
-                <Button
-                  type="button"
-                  borderRadius="full"
-                  size={{ base: "xs", sm: "sm" }}
-                  variant="outline"
-                  borderColor="gray.300"
-                  color="gray.700"
-                  onClick={() => photoInputRef.current?.click()}
-                  fontSize={{ base: "xs", sm: "sm" }}
-                >
-                  Escolher foto
-                </Button>
-                <Text
-                  fontSize={{ base: "xs" }}
-                  color="gray.500"
-                  maxW={{ base: "full", sm: "300px" }}
-                  overflow="hidden"
-                  textOverflow="ellipsis"
-                  whiteSpace="nowrap"
-                >
-                  {selectedPhoto
-                    ? selectedPhoto.name
-                    : "Nenhum arquivo selecionado"}
-                </Text>
-                <Button
-                  type="button"
-                  onClick={handlePhotoUpload}
-                  disabled={!selectedPhoto || isUploadingPhoto}
-                  borderRadius="full"
-                  size={{ base: "xs", sm: "sm" }}
-                  bg="green.400"
-                  color="white"
-                  _hover={{ bg: "green.500" }}
-                  _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
-                  fontSize={{ base: "xs", sm: "sm" }}
-                >
-                  {isUploadingPhoto ? "Enviando..." : "Enviar"}
-                </Button>
-              </HStack>
+                Escolher foto
+              </Button>
+              <Button
+                type="button"
+                onClick={handlePhotoUpload}
+                disabled={!selectedPhoto || isUploadingPhoto}
+                borderRadius="full"
+                size={{ base: "xs", sm: "sm" }}
+                bg="green.400"
+                color="white"
+                _hover={{ bg: "green.500" }}
+                _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
+                fontSize={{ base: "xs", sm: "sm" }}
+                w={{ base: "full", lg: "auto" }}
+              >
+                {isUploadingPhoto ? "Enviando..." : "Enviar"}
+              </Button>
+
+              <Text
+                fontSize={{ base: "xs" }}
+                color="gray.500"
+                maxW={{ base: "full", lg: "160px" }}
+                overflow="hidden"
+                textOverflow="ellipsis"
+                whiteSpace="nowrap"
+                textAlign={{ base: "center", lg: "left" }}
+              >
+                {selectedPhoto
+                  ? selectedPhoto.name
+                  : "Nenhum arquivo selecionado"}
+              </Text>
+
               {uploadSuccess ? (
                 <Text fontSize={{ base: "xs" }} color="green.600">
                   Foto enviada com sucesso.
@@ -524,145 +524,117 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                 </Text>
               ) : null}
             </VStack>
-          </Flex>
-        </Box>
 
-        <Grid
-          gap={{ base: 3, md: 4 }}
-          templateColumns={{ base: "1fr", md: "1fr 1fr" }}
-        >
-          <Box minW={0}>
-            <Text
-              fontSize={{ base: "xs", sm: "sm" }}
-              fontWeight="medium"
-              color="gray.700"
-              mb={2}
-            >
-              Nome
-            </Text>
-            <Input
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              h={{ base: "10", md: "11" }}
-              borderRadius={{ base: "lg", md: "xl" }}
-              bg="gray.50"
-              borderColor="gray.200"
-              focusRingColor="teal.200"
-              placeholder="Seu nome"
-              required
-              fontSize={{ base: "sm" }}
-            />
-          </Box>
+            <VStack align="stretch" gap={{ base: 3, md: 4 }} minW={0}>
+              <Box minW={0}>
+                <Text
+                  fontSize={{ base: "xs", sm: "sm" }}
+                  fontWeight="medium"
+                  color="gray.700"
+                  mb={2}
+                >
+                  Nome
+                </Text>
+                <Input
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  h={{ base: "10", md: "11" }}
+                  borderRadius={{ base: "lg", md: "xl" }}
+                  bg="gray.50"
+                  borderColor="gray.200"
+                  focusRingColor="teal.200"
+                  placeholder="Seu nome"
+                  required
+                  fontSize={{ base: "sm" }}
+                />
+              </Box>
 
-          <Box minW={0}>
-            <Text
-              fontSize={{ base: "xs", sm: "sm" }}
-              fontWeight="medium"
-              color="gray.700"
-              mb={2}
-            >
-              Email
-            </Text>
-            <Input
-              value={email}
-              readOnly
-              h={{ base: "10", md: "11" }}
-              borderRadius={{ base: "lg", md: "xl" }}
-              bg="gray.100"
-              borderColor="gray.200"
-              color="gray.500"
-              fontSize={{ base: "sm" }}
-            />
-            <Text mt={1.5} fontSize={{ base: "xs" }} color="gray.400">
-              O email é fixo e não pode ser alterado aqui.
-            </Text>
-          </Box>
-        </Grid>
+              <Box minW={0}>
+                <Text
+                  fontSize={{ base: "xs", sm: "sm" }}
+                  fontWeight="medium"
+                  color="gray.700"
+                  mb={2}
+                >
+                  Email
+                </Text>
+                <Input
+                  value={email}
+                  readOnly
+                  h={{ base: "10", md: "11" }}
+                  borderRadius={{ base: "lg", md: "xl" }}
+                  bg="gray.100"
+                  borderColor="gray.200"
+                  color="gray.500"
+                  fontSize={{ base: "sm" }}
+                />
+                <Text mt={1.5} fontSize={{ base: "xs" }} color="gray.400">
+                  O email é fixo e não pode ser alterado aqui.
+                </Text>
+              </Box>
 
-        <Box
-          borderRadius={{ base: "xl", md: "2xl" }}
-          borderWidth="1px"
-          borderColor="gray.200"
-          bg="gray.50"
-          p={{ base: 3, sm: 4, md: 4 }}
-        >
-          <Text
-            fontSize={{ base: "sm", md: "sm" }}
-            fontWeight="semibold"
-            color="gray.900"
-          >
-            Telefone
-          </Text>
-          <Grid
-            mt={3}
-            gap={{ base: 2, md: 4 }}
-            templateColumns={{ base: "1fr", md: "repeat(3, minmax(0, 1fr))" }}
-          >
-            <Box minW={0}>
-              <Text
-                fontSize={{ base: "xs", sm: "sm" }}
-                fontWeight="medium"
-                color="gray.700"
-                mb={2}
-              >
-                DDI
-              </Text>
-              <Input
-                value={phoneCountryCode}
-                onChange={(event) => setPhoneCountryCode(event.target.value)}
-                h={{ base: "10", md: "11" }}
-                borderRadius={{ base: "lg", md: "xl" }}
-                bg="gray.50"
-                borderColor="gray.200"
-                focusRingColor="teal.200"
-                placeholder="55"
-                fontSize={{ base: "sm" }}
-              />
-            </Box>
+              <Box minW={0}>
+                <Text
+                  fontSize={{ base: "xs", sm: "sm" }}
+                  fontWeight="medium"
+                  color="gray.700"
+                  mb={2}
+                >
+                  Telefone
+                </Text>
+                <Grid
+                  gap={{ base: 2, md: 4 }}
+                  templateColumns={{
+                    base: "1fr",
+                    sm: "86px 86px minmax(0, 1fr)",
+                  }}
+                >
+                  <Box minW={0}>
+                    <Input
+                      value={phoneCountryCode}
+                      onChange={(event) =>
+                        setPhoneCountryCode(event.target.value)
+                      }
+                      h={{ base: "10", md: "11" }}
+                      borderRadius={{ base: "lg", md: "xl" }}
+                      bg="gray.50"
+                      borderColor="gray.200"
+                      focusRingColor="teal.200"
+                      placeholder="+55"
+                      fontSize={{ base: "sm" }}
+                    />
+                  </Box>
 
-            <Box minW={0}>
-              <Text
-                fontSize={{ base: "xs", sm: "sm" }}
-                fontWeight="medium"
-                color="gray.700"
-                mb={2}
-              >
-                DDD
-              </Text>
-              <Input
-                value={phoneAreaCode}
-                onChange={(event) => setPhoneAreaCode(event.target.value)}
-                h={{ base: "10", md: "11" }}
-                borderRadius={{ base: "lg", md: "xl" }}
-                bg="gray.50"
-                borderColor="gray.200"
-                focusRingColor="teal.200"
-                placeholder="82"
-                fontSize={{ base: "sm" }}
-              />
-            </Box>
+                  <Box minW={0}>
+                    <Input
+                      value={phoneAreaCode}
+                      onChange={(event) => setPhoneAreaCode(event.target.value)}
+                      h={{ base: "10", md: "11" }}
+                      borderRadius={{ base: "lg", md: "xl" }}
+                      bg="gray.50"
+                      borderColor="gray.200"
+                      focusRingColor="teal.200"
+                      placeholder="82"
+                      fontSize={{ base: "sm" }}
+                    />
+                  </Box>
 
-            <Box minW={0}>
-              <Text
-                fontSize={{ base: "xs", sm: "sm" }}
-                fontWeight="medium"
-                color="gray.700"
-                mb={2}
-              >
-                Número
-              </Text>
-              <Input
-                value={phoneNumber}
-                onChange={(event) => setPhoneNumber(event.target.value)}
-                h={{ base: "10", md: "11" }}
-                borderRadius={{ base: "lg", md: "xl" }}
-                bg="gray.50"
-                borderColor="gray.200"
-                focusRingColor="teal.200"
-                placeholder="999999999"
-                fontSize={{ base: "sm" }}
-              />
-            </Box>
+                  <Box minW={0}>
+                    <Input
+                      value={phoneNumber}
+                      onChange={(event) => setPhoneNumber(event.target.value)}
+                      h={{ base: "10", md: "11" }}
+                      borderRadius={{ base: "lg", md: "xl" }}
+                      bg="gray.50"
+                      borderColor="gray.200"
+                      focusRingColor="teal.200"
+                      placeholder="999776761"
+                      fontSize={{ base: "sm" }}
+                    />
+                  </Box>
+                </Grid>
+              </Box>
+            </VStack>
           </Grid>
         </Box>
 
