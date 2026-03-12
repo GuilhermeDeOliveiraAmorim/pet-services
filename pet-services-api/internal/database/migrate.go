@@ -109,5 +109,10 @@ func getMigrations() []Migration {
 			Description: "Seed inicial de pets para usuário owner",
 			Up:          Migration20260311000001,
 		},
+		{
+			Version:     "20260311000002",
+			Description: "Seed inicial de tags e serviços para provider seed",
+			Up:          Migration20260311000002,
+		},
 	}
 }

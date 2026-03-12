@@ -437,3 +437,146 @@ func Migration20260311000001(db *gorm.DB) error {
 
 	return nil
 }
+
+func Migration20260311000002(db *gorm.DB) error {
+	seedTags := []models.Tag{
+		{ID: "01KTAG1XN0BQ4KHKPHY5VTAG01", Name: "Domiciliar", Active: true},
+		{ID: "01KTAG1XN0BQ4KHKPHY5VTAG02", Name: "Pequeno Porte", Active: true},
+		{ID: "01KTAG1XN0BQ4KHKPHY5VTAG03", Name: "Grande Porte", Active: true},
+		{ID: "01KTAG1XN0BQ4KHKPHY5VTAG04", Name: "Emergência", Active: true},
+		{ID: "01KTAG1XN0BQ4KHKPHY5VTAG05", Name: "Fins de Semana", Active: true},
+	}
+
+	for _, tag := range seedTags {
+		if err := db.Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "id"}},
+			DoNothing: true,
+		}).Create(&tag).Error; err != nil {
+			return err
+		}
+	}
+
+	var providerUser models.User
+	if err := db.Where("email = ?", "provider.seed@petservices.local").First(&providerUser).Error; err != nil {
+		return err
+	}
+
+	var provider models.Provider
+	if err := db.Where("user_id = ?", providerUser.ID).First(&provider).Error; err != nil {
+		return err
+	}
+
+	type serviceSeed struct {
+		ID           string
+		Name         string
+		Description  string
+		Price        float64
+		PriceMinimum float64
+		PriceMaximum float64
+		Duration     int
+		CategoryIDs  []string
+		TagIDs       []string
+	}
+
+	serviceSeeds := []serviceSeed{
+		{
+			ID:           "01KSVC1XN0BQ4KHKPHY5VSVC01",
+			Name:         "Banho e Tosa Completo",
+			Description:  "Serviço completo de banho e tosa para cães e gatos. Inclui secagem, escovação e perfume.",
+			Price:        80.00,
+			PriceMinimum: 60.00,
+			PriceMaximum: 120.00,
+			Duration:     90,
+			CategoryIDs:  []string{"01KG7CG1XR2FA63J6N4CCPCAT4", "01KG7CG1XR2FA63J6N4DCPCAT5"},
+			TagIDs:       []string{"01KTAG1XN0BQ4KHKPHY5VTAG02", "01KTAG1XN0BQ4KHKPHY5VTAG03"},
+		},
+		{
+			ID:           "01KSVC1XN0BQ4KHKPHY5VSVC02",
+			Name:         "Passeio Diário",
+			Description:  "Passeio diário de 30 a 60 minutos em parques e áreas verdes próximas.",
+			Price:        40.00,
+			PriceMinimum: 35.00,
+			PriceMaximum: 55.00,
+			Duration:     45,
+			CategoryIDs:  []string{"01KG7CG1XR2FA63J6N46CPCAT1", "01KG7CG1XR2FA63J6N4ACPCAT2"},
+			TagIDs:       []string{"01KTAG1XN0BQ4KHKPHY5VTAG02", "01KTAG1XN0BQ4KHKPHY5VTAG05"},
+		},
+		{
+			ID:           "01KSVC1XN0BQ4KHKPHY5VSVC03",
+			Name:         "Pet Sitting em Casa",
+			Description:  "Cuidado do seu pet no conforto da sua própria casa. Inclui alimentação, brincadeiras e companhia.",
+			Price:        120.00,
+			PriceMinimum: 100.00,
+			PriceMaximum: 180.00,
+			Duration:     480,
+			CategoryIDs:  []string{"01KG7CG1XN0BQ4KHKPHY5V5CAT"},
+			TagIDs:       []string{"01KTAG1XN0BQ4KHKPHY5VTAG01", "01KTAG1XN0BQ4KHKPHY5VTAG05"},
+		},
+		{
+			ID:           "01KSVC1XN0BQ4KHKPHY5VSVC04",
+			Name:         "Hospedagem (Hotel Pet)",
+			Description:  "Hospedagem completa com alimentação, passeios e muita atenção. Ideal para viagens.",
+			Price:        150.00,
+			PriceMinimum: 120.00,
+			PriceMaximum: 200.00,
+			Duration:     1440,
+			CategoryIDs:  []string{"01KG7CG1XR2FA63J6N4ICPCA10"},
+			TagIDs:       []string{"01KTAG1XN0BQ4KHKPHY5VTAG02", "01KTAG1XN0BQ4KHKPHY5VTAG03", "01KTAG1XN0BQ4KHKPHY5VTAG05"},
+		},
+		{
+			ID:           "01KSVC1XN0BQ4KHKPHY5VSVC05",
+			Name:         "Adestramento Básico",
+			Description:  "Treinamento de comandos básicos: senta, fica, deita, não pula. Sessões de 1 hora com reforço positivo.",
+			Price:        200.00,
+			PriceMinimum: 180.00,
+			PriceMaximum: 250.00,
+			Duration:     60,
+			CategoryIDs:  []string{"01KG7CG1XR2FA63J6N4GCPCAT8", "01KG7CG1XR2FA63J6N4HCPCAT9"},
+			TagIDs:       []string{"01KTAG1XN0BQ4KHKPHY5VTAG02", "01KTAG1XN0BQ4KHKPHY5VTAG03"},
+		},
+	}
+
+	for _, svc := range serviceSeeds {
+		categories := make([]models.Category, len(svc.CategoryIDs))
+		for i, id := range svc.CategoryIDs {
+			categories[i] = models.Category{ID: id}
+		}
+
+		tagModels := make([]models.Tag, len(svc.TagIDs))
+		for i, id := range svc.TagIDs {
+			tagModels[i] = models.Tag{ID: id}
+		}
+
+		service := models.Service{
+			ID:           svc.ID,
+			ProviderID:   provider.ID,
+			Name:         svc.Name,
+			Description:  svc.Description,
+			Price:        svc.Price,
+			PriceMinimum: svc.PriceMinimum,
+			PriceMaximum: svc.PriceMaximum,
+			Duration:     svc.Duration,
+			Active:       true,
+		}
+
+		if err := db.Clauses(clause.OnConflict{
+			Columns: []clause.Column{{Name: "id"}},
+			DoUpdates: clause.AssignmentColumns([]string{
+				"provider_id", "name", "description", "price",
+				"price_minimum", "price_maximum", "duration", "active",
+			}),
+		}).Create(&service).Error; err != nil {
+			return err
+		}
+
+		if err := db.Model(&service).Association("Categories").Replace(categories); err != nil {
+			return err
+		}
+
+		if err := db.Model(&service).Association("Tags").Replace(tagModels); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
