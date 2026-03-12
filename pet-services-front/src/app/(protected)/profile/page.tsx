@@ -61,27 +61,39 @@ export default function ProfilePage() {
       <MainNav />
 
       <Box
-        borderRadius="3xl"
+        borderRadius={{ base: "2xl", md: "3xl" }}
         bg="white"
-        p={{ base: 5, md: 7 }}
+        p={{ base: 4, sm: 5, md: 7 }}
         borderWidth="1px"
         borderColor="gray.200"
         shadow="sm"
       >
-        <Flex mb={6} wrap="wrap" align="start" justify="space-between" gap={4}>
+        <Flex
+          mb={6}
+          wrap="wrap"
+          align="start"
+          justify="space-between"
+          gap={4}
+          direction={{ base: "column", sm: "row" }}
+        >
           <Box>
             <Text
-              fontSize="xs"
+              fontSize={{ base: "xs" }}
               fontWeight="semibold"
               textTransform="uppercase"
               color="green.500"
             >
               Perfil
             </Text>
-            <Text mt={2} fontSize="2xl" fontWeight="semibold" color="gray.900">
+            <Text
+              mt={2}
+              fontSize={{ base: "xl", sm: "2xl" }}
+              fontWeight="semibold"
+              color="gray.900"
+            >
               Seus dados
             </Text>
-            <Text mt={2} fontSize="sm" color="gray.600">
+            <Text mt={2} fontSize={{ base: "xs", sm: "sm" }} color="gray.600">
               Atualize suas informações para manter seu perfil completo.
             </Text>
           </Box>
@@ -90,23 +102,23 @@ export default function ProfilePage() {
               borderRadius="full"
               px={3}
               py={1}
-              fontSize="xs"
+              fontSize={{ base: "xs" }}
               colorPalette={user.active ? "green" : "orange"}
               variant="subtle"
             >
-              {user.active ? "Conta ativa" : "Conta desativada"}
+              {user.active ? "Ativo" : "Inativo"}
             </Badge>
           ) : null}
         </Flex>
 
         {isLoading ? (
-          <Text fontSize="sm" color="gray.500">
+          <Text fontSize={{ base: "xs", sm: "sm" }} color="gray.500">
             Carregando perfil...
           </Text>
         ) : user ? (
           <ProfileForm key={user.id} user={user} />
         ) : (
-          <Text fontSize="sm" color="gray.500">
+          <Text fontSize={{ base: "xs", sm: "sm" }} color="gray.500">
             Não foi possível carregar o perfil.
           </Text>
         )}
@@ -115,26 +127,31 @@ export default function ProfilePage() {
       <ChangePasswordCard />
 
       <Box
-        borderRadius="3xl"
+        borderRadius={{ base: "2xl", md: "3xl" }}
         borderWidth="1px"
         borderColor="gray.200"
         bg="white"
-        p={{ base: 5, md: 6 }}
+        p={{ base: 4, sm: 5, md: 6 }}
         shadow="sm"
       >
         <Box mb={4}>
           <Text
-            fontSize="xs"
+            fontSize={{ base: "xs" }}
             fontWeight="semibold"
             textTransform="uppercase"
             color="gray.500"
           >
             Conta
           </Text>
-          <Text mt={2} fontSize="xl" fontWeight="semibold" color="gray.900">
+          <Text
+            mt={2}
+            fontSize={{ base: "lg", md: "xl" }}
+            fontWeight="semibold"
+            color="gray.900"
+          >
             Status da conta
           </Text>
-          <Text mt={2} fontSize="sm" color="gray.600">
+          <Text mt={2} fontSize={{ base: "xs", sm: "sm" }} color="gray.600">
             Você pode desativar sua conta e reativá-la depois.
           </Text>
         </Box>
@@ -142,20 +159,24 @@ export default function ProfilePage() {
         {accountFeedback ? (
           <Box
             mb={4}
-            borderRadius="2xl"
+            borderRadius={{ base: "xl", md: "2xl" }}
             borderWidth="1px"
             borderColor="red.200"
             bg="red.50"
-            px={4}
+            px={{ base: 3, md: 4 }}
             py={3}
           >
-            <Text fontSize="sm" color="red.600">
+            <Text fontSize={{ base: "xs", sm: "sm" }} color="red.600">
               {accountFeedback}
             </Text>
           </Box>
         ) : null}
 
-        <HStack gap={3} flexWrap="wrap">
+        <HStack
+          gap={{ base: 2, sm: 3 }}
+          flexWrap="wrap"
+          justify={{ base: "center", sm: "flex-start" }}
+        >
           <Button
             type="button"
             onClick={() => setIsDeactivateOpen(true)}
@@ -167,8 +188,10 @@ export default function ProfilePage() {
             bg="white"
             _hover={{ bg: "red.50" }}
             _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
+            fontSize={{ base: "xs", sm: "sm" }}
+            h={{ base: "9", md: "10" }}
           >
-            {isDeactivating ? "Desativando..." : "Desativar conta"}
+            {isDeactivating ? "Desativando..." : "Desativar"}
           </Button>
 
           <Button
@@ -182,8 +205,10 @@ export default function ProfilePage() {
             bg="white"
             _hover={{ bg: "gray.50" }}
             _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
+            fontSize={{ base: "xs", sm: "sm" }}
+            h={{ base: "9", md: "10" }}
           >
-            {isReactivating ? "Reativando..." : "Reativar conta"}
+            {isReactivating ? "Reativando..." : "Reativar"}
           </Button>
         </HStack>
       </Box>
@@ -204,15 +229,19 @@ export default function ProfilePage() {
             aria-modal="true"
             maxW="md"
             w="full"
-            borderRadius="3xl"
+            borderRadius={{ base: "2xl", md: "3xl" }}
             bg="white"
-            p={6}
+            p={{ base: 4, md: 6 }}
             shadow="xl"
           >
-            <Text fontSize="lg" fontWeight="semibold" color="gray.900">
+            <Text
+              fontSize={{ base: "base", md: "lg" }}
+              fontWeight="semibold"
+              color="gray.900"
+            >
               Desativar conta?
             </Text>
-            <Text mt={2} fontSize="sm" color="gray.600">
+            <Text mt={2} fontSize={{ base: "xs", sm: "sm" }} color="gray.600">
               Ao desativar sua conta, você será desconectado e precisará
               reativá-la para acessar novamente.
             </Text>
@@ -226,6 +255,8 @@ export default function ProfilePage() {
                 bg="white"
                 color="gray.700"
                 onClick={() => setIsDeactivateOpen(false)}
+                fontSize={{ base: "xs", sm: "sm" }}
+                h={{ base: "9", md: "10" }}
               >
                 Cancelar
               </Button>
@@ -238,6 +269,8 @@ export default function ProfilePage() {
                 disabled={isDeactivating}
                 _hover={{ bg: "red.600" }}
                 _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
+                fontSize={{ base: "xs", sm: "sm" }}
+                h={{ base: "9", md: "10" }}
               >
                 {isDeactivating ? "Desativando..." : "Confirmar"}
               </Button>

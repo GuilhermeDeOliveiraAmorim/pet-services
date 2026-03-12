@@ -212,35 +212,51 @@ export default function ProfileForm({ user }: ProfileFormProps) {
 
   return (
     <chakra.form onSubmit={handleSubmit}>
-      <VStack align="stretch" gap={6}>
+      <VStack align="stretch" gap={4}>
         <Box
-          borderRadius="2xl"
+          borderRadius={{ base: "xl", md: "2xl" }}
           borderWidth="1px"
           borderColor="gray.200"
           bg="white"
-          p={4}
+          p={{ base: 3, sm: 4, md: 4 }}
         >
-          <Flex wrap="wrap" align="center" gap={4}>
+          <Flex
+            wrap="wrap"
+            align="center"
+            gap={{ base: 3, md: 4 }}
+            direction={{ base: "column", sm: "row" }}
+            justify={{ base: "center", sm: "flex-start" }}
+          >
             <Box
-              h="20"
-              w="20"
+              h={{ base: "24", sm: "20" }}
+              w={{ base: "24", sm: "20" }}
               overflow="hidden"
-              borderRadius="2xl"
+              borderRadius={{ base: "xl", md: "2xl" }}
               bg="gray.200"
+              flexShrink={0}
             >
               {currentPhotoUrl ? (
                 <Image
                   src={currentPhotoUrl}
                   alt="Foto do usuário"
-                  width={80}
-                  height={80}
+                  width={96}
+                  height={96}
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
                   unoptimized
                 />
               ) : null}
             </Box>
-            <VStack align="start" gap={2} flex={1} minW="260px">
-              <Text fontSize="sm" fontWeight="medium" color="gray.800">
+            <VStack
+              align={{ base: "center", sm: "start" }}
+              gap={2}
+              flex={1}
+              minW={0}
+            >
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.800"
+              >
                 Foto do perfil
               </Text>
               <Input
@@ -252,22 +268,27 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                   setSelectedPhoto(event.target.files?.[0] ?? null)
                 }
               />
-              <HStack gap={3} flexWrap="wrap">
+              <HStack
+                gap={{ base: 2, sm: 3 }}
+                flexWrap="wrap"
+                justify={{ base: "center", sm: "flex-start" }}
+              >
                 <Button
                   type="button"
                   borderRadius="full"
-                  size="sm"
+                  size={{ base: "xs", sm: "sm" }}
                   variant="outline"
                   borderColor="gray.300"
                   color="gray.700"
                   onClick={() => photoInputRef.current?.click()}
+                  fontSize={{ base: "xs", sm: "sm" }}
                 >
                   Escolher foto
                 </Button>
                 <Text
-                  fontSize="xs"
+                  fontSize={{ base: "xs" }}
                   color="gray.500"
-                  maxW="300px"
+                  maxW={{ base: "full", sm: "300px" }}
                   overflow="hidden"
                   textOverflow="ellipsis"
                   whiteSpace="nowrap"
@@ -281,22 +302,23 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                   onClick={handlePhotoUpload}
                   disabled={!selectedPhoto || isUploadingPhoto}
                   borderRadius="full"
-                  size="sm"
+                  size={{ base: "xs", sm: "sm" }}
                   bg="green.400"
                   color="white"
                   _hover={{ bg: "green.500" }}
                   _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
+                  fontSize={{ base: "xs", sm: "sm" }}
                 >
-                  {isUploadingPhoto ? "Enviando..." : "Enviar foto"}
+                  {isUploadingPhoto ? "Enviando..." : "Enviar"}
                 </Button>
               </HStack>
               {uploadSuccess ? (
-                <Text fontSize="xs" color="green.600">
+                <Text fontSize={{ base: "xs" }} color="green.600">
                   Foto enviada com sucesso.
                 </Text>
               ) : null}
               {photoFeedback ? (
-                <Text fontSize="xs" color="red.600">
+                <Text fontSize={{ base: "xs" }} color="red.600">
                   {photoFeedback}
                 </Text>
               ) : null}
@@ -304,276 +326,381 @@ export default function ProfileForm({ user }: ProfileFormProps) {
           </Flex>
         </Box>
 
-        <Grid gap={4} templateColumns={{ base: "1fr", md: "1fr 1fr" }}>
+        <Grid
+          gap={{ base: 3, md: 4 }}
+          templateColumns={{ base: "1fr", md: "1fr 1fr" }}
+        >
           <Box minW={0}>
-            <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+            <Text
+              fontSize={{ base: "xs", sm: "sm" }}
+              fontWeight="medium"
+              color="gray.700"
+              mb={2}
+            >
               Nome
             </Text>
             <Input
               value={name}
               onChange={(event) => setName(event.target.value)}
-              h="11"
-              borderRadius="xl"
+              h={{ base: "10", md: "11" }}
+              borderRadius={{ base: "lg", md: "xl" }}
               bg="gray.50"
               borderColor="gray.200"
               focusRingColor="teal.200"
               placeholder="Seu nome"
               required
+              fontSize={{ base: "sm" }}
             />
           </Box>
 
           <Box minW={0}>
-            <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+            <Text
+              fontSize={{ base: "xs", sm: "sm" }}
+              fontWeight="medium"
+              color="gray.700"
+              mb={2}
+            >
               Email
             </Text>
             <Input
               value={email}
               readOnly
-              h="11"
-              borderRadius="xl"
+              h={{ base: "10", md: "11" }}
+              borderRadius={{ base: "lg", md: "xl" }}
               bg="gray.100"
               borderColor="gray.200"
               color="gray.500"
+              fontSize={{ base: "sm" }}
             />
-            <Text mt={1.5} fontSize="xs" color="gray.400">
+            <Text mt={1.5} fontSize={{ base: "xs" }} color="gray.400">
               O email é fixo e não pode ser alterado aqui.
             </Text>
           </Box>
         </Grid>
 
         <Box
-          borderRadius="2xl"
+          borderRadius={{ base: "xl", md: "2xl" }}
           borderWidth="1px"
           borderColor="gray.200"
           bg="gray.50"
-          p={4}
+          p={{ base: 3, sm: 4, md: 4 }}
         >
-          <Text fontSize="sm" fontWeight="semibold" color="gray.900">
+          <Text
+            fontSize={{ base: "sm", md: "sm" }}
+            fontWeight="semibold"
+            color="gray.900"
+          >
             Telefone
           </Text>
           <Grid
             mt={3}
-            gap={4}
+            gap={{ base: 2, md: 4 }}
             templateColumns={{ base: "1fr", md: "repeat(3, minmax(0, 1fr))" }}
           >
             <Box minW={0}>
-              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
                 DDI
               </Text>
               <Input
                 value={phoneCountryCode}
                 onChange={(event) => setPhoneCountryCode(event.target.value)}
-                h="11"
-                borderRadius="xl"
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
                 bg="gray.50"
                 borderColor="gray.200"
                 focusRingColor="teal.200"
                 placeholder="55"
+                fontSize={{ base: "sm" }}
               />
             </Box>
 
             <Box minW={0}>
-              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
                 DDD
               </Text>
               <Input
                 value={phoneAreaCode}
                 onChange={(event) => setPhoneAreaCode(event.target.value)}
-                h="11"
-                borderRadius="xl"
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
                 bg="gray.50"
                 borderColor="gray.200"
                 focusRingColor="teal.200"
                 placeholder="82"
+                fontSize={{ base: "sm" }}
               />
             </Box>
 
             <Box minW={0}>
-              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
                 Número
               </Text>
               <Input
                 value={phoneNumber}
                 onChange={(event) => setPhoneNumber(event.target.value)}
-                h="11"
-                borderRadius="xl"
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
                 bg="gray.50"
                 borderColor="gray.200"
                 focusRingColor="teal.200"
                 placeholder="999999999"
+                fontSize={{ base: "sm" }}
               />
             </Box>
           </Grid>
         </Box>
 
         <Box
-          borderRadius="2xl"
+          borderRadius={{ base: "xl", md: "2xl" }}
           borderWidth="1px"
           borderColor="gray.200"
           bg="gray.50"
-          p={4}
+          p={{ base: 3, sm: 4, md: 4 }}
         >
-          <Text fontSize="sm" fontWeight="semibold" color="gray.900">
+          <Text
+            fontSize={{ base: "sm", md: "sm" }}
+            fontWeight="semibold"
+            color="gray.900"
+          >
             Endereço
           </Text>
-          <Grid mt={3} gap={4} templateColumns={{ base: "1fr", md: "1fr 1fr" }}>
+          <Grid
+            mt={3}
+            gap={{ base: 2, md: 4 }}
+            templateColumns={{ base: "1fr", sm: "1fr 1fr", md: "1fr 1fr" }}
+          >
             <Box minW={0}>
-              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
                 Rua
               </Text>
               <Input
                 value={street}
                 onChange={(event) => setStreet(event.target.value)}
-                h="11"
-                borderRadius="xl"
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
                 bg="gray.50"
                 borderColor="gray.200"
                 focusRingColor="teal.200"
                 placeholder="Rua"
+                fontSize={{ base: "sm" }}
               />
             </Box>
 
             <Box minW={0}>
-              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
                 Número
               </Text>
               <Input
                 value={addressNumber}
                 onChange={(event) => setAddressNumber(event.target.value)}
-                h="11"
-                borderRadius="xl"
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
                 bg="gray.50"
                 borderColor="gray.200"
                 focusRingColor="teal.200"
                 placeholder="123"
+                fontSize={{ base: "sm" }}
               />
             </Box>
 
             <Box minW={0}>
-              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
                 Bairro
               </Text>
               <Input
                 value={neighborhood}
                 onChange={(event) => setNeighborhood(event.target.value)}
-                h="11"
-                borderRadius="xl"
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
                 bg="gray.50"
                 borderColor="gray.200"
                 focusRingColor="teal.200"
                 placeholder="Centro"
+                fontSize={{ base: "sm" }}
               />
             </Box>
 
             <Box minW={0}>
-              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
                 Cidade
               </Text>
               <Input
                 value={city}
                 onChange={(event) => setCity(event.target.value)}
-                h="11"
-                borderRadius="xl"
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
                 bg="gray.50"
                 borderColor="gray.200"
                 focusRingColor="teal.200"
                 placeholder="Maceió"
+                fontSize={{ base: "sm" }}
               />
             </Box>
 
             <Box minW={0}>
-              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
                 CEP
               </Text>
               <Input
                 value={zipCode}
                 onChange={(event) => setZipCode(event.target.value)}
-                h="11"
-                borderRadius="xl"
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
                 bg="gray.50"
                 borderColor="gray.200"
                 focusRingColor="teal.200"
                 placeholder="00000-000"
+                fontSize={{ base: "sm" }}
               />
             </Box>
 
             <Box minW={0}>
-              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
                 Estado
               </Text>
               <Input
                 value={state}
                 onChange={(event) => setState(event.target.value)}
-                h="11"
-                borderRadius="xl"
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
                 bg="gray.50"
                 borderColor="gray.200"
                 focusRingColor="teal.200"
                 placeholder="AL"
+                fontSize={{ base: "sm" }}
               />
             </Box>
 
             <Box minW={0}>
-              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
                 País
               </Text>
               <Input
                 value={country}
                 onChange={(event) => setCountry(event.target.value)}
-                h="11"
-                borderRadius="xl"
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
                 bg="gray.50"
                 borderColor="gray.200"
                 focusRingColor="teal.200"
                 placeholder="Brasil"
+                fontSize={{ base: "sm" }}
               />
             </Box>
 
             <Box minW={0}>
-              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
                 Complemento
               </Text>
               <Input
                 value={complement}
                 onChange={(event) => setComplement(event.target.value)}
-                h="11"
-                borderRadius="xl"
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
                 bg="gray.50"
                 borderColor="gray.200"
                 focusRingColor="teal.200"
-                placeholder="Apartamento"
+                placeholder="Apto"
+                fontSize={{ base: "sm" }}
               />
             </Box>
 
             <Box minW={0}>
-              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
                 Latitude
               </Text>
               <Input
                 value={latitude}
                 onChange={(event) => setLatitude(event.target.value)}
-                h="11"
-                borderRadius="xl"
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
                 bg="gray.50"
                 borderColor="gray.200"
                 focusRingColor="teal.200"
                 placeholder="-10.000"
+                fontSize={{ base: "sm" }}
               />
             </Box>
 
             <Box minW={0}>
-              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
                 Longitude
               </Text>
               <Input
                 value={longitude}
                 onChange={(event) => setLongitude(event.target.value)}
-                h="11"
-                borderRadius="xl"
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
                 bg="gray.50"
                 borderColor="gray.200"
                 focusRingColor="teal.200"
                 placeholder="-37.000"
+                fontSize={{ base: "sm" }}
               />
             </Box>
           </Grid>
@@ -581,14 +708,14 @@ export default function ProfileForm({ user }: ProfileFormProps) {
 
         {feedback ? (
           <Box
-            borderRadius="2xl"
+            borderRadius={{ base: "xl", md: "2xl" }}
             borderWidth="1px"
             borderColor="red.200"
             bg="red.50"
-            px={4}
+            px={{ base: 3, md: 4 }}
             py={3}
           >
-            <Text fontSize="sm" color="red.600">
+            <Text fontSize={{ base: "xs", sm: "sm" }} color="red.600">
               {feedback}
             </Text>
           </Box>
@@ -596,14 +723,14 @@ export default function ProfileForm({ user }: ProfileFormProps) {
 
         {updateSuccess ? (
           <Box
-            borderRadius="2xl"
+            borderRadius={{ base: "xl", md: "2xl" }}
             borderWidth="1px"
             borderColor="green.200"
             bg="green.50"
-            px={4}
+            px={{ base: 3, md: 4 }}
             py={3}
           >
-            <Text fontSize="sm" color="green.700">
+            <Text fontSize={{ base: "xs", sm: "sm" }} color="green.700">
               Perfil atualizado com sucesso.
             </Text>
           </Box>
@@ -612,13 +739,14 @@ export default function ProfileForm({ user }: ProfileFormProps) {
         <Button
           type="submit"
           disabled={isSaving || !hasChanges}
-          h="11"
+          h={{ base: "10", md: "11" }}
           w="full"
           borderRadius="full"
           bg="green.400"
           color="white"
           _hover={{ bg: "green.500" }}
           _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
+          fontSize={{ base: "sm" }}
         >
           {isSaving ? "Salvando..." : "Salvar alterações"}
         </Button>
