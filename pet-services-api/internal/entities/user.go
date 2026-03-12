@@ -87,7 +87,7 @@ func NewUser(name string, userType string, login Login, phone Phone, address Add
 	}, nil
 }
 
-func NewIncompleteUser(name string, login Login, phone Phone) (*User, []exceptions.ProblemDetails) {
+func NewIncompleteUser(name string, userType string, login Login, phone Phone) (*User, []exceptions.ProblemDetails) {
 	var problems []exceptions.ProblemDetails
 
 	if name == "" {
@@ -102,6 +102,20 @@ func NewIncompleteUser(name string, login Login, phone Phone) (*User, []exceptio
 		}))
 	}
 
+	if userType == "" {
+		problems = append(problems, exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "Tipo de usuário ausente",
+			Detail: "O tipo de usuário é obrigatório",
+		}))
+	}
+
+	if userType != UserTypes.Owner && userType != UserTypes.Provider && userType != UserTypes.Admin {
+		problems = append(problems, exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "Tipo de usuário inválido",
+			Detail: "O tipo de usuário deve ser 'owner', 'provider' ou 'admin'",
+		}))
+	}
+
 	if len(problems) > 0 {
 		return nil, problems
 	}
@@ -112,7 +126,7 @@ func NewIncompleteUser(name string, login Login, phone Phone) (*User, []exceptio
 		Login:           login,
 		Phone:           phone,
 		Address:         Address{Country: "BR"},
-		UserType:        "",
+		UserType:        userType,
 		EmailVerified:   false,
 		ProfileComplete: false,
 	}, nil

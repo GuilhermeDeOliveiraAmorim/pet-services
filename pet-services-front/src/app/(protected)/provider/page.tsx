@@ -7,16 +7,10 @@ import {
   Box,
   Button,
   Dialog,
-  Flex,
   Grid,
-  HStack,
-  Input,
-  NativeSelect,
   Portal,
   Text,
-  Textarea,
   VStack,
-  chakra,
 } from "@chakra-ui/react";
 import {
   type ListTagsOutput,
@@ -39,6 +33,9 @@ import {
 } from "@/application";
 import type { Service } from "@/domain";
 import { getApiErrorMessage } from "@/lib/api-error";
+import AddProviderForm from "./components/AddProviderForm";
+import ServiceFormCard from "./components/ServiceFormCard";
+import ServicesListSection from "./components/ServicesListSection";
 import ChangePasswordCard from "@/components/account/ChangePasswordCard";
 import MainNav from "@/components/common/MainNav";
 import PageWrapper from "@/components/common/PageWrapper";
@@ -895,6 +892,24 @@ export default function ProviderDashboardPage() {
     }
   };
 
+  const listServicesErrorMessage = listServicesError
+    ? getApiErrorMessage(
+        listServicesError,
+        "Não foi possível carregar os serviços.",
+      )
+    : null;
+
+  const categoriesErrorMessage = categoriesError
+    ? getApiErrorMessage(
+        categoriesError,
+        "Não foi possível carregar as categorias.",
+      )
+    : null;
+
+  const tagsErrorMessage = tagsError
+    ? getApiErrorMessage(tagsError, "Não foi possível carregar as tags.")
+    : null;
+
   return (
     <PageWrapper gap={10}>
       <MainNav />
@@ -960,1161 +975,113 @@ export default function ProviderDashboardPage() {
         </Grid>
 
         {shouldShowAddProviderForm ? (
-          <Box
-            borderRadius="3xl"
-            bg="white"
-            p={{ base: 5, md: 6 }}
-            borderWidth="1px"
-            borderColor="gray.200"
-            shadow="sm"
-          >
-            <Box mb={4}>
-              <Text
-                fontSize="xs"
-                fontWeight="semibold"
-                textTransform="uppercase"
-                color="green.500"
-              >
-                Provider
-              </Text>
-              <Text mt={2} fontSize="xl" fontWeight="semibold" color="gray.900">
-                Cadastrar provider
-              </Text>
-              <Text mt={2} fontSize="sm" color="gray.600">
-                Antes de criar serviços, você precisa cadastrar os dados do seu
-                provider.
-              </Text>
-            </Box>
-
-            <chakra.form onSubmit={handleAddProvider}>
-              <VStack align="stretch" gap={4}>
-                <HStack justify="space-between" flexWrap="wrap">
-                  <Text fontSize="sm" color="gray.600">
-                    Use seus dados do perfil como base e ajuste se necessário.
-                  </Text>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    borderRadius="full"
-                    onClick={applyUserDefaultsToProviderForm}
-                    disabled={!currentUser || isAddingProvider}
-                  >
-                    Preencher com dados do perfil
-                  </Button>
-                </HStack>
-
-                <Grid gap={4} templateColumns={{ base: "1fr", md: "1fr 1fr" }}>
-                  <Box minW={0}>
-                    <Text
-                      fontSize="sm"
-                      fontWeight="medium"
-                      color="gray.700"
-                      mb={2}
-                    >
-                      Nome comercial
-                    </Text>
-                    <Input
-                      value={providerBusinessName}
-                      onChange={(event) =>
-                        setProviderBusinessName(event.target.value)
-                      }
-                      h="11"
-                      borderRadius="xl"
-                      bg="gray.50"
-                      borderColor="gray.200"
-                      focusRingColor="teal.200"
-                      placeholder="Ex: Clínica Pet Saúde"
-                      required
-                    />
-                  </Box>
-
-                  <Box minW={0}>
-                    <Text
-                      fontSize="sm"
-                      fontWeight="medium"
-                      color="gray.700"
-                      mb={2}
-                    >
-                      Faixa de preço
-                    </Text>
-                    <Input
-                      value={providerPriceRange}
-                      onChange={(event) =>
-                        setProviderPriceRange(
-                          event.target.value.slice(
-                            0,
-                            PROVIDER_PRICE_RANGE_MAX_LENGTH,
-                          ),
-                        )
-                      }
-                      maxLength={PROVIDER_PRICE_RANGE_MAX_LENGTH}
-                      h="11"
-                      borderRadius="xl"
-                      bg="gray.50"
-                      borderColor="gray.200"
-                      focusRingColor="teal.200"
-                      placeholder="Ex: 80-180"
-                      required
-                    />
-                    <Text mt={1.5} fontSize="xs" color="gray.500">
-                      Máximo de {PROVIDER_PRICE_RANGE_MAX_LENGTH} caracteres.
-                    </Text>
-                  </Box>
-
-                  <Box minW={0}>
-                    <Text
-                      fontSize="sm"
-                      fontWeight="medium"
-                      color="gray.700"
-                      mb={2}
-                    >
-                      Descrição
-                    </Text>
-                    <Textarea
-                      value={providerDescription}
-                      onChange={(event) =>
-                        setProviderDescription(event.target.value)
-                      }
-                      minH="20"
-                      borderRadius="xl"
-                      bg="gray.50"
-                      borderColor="gray.200"
-                      focusRingColor="teal.200"
-                      placeholder="Descreva o seu negócio e os serviços prestados"
-                      required
-                    />
-                  </Box>
-
-                  <Box minW={0}>
-                    <Text
-                      fontSize="sm"
-                      fontWeight="medium"
-                      color="gray.700"
-                      mb={2}
-                    >
-                      Rua
-                    </Text>
-                    <Input
-                      value={providerStreet}
-                      onChange={(event) =>
-                        setProviderStreet(event.target.value)
-                      }
-                      h="11"
-                      borderRadius="xl"
-                      bg="gray.50"
-                      borderColor="gray.200"
-                      focusRingColor="teal.200"
-                      placeholder="Rua"
-                      required
-                    />
-                  </Box>
-
-                  <Box minW={0}>
-                    <Text
-                      fontSize="sm"
-                      fontWeight="medium"
-                      color="gray.700"
-                      mb={2}
-                    >
-                      Número do endereço
-                    </Text>
-                    <Input
-                      value={providerAddressNumber}
-                      onChange={(event) =>
-                        setProviderAddressNumber(event.target.value)
-                      }
-                      h="11"
-                      borderRadius="xl"
-                      bg="gray.50"
-                      borderColor="gray.200"
-                      focusRingColor="teal.200"
-                      placeholder="123"
-                      required
-                    />
-                  </Box>
-
-                  <Box minW={0}>
-                    <Text
-                      fontSize="sm"
-                      fontWeight="medium"
-                      color="gray.700"
-                      mb={2}
-                    >
-                      Bairro
-                    </Text>
-                    <Input
-                      value={providerNeighborhood}
-                      onChange={(event) =>
-                        setProviderNeighborhood(event.target.value)
-                      }
-                      h="11"
-                      borderRadius="xl"
-                      bg="gray.50"
-                      borderColor="gray.200"
-                      focusRingColor="teal.200"
-                      placeholder="Bairro"
-                      required
-                    />
-                  </Box>
-
-                  <Box minW={0}>
-                    <Text
-                      fontSize="sm"
-                      fontWeight="medium"
-                      color="gray.700"
-                      mb={2}
-                    >
-                      Cidade
-                    </Text>
-                    <Input
-                      value={providerCity}
-                      onChange={(event) => setProviderCity(event.target.value)}
-                      h="11"
-                      borderRadius="xl"
-                      bg="gray.50"
-                      borderColor="gray.200"
-                      focusRingColor="teal.200"
-                      placeholder="Cidade"
-                      required
-                    />
-                  </Box>
-
-                  <Box minW={0}>
-                    <Text
-                      fontSize="sm"
-                      fontWeight="medium"
-                      color="gray.700"
-                      mb={2}
-                    >
-                      CEP
-                    </Text>
-                    <Input
-                      value={providerZipCode}
-                      onChange={(event) =>
-                        setProviderZipCode(event.target.value)
-                      }
-                      h="11"
-                      borderRadius="xl"
-                      bg="gray.50"
-                      borderColor="gray.200"
-                      focusRingColor="teal.200"
-                      placeholder="57000-000"
-                      required
-                    />
-                  </Box>
-
-                  <Box minW={0}>
-                    <Text
-                      fontSize="sm"
-                      fontWeight="medium"
-                      color="gray.700"
-                      mb={2}
-                    >
-                      Estado
-                    </Text>
-                    <Input
-                      value={providerState}
-                      onChange={(event) => setProviderState(event.target.value)}
-                      h="11"
-                      borderRadius="xl"
-                      bg="gray.50"
-                      borderColor="gray.200"
-                      focusRingColor="teal.200"
-                      placeholder="AL"
-                      required
-                    />
-                  </Box>
-
-                  <Box minW={0}>
-                    <Text
-                      fontSize="sm"
-                      fontWeight="medium"
-                      color="gray.700"
-                      mb={2}
-                    >
-                      País
-                    </Text>
-                    <Input
-                      value={providerCountry}
-                      onChange={(event) =>
-                        setProviderCountry(event.target.value)
-                      }
-                      h="11"
-                      borderRadius="xl"
-                      bg="gray.50"
-                      borderColor="gray.200"
-                      focusRingColor="teal.200"
-                      placeholder="Brasil"
-                      required
-                    />
-                  </Box>
-
-                  <Box minW={0}>
-                    <Text
-                      fontSize="sm"
-                      fontWeight="medium"
-                      color="gray.700"
-                      mb={2}
-                    >
-                      Latitude
-                    </Text>
-                    <Input
-                      type="number"
-                      inputMode="decimal"
-                      value={providerLatitude}
-                      onChange={(event) =>
-                        setProviderLatitude(event.target.value)
-                      }
-                      h="11"
-                      borderRadius="xl"
-                      bg="gray.50"
-                      borderColor="gray.200"
-                      focusRingColor="teal.200"
-                      placeholder="-9.6498"
-                      step="0.000001"
-                      required
-                    />
-                  </Box>
-
-                  <Box minW={0}>
-                    <Text
-                      fontSize="sm"
-                      fontWeight="medium"
-                      color="gray.700"
-                      mb={2}
-                    >
-                      Longitude
-                    </Text>
-                    <Input
-                      type="number"
-                      inputMode="decimal"
-                      value={providerLongitude}
-                      onChange={(event) =>
-                        setProviderLongitude(event.target.value)
-                      }
-                      h="11"
-                      borderRadius="xl"
-                      bg="gray.50"
-                      borderColor="gray.200"
-                      focusRingColor="teal.200"
-                      placeholder="-35.7089"
-                      step="0.000001"
-                      required
-                    />
-                  </Box>
-                </Grid>
-
-                <Box minW={0}>
-                  <Text
-                    fontSize="sm"
-                    fontWeight="medium"
-                    color="gray.700"
-                    mb={2}
-                  >
-                    Complemento (opcional)
-                  </Text>
-                  <Input
-                    value={providerComplement}
-                    onChange={(event) =>
-                      setProviderComplement(event.target.value)
-                    }
-                    h="11"
-                    borderRadius="xl"
-                    bg="gray.50"
-                    borderColor="gray.200"
-                    focusRingColor="teal.200"
-                    placeholder="Sala, bloco, referência"
-                  />
-                </Box>
-
-                <HStack gap={3} flexWrap="wrap">
-                  <Button
-                    type="submit"
-                    borderRadius="full"
-                    bg="green.400"
-                    color="white"
-                    _hover={{ bg: "green.500" }}
-                    _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
-                    disabled={isAddingProvider || isLoadingProviderContext}
-                  >
-                    {isAddingProvider
-                      ? "Cadastrando provider..."
-                      : "Cadastrar provider"}
-                  </Button>
-                </HStack>
-
-                {providerFeedback ? (
-                  <Text
-                    fontSize="xs"
-                    color={
-                      providerFeedback.type === "error"
-                        ? "red.600"
-                        : "green.600"
-                    }
-                  >
-                    {providerFeedback.message}
-                  </Text>
-                ) : null}
-              </VStack>
-            </chakra.form>
-          </Box>
+          <AddProviderForm
+            onSubmit={handleAddProvider}
+            onPrefillFromProfile={applyUserDefaultsToProviderForm}
+            canPrefillFromProfile={Boolean(currentUser)}
+            isSubmitting={isAddingProvider}
+            isLoadingProviderContext={isLoadingProviderContext}
+            maxPriceRangeLength={PROVIDER_PRICE_RANGE_MAX_LENGTH}
+            feedback={providerFeedback}
+            businessName={providerBusinessName}
+            onBusinessNameChange={setProviderBusinessName}
+            priceRange={providerPriceRange}
+            onPriceRangeChange={setProviderPriceRange}
+            description={providerDescription}
+            onDescriptionChange={setProviderDescription}
+            street={providerStreet}
+            onStreetChange={setProviderStreet}
+            addressNumber={providerAddressNumber}
+            onAddressNumberChange={setProviderAddressNumber}
+            neighborhood={providerNeighborhood}
+            onNeighborhoodChange={setProviderNeighborhood}
+            city={providerCity}
+            onCityChange={setProviderCity}
+            zipCode={providerZipCode}
+            onZipCodeChange={setProviderZipCode}
+            state={providerState}
+            onStateChange={setProviderState}
+            country={providerCountry}
+            onCountryChange={setProviderCountry}
+            latitude={providerLatitude}
+            onLatitudeChange={setProviderLatitude}
+            longitude={providerLongitude}
+            onLongitudeChange={setProviderLongitude}
+            complement={providerComplement}
+            onComplementChange={setProviderComplement}
+          />
         ) : null}
 
-        <Box
-          borderRadius="3xl"
-          bg="white"
-          p={{ base: 5, md: 6 }}
-          borderWidth="1px"
-          borderColor="gray.200"
-          shadow="sm"
-        >
-          <Box mb={4}>
-            <Text
-              fontSize="xs"
-              fontWeight="semibold"
-              textTransform="uppercase"
-              color="green.500"
-            >
-              Serviços
-            </Text>
-            <Text mt={2} fontSize="xl" fontWeight="semibold" color="gray.900">
-              {isEditing ? "Editar serviço" : "Cadastrar serviço"}
-            </Text>
-          </Box>
+        <ServiceFormCard
+          isEditing={isEditing}
+          onSubmit={handleSubmit}
+          name={name}
+          onNameChange={setName}
+          duration={duration}
+          onDurationChange={setDuration}
+          price={price}
+          onPriceChange={setPrice}
+          priceMinimum={priceMinimum}
+          onPriceMinimumChange={setPriceMinimum}
+          priceMaximum={priceMaximum}
+          onPriceMaximumChange={setPriceMaximum}
+          description={description}
+          onDescriptionChange={setDescription}
+          isSubmitting={isSubmitting}
+          canSubmit={Boolean(provider?.id) && !isLoadingProviderContext}
+          onCancelEdit={handleCancelEdit}
+          feedback={feedback}
+        />
 
-          <chakra.form onSubmit={handleSubmit}>
-            <VStack align="stretch" gap={4}>
-              <Grid gap={4} templateColumns={{ base: "1fr", md: "1fr 1fr" }}>
-                <Box minW={0}>
-                  <Text
-                    fontSize="sm"
-                    fontWeight="medium"
-                    color="gray.700"
-                    mb={2}
-                  >
-                    Nome
-                  </Text>
-                  <Input
-                    value={name}
-                    onChange={(event) => setName(event.target.value)}
-                    h="11"
-                    borderRadius="xl"
-                    bg="gray.50"
-                    borderColor="gray.200"
-                    focusRingColor="teal.200"
-                    placeholder="Ex: Consulta veterinária"
-                    required
-                  />
-                </Box>
-
-                <Box minW={0}>
-                  <Text
-                    fontSize="sm"
-                    fontWeight="medium"
-                    color="gray.700"
-                    mb={2}
-                  >
-                    Duração (minutos)
-                  </Text>
-                  <Input
-                    type="number"
-                    inputMode="numeric"
-                    value={duration}
-                    onChange={(event) => setDuration(event.target.value)}
-                    h="11"
-                    borderRadius="xl"
-                    bg="gray.50"
-                    borderColor="gray.200"
-                    focusRingColor="teal.200"
-                    placeholder="Ex: 60"
-                    min={1}
-                    required
-                  />
-                </Box>
-
-                <Box minW={0}>
-                  <Text
-                    fontSize="sm"
-                    fontWeight="medium"
-                    color="gray.700"
-                    mb={2}
-                  >
-                    Preço base (R$)
-                  </Text>
-                  <Input
-                    type="number"
-                    inputMode="decimal"
-                    value={price}
-                    onChange={(event) => setPrice(event.target.value)}
-                    h="11"
-                    borderRadius="xl"
-                    bg="gray.50"
-                    borderColor="gray.200"
-                    focusRingColor="teal.200"
-                    placeholder="Ex: 120"
-                    min={0}
-                    step="0.01"
-                  />
-                </Box>
-
-                <Box minW={0}>
-                  <Text
-                    fontSize="sm"
-                    fontWeight="medium"
-                    color="gray.700"
-                    mb={2}
-                  >
-                    Preço mínimo (R$)
-                  </Text>
-                  <Input
-                    type="number"
-                    inputMode="decimal"
-                    value={priceMinimum}
-                    onChange={(event) => setPriceMinimum(event.target.value)}
-                    h="11"
-                    borderRadius="xl"
-                    bg="gray.50"
-                    borderColor="gray.200"
-                    focusRingColor="teal.200"
-                    placeholder="Ex: 100"
-                    min={0}
-                    step="0.01"
-                  />
-                </Box>
-
-                <Box minW={0}>
-                  <Text
-                    fontSize="sm"
-                    fontWeight="medium"
-                    color="gray.700"
-                    mb={2}
-                  >
-                    Preço máximo (R$)
-                  </Text>
-                  <Input
-                    type="number"
-                    inputMode="decimal"
-                    value={priceMaximum}
-                    onChange={(event) => setPriceMaximum(event.target.value)}
-                    h="11"
-                    borderRadius="xl"
-                    bg="gray.50"
-                    borderColor="gray.200"
-                    focusRingColor="teal.200"
-                    placeholder="Ex: 180"
-                    min={0}
-                    step="0.01"
-                  />
-                </Box>
-              </Grid>
-
-              <Text fontSize="xs" color="gray.500">
-                Use preço fixo ou faixa (mínimo e máximo), não ambos.
-              </Text>
-
-              <Box minW={0}>
-                <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
-                  Descrição
-                </Text>
-                <Textarea
-                  value={description}
-                  onChange={(event) => setDescription(event.target.value)}
-                  minH="24"
-                  borderRadius="xl"
-                  bg="gray.50"
-                  borderColor="gray.200"
-                  focusRingColor="teal.200"
-                  placeholder="Detalhes do serviço, público-alvo e diferenciais"
-                  required
-                />
-              </Box>
-
-              <HStack gap={3} flexWrap="wrap">
-                <Button
-                  type="submit"
-                  disabled={
-                    isSubmitting || !provider?.id || isLoadingProviderContext
-                  }
-                  borderRadius="full"
-                  bg="green.400"
-                  color="white"
-                  _hover={{ bg: "green.500" }}
-                  _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
-                >
-                  {isSubmitting
-                    ? isEditing
-                      ? "Salvando..."
-                      : "Cadastrando..."
-                    : isEditing
-                      ? "Salvar alterações"
-                      : "Cadastrar serviço"}
-                </Button>
-
-                {isEditing ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    borderRadius="full"
-                    onClick={handleCancelEdit}
-                    disabled={isSubmitting}
-                  >
-                    Cancelar edição
-                  </Button>
-                ) : null}
-              </HStack>
-
-              {feedback ? (
-                <Text
-                  fontSize="xs"
-                  color={feedback.type === "error" ? "red.600" : "green.600"}
-                >
-                  {feedback.message}
-                </Text>
-              ) : null}
-            </VStack>
-          </chakra.form>
-        </Box>
-
-        <Box
-          borderRadius="3xl"
-          bg="white"
-          p={{ base: 5, md: 6 }}
-          borderWidth="1px"
-          borderColor="gray.200"
-          shadow="sm"
-        >
-          <Text fontSize="xl" fontWeight="semibold" color="gray.900" mb={4}>
-            Seus serviços
-          </Text>
-
-          {isLoadingProviderContext || isLoadingServices ? (
-            <Text fontSize="sm" color="gray.500">
-              Carregando serviços...
-            </Text>
-          ) : !provider?.id ? (
-            <Text fontSize="sm" color="red.600">
-              Não encontramos um provider vinculado ao seu usuário.
-            </Text>
-          ) : listServicesError ? (
-            <Text fontSize="sm" color="red.600">
-              {getApiErrorMessage(
-                listServicesError,
-                "Não foi possível carregar os serviços.",
-              )}
-            </Text>
-          ) : services.length === 0 ? (
-            <Text fontSize="sm" color="gray.500">
-              Você ainda não cadastrou serviços.
-            </Text>
-          ) : (
-            <VStack align="stretch" gap={3}>
-              {services.map((service) => {
-                const isCurrentDeleting = deletingServiceId === service.id;
-                const currentPhotoFile =
-                  photoFilesByService[service.id] ?? null;
-                const isCurrentUploadingPhoto =
-                  uploadingPhotoServiceId === service.id;
-                const selectedCategoryId =
-                  selectedCategoryByService[service.id] ?? "";
-                const selectedTagId = selectedTagByService[service.id] ?? "";
-                const isCurrentAddingCategory =
-                  addingCategoryServiceId === service.id;
-                const isCurrentAddingTag = addingTagServiceId === service.id;
-                const taxonomyFeedback =
-                  taxonomyFeedbackByService[service.id] ?? null;
-                const newTagName = newTagNameByService[service.id] ?? "";
-
-                return (
-                  <Box
-                    key={service.id}
-                    borderRadius="2xl"
-                    borderWidth="1px"
-                    borderColor="gray.200"
-                    bg="gray.50"
-                    p={4}
-                  >
-                    <Flex
-                      align={{ base: "start", md: "center" }}
-                      justify="space-between"
-                      direction={{ base: "column", md: "row" }}
-                      gap={3}
-                    >
-                      <Box>
-                        <Text
-                          fontSize="md"
-                          fontWeight="semibold"
-                          color="gray.900"
-                        >
-                          {service.name}
-                        </Text>
-                        <Text mt={1} fontSize="sm" color="gray.600">
-                          {service.description}
-                        </Text>
-                        <Text mt={2} fontSize="xs" color="gray.500">
-                          Preço base: R$ {service.price.toFixed(2)} · Faixa: R${" "}
-                          {service.priceMinimum.toFixed(2)} - R${" "}
-                          {service.priceMaximum.toFixed(2)} · Duração:{" "}
-                          {service.duration} min
-                        </Text>
-                      </Box>
-
-                      <HStack gap={2}>
-                        <Button
-                          size="sm"
-                          borderRadius="full"
-                          variant="subtle"
-                          onClick={() =>
-                            router.push(
-                              `/services/${service.id}?from=/provider`,
-                            )
-                          }
-                        >
-                          Ver detalhes
-                        </Button>
-                        <Button
-                          size="sm"
-                          borderRadius="full"
-                          variant="outline"
-                          onClick={() => fillFormForEdit(service)}
-                          disabled={isSubmitting || isCurrentDeleting}
-                        >
-                          Editar
-                        </Button>
-                        <Button
-                          size="sm"
-                          borderRadius="full"
-                          colorPalette="red"
-                          variant="subtle"
-                          onClick={() => handleDeleteService(service.id)}
-                          disabled={
-                            isDeletingService ||
-                            isSubmitting ||
-                            Boolean(confirmDeleteServiceId)
-                          }
-                        >
-                          {isCurrentDeleting ? "Excluindo..." : "Excluir"}
-                        </Button>
-                      </HStack>
-                    </Flex>
-
-                    <Box mt={4}>
-                      <Text fontSize="sm" fontWeight="medium" color="gray.700">
-                        Fotos do serviço
-                      </Text>
-
-                      {service.photos.length === 0 ? (
-                        <Text mt={1.5} fontSize="xs" color="gray.500">
-                          Nenhuma foto cadastrada.
-                        </Text>
-                      ) : (
-                        <Flex mt={2} gap={2} wrap="wrap">
-                          {service.photos.map((photo) => {
-                            const photoDeleteKey = `${service.id}:${photo.id}`;
-                            const isCurrentDeletingPhoto =
-                              deletingPhotoKey === photoDeleteKey;
-
-                            return (
-                              <Box
-                                key={photo.id}
-                                borderWidth="1px"
-                                borderColor="gray.200"
-                                borderRadius="lg"
-                                bg="white"
-                                p={2}
-                              >
-                                <chakra.img
-                                  src={photo.url}
-                                  alt={`Foto do serviço ${service.name}`}
-                                  w="84px"
-                                  h="84px"
-                                  objectFit="cover"
-                                  borderRadius="md"
-                                />
-                                <Button
-                                  mt={2}
-                                  size="xs"
-                                  borderRadius="full"
-                                  colorPalette="red"
-                                  variant="subtle"
-                                  onClick={() =>
-                                    handleDeleteServicePhoto(
-                                      service.id,
-                                      photo.id,
-                                    )
-                                  }
-                                  disabled={
-                                    isDeletingServicePhoto ||
-                                    isCurrentDeletingPhoto ||
-                                    isAddingServicePhoto
-                                  }
-                                >
-                                  {isCurrentDeletingPhoto
-                                    ? "Removendo..."
-                                    : "Remover"}
-                                </Button>
-                              </Box>
-                            );
-                          })}
-                        </Flex>
-                      )}
-
-                      <HStack mt={3} align="end" gap={2} flexWrap="wrap">
-                        <Box>
-                          <Input
-                            type="file"
-                            accept="image/*"
-                            onChange={(event) =>
-                              handlePhotoFileChange(service.id, event)
-                            }
-                            h="10"
-                            bg="white"
-                            borderRadius="xl"
-                            borderColor="gray.200"
-                            p={1}
-                            disabled={
-                              isAddingServicePhoto || isCurrentUploadingPhoto
-                            }
-                          />
-                          {currentPhotoFile ? (
-                            <Text mt={1} fontSize="xs" color="gray.500">
-                              Arquivo selecionado: {currentPhotoFile.name}
-                            </Text>
-                          ) : null}
-                        </Box>
-
-                        <Button
-                          size="sm"
-                          borderRadius="full"
-                          bg="green.400"
-                          color="white"
-                          _hover={{ bg: "green.500" }}
-                          onClick={() => handleUploadServicePhoto(service.id)}
-                          disabled={
-                            isAddingServicePhoto ||
-                            isCurrentUploadingPhoto ||
-                            !currentPhotoFile ||
-                            isDeletingServicePhoto
-                          }
-                        >
-                          {isCurrentUploadingPhoto
-                            ? "Enviando..."
-                            : "Enviar foto"}
-                        </Button>
-                      </HStack>
-
-                      <Box mt={4}>
-                        <Text
-                          fontSize="sm"
-                          fontWeight="medium"
-                          color="gray.700"
-                          mb={2}
-                        >
-                          Categorias e tags
-                        </Text>
-
-                        <Grid
-                          templateColumns={{ base: "1fr", md: "1fr 1fr" }}
-                          gap={3}
-                        >
-                          <Box>
-                            <Text fontSize="xs" color="gray.500" mb={1}>
-                              Categorias atuais
-                            </Text>
-                            {service.categories.length > 0 ? (
-                              <VStack align="stretch" gap={1}>
-                                {service.categories.map((category) => {
-                                  const categoryKey = `${service.id}:${category.id}`;
-                                  const isCurrentRemovingCategory =
-                                    removingCategoryKey === categoryKey;
-
-                                  return (
-                                    <HStack
-                                      key={category.id}
-                                      justify="space-between"
-                                      borderWidth="1px"
-                                      borderColor="gray.200"
-                                      bg="white"
-                                      borderRadius="md"
-                                      px={2}
-                                      py={1}
-                                    >
-                                      <Text fontSize="sm" color="gray.700">
-                                        {category.name}
-                                      </Text>
-                                      <Button
-                                        size="xs"
-                                        borderRadius="full"
-                                        colorPalette="red"
-                                        variant="subtle"
-                                        onClick={() =>
-                                          handleRemoveCategoryFromService(
-                                            service,
-                                            category.id,
-                                          )
-                                        }
-                                        disabled={
-                                          isCurrentRemovingCategory ||
-                                          isDeletingServiceCategory ||
-                                          isAddingServiceCategory
-                                        }
-                                      >
-                                        {isCurrentRemovingCategory
-                                          ? "Removendo..."
-                                          : "Remover"}
-                                      </Button>
-                                    </HStack>
-                                  );
-                                })}
-                              </VStack>
-                            ) : (
-                              <Text fontSize="sm" color="gray.700">
-                                Nenhuma categoria associada.
-                              </Text>
-                            )}
-
-                            <HStack mt={2} align="end" gap={2} flexWrap="wrap">
-                              <NativeSelect.Root
-                                size="sm"
-                                minW="220px"
-                                disabled={
-                                  isLoadingCategories ||
-                                  Boolean(categoriesError) ||
-                                  isCurrentAddingCategory ||
-                                  isAddingServiceTag ||
-                                  isAddingServiceCategory
-                                }
-                              >
-                                <NativeSelect.Field
-                                  value={selectedCategoryId}
-                                  onChange={(event) =>
-                                    handleCategorySelectionChange(
-                                      service.id,
-                                      event.target.value,
-                                    )
-                                  }
-                                  borderRadius="xl"
-                                  bg="white"
-                                  borderColor="gray.200"
-                                >
-                                  <option value="">
-                                    {isLoadingCategories
-                                      ? "Carregando categorias..."
-                                      : "Selecione uma categoria"}
-                                  </option>
-                                  {categories.map((category) => (
-                                    <option
-                                      key={category.id}
-                                      value={category.id}
-                                    >
-                                      {category.name}
-                                    </option>
-                                  ))}
-                                </NativeSelect.Field>
-                                <NativeSelect.Indicator color="gray.500" />
-                              </NativeSelect.Root>
-
-                              <Button
-                                size="sm"
-                                borderRadius="full"
-                                variant="outline"
-                                onClick={() =>
-                                  handleAddCategoryToService(service)
-                                }
-                                disabled={
-                                  !selectedCategoryId ||
-                                  isCurrentAddingCategory ||
-                                  isAddingServiceCategory ||
-                                  isDeletingServiceCategory ||
-                                  isLoadingCategories ||
-                                  Boolean(categoriesError)
-                                }
-                              >
-                                {isCurrentAddingCategory
-                                  ? "Associando..."
-                                  : "Associar categoria"}
-                              </Button>
-                            </HStack>
-
-                            {categoriesError ? (
-                              <Text mt={1} fontSize="xs" color="red.600">
-                                {getApiErrorMessage(
-                                  categoriesError,
-                                  "Não foi possível carregar as categorias.",
-                                )}
-                              </Text>
-                            ) : null}
-                          </Box>
-
-                          <Box>
-                            <Text fontSize="xs" color="gray.500" mb={1}>
-                              Tags atuais
-                            </Text>
-                            {service.tags.length > 0 ? (
-                              <VStack align="stretch" gap={1}>
-                                {service.tags.map((tag) => {
-                                  const tagKey = `${service.id}:${tag.id}`;
-                                  const isCurrentRemovingTag =
-                                    removingTagKey === tagKey;
-
-                                  return (
-                                    <HStack
-                                      key={tag.id}
-                                      justify="space-between"
-                                      borderWidth="1px"
-                                      borderColor="gray.200"
-                                      bg="white"
-                                      borderRadius="md"
-                                      px={2}
-                                      py={1}
-                                    >
-                                      <Text fontSize="sm" color="gray.700">
-                                        {tag.name}
-                                      </Text>
-                                      <Button
-                                        size="xs"
-                                        borderRadius="full"
-                                        colorPalette="red"
-                                        variant="subtle"
-                                        onClick={() =>
-                                          handleRemoveTagFromService(
-                                            service,
-                                            tag.id,
-                                          )
-                                        }
-                                        disabled={
-                                          isCurrentRemovingTag ||
-                                          isDeletingServiceTag ||
-                                          isAddingServiceTag
-                                        }
-                                      >
-                                        {isCurrentRemovingTag
-                                          ? "Removendo..."
-                                          : "Remover"}
-                                      </Button>
-                                    </HStack>
-                                  );
-                                })}
-                              </VStack>
-                            ) : (
-                              <Text fontSize="sm" color="gray.700">
-                                Nenhuma tag associada.
-                              </Text>
-                            )}
-
-                            <HStack mt={2} align="end" gap={2} flexWrap="wrap">
-                              <NativeSelect.Root
-                                size="sm"
-                                minW="220px"
-                                disabled={
-                                  isLoadingTags ||
-                                  Boolean(tagsError) ||
-                                  isCurrentAddingTag ||
-                                  isAddingServiceTag ||
-                                  isAddingServiceCategory ||
-                                  isDeletingServiceTag
-                                }
-                              >
-                                <NativeSelect.Field
-                                  value={selectedTagId}
-                                  onChange={(event) =>
-                                    handleTagSelectionChange(
-                                      service.id,
-                                      event.target.value,
-                                    )
-                                  }
-                                  borderRadius="xl"
-                                  bg="white"
-                                  borderColor="gray.200"
-                                >
-                                  <option value="">
-                                    {isLoadingTags
-                                      ? "Carregando tags..."
-                                      : "Selecione uma tag (ou adicione)"}
-                                  </option>
-                                  {tags.map((tag) => (
-                                    <option key={tag.id} value={tag.id}>
-                                      {tag.name}
-                                    </option>
-                                  ))}
-                                </NativeSelect.Field>
-                                <NativeSelect.Indicator color="gray.500" />
-                              </NativeSelect.Root>
-
-                              <Input
-                                value={newTagName}
-                                onChange={(event) =>
-                                  handleNewTagNameChange(
-                                    service.id,
-                                    event.target.value,
-                                  )
-                                }
-                                placeholder="Nova tag (ex: urgente)"
-                                h="9"
-                                minW="220px"
-                                borderRadius="xl"
-                                bg="white"
-                                borderColor="gray.200"
-                                disabled={
-                                  isCurrentAddingTag ||
-                                  isAddingServiceTag ||
-                                  isLoadingTags ||
-                                  isDeletingServiceTag
-                                }
-                              />
-
-                              <Button
-                                size="sm"
-                                borderRadius="full"
-                                variant="outline"
-                                onClick={() => handleAddTagToService(service)}
-                                disabled={
-                                  (!selectedTagId && !newTagName.trim()) ||
-                                  isCurrentAddingTag ||
-                                  isAddingServiceTag ||
-                                  isDeletingServiceTag ||
-                                  isLoadingTags ||
-                                  Boolean(tagsError)
-                                }
-                              >
-                                {isCurrentAddingTag
-                                  ? "Associando..."
-                                  : "Adicionar/associar tag"}
-                              </Button>
-                            </HStack>
-
-                            {tagsError ? (
-                              <Text mt={1} fontSize="xs" color="red.600">
-                                {getApiErrorMessage(
-                                  tagsError,
-                                  "Não foi possível carregar as tags.",
-                                )}
-                              </Text>
-                            ) : null}
-                          </Box>
-                        </Grid>
-
-                        {taxonomyFeedback ? (
-                          <Text
-                            mt={2}
-                            fontSize="xs"
-                            color={
-                              taxonomyFeedback.type === "error"
-                                ? "red.600"
-                                : "green.600"
-                            }
-                          >
-                            {taxonomyFeedback.message}
-                          </Text>
-                        ) : null}
-                      </Box>
-                    </Box>
-                  </Box>
-                );
-              })}
-            </VStack>
-          )}
-        </Box>
+        <ServicesListSection
+          isLoadingProviderContext={isLoadingProviderContext}
+          isLoadingServices={isLoadingServices}
+          hasProvider={Boolean(provider?.id)}
+          listServicesErrorMessage={listServicesErrorMessage}
+          services={services}
+          deletingServiceId={deletingServiceId}
+          isSubmitting={isSubmitting}
+          isDeletingService={isDeletingService}
+          confirmDeleteServiceId={confirmDeleteServiceId}
+          onViewDetails={(serviceId) =>
+            router.push(`/services/${serviceId}?from=/provider`)
+          }
+          onEditService={fillFormForEdit}
+          onDeleteService={handleDeleteService}
+          photoFilesByService={photoFilesByService}
+          uploadingPhotoServiceId={uploadingPhotoServiceId}
+          deletingPhotoKey={deletingPhotoKey}
+          isAddingServicePhoto={isAddingServicePhoto}
+          isDeletingServicePhoto={isDeletingServicePhoto}
+          onPhotoFileChange={handlePhotoFileChange}
+          onUploadServicePhoto={handleUploadServicePhoto}
+          onDeleteServicePhoto={handleDeleteServicePhoto}
+          selectedCategoryByService={selectedCategoryByService}
+          selectedTagByService={selectedTagByService}
+          newTagNameByService={newTagNameByService}
+          addingCategoryServiceId={addingCategoryServiceId}
+          addingTagServiceId={addingTagServiceId}
+          removingCategoryKey={removingCategoryKey}
+          removingTagKey={removingTagKey}
+          taxonomyFeedbackByService={taxonomyFeedbackByService}
+          categories={categories}
+          tags={tags}
+          isLoadingCategories={isLoadingCategories}
+          isLoadingTags={isLoadingTags}
+          isAddingServiceCategory={isAddingServiceCategory}
+          isDeletingServiceCategory={isDeletingServiceCategory}
+          isAddingServiceTag={isAddingServiceTag}
+          isDeletingServiceTag={isDeletingServiceTag}
+          categoriesErrorMessage={categoriesErrorMessage}
+          tagsErrorMessage={tagsErrorMessage}
+          onCategorySelectionChange={handleCategorySelectionChange}
+          onTagSelectionChange={handleTagSelectionChange}
+          onNewTagNameChange={handleNewTagNameChange}
+          onAddCategoryToService={handleAddCategoryToService}
+          onRemoveCategoryFromService={handleRemoveCategoryFromService}
+          onAddTagToService={handleAddTagToService}
+          onRemoveTagFromService={handleRemoveTagFromService}
+        />
       </VStack>
 
       <Dialog.Root

@@ -2,16 +2,20 @@ import { Button, Flex } from "@chakra-ui/react";
 
 type RegisterSubmitRowProps = {
   isPending: boolean;
+  isRedirecting?: boolean;
 };
 
 export default function RegisterSubmitRow({
   isPending,
+  isRedirecting = false,
 }: RegisterSubmitRowProps) {
+  const isDisabled = isPending || isRedirecting;
+
   return (
     <Flex justify="center">
       <Button
         type="submit"
-        disabled={isPending}
+        disabled={isDisabled}
         h="11"
         w="full"
         maxW="xs"
@@ -21,7 +25,11 @@ export default function RegisterSubmitRow({
         _hover={{ bg: "green.500" }}
         _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
       >
-        {isPending ? "Criando..." : "Criar conta"}
+        {isPending
+          ? "Criando..."
+          : isRedirecting
+            ? "Redirecionando..."
+            : "Criar conta"}
       </Button>
     </Flex>
   );

@@ -1,0 +1,1005 @@
+"use client";
+
+import { useMemo, useRef, useState } from "react";
+import Image from "next/image";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  Box,
+  Button,
+  Flex,
+  Grid,
+  HStack,
+  Input,
+  Text,
+  VStack,
+  chakra,
+} from "@chakra-ui/react";
+
+import { useUserAddPhoto, useUserUpdate } from "@/application";
+import type { UpdateUserInput } from "@/application";
+import type { User } from "@/domain/entities/user";
+import { getApiErrorMessage } from "@/lib/api-error";
+
+type ProfileFormProps = {
+  user: User;
+};
+
+export default function ProfileForm({ user }: ProfileFormProps) {
+  const queryClient = useQueryClient();
+  const {
+    mutateAsync: updateUser,
+    isPending: isSaving,
+    error: updateError,
+    isSuccess: updateSuccess,
+  } = useUserUpdate();
+  const {
+    mutateAsync: addUserPhoto,
+    isPending: isUploadingPhoto,
+    error: uploadError,
+    isSuccess: uploadSuccess,
+  } = useUserAddPhoto({
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] }),
+  });
+
+  const initialValues = useMemo(
+    () => ({
+      name: user.name ?? "",
+      phoneCountryCode: user.phone?.countryCode ?? "",
+      phoneAreaCode: user.phone?.areaCode ?? "",
+      phoneNumber: user.phone?.number ?? "",
+      street: user.address?.street ?? "",
+      addressNumber: user.address?.number ?? "",
+      neighborhood: user.address?.neighborhood ?? "",
+      city: user.address?.city ?? "",
+      zipCode: user.address?.zipCode ?? "",
+      state: user.address?.state ?? "",
+      country: user.address?.country ?? "",
+      complement: user.address?.complement ?? "",
+      latitude:
+        user.address?.location?.latitude !== undefined
+          ? String(user.address.location.latitude)
+          : "",
+      longitude:
+        user.address?.location?.longitude !== undefined
+          ? String(user.address.location.longitude)
+          : "",
+    }),
+    [user],
+  );
+
+  const [name, setName] = useState(initialValues.name);
+  const [email] = useState(user.login?.email ?? "");
+  const [phoneCountryCode, setPhoneCountryCode] = useState(
+    initialValues.phoneCountryCode,
+  );
+  const [phoneAreaCode, setPhoneAreaCode] = useState(
+    initialValues.phoneAreaCode,
+  );
+  const [phoneNumber, setPhoneNumber] = useState(initialValues.phoneNumber);
+
+  const [street, setStreet] = useState(initialValues.street);
+  const [addressNumber, setAddressNumber] = useState(
+    initialValues.addressNumber,
+  );
+  const [neighborhood, setNeighborhood] = useState(initialValues.neighborhood);
+  const [city, setCity] = useState(initialValues.city);
+  const [zipCode, setZipCode] = useState(initialValues.zipCode);
+  const [state, setState] = useState(initialValues.state);
+  const [country, setCountry] = useState(initialValues.country);
+  const [complement, setComplement] = useState(initialValues.complement);
+  const [latitude, setLatitude] = useState(initialValues.latitude);
+  const [longitude, setLongitude] = useState(initialValues.longitude);
+  const [isResolvingCoordinates, setIsResolvingCoordinates] = useState(false);
+  const [geocodeStatus, setGeocodeStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
+  const [geocodeMessage, setGeocodeMessage] = useState("");
+  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
+  const photoInputRef = useRef<HTMLInputElement | null>(null);
+
+  const hasChanges = useMemo(() => {
+    const normalize = (value: string) => value.trim();
+
+    return (
+      normalize(name) !== normalize(initialValues.name) ||
+      normalize(phoneCountryCode) !==
+        normalize(initialValues.phoneCountryCode) ||
+      normalize(phoneAreaCode) !== normalize(initialValues.phoneAreaCode) ||
+      normalize(phoneNumber) !== normalize(initialValues.phoneNumber) ||
+      normalize(street) !== normalize(initialValues.street) ||
+      normalize(addressNumber) !== normalize(initialValues.addressNumber) ||
+      normalize(neighborhood) !== normalize(initialValues.neighborhood) ||
+      normalize(city) !== normalize(initialValues.city) ||
+      normalize(zipCode) !== normalize(initialValues.zipCode) ||
+      normalize(state) !== normalize(initialValues.state) ||
+      normalize(country) !== normalize(initialValues.country) ||
+      normalize(complement) !== normalize(initialValues.complement) ||
+      normalize(latitude) !== normalize(initialValues.latitude) ||
+      normalize(longitude) !== normalize(initialValues.longitude)
+    );
+  }, [
+    addressNumber,
+    city,
+    complement,
+    country,
+    initialValues,
+    latitude,
+    longitude,
+    name,
+    neighborhood,
+    phoneAreaCode,
+    phoneCountryCode,
+    phoneNumber,
+    state,
+    street,
+    zipCode,
+  ]);
+
+  const feedback = useMemo(() => {
+    if (!updateError) {
+      return "";
+    }
+
+    return getApiErrorMessage(
+      updateError,
+      "Não foi possível atualizar o perfil.",
+    );
+  }, [updateError]);
+
+  const photoFeedback = useMemo(() => {
+    if (!uploadError) {
+      return "";
+    }
+
+    return getApiErrorMessage(uploadError, "Não foi possível enviar a foto.");
+  }, [uploadError]);
+
+  const currentPhotoUrl = user.photos?.[0]?.url;
+
+  const normalizedLatitude = latitude.replace(",", ".").trim();
+  const normalizedLongitude = longitude.replace(",", ".").trim();
+  const parsedLatitude = Number(normalizedLatitude);
+  const parsedLongitude = Number(normalizedLongitude);
+  const hasCoordinateInput =
+    normalizedLatitude.length > 0 || normalizedLongitude.length > 0;
+  const hasValidCoordinates =
+    Number.isFinite(parsedLatitude) &&
+    Number.isFinite(parsedLongitude) &&
+    parsedLatitude >= -90 &&
+    parsedLatitude <= 90 &&
+    parsedLongitude >= -180 &&
+    parsedLongitude <= 180;
+  const mapsQuery = hasValidCoordinates
+    ? `${parsedLatitude},${parsedLongitude}`
+    : "";
+  const mapsUrl = mapsQuery
+    ? `https://www.google.com/maps?q=${encodeURIComponent(mapsQuery)}`
+    : "";
+  const mapsEmbedUrl = mapsQuery
+    ? `https://www.google.com/maps?q=${encodeURIComponent(mapsQuery)}&z=15&output=embed`
+    : "";
+
+  const handlePhotoUpload = async () => {
+    if (!selectedPhoto) {
+      return;
+    }
+
+    await addUserPhoto({ file: selectedPhoto });
+    setSelectedPhoto(null);
+  };
+
+  const fetchCoordinatesByZipCode = async (zipCodeValue: string) => {
+    const response = await fetch(
+      `/api/geocode?address=${encodeURIComponent(zipCodeValue)}`,
+    );
+    const data = await response.json();
+
+    if (!response.ok) {
+      const message =
+        typeof data?.error === "string"
+          ? data.error
+          : "Não foi possível buscar coordenadas pelo CEP.";
+      throw new Error(message);
+    }
+
+    const nextLatitude = Number(data?.latitude);
+    const nextLongitude = Number(data?.longitude);
+
+    const hasValidCoordinates =
+      Number.isFinite(nextLatitude) &&
+      Number.isFinite(nextLongitude) &&
+      nextLatitude >= -90 &&
+      nextLatitude <= 90 &&
+      nextLongitude >= -180 &&
+      nextLongitude <= 180;
+
+    if (!hasValidCoordinates) {
+      throw new Error("Coordenadas inválidas retornadas para o CEP informado.");
+    }
+
+    return { latitude: nextLatitude, longitude: nextLongitude };
+  };
+
+  const handleResolveCoordinatesFromZipCode = async () => {
+    const normalizedZipCode = zipCode.trim();
+    if (!normalizedZipCode) {
+      setGeocodeStatus("error");
+      setGeocodeMessage("Informe o CEP para buscar as coordenadas.");
+      return;
+    }
+
+    setIsResolvingCoordinates(true);
+    setGeocodeStatus("idle");
+    setGeocodeMessage("");
+
+    try {
+      const coords = await fetchCoordinatesByZipCode(normalizedZipCode);
+      setLatitude(String(coords.latitude));
+      setLongitude(String(coords.longitude));
+      setGeocodeStatus("success");
+      setGeocodeMessage("Coordenadas preenchidas automaticamente pelo CEP.");
+    } catch (error) {
+      setGeocodeStatus("error");
+      setGeocodeMessage(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível buscar coordenadas pelo CEP.",
+      );
+    } finally {
+      setIsResolvingCoordinates(false);
+    }
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const payload: UpdateUserInput = {};
+
+    if (name.trim()) {
+      payload.name = name.trim();
+    }
+
+    if (phoneCountryCode || phoneAreaCode || phoneNumber) {
+      payload.phone = {
+        countryCode: phoneCountryCode.trim(),
+        areaCode: phoneAreaCode.trim(),
+        number: phoneNumber.trim(),
+      };
+    }
+
+    const hasAddressField =
+      street ||
+      addressNumber ||
+      neighborhood ||
+      city ||
+      zipCode ||
+      state ||
+      country ||
+      complement ||
+      latitude ||
+      longitude;
+
+    if (hasAddressField) {
+      let resolvedLatitude = Number(latitude.replace(",", ".").trim());
+      let resolvedLongitude = Number(longitude.replace(",", ".").trim());
+
+      const hasValidManualCoordinates =
+        Number.isFinite(resolvedLatitude) &&
+        Number.isFinite(resolvedLongitude) &&
+        resolvedLatitude >= -90 &&
+        resolvedLatitude <= 90 &&
+        resolvedLongitude >= -180 &&
+        resolvedLongitude <= 180;
+
+      const normalizedZipCode = zipCode.trim();
+
+      if (!hasValidManualCoordinates && normalizedZipCode) {
+        setIsResolvingCoordinates(true);
+        setGeocodeStatus("idle");
+        setGeocodeMessage("");
+
+        try {
+          const coords = await fetchCoordinatesByZipCode(normalizedZipCode);
+          resolvedLatitude = coords.latitude;
+          resolvedLongitude = coords.longitude;
+          setLatitude(String(coords.latitude));
+          setLongitude(String(coords.longitude));
+          setGeocodeStatus("success");
+          setGeocodeMessage(
+            "Coordenadas preenchidas automaticamente pelo CEP.",
+          );
+        } catch (error) {
+          setGeocodeStatus("error");
+          setGeocodeMessage(
+            error instanceof Error
+              ? error.message
+              : "Não foi possível buscar coordenadas pelo CEP.",
+          );
+          setIsResolvingCoordinates(false);
+          return;
+        } finally {
+          setIsResolvingCoordinates(false);
+        }
+      }
+
+      payload.address = {
+        street: street.trim(),
+        number: addressNumber.trim(),
+        neighborhood: neighborhood.trim(),
+        city: city.trim(),
+        zipCode: zipCode.trim(),
+        state: state.trim(),
+        country: country.trim(),
+        complement: complement.trim(),
+        location: {
+          latitude: Number.isFinite(resolvedLatitude) ? resolvedLatitude : 0,
+          longitude: Number.isFinite(resolvedLongitude) ? resolvedLongitude : 0,
+        },
+      };
+    }
+
+    await updateUser(payload);
+  };
+
+  return (
+    <chakra.form onSubmit={handleSubmit}>
+      <VStack align="stretch" gap={4}>
+        <Box
+          borderRadius={{ base: "xl", md: "2xl" }}
+          borderWidth="1px"
+          borderColor="gray.200"
+          bg="white"
+          p={{ base: 3, sm: 4, md: 4 }}
+        >
+          <Flex
+            wrap="wrap"
+            align="center"
+            gap={{ base: 3, md: 4 }}
+            direction={{ base: "column", sm: "row" }}
+            justify={{ base: "center", sm: "flex-start" }}
+          >
+            <Box
+              h={{ base: "24", sm: "20" }}
+              w={{ base: "24", sm: "20" }}
+              overflow="hidden"
+              borderRadius={{ base: "xl", md: "2xl" }}
+              bg="gray.200"
+              flexShrink={0}
+            >
+              {currentPhotoUrl ? (
+                <Image
+                  src={currentPhotoUrl}
+                  alt="Foto do usuário"
+                  width={96}
+                  height={96}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  unoptimized
+                />
+              ) : null}
+            </Box>
+            <VStack
+              align={{ base: "center", sm: "start" }}
+              gap={2}
+              flex={1}
+              minW={0}
+            >
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.800"
+              >
+                Foto do perfil
+              </Text>
+              <Input
+                ref={photoInputRef}
+                type="file"
+                accept="image/*"
+                display="none"
+                onChange={(event) =>
+                  setSelectedPhoto(event.target.files?.[0] ?? null)
+                }
+              />
+              <HStack
+                gap={{ base: 2, sm: 3 }}
+                flexWrap="wrap"
+                justify={{ base: "center", sm: "flex-start" }}
+              >
+                <Button
+                  type="button"
+                  borderRadius="full"
+                  size={{ base: "xs", sm: "sm" }}
+                  variant="outline"
+                  borderColor="gray.300"
+                  color="gray.700"
+                  onClick={() => photoInputRef.current?.click()}
+                  fontSize={{ base: "xs", sm: "sm" }}
+                >
+                  Escolher foto
+                </Button>
+                <Text
+                  fontSize={{ base: "xs" }}
+                  color="gray.500"
+                  maxW={{ base: "full", sm: "300px" }}
+                  overflow="hidden"
+                  textOverflow="ellipsis"
+                  whiteSpace="nowrap"
+                >
+                  {selectedPhoto
+                    ? selectedPhoto.name
+                    : "Nenhum arquivo selecionado"}
+                </Text>
+                <Button
+                  type="button"
+                  onClick={handlePhotoUpload}
+                  disabled={!selectedPhoto || isUploadingPhoto}
+                  borderRadius="full"
+                  size={{ base: "xs", sm: "sm" }}
+                  bg="green.400"
+                  color="white"
+                  _hover={{ bg: "green.500" }}
+                  _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
+                  fontSize={{ base: "xs", sm: "sm" }}
+                >
+                  {isUploadingPhoto ? "Enviando..." : "Enviar"}
+                </Button>
+              </HStack>
+              {uploadSuccess ? (
+                <Text fontSize={{ base: "xs" }} color="green.600">
+                  Foto enviada com sucesso.
+                </Text>
+              ) : null}
+              {photoFeedback ? (
+                <Text fontSize={{ base: "xs" }} color="red.600">
+                  {photoFeedback}
+                </Text>
+              ) : null}
+            </VStack>
+          </Flex>
+        </Box>
+
+        <Grid
+          gap={{ base: 3, md: 4 }}
+          templateColumns={{ base: "1fr", md: "1fr 1fr" }}
+        >
+          <Box minW={0}>
+            <Text
+              fontSize={{ base: "xs", sm: "sm" }}
+              fontWeight="medium"
+              color="gray.700"
+              mb={2}
+            >
+              Nome
+            </Text>
+            <Input
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              h={{ base: "10", md: "11" }}
+              borderRadius={{ base: "lg", md: "xl" }}
+              bg="gray.50"
+              borderColor="gray.200"
+              focusRingColor="teal.200"
+              placeholder="Seu nome"
+              required
+              fontSize={{ base: "sm" }}
+            />
+          </Box>
+
+          <Box minW={0}>
+            <Text
+              fontSize={{ base: "xs", sm: "sm" }}
+              fontWeight="medium"
+              color="gray.700"
+              mb={2}
+            >
+              Email
+            </Text>
+            <Input
+              value={email}
+              readOnly
+              h={{ base: "10", md: "11" }}
+              borderRadius={{ base: "lg", md: "xl" }}
+              bg="gray.100"
+              borderColor="gray.200"
+              color="gray.500"
+              fontSize={{ base: "sm" }}
+            />
+            <Text mt={1.5} fontSize={{ base: "xs" }} color="gray.400">
+              O email é fixo e não pode ser alterado aqui.
+            </Text>
+          </Box>
+        </Grid>
+
+        <Box
+          borderRadius={{ base: "xl", md: "2xl" }}
+          borderWidth="1px"
+          borderColor="gray.200"
+          bg="gray.50"
+          p={{ base: 3, sm: 4, md: 4 }}
+        >
+          <Text
+            fontSize={{ base: "sm", md: "sm" }}
+            fontWeight="semibold"
+            color="gray.900"
+          >
+            Telefone
+          </Text>
+          <Grid
+            mt={3}
+            gap={{ base: 2, md: 4 }}
+            templateColumns={{ base: "1fr", md: "repeat(3, minmax(0, 1fr))" }}
+          >
+            <Box minW={0}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
+                DDI
+              </Text>
+              <Input
+                value={phoneCountryCode}
+                onChange={(event) => setPhoneCountryCode(event.target.value)}
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
+                placeholder="55"
+                fontSize={{ base: "sm" }}
+              />
+            </Box>
+
+            <Box minW={0}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
+                DDD
+              </Text>
+              <Input
+                value={phoneAreaCode}
+                onChange={(event) => setPhoneAreaCode(event.target.value)}
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
+                placeholder="82"
+                fontSize={{ base: "sm" }}
+              />
+            </Box>
+
+            <Box minW={0}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
+                Número
+              </Text>
+              <Input
+                value={phoneNumber}
+                onChange={(event) => setPhoneNumber(event.target.value)}
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
+                placeholder="999999999"
+                fontSize={{ base: "sm" }}
+              />
+            </Box>
+          </Grid>
+        </Box>
+
+        <Box
+          borderRadius={{ base: "xl", md: "2xl" }}
+          borderWidth="1px"
+          borderColor="gray.200"
+          bg="gray.50"
+          p={{ base: 3, sm: 4, md: 4 }}
+        >
+          <Text
+            fontSize={{ base: "sm", md: "sm" }}
+            fontWeight="semibold"
+            color="gray.900"
+          >
+            Endereço
+          </Text>
+          <Grid
+            mt={3}
+            gap={{ base: 2, md: 4 }}
+            templateColumns={{ base: "1fr", sm: "1fr 1fr", md: "1fr 1fr" }}
+          >
+            <Box minW={0}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
+                Rua
+              </Text>
+              <Input
+                value={street}
+                onChange={(event) => setStreet(event.target.value)}
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
+                placeholder="Rua"
+                fontSize={{ base: "sm" }}
+              />
+            </Box>
+
+            <Box minW={0}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
+                Número
+              </Text>
+              <Input
+                value={addressNumber}
+                onChange={(event) => setAddressNumber(event.target.value)}
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
+                placeholder="123"
+                fontSize={{ base: "sm" }}
+              />
+            </Box>
+
+            <Box minW={0}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
+                Bairro
+              </Text>
+              <Input
+                value={neighborhood}
+                onChange={(event) => setNeighborhood(event.target.value)}
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
+                placeholder="Centro"
+                fontSize={{ base: "sm" }}
+              />
+            </Box>
+
+            <Box minW={0}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
+                Cidade
+              </Text>
+              <Input
+                value={city}
+                onChange={(event) => setCity(event.target.value)}
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
+                placeholder="Maceió"
+                fontSize={{ base: "sm" }}
+              />
+            </Box>
+
+            <Box minW={0}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
+                CEP
+              </Text>
+              <Input
+                value={zipCode}
+                onChange={(event) => setZipCode(event.target.value)}
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
+                placeholder="00000-000"
+                fontSize={{ base: "sm" }}
+              />
+
+              <Button
+                mt={2}
+                type="button"
+                onClick={handleResolveCoordinatesFromZipCode}
+                disabled={isResolvingCoordinates || !zipCode.trim()}
+                borderRadius="full"
+                borderWidth="1px"
+                borderColor="gray.300"
+                bg="white"
+                color="gray.700"
+                _hover={{ bg: "gray.50" }}
+                _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
+                fontSize={{ base: "xs", sm: "sm" }}
+                h={{ base: "8", sm: "9" }}
+                px={{ base: 3, sm: 4 }}
+              >
+                {isResolvingCoordinates
+                  ? "Buscando..."
+                  : "Buscar coordenadas pelo CEP"}
+              </Button>
+            </Box>
+
+            <Box minW={0}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
+                Estado
+              </Text>
+              <Input
+                value={state}
+                onChange={(event) => setState(event.target.value)}
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
+                placeholder="AL"
+                fontSize={{ base: "sm" }}
+              />
+            </Box>
+
+            <Box minW={0}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
+                País
+              </Text>
+              <Input
+                value={country}
+                onChange={(event) => setCountry(event.target.value)}
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
+                placeholder="Brasil"
+                fontSize={{ base: "sm" }}
+              />
+            </Box>
+
+            <Box minW={0}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
+                Complemento
+              </Text>
+              <Input
+                value={complement}
+                onChange={(event) => setComplement(event.target.value)}
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
+                placeholder="Apto"
+                fontSize={{ base: "sm" }}
+              />
+            </Box>
+
+            <Box minW={0}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
+                Latitude
+              </Text>
+              <Input
+                value={latitude}
+                onChange={(event) => setLatitude(event.target.value)}
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
+                placeholder="-10.000"
+                fontSize={{ base: "sm" }}
+              />
+            </Box>
+
+            <Box minW={0}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
+                Longitude
+              </Text>
+              <Input
+                value={longitude}
+                onChange={(event) => setLongitude(event.target.value)}
+                h={{ base: "10", md: "11" }}
+                borderRadius={{ base: "lg", md: "xl" }}
+                bg="gray.50"
+                borderColor="gray.200"
+                focusRingColor="teal.200"
+                placeholder="-37.000"
+                fontSize={{ base: "sm" }}
+              />
+            </Box>
+
+            <Box minW={0} gridColumn={{ base: "auto", sm: "1 / -1" }}>
+              <Text
+                fontSize={{ base: "xs", sm: "sm" }}
+                fontWeight="medium"
+                color="gray.700"
+                mb={2}
+              >
+                Localização no mapa
+              </Text>
+
+              {geocodeStatus !== "idle" && geocodeMessage ? (
+                <Box
+                  mb={3}
+                  borderRadius={{ base: "lg", md: "xl" }}
+                  borderWidth="1px"
+                  borderColor={
+                    geocodeStatus === "success" ? "green.200" : "red.200"
+                  }
+                  bg={geocodeStatus === "success" ? "green.50" : "red.50"}
+                  px={{ base: 3, md: 4 }}
+                  py={2}
+                >
+                  <Text
+                    fontSize={{ base: "xs", sm: "sm" }}
+                    color={
+                      geocodeStatus === "success" ? "green.700" : "red.600"
+                    }
+                  >
+                    {geocodeMessage}
+                  </Text>
+                </Box>
+              ) : null}
+
+              {hasValidCoordinates ? (
+                <VStack align="stretch" gap={2}>
+                  <Box
+                    borderRadius={{ base: "lg", md: "xl" }}
+                    borderWidth="1px"
+                    borderColor="gray.200"
+                    overflow="hidden"
+                    bg="gray.100"
+                    h={{ base: "220px", md: "260px" }}
+                  >
+                    <chakra.iframe
+                      title="Mapa com as coordenadas do perfil"
+                      src={mapsEmbedUrl}
+                      w="full"
+                      h="full"
+                      border={0}
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
+                  </Box>
+
+                  <chakra.a
+                    href={mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    alignSelf="flex-start"
+                    display="inline-flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    borderRadius="full"
+                    borderWidth="1px"
+                    borderColor="gray.300"
+                    bg="white"
+                    color="gray.700"
+                    _hover={{ bg: "gray.50", textDecoration: "none" }}
+                    h={{ base: "8", sm: "9" }}
+                    px={{ base: 3, sm: 4 }}
+                    fontSize={{ base: "xs", sm: "sm" }}
+                  >
+                    Abrir no Google Maps
+                  </chakra.a>
+                </VStack>
+              ) : hasCoordinateInput ? (
+                <Box
+                  borderRadius={{ base: "lg", md: "xl" }}
+                  borderWidth="1px"
+                  borderColor="orange.200"
+                  bg="orange.50"
+                  px={{ base: 3, md: 4 }}
+                  py={3}
+                >
+                  <Text fontSize={{ base: "xs", sm: "sm" }} color="orange.700">
+                    Informe latitude entre -90 e 90 e longitude entre -180 e 180
+                    para visualizar no mapa.
+                  </Text>
+                </Box>
+              ) : (
+                <Text fontSize={{ base: "xs", sm: "sm" }} color="gray.500">
+                  Preencha latitude e longitude para visualizar no mapa.
+                </Text>
+              )}
+            </Box>
+          </Grid>
+        </Box>
+
+        {feedback ? (
+          <Box
+            borderRadius={{ base: "xl", md: "2xl" }}
+            borderWidth="1px"
+            borderColor="red.200"
+            bg="red.50"
+            px={{ base: 3, md: 4 }}
+            py={3}
+          >
+            <Text fontSize={{ base: "xs", sm: "sm" }} color="red.600">
+              {feedback}
+            </Text>
+          </Box>
+        ) : null}
+
+        {updateSuccess ? (
+          <Box
+            borderRadius={{ base: "xl", md: "2xl" }}
+            borderWidth="1px"
+            borderColor="green.200"
+            bg="green.50"
+            px={{ base: 3, md: 4 }}
+            py={3}
+          >
+            <Text fontSize={{ base: "xs", sm: "sm" }} color="green.700">
+              Perfil atualizado com sucesso.
+            </Text>
+          </Box>
+        ) : null}
+
+        <Button
+          type="submit"
+          disabled={isSaving || !hasChanges}
+          h={{ base: "10", md: "11" }}
+          w="full"
+          borderRadius="full"
+          bg="green.400"
+          color="white"
+          _hover={{ bg: "green.500" }}
+          _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
+          fontSize={{ base: "sm" }}
+        >
+          {isSaving ? "Salvando..." : "Salvar alterações"}
+        </Button>
+      </VStack>
+    </chakra.form>
+  );
+}

@@ -14,6 +14,7 @@ const run = async () => {
   console.log("→ Register user");
   await registerUserUseCase.execute({
     name: "Guilherme de Oliveira Amorim",
+    userType: "owner",
     login: { email, password },
     phone: {
       countryCode: "55",
@@ -35,7 +36,9 @@ const run = async () => {
   }
 
   console.log("→ Verify email");
-  const verify = await verifyEmailUseCase.execute({ token: resend.verifyToken });
+  const verify = await verifyEmailUseCase.execute({
+    token: resend.verifyToken,
+  });
   console.log("Verify ok:", verify);
 
   console.log("→ Login");

@@ -3,6 +3,7 @@ import PageWrapper from "@/components/common/PageWrapper";
 import RegisterAside from "@/components/register/RegisterAside";
 import RegisterForm from "@/components/register/RegisterForm";
 import { Grid } from "@chakra-ui/react";
+import { Suspense } from "react";
 
 export default function RegisterPage() {
   return (
@@ -14,7 +15,9 @@ export default function RegisterPage() {
         templateColumns={{ base: "1fr", lg: "0.9fr 1.1fr" }}
       >
         <RegisterAside />
-        <RegisterForm />
+        <Suspense fallback={null}>
+          <RegisterForm />
+        </Suspense>
       </Grid>
     </PageWrapper>
   );

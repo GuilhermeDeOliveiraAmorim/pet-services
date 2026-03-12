@@ -5,11 +5,13 @@ import { getApiErrorMessage } from "@/lib/api-error";
 type RegisterFormFooterProps = {
   error: Error | null;
   isSuccess: boolean;
+  successMessage?: string;
 };
 
 export default function RegisterFormFooter({
   error,
   isSuccess,
+  successMessage,
 }: RegisterFormFooterProps) {
   const feedbackMessage = (() => {
     if (!error) {
@@ -32,7 +34,8 @@ export default function RegisterFormFooter({
 
       {isSuccess ? (
         <Text fontSize="sm" color="green.600">
-          Cadastro inicial realizado! Entre para completar seu perfil.
+          {successMessage ||
+            "Cadastro inicial realizado! Entre para completar seu perfil."}
         </Text>
       ) : null}
 
