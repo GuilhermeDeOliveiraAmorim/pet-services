@@ -175,7 +175,7 @@ export default function AddProviderForm({
               </Text>
             </Box>
 
-            <Box minW={0}>
+            <Box minW={0} gridColumn={{ base: "auto", md: "1 / -1" }}>
               <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
                 Descrição
               </Text>
@@ -191,181 +191,221 @@ export default function AddProviderForm({
                 required
               />
             </Box>
-
-            <Box minW={0}>
-              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
-                Rua
-              </Text>
-              <Input
-                value={street}
-                onChange={(event) => onStreetChange(event.target.value)}
-                h="11"
-                borderRadius="xl"
-                bg="gray.50"
-                borderColor="gray.200"
-                focusRingColor="teal.200"
-                placeholder="Rua"
-                required
-              />
-            </Box>
-
-            <Box minW={0}>
-              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
-                Número do endereço
-              </Text>
-              <Input
-                value={addressNumber}
-                onChange={(event) => onAddressNumberChange(event.target.value)}
-                h="11"
-                borderRadius="xl"
-                bg="gray.50"
-                borderColor="gray.200"
-                focusRingColor="teal.200"
-                placeholder="123"
-                required
-              />
-            </Box>
-
-            <Box minW={0}>
-              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
-                Bairro
-              </Text>
-              <Input
-                value={neighborhood}
-                onChange={(event) => onNeighborhoodChange(event.target.value)}
-                h="11"
-                borderRadius="xl"
-                bg="gray.50"
-                borderColor="gray.200"
-                focusRingColor="teal.200"
-                placeholder="Bairro"
-                required
-              />
-            </Box>
-
-            <Box minW={0}>
-              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
-                Cidade
-              </Text>
-              <Input
-                value={city}
-                onChange={(event) => onCityChange(event.target.value)}
-                h="11"
-                borderRadius="xl"
-                bg="gray.50"
-                borderColor="gray.200"
-                focusRingColor="teal.200"
-                placeholder="Cidade"
-                required
-              />
-            </Box>
-
-            <Box minW={0}>
-              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
-                CEP
-              </Text>
-              <Input
-                value={zipCode}
-                onChange={(event) => onZipCodeChange(event.target.value)}
-                h="11"
-                borderRadius="xl"
-                bg="gray.50"
-                borderColor="gray.200"
-                focusRingColor="teal.200"
-                placeholder="57000-000"
-                required
-              />
-            </Box>
-
-            <Box minW={0}>
-              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
-                Estado
-              </Text>
-              <Input
-                value={state}
-                onChange={(event) => onStateChange(event.target.value)}
-                h="11"
-                borderRadius="xl"
-                bg="gray.50"
-                borderColor="gray.200"
-                focusRingColor="teal.200"
-                placeholder="AL"
-                required
-              />
-            </Box>
-
-            <Box minW={0}>
-              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
-                País
-              </Text>
-              <Input
-                value={country}
-                onChange={(event) => onCountryChange(event.target.value)}
-                h="11"
-                borderRadius="xl"
-                bg="gray.50"
-                borderColor="gray.200"
-                focusRingColor="teal.200"
-                placeholder="Brasil"
-                required
-              />
-            </Box>
-
-            <Box minW={0}>
-              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
-                Latitude
-              </Text>
-              <Input
-                type="number"
-                inputMode="decimal"
-                value={latitude}
-                onChange={(event) => onLatitudeChange(event.target.value)}
-                h="11"
-                borderRadius="xl"
-                bg="gray.50"
-                borderColor="gray.200"
-                focusRingColor="teal.200"
-                placeholder="-9.6498"
-                step="0.000001"
-                required
-              />
-            </Box>
-
-            <Box minW={0}>
-              <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
-                Longitude
-              </Text>
-              <Input
-                type="number"
-                inputMode="decimal"
-                value={longitude}
-                onChange={(event) => onLongitudeChange(event.target.value)}
-                h="11"
-                borderRadius="xl"
-                bg="gray.50"
-                borderColor="gray.200"
-                focusRingColor="teal.200"
-                placeholder="-35.7089"
-                step="0.000001"
-                required
-              />
-            </Box>
           </Grid>
 
-          <Box minW={0}>
-            <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
-              Complemento (opcional)
+          <Box
+            borderRadius="2xl"
+            borderWidth="1px"
+            borderColor="gray.200"
+            bg="gray.50"
+            p={{ base: 3, md: 4 }}
+          >
+            <Text fontSize="sm" fontWeight="semibold" color="gray.900" mb={3}>
+              Endereço
             </Text>
-            <Input
-              value={complement}
-              onChange={(event) => onComplementChange(event.target.value)}
-              h="11"
-              borderRadius="xl"
-              bg="gray.50"
-              borderColor="gray.200"
-              focusRingColor="teal.200"
-              placeholder="Sala, bloco, referência"
-            />
+
+            <Grid gap={4} templateColumns={{ base: "1fr", md: "1fr 1fr 1fr" }}>
+              <Box minW={0} gridColumn={{ base: "auto", md: "1 / 2" }}>
+                <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                  CEP
+                </Text>
+                <Input
+                  value={zipCode}
+                  onChange={(event) => onZipCodeChange(event.target.value)}
+                  h="11"
+                  borderRadius="xl"
+                  bg="white"
+                  borderColor="gray.200"
+                  focusRingColor="teal.200"
+                  placeholder="57000-000"
+                  required
+                />
+              </Box>
+
+              <Box minW={0} gridColumn={{ base: "auto", md: "2 / 4" }}>
+                <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                  Rua
+                </Text>
+                <Input
+                  value={street}
+                  onChange={(event) => onStreetChange(event.target.value)}
+                  h="11"
+                  borderRadius="xl"
+                  bg="white"
+                  borderColor="gray.200"
+                  focusRingColor="teal.200"
+                  placeholder="Rua"
+                  required
+                />
+              </Box>
+
+              <Box minW={0} gridColumn={{ base: "auto", md: "1 / 2" }}>
+                <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                  Número
+                </Text>
+                <Input
+                  value={addressNumber}
+                  onChange={(event) =>
+                    onAddressNumberChange(event.target.value)
+                  }
+                  h="11"
+                  borderRadius="xl"
+                  bg="white"
+                  borderColor="gray.200"
+                  focusRingColor="teal.200"
+                  placeholder="123"
+                  required
+                />
+              </Box>
+
+              <Box minW={0} gridColumn={{ base: "auto", md: "2 / 4" }}>
+                <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                  Complemento (opcional)
+                </Text>
+                <Input
+                  value={complement}
+                  onChange={(event) => onComplementChange(event.target.value)}
+                  h="11"
+                  borderRadius="xl"
+                  bg="white"
+                  borderColor="gray.200"
+                  focusRingColor="teal.200"
+                  placeholder="Sala, bloco, referência"
+                />
+              </Box>
+
+              <Box minW={0}>
+                <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                  País
+                </Text>
+                <Input
+                  value={country}
+                  onChange={(event) => onCountryChange(event.target.value)}
+                  h="11"
+                  borderRadius="xl"
+                  bg="white"
+                  borderColor="gray.200"
+                  focusRingColor="teal.200"
+                  placeholder="Brasil"
+                  required
+                />
+              </Box>
+
+              <Box minW={0}>
+                <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                  Estado
+                </Text>
+                <Input
+                  value={state}
+                  onChange={(event) => onStateChange(event.target.value)}
+                  h="11"
+                  borderRadius="xl"
+                  bg="white"
+                  borderColor="gray.200"
+                  focusRingColor="teal.200"
+                  placeholder="AL"
+                  required
+                />
+              </Box>
+
+              <Box minW={0}>
+                <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                  Cidade
+                </Text>
+                <Input
+                  value={city}
+                  onChange={(event) => onCityChange(event.target.value)}
+                  h="11"
+                  borderRadius="xl"
+                  bg="white"
+                  borderColor="gray.200"
+                  focusRingColor="teal.200"
+                  placeholder="Cidade"
+                  required
+                />
+              </Box>
+
+              <Box minW={0} gridColumn={{ base: "auto", md: "1 / -1" }}>
+                <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                  Bairro
+                </Text>
+                <Input
+                  value={neighborhood}
+                  onChange={(event) => onNeighborhoodChange(event.target.value)}
+                  h="11"
+                  borderRadius="xl"
+                  bg="white"
+                  borderColor="gray.200"
+                  focusRingColor="teal.200"
+                  placeholder="Bairro"
+                  required
+                />
+              </Box>
+
+              <Box minW={0} gridColumn={{ base: "auto", md: "1 / -1" }}>
+                <Text
+                  fontSize="sm"
+                  fontWeight="semibold"
+                  color="gray.900"
+                  mb={2}
+                >
+                  Coordenadas
+                </Text>
+                <Grid gap={4} templateColumns={{ base: "1fr", md: "1fr 1fr" }}>
+                  <Box minW={0}>
+                    <Text
+                      fontSize="sm"
+                      fontWeight="medium"
+                      color="gray.700"
+                      mb={2}
+                    >
+                      Latitude
+                    </Text>
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      value={latitude}
+                      onChange={(event) => onLatitudeChange(event.target.value)}
+                      h="11"
+                      borderRadius="xl"
+                      bg="white"
+                      borderColor="gray.200"
+                      focusRingColor="teal.200"
+                      placeholder="-9.6498"
+                      step="0.000001"
+                      required
+                    />
+                  </Box>
+
+                  <Box minW={0}>
+                    <Text
+                      fontSize="sm"
+                      fontWeight="medium"
+                      color="gray.700"
+                      mb={2}
+                    >
+                      Longitude
+                    </Text>
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      value={longitude}
+                      onChange={(event) =>
+                        onLongitudeChange(event.target.value)
+                      }
+                      h="11"
+                      borderRadius="xl"
+                      bg="white"
+                      borderColor="gray.200"
+                      focusRingColor="teal.200"
+                      placeholder="-35.7089"
+                      step="0.000001"
+                      required
+                    />
+                  </Box>
+                </Grid>
+              </Box>
+            </Grid>
           </Box>
 
           <HStack gap={3} flexWrap="wrap">
