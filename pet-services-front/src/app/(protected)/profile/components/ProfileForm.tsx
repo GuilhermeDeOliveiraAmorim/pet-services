@@ -703,26 +703,28 @@ export default function ProfileForm({ user }: ProfileFormProps) {
           </Grid>
         </Box>
 
-        <Box
-          borderRadius={{ base: "xl", md: "2xl" }}
-          borderWidth="1px"
-          borderColor="teal.200"
-          bg="teal.50"
-          p={{ base: 3, sm: 4 }}
-        >
-          <Text
-            fontSize={{ base: "xs" }}
-            fontWeight="semibold"
-            textTransform="uppercase"
-            color="teal.500"
+        {!user.profileComplete ? (
+          <Box
+            borderRadius={{ base: "xl", md: "2xl" }}
+            borderWidth="1px"
+            borderColor="teal.200"
+            bg="teal.50"
+            p={{ base: 3, sm: 4 }}
           >
-            Complete seu perfil
-          </Text>
-          <Text mt={1} fontSize={{ base: "xs", sm: "sm" }} color="teal.700">
-            Preencha o endereço e a localização para ficar visível na
-            plataforma.
-          </Text>
-        </Box>
+            <Text
+              fontSize={{ base: "xs" }}
+              fontWeight="semibold"
+              textTransform="uppercase"
+              color="teal.500"
+            >
+              Complete seu perfil
+            </Text>
+            <Text mt={1} fontSize={{ base: "xs", sm: "sm" }} color="teal.700">
+              Preencha o endereço e a localização para ficar visível na
+              plataforma.
+            </Text>
+          </Box>
+        ) : null}
 
         <Box
           borderRadius={{ base: "xl", md: "2xl" }}
@@ -1151,7 +1153,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
               </Button>
             </Box>
 
-            {geocodeStatus !== "idle" ? (
+            {geocodeStatus !== "idle" || user.profileComplete ? (
               <Box minW={0} gridColumn={{ base: "auto", sm: "1 / -1" }}>
                 <Text
                   fontSize={{ base: "xs", sm: "sm" }}
@@ -1185,7 +1187,8 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                   </Box>
                 ) : null}
 
-                {geocodeStatus === "success" && hasValidCoordinates ? (
+                {(geocodeStatus === "success" || user.profileComplete) &&
+                hasValidCoordinates ? (
                   <VStack align="stretch" gap={2}>
                     <Box
                       borderRadius={{ base: "lg", md: "xl" }}
