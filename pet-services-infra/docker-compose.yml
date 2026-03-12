@@ -64,7 +64,7 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     command: server /data --console-address ":9001"
     volumes:
-      - "${VOLUME_PATH}:/data"
+      - "${MINIO_DATA_PATH:-./.volumes/minio}:/data"
 
   postgres:
     image: postgres:16-alpine
