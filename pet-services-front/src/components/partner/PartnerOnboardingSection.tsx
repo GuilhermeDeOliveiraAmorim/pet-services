@@ -80,7 +80,7 @@ export default function PartnerOnboardingSection() {
 
       <Button
         as={Link}
-        href="/register"
+        href="/register?user_type=provider"
         alignSelf={{ base: "stretch", md: "flex-start" }}
         borderRadius="full"
         bgGradient="linear(to-r, teal.400, cyan.400)"

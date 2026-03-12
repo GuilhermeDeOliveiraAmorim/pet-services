@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Checkbox, Text, VStack, chakra } from "@chakra-ui/react";
 import { useReferenceCountries, useUserRegister } from "@/application";
 import { UserTypes } from "@/domain";
@@ -16,6 +16,7 @@ const defaultCountryCode = "BR";
 
 export default function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { mutateAsync, isPending, error, isSuccess } = useUserRegister();
 
   const [name, setName] = useState("");
@@ -24,7 +25,9 @@ export default function RegisterForm() {
   const [selectedDialCodeValue, setSelectedDialCodeValue] = useState("");
   const [areaCode, setAreaCode] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [isPartnerAccount, setIsPartnerAccount] = useState(false);
+  const [isPartnerAccount, setIsPartnerAccount] = useState(
+    searchParams.get("user_type") === UserTypes.Provider,
+  );
 
   const { data: countriesData } = useReferenceCountries();
 

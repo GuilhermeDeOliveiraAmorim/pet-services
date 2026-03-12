@@ -53,7 +53,7 @@ export default function PartnerHeroSection() {
         >
           <Button
             as={Link}
-            href="/register"
+            href="/register?user_type=provider"
             borderRadius="full"
             px="6"
             bg="teal.400"
