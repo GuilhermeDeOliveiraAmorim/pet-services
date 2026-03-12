@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Text, VStack, chakra } from "@chakra-ui/react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Checkbox, Text, VStack, chakra } from "@chakra-ui/react";
 import { useReferenceCountries, useUserRegister } from "@/application";
+import { UserTypes } from "@/domain";
 import RegisterAccountFields from "./RegisterAccountFields";
 import RegisterFormCard from "./RegisterFormCard";
 import RegisterFormFooter from "./RegisterFormFooter";
@@ -12,9 +13,11 @@ import RegisterSubmitRow from "./RegisterSubmitRow";
 
 const defaultPhoneCountryCode = "55";
 const defaultCountryCode = "BR";
+const redirectDelaySeconds = 4;
 
 export default function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { mutateAsync, isPending, error, isSuccess } = useUserRegister();
 
   const [name, setName] = useState("");
@@ -23,6 +26,43 @@ export default function RegisterForm() {
   const [selectedDialCodeValue, setSelectedDialCodeValue] = useState("");
   const [areaCode, setAreaCode] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [redirectSecondsLeft, setRedirectSecondsLeft] = useState<number | null>(
+    null,
+  );
+  const [successFeedbackMessage, setSuccessFeedbackMessage] = useState("");
+  const [isPartnerAccount, setIsPartnerAccount] = useState(
+    searchParams.get("user_type") === UserTypes.Provider,
+  );
+
+  useEffect(() => {
+    if (redirectSecondsLeft === null || redirectSecondsLeft <= 0) {
+      return;
+    }
+
+    const timerId = window.setInterval(() => {
+      setRedirectSecondsLeft((previous) => {
+        if (previous === null) {
+          return null;
+        }
+
+        if (previous <= 1) {
+          return 0;
+        }
+
+        return previous - 1;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(timerId);
+  }, [redirectSecondsLeft]);
+
+  useEffect(() => {
+    if (redirectSecondsLeft !== 0) {
+      return;
+    }
+
+    router.replace("/login");
+  }, [redirectSecondsLeft, router]);
 
   const { data: countriesData } = useReferenceCountries();
 
@@ -104,8 +144,9 @@ export default function RegisterForm() {
     const phoneDigits = phoneNumber.replace(/\D/g, "");
     const [countryCodeDigits] = currentDialCodeValue.split(":");
 
-    await mutateAsync({
+    const response = await mutateAsync({
       name,
+      userType: isPartnerAccount ? UserTypes.Provider : UserTypes.Owner,
       login: {
         email,
         password,
@@ -117,8 +158,17 @@ export default function RegisterForm() {
       },
     });
 
-    router.replace("/login");
+    setSuccessFeedbackMessage(
+      response.detail ||
+        "Cadastro realizado! Enviamos um e-mail de confirmação para sua conta.",
+    );
+    setRedirectSecondsLeft(redirectDelaySeconds);
   };
+
+  const isRedirectingAfterSuccess = redirectSecondsLeft !== null;
+  const successMessageWithCountdown = isRedirectingAfterSuccess
+    ? `${successFeedbackMessage} Você será redirecionado para o login em ${redirectSecondsLeft}s.`
+    : successFeedbackMessage;
 
   return (
     <RegisterFormCard>
@@ -150,9 +200,29 @@ export default function RegisterForm() {
               dialCodeOptions={dialCodeOptions}
             />
 
-            <RegisterSubmitRow isPending={isPending} />
+            <VStack align="stretch" gap={1}>
+              <Checkbox.Root
+                checked={isPartnerAccount}
+                onCheckedChange={() => setIsPartnerAccount((prev) => !prev)}
+              >
+                <Checkbox.HiddenInput />
+                <Checkbox.Control />
+                <Checkbox.Label>
+                  Quero me cadastrar como parceiro
+                </Checkbox.Label>
+              </Checkbox.Root>
+            </VStack>
 
-            <RegisterFormFooter error={error} isSuccess={isSuccess} />
+            <RegisterSubmitRow
+              isPending={isPending}
+              isRedirecting={isRedirectingAfterSuccess}
+            />
+
+            <RegisterFormFooter
+              error={error}
+              isSuccess={isSuccess}
+              successMessage={successMessageWithCountdown}
+            />
           </VStack>
         </VStack>
       </chakra.form>

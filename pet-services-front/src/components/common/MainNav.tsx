@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
-  Box,
   Button,
   Flex,
   HStack,
@@ -17,7 +16,7 @@ import Image from "next/image";
 
 const navItems = [
   { label: "Encontre Serviços", href: "/services" },
-  { label: "Seja um Parceiro", href: "/partner" }
+  { label: "Seja um Parceiro", href: "/partner" },
 ];
 
 type MainNavProps = {
@@ -32,8 +31,12 @@ export default function MainNav({
   showActions = true,
 }: MainNavProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const { session, isAuthenticated, clearSession } = useAuthSession();
   const { mutateAsync: logout, isPending } = useAuthLogout();
+  const registerHref = pathname?.startsWith("/partner")
+    ? "/register?user_type=provider"
+    : "/register";
 
   const handleLogout = async () => {
     try {
@@ -80,11 +83,11 @@ export default function MainNav({
           fontWeight="medium"
           color="gray.600"
         >
-            {navItems.map((item) => (
-              <ChakraLink key={item.href} as={Link} href={item.href}>
-                {item.label}
-              </ChakraLink>
-            ))}
+          {navItems.map((item) => (
+            <ChakraLink key={item.href} as={Link} href={item.href}>
+              {item.label}
+            </ChakraLink>
+          ))}
         </HStack>
       ) : null}
 
@@ -123,7 +126,7 @@ export default function MainNav({
               </ChakraLink>
               <ChakraLink
                 as={Link}
-                href="/register"
+                href={registerHref}
                 display="inline-flex"
                 alignItems="center"
                 justifyContent="center"
