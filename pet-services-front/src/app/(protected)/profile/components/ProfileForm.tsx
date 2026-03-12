@@ -24,6 +24,7 @@ import {
   useUserAddPhoto,
   useUserUpdate,
 } from "@/application";
+import { Send } from "lucide-react";
 import type { UpdateUserInput } from "@/application";
 import type { User } from "@/domain/entities/user";
 import { getApiErrorMessage } from "@/lib/api-error";
@@ -535,34 +536,38 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                 Foto do perfil
               </Text>
 
-              <Button
-                type="button"
-                borderRadius="full"
-                size={{ base: "xs", sm: "sm" }}
-                variant="outline"
-                borderColor="gray.300"
-                color="gray.700"
-                onClick={() => photoInputRef.current?.click()}
-                fontSize={{ base: "xs", sm: "sm" }}
-                w={{ base: "full", lg: "auto" }}
-              >
-                Escolher foto
-              </Button>
-              <Button
-                type="button"
-                onClick={handlePhotoUpload}
-                disabled={!selectedPhoto || isUploadingPhoto}
-                borderRadius="full"
-                size={{ base: "xs", sm: "sm" }}
-                bg="green.400"
-                color="white"
-                _hover={{ bg: "green.500" }}
-                _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
-                fontSize={{ base: "xs", sm: "sm" }}
-                w={{ base: "full", lg: "auto" }}
-              >
-                {isUploadingPhoto ? "Enviando..." : "Enviar"}
-              </Button>
+              <Flex gap={2} w={{ base: "full", lg: "auto" }}>
+                <Button
+                  type="button"
+                  borderRadius="full"
+                  size={{ base: "xs", sm: "sm" }}
+                  variant="outline"
+                  borderColor="gray.300"
+                  color="gray.700"
+                  onClick={() => photoInputRef.current?.click()}
+                  fontSize={{ base: "xs", sm: "sm" }}
+                  flex={1}
+                >
+                  Escolher foto
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handlePhotoUpload}
+                  disabled={!selectedPhoto || isUploadingPhoto}
+                  borderRadius="full"
+                  size={{ base: "xs", sm: "sm" }}
+                  bg="green.400"
+                  color="white"
+                  _hover={{ bg: "green.500" }}
+                  _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
+                  fontSize={{ base: "xs", sm: "sm" }}
+                  minW={{ base: "10", sm: "11" }}
+                  px={0}
+                  aria-label="Enviar foto"
+                >
+                  <Send size={14} />
+                </Button>
+              </Flex>
 
               <Text
                 fontSize={{ base: "xs" }}
@@ -614,91 +619,98 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                 />
               </Box>
 
-              <Box minW={0}>
-                <Text
-                  fontSize={{ base: "xs", sm: "sm" }}
-                  fontWeight="medium"
-                  color="gray.700"
-                  mb={2}
-                >
-                  Email
-                </Text>
-                <Input
-                  value={email}
-                  readOnly
-                  h={{ base: "10", md: "11" }}
-                  borderRadius={{ base: "lg", md: "xl" }}
-                  bg="gray.100"
-                  borderColor="gray.200"
-                  color="gray.500"
-                  fontSize={{ base: "sm" }}
-                />
-                <Text mt={1.5} fontSize={{ base: "xs" }} color="gray.400">
-                  O email é fixo e não pode ser alterado aqui.
-                </Text>
-              </Box>
+              <Grid
+                gap={{ base: 3, md: 4 }}
+                templateColumns={{ base: "1fr", md: "1fr 1fr" }}
+              >
+                <Box minW={0}>
+                  <Text
+                    fontSize={{ base: "xs", sm: "sm" }}
+                    fontWeight="medium"
+                    color="gray.700"
+                    mb={2}
+                  >
+                    Email
+                  </Text>
+                  <Input
+                    value={email}
+                    readOnly
+                    h={{ base: "10", md: "11" }}
+                    borderRadius={{ base: "lg", md: "xl" }}
+                    bg="gray.100"
+                    borderColor="gray.200"
+                    color="gray.500"
+                    fontSize={{ base: "sm" }}
+                  />
+                  <Text mt={1.5} fontSize={{ base: "xs" }} color="gray.400">
+                    O email é fixo e não pode ser alterado aqui.
+                  </Text>
+                </Box>
 
-              <Box minW={0}>
-                <Text
-                  fontSize={{ base: "xs", sm: "sm" }}
-                  fontWeight="medium"
-                  color="gray.700"
-                  mb={2}
-                >
-                  Telefone
-                </Text>
-                <Grid
-                  gap={{ base: 2, md: 4 }}
-                  templateColumns={{
-                    base: "1fr",
-                    sm: "86px 86px minmax(0, 1fr)",
-                  }}
-                >
-                  <Box minW={0}>
-                    <Input
-                      value={phoneCountryCode}
-                      onChange={(event) =>
-                        setPhoneCountryCode(event.target.value)
-                      }
-                      h={{ base: "10", md: "11" }}
-                      borderRadius={{ base: "lg", md: "xl" }}
-                      bg="gray.50"
-                      borderColor="gray.200"
-                      focusRingColor="teal.200"
-                      placeholder="+55"
-                      fontSize={{ base: "sm" }}
-                    />
-                  </Box>
+                <Box minW={0}>
+                  <Text
+                    fontSize={{ base: "xs", sm: "sm" }}
+                    fontWeight="medium"
+                    color="gray.700"
+                    mb={2}
+                  >
+                    Telefone
+                  </Text>
+                  <Grid
+                    gap={{ base: 2, md: 2 }}
+                    templateColumns={{
+                      base: "1fr",
+                      sm: "86px 86px minmax(0, 1fr)",
+                    }}
+                  >
+                    <Box minW={0}>
+                      <Input
+                        value={phoneCountryCode}
+                        onChange={(event) =>
+                          setPhoneCountryCode(event.target.value)
+                        }
+                        h={{ base: "10", md: "11" }}
+                        borderRadius={{ base: "lg", md: "xl" }}
+                        bg="gray.50"
+                        borderColor="gray.200"
+                        focusRingColor="teal.200"
+                        placeholder="+55"
+                        fontSize={{ base: "sm" }}
+                      />
+                    </Box>
 
-                  <Box minW={0}>
-                    <Input
-                      value={phoneAreaCode}
-                      onChange={(event) => setPhoneAreaCode(event.target.value)}
-                      h={{ base: "10", md: "11" }}
-                      borderRadius={{ base: "lg", md: "xl" }}
-                      bg="gray.50"
-                      borderColor="gray.200"
-                      focusRingColor="teal.200"
-                      placeholder="82"
-                      fontSize={{ base: "sm" }}
-                    />
-                  </Box>
+                    <Box minW={0}>
+                      <Input
+                        value={phoneAreaCode}
+                        onChange={(event) =>
+                          setPhoneAreaCode(event.target.value)
+                        }
+                        h={{ base: "10", md: "11" }}
+                        borderRadius={{ base: "lg", md: "xl" }}
+                        bg="gray.50"
+                        borderColor="gray.200"
+                        focusRingColor="teal.200"
+                        placeholder="82"
+                        fontSize={{ base: "sm" }}
+                      />
+                    </Box>
 
-                  <Box minW={0}>
-                    <Input
-                      value={phoneNumber}
-                      onChange={(event) => setPhoneNumber(event.target.value)}
-                      h={{ base: "10", md: "11" }}
-                      borderRadius={{ base: "lg", md: "xl" }}
-                      bg="gray.50"
-                      borderColor="gray.200"
-                      focusRingColor="teal.200"
-                      placeholder="999776761"
-                      fontSize={{ base: "sm" }}
-                    />
-                  </Box>
-                </Grid>
-              </Box>
+                    <Box minW={0}>
+                      <Input
+                        value={phoneNumber}
+                        onChange={(event) => setPhoneNumber(event.target.value)}
+                        h={{ base: "10", md: "11" }}
+                        borderRadius={{ base: "lg", md: "xl" }}
+                        bg="gray.50"
+                        borderColor="gray.200"
+                        focusRingColor="teal.200"
+                        placeholder="999776761"
+                        fontSize={{ base: "sm" }}
+                      />
+                    </Box>
+                  </Grid>
+                </Box>
+              </Grid>
             </VStack>
           </Grid>
         </Box>
@@ -1086,7 +1098,11 @@ export default function ProfileForm({ user }: ProfileFormProps) {
               </Text>
               <Grid
                 gap={{ base: 2, md: 4 }}
-                templateColumns={{ base: "1fr", sm: "1fr 1fr" }}
+                templateColumns={{
+                  base: "1fr",
+                  sm: "1fr 1fr",
+                  md: "1fr 1fr auto",
+                }}
               >
                 <Box minW={0}>
                   <Text
@@ -1131,26 +1147,30 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                     fontSize={{ base: "sm" }}
                   />
                 </Box>
-              </Grid>
 
-              <Button
-                mt={3}
-                type="button"
-                onClick={handleResolveCoordinatesFromZipCode}
-                disabled={isResolvingCoordinates || !zipCode.trim()}
-                borderRadius="full"
-                borderWidth="1px"
-                borderColor="gray.300"
-                bg="white"
-                color="gray.700"
-                _hover={{ bg: "gray.50" }}
-                _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
-                fontSize={{ base: "xs", sm: "sm" }}
-                h={{ base: "10", md: "11" }}
-                px={{ base: 3, sm: 4 }}
-              >
-                {isResolvingCoordinates ? "Buscando..." : "Atualizar pelo CEP"}
-              </Button>
+                <Flex align="end">
+                  <Button
+                    type="button"
+                    onClick={handleResolveCoordinatesFromZipCode}
+                    disabled={isResolvingCoordinates || !zipCode.trim()}
+                    borderRadius="full"
+                    borderWidth="1px"
+                    borderColor="gray.300"
+                    bg="white"
+                    color="gray.700"
+                    _hover={{ bg: "gray.50" }}
+                    _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
+                    fontSize={{ base: "xs", sm: "sm" }}
+                    h={{ base: "10", md: "11" }}
+                    px={{ base: 3, sm: 4 }}
+                    w={{ base: "full", md: "auto" }}
+                  >
+                    {isResolvingCoordinates
+                      ? "Buscando..."
+                      : "Atualizar pelo CEP"}
+                  </Button>
+                </Flex>
+              </Grid>
             </Box>
 
             {geocodeStatus !== "idle" || user.profileComplete ? (
