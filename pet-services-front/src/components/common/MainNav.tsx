@@ -41,11 +41,17 @@ export default function MainNav({
     : "/register";
   const isActive = (href: string) =>
     pathname === href || pathname?.startsWith(`${href}/`);
+  const isOwnerUser = profileData?.user?.userType === UserTypes.Owner;
   const isProviderUser = profileData?.user?.userType === UserTypes.Provider;
+  const canAccessRequests = isOwnerUser || isProviderUser;
   const navItems = [
     ...baseNavItems,
     ...(isAuthenticated ? [{ label: "Perfil", href: "/profile" }] : []),
+    ...(isOwnerUser ? [{ label: "Owner", href: "/owner" }] : []),
     ...(isProviderUser ? [{ label: "Provider", href: "/provider" }] : []),
+    ...(canAccessRequests
+      ? [{ label: "Minhas solicitações", href: "/requests" }]
+      : []),
   ];
 
   const handleLogout = async () => {

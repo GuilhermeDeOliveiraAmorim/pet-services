@@ -1,9 +1,15 @@
 import { useMemo } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type UseQueryOptions,
+} from "@tanstack/react-query";
 import {
   AddRequestInput,
   GetRequestInput,
   ListRequestsInput,
+  ListRequestsOutput,
   AcceptRequestInput,
   RejectRequestInput,
   CompleteRequestInput,
@@ -27,6 +33,11 @@ const REQUEST_KEYS = {
   detail: (id: string) => [...REQUEST_KEYS.details(), id] as const,
 };
 
+type ListRequestsOptions = Omit<
+  UseQueryOptions<ListRequestsOutput, Error>,
+  "queryKey" | "queryFn"
+>;
+
 export function useRequestAdd() {
   const queryClient = useQueryClient();
   const { addRequest } = useRequestUseCases();
@@ -49,12 +60,16 @@ export function useRequestGet(input: GetRequestInput) {
   });
 }
 
-export function useRequestList(input?: ListRequestsInput) {
+export function useRequestList(
+  input?: ListRequestsInput,
+  options?: ListRequestsOptions,
+) {
   const { listRequests } = useRequestUseCases();
 
   return useQuery({
     queryKey: REQUEST_KEYS.list(input),
     queryFn: () => listRequests.execute(input),
+    ...options,
   });
 }
 
