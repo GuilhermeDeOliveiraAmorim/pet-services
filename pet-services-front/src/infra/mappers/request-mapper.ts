@@ -3,8 +3,11 @@ import { Request } from "@/domain/entities";
 interface RawRequest {
   id?: string;
   user_id?: string;
+  user_name?: string;
   provider_id?: string;
+  business_name?: string;
   service_id?: string;
+  service_name?: string;
   pet_id?: string;
   pet?: Record<string, unknown>;
   notes?: string;
@@ -22,8 +25,11 @@ export function mapRequestFromApi(raw: Record<string, unknown>): Request {
   return {
     id: data.id || "",
     userId: data.user_id || "",
+    userName: data.user_name || "",
     providerId: data.provider_id || "",
+    businessName: data.business_name || "",
     serviceId: data.service_id || "",
+    serviceName: data.service_name || "",
     petId: data.pet_id || "",
     pet: data.pet as Request["pet"],
     notes: data.notes || "",
