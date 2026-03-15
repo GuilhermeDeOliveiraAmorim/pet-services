@@ -3,6 +3,7 @@ import { PetGateway } from "@/application/ports/pet-gateway";
 export interface AddPetInput {
   name: string;
   speciesId: string;
+  breed?: string;
   age: number;
   weight: number;
   notes: string;
@@ -15,6 +16,7 @@ export interface AddPetOutput {
     id: number;
     name: string;
     speciesId: string;
+    breed?: string;
     age: number;
     weight: number;
     notes: string;

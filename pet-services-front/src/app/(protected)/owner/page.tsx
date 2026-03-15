@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import {
+  useBreedsList,
   usePetAdd,
   useSpeciesList,
   useUserAddPhoto,
@@ -26,6 +27,7 @@ export default function OwnerDashboardPage() {
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const [petName, setPetName] = useState("");
   const [petSpeciesId, setPetSpeciesId] = useState("");
+  const [petBreed, setPetBreed] = useState("");
   const [petAge, setPetAge] = useState("");
   const [petWeight, setPetWeight] = useState("");
   const [petNotes, setPetNotes] = useState("");
@@ -52,6 +54,7 @@ export default function OwnerDashboardPage() {
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
       setPetName("");
       setPetSpeciesId("");
+      setPetBreed("");
       setPetAge("");
       setPetWeight("");
       setPetNotes("");
@@ -73,6 +76,23 @@ export default function OwnerDashboardPage() {
     [speciesData?.species],
   );
 
+  const {
+    data: breedsData,
+    isLoading: isLoadingBreeds,
+    error: breedsError,
+  } = useBreedsList(petSpeciesId || undefined);
+
+  const breedOptions = useMemo(() => {
+    return (
+      breedsData?.breeds?.map((breed) => ({
+        value: breed.name,
+        label: breed.name,
+      })) ?? []
+    );
+  }, [breedsData?.breeds]);
+
+  const showBreedField = breedOptions.length > 0;
+
   const photoFeedback = useMemo(() => {
     if (!uploadError) {
       return "";
@@ -92,8 +112,14 @@ export default function OwnerDashboardPage() {
   const isPetFormValid =
     Boolean(petName.trim()) &&
     Boolean(petSpeciesId.trim()) &&
+    (!showBreedField || Boolean(petBreed.trim())) &&
     Number(petAge) > 0 &&
     Number(petWeight) > 0;
+
+  const handleSpeciesChange = (value: string) => {
+    setPetSpeciesId(value);
+    setPetBreed("");
+  };
 
   const handlePhotoUpload = async () => {
     if (!selectedPhoto) {
@@ -110,6 +136,7 @@ export default function OwnerDashboardPage() {
     await addPet({
       name: petName.trim(),
       speciesId: petSpeciesId.trim(),
+      breed: petBreed.trim() || undefined,
       age: Number(petAge),
       weight: Number(petWeight),
       notes: petNotes.trim(),
@@ -125,11 +152,13 @@ export default function OwnerDashboardPage() {
       <PetFormCard
         petName={petName}
         petSpeciesId={petSpeciesId}
+        petBreed={petBreed}
         petAge={petAge}
         petWeight={petWeight}
         petNotes={petNotes}
         onPetNameChange={setPetName}
-        onPetSpeciesIdChange={setPetSpeciesId}
+        onPetSpeciesIdChange={handleSpeciesChange}
+        onPetBreedChange={setPetBreed}
         onPetAgeChange={setPetAge}
         onPetWeightChange={setPetWeight}
         onPetNotesChange={setPetNotes}
@@ -140,7 +169,11 @@ export default function OwnerDashboardPage() {
         petFeedback={petFeedback}
         hasSpeciesError={Boolean(speciesError)}
         isLoadingSpecies={isLoadingSpecies}
+        hasBreedsError={Boolean(breedsError)}
+        isLoadingBreeds={isLoadingBreeds}
         specieOptions={specieOptions}
+        breedOptions={breedOptions}
+        showBreedField={showBreedField}
       />
 
       <PhotoUploadCard

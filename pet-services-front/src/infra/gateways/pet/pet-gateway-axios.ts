@@ -25,6 +25,7 @@ type PetApi = {
   };
   species_id?: string;
   speciesId?: string;
+  breed?: string;
   age?: number;
   weight?: number;
   notes?: string;
@@ -47,6 +48,7 @@ const mapPetApiToDomain = (pet: PetApi): Pet => ({
     updatedAt: undefined,
     deactivatedAt: undefined,
   },
+  breed: pet.breed ?? "",
   age: pet.age ?? 0,
   weight: pet.weight ?? 0,
   notes: pet.notes ?? "",
@@ -80,6 +82,7 @@ export class PetGatewayAxios implements PetGateway {
     const payload = {
       name: input.name,
       species_id: input.speciesId,
+      breed: input.breed,
       age: input.age,
       weight: input.weight,
       notes: input.notes,
@@ -103,6 +106,7 @@ export class PetGatewayAxios implements PetGateway {
               data.pet.species_id ??
               data.pet.speciesId ??
               "",
+            breed: data.pet.breed ?? "",
             age: data.pet.age ?? 0,
             weight: data.pet.weight ?? 0,
             notes: data.pet.notes ?? "",
@@ -119,6 +123,8 @@ export class PetGatewayAxios implements PetGateway {
   async updatePet(input: UpdatePetInput): Promise<UpdatePetOutput> {
     const payload: Record<string, unknown> = {};
     if (input.name !== undefined) payload.name = input.name;
+    if (input.speciesId !== undefined) payload.species_id = input.speciesId;
+    if (input.breed !== undefined) payload.breed = input.breed;
     if (input.age !== undefined) payload.age = input.age;
     if (input.weight !== undefined) payload.weight = input.weight;
     if (input.notes !== undefined) payload.notes = input.notes;

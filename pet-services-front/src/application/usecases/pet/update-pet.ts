@@ -3,6 +3,8 @@ import type { PetGateway } from "@/application/ports/pet-gateway";
 export interface UpdatePetInput {
   petId: string | number;
   name?: string;
+  speciesId?: string;
+  breed?: string;
   age?: number;
   weight?: number;
   notes?: string;

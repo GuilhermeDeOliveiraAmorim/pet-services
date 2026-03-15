@@ -15,6 +15,7 @@ import (
 type UpdatePetInputBody struct {
 	Name      string  `json:"name,omitempty"`
 	SpeciesID string  `json:"species_id,omitempty"`
+	Breed     string  `json:"breed,omitempty"`
 	Age       int     `json:"age,omitempty"`
 	Weight    float64 `json:"weight,omitempty"`
 	Notes     string  `json:"notes,omitempty"`
@@ -25,6 +26,7 @@ type UpdatePetInput struct {
 	PetID     string  `json:"pet_id"`
 	Name      string  `json:"name,omitempty"`
 	SpeciesID string  `json:"species_id,omitempty"`
+	Breed     string  `json:"breed,omitempty"`
 	Age       int     `json:"age,omitempty"`
 	Weight    float64 `json:"weight,omitempty"`
 	Notes     string  `json:"notes,omitempty"`
@@ -115,6 +117,13 @@ func (uc *UpdatePetUseCase) Execute(ctx context.Context, input UpdatePetInput) (
 			return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar espécie", err)
 		}
 		pet.Species = *specie
+	}
+
+	if input.Breed != "" {
+		if len(input.Breed) > 100 {
+			return nil, uc.logger.LogBadRequest(ctx, from, "Raça muito longa", errors.New("A raça do pet deve ter no máximo 100 caracteres"))
+		}
+		pet.Breed = input.Breed
 	}
 
 	if input.Age != 0 {
