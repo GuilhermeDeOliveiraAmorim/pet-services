@@ -580,3 +580,328 @@ func Migration20260311000002(db *gorm.DB) error {
 
 	return nil
 }
+func Migration20260315000000(db *gorm.DB) error {
+	providerPassword, err := bcrypt.GenerateFromPassword([]byte("Provider@123"), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	type svcSeed struct {
+		ID           string
+		Name         string
+		Description  string
+		Price        float64
+		PriceMinimum float64
+		PriceMaximum float64
+		Duration     int
+		CategoryIDs  []string
+		TagIDs       []string
+	}
+
+	type seedEntry struct {
+		User     models.User
+		Provider models.Provider
+		Services []svcSeed
+	}
+
+	pwd := string(providerPassword)
+
+	entries := []seedEntry{
+		// 1. Ana Beatriz Santos — Pet Sitter / Passeio — Centro, Aracaju
+		{
+			User: models.User{
+				ID: "01KSSEPROVARACAJU00USER001", Name: "Ana Beatriz Santos",
+				UserType: "provider", Email: "ana.beatriz.provider@petservices.local",
+				Password: pwd, CountryCode: "+55", AreaCode: "79", PhoneNumber: "991110001",
+				EmailVerified: true, ProfileComplete: true, Active: true,
+				Street: "Rua São João", Number: "245", Neighborhood: "Centro",
+				City: "Aracaju", ZipCode: "49010-020", State: "SE", Country: "BR",
+				Latitude: -10.9099, Longitude: -37.0504,
+			},
+			Provider: models.Provider{
+				ID: "01KSSEPROVARACAJU00PROV001", BusinessName: "Ana Pet Care",
+				Description:   "Serviços de pet sitting e passeios em Aracaju. Cuidado especial para cães e gatos no Centro da cidade.",
+				PriceRange:    "low",
+				AverageRating: 4.7, Active: true,
+				Street: "Rua São João", Number: "245", Neighborhood: "Centro",
+				City: "Aracaju", ZipCode: "49010-020", State: "SE", Country: "BR",
+				Latitude: -10.9099, Longitude: -37.0504,
+			},
+			Services: []svcSeed{
+				{
+					ID:          "01KSSEPROVARACAJU00SVC0101",
+					Name:        "Pet Sitting em Casa",
+					Description: "Cuidado do seu pet no conforto da sua própria casa. Alimentação, brincadeiras e atenção o dia todo.",
+					Price:       100.00, PriceMinimum: 80.00, PriceMaximum: 150.00, Duration: 480,
+					CategoryIDs: []string{"01KG7CG1XN0BQ4KHKPHY5V5CAT"},
+					TagIDs:      []string{"01KTAG1XN0BQ4KHKPHY5VTAG01", "01KTAG1XN0BQ4KHKPHY5VTAG05"},
+				},
+				{
+					ID:          "01KSSEPROVARACAJU00SVC0102",
+					Name:        "Passeio Diário",
+					Description: "Passeios diários pelo Parque da Sementeira e orla de Aracaju. Duração de 45 a 60 minutos.",
+					Price:       35.00, PriceMinimum: 30.00, PriceMaximum: 50.00, Duration: 45,
+					CategoryIDs: []string{"01KG7CG1XR2FA63J6N46CPCAT1", "01KG7CG1XR2FA63J6N4ACPCAT2"},
+					TagIDs:      []string{"01KTAG1XN0BQ4KHKPHY5VTAG02", "01KTAG1XN0BQ4KHKPHY5VTAG05"},
+				},
+			},
+		},
+		// 2. Carlos Eduardo Oliveira — Veterinário — Farolândia, Aracaju
+		{
+			User: models.User{
+				ID: "01KSSEPROVARACAJU00USER002", Name: "Carlos Eduardo Oliveira",
+				UserType: "provider", Email: "carlos.eduardo.provider@petservices.local",
+				Password: pwd, CountryCode: "+55", AreaCode: "79", PhoneNumber: "991110002",
+				EmailVerified: true, ProfileComplete: true, Active: true,
+				Street: "Avenida Beira Mar", Number: "850", Neighborhood: "Farolândia",
+				City: "Aracaju", ZipCode: "49030-100", State: "SE", Country: "BR",
+				Latitude: -10.9581, Longitude: -37.0568,
+			},
+			Provider: models.Provider{
+				ID: "01KSSEPROVARACAJU00PROV002", BusinessName: "Clínica Vet Farolândia",
+				Description:   "Clínica veterinária completa no bairro Farolândia. Especializada em pequenos animais com atendimento humanizado.",
+				PriceRange:    "high",
+				AverageRating: 4.9, Active: true,
+				Street: "Avenida Beira Mar", Number: "850", Neighborhood: "Farolândia",
+				City: "Aracaju", ZipCode: "49030-100", State: "SE", Country: "BR",
+				Latitude: -10.9581, Longitude: -37.0568,
+			},
+			Services: []svcSeed{
+				{
+					ID:          "01KSSEPROVARACAJU00SVC0201",
+					Name:        "Consulta Veterinária",
+					Description: "Consulta clínica geral com anamnese completa, exame físico e orientações de saúde para seu pet.",
+					Price:       180.00, PriceMinimum: 150.00, PriceMaximum: 220.00, Duration: 45,
+					CategoryIDs: []string{"01KG7CG1XR2FA63J6N4ECPCAT6", "01KG7CG1XR2FA63J6N4FCPCAT7"},
+					TagIDs:      []string{"01KTAG1XN0BQ4KHKPHY5VTAG02", "01KTAG1XN0BQ4KHKPHY5VTAG03"},
+				},
+				{
+					ID:          "01KSSEPROVARACAJU00SVC0202",
+					Name:        "Vacinação",
+					Description: "Aplicação de vacinas essenciais e controle do cartão de vacinação do seu animal.",
+					Price:       120.00, PriceMinimum: 90.00, PriceMaximum: 160.00, Duration: 30,
+					CategoryIDs: []string{"01KG7CG1XR2FA63J6N4ECPCAT6", "01KG7CG1XR2FA63J6N5ACPCA28"},
+					TagIDs:      []string{"01KTAG1XN0BQ4KHKPHY5VTAG02", "01KTAG1XN0BQ4KHKPHY5VTAG03"},
+				},
+				{
+					ID:          "01KSSEPROVARACAJU00SVC0203",
+					Name:        "Emergência 24h",
+					Description: "Atendimento de emergência disponível 24 horas para situações críticas que exigem cuidados imediatos.",
+					Price:       350.00, PriceMinimum: 250.00, PriceMaximum: 600.00, Duration: 60,
+					CategoryIDs: []string{"01KG7CG1XR2FA63J6N4ECPCAT6", "01KG7CG1XR2FA63J6N4TCPCA21"},
+					TagIDs:      []string{"01KTAG1XN0BQ4KHKPHY5VTAG04"},
+				},
+			},
+		},
+		// 3. Mariana Costa — Banho e Tosa / Grooming — Atalaia, Aracaju
+		{
+			User: models.User{
+				ID: "01KSSEPROVARACAJU00USER003", Name: "Mariana Costa",
+				UserType: "provider", Email: "mariana.costa.provider@petservices.local",
+				Password: pwd, CountryCode: "+55", AreaCode: "79", PhoneNumber: "991110003",
+				EmailVerified: true, ProfileComplete: true, Active: true,
+				Street: "Avenida Oceanica", Number: "312", Neighborhood: "Atalaia",
+				City: "Aracaju", ZipCode: "49037-100", State: "SE", Country: "BR",
+				Latitude: -10.9856, Longitude: -37.0455,
+			},
+			Provider: models.Provider{
+				ID: "01KSSEPROVARACAJU00PROV003", BusinessName: "Mariana Grooming Atalaia",
+				Description:   "Pet shop e grooming especializado na Atalaia. Banho, tosa e estética para seu pet com produtos premium.",
+				PriceRange:    "medium",
+				AverageRating: 4.6, Active: true,
+				Street: "Avenida Oceanica", Number: "312", Neighborhood: "Atalaia",
+				City: "Aracaju", ZipCode: "49037-100", State: "SE", Country: "BR",
+				Latitude: -10.9856, Longitude: -37.0455,
+			},
+			Services: []svcSeed{
+				{
+					ID:          "01KSSEPROVARACAJU00SVC0301",
+					Name:        "Banho e Tosa Completo",
+					Description: "Serviço completo de banho e tosa para cães e gatos. Inclui secagem, escovação, limpeza de ouvidos e perfume.",
+					Price:       85.00, PriceMinimum: 65.00, PriceMaximum: 130.00, Duration: 90,
+					CategoryIDs: []string{"01KG7CG1XR2FA63J6N4CCPCAT4", "01KG7CG1XR2FA63J6N4DCPCAT5"},
+					TagIDs:      []string{"01KTAG1XN0BQ4KHKPHY5VTAG02", "01KTAG1XN0BQ4KHKPHY5VTAG03"},
+				},
+				{
+					ID:          "01KSSEPROVARACAJU00SVC0302",
+					Name:        "Tosa Higiênica",
+					Description: "Tosa higiênica nas regiões de patas, virilha, barriga e ao redor do ânus. Mantém o pet limpo e confortável.",
+					Price:       55.00, PriceMinimum: 40.00, PriceMaximum: 75.00, Duration: 45,
+					CategoryIDs: []string{"01KG7CG1XR2FA63J6N4CCPCAT4", "01KG7CG1XR2FA63J6N4WCPCA24"},
+					TagIDs:      []string{"01KTAG1XN0BQ4KHKPHY5VTAG02"},
+				},
+				{
+					ID:          "01KSSEPROVARACAJU00SVC0303",
+					Name:        "Corte de Unhas",
+					Description: "Corte e lixamento de unhas para cães e gatos. Procedimento rápido e seguro.",
+					Price:       25.00, PriceMinimum: 20.00, PriceMaximum: 35.00, Duration: 20,
+					CategoryIDs: []string{"01KG7CG1XR2FA63J6N4DCPCAT5", "01KG7CG1XR2FA63J6N4XCPCA25"},
+					TagIDs:      []string{"01KTAG1XN0BQ4KHKPHY5VTAG02", "01KTAG1XN0BQ4KHKPHY5VTAG03"},
+				},
+			},
+		},
+		// 4. Rafael Mendes — Adestramento — Jabotiana, Aracaju
+		{
+			User: models.User{
+				ID: "01KSSEPROVARACAJU00USER004", Name: "Rafael Mendes",
+				UserType: "provider", Email: "rafael.mendes.provider@petservices.local",
+				Password: pwd, CountryCode: "+55", AreaCode: "79", PhoneNumber: "991110004",
+				EmailVerified: true, ProfileComplete: true, Active: true,
+				Street: "Rua Prefeito Olavo Bilac", Number: "78", Neighborhood: "Jabotiana",
+				City: "Aracaju", ZipCode: "49095-000", State: "SE", Country: "BR",
+				Latitude: -10.9311, Longitude: -37.0820,
+			},
+			Provider: models.Provider{
+				ID: "01KSSEPROVARACAJU00PROV004", BusinessName: "Rafael Adestra Pets",
+				Description:   "Adestramento e treinamento comportamental para cães de todos os portes em Aracaju. Método de reforço positivo.",
+				PriceRange:    "medium",
+				AverageRating: 4.8, Active: true,
+				Street: "Rua Prefeito Olavo Bilac", Number: "78", Neighborhood: "Jabotiana",
+				City: "Aracaju", ZipCode: "49095-000", State: "SE", Country: "BR",
+				Latitude: -10.9311, Longitude: -37.0820,
+			},
+			Services: []svcSeed{
+				{
+					ID:          "01KSSEPROVARACAJU00SVC0401",
+					Name:        "Adestramento Básico",
+					Description: "Treino de comandos básicos: senta, fica, deita, não pula. Sessões de 1 hora com reforço positivo.",
+					Price:       200.00, PriceMinimum: 180.00, PriceMaximum: 250.00, Duration: 60,
+					CategoryIDs: []string{"01KG7CG1XR2FA63J6N4GCPCAT8", "01KG7CG1XR2FA63J6N4HCPCAT9"},
+					TagIDs:      []string{"01KTAG1XN0BQ4KHKPHY5VTAG02", "01KTAG1XN0BQ4KHKPHY5VTAG03"},
+				},
+				{
+					ID:          "01KSSEPROVARACAJU00SVC0402",
+					Name:        "Treinamento Avançado",
+					Description: "Treinamento avançado com foco em comportamento, socialização e obediência em ambientes externos.",
+					Price:       280.00, PriceMinimum: 250.00, PriceMaximum: 350.00, Duration: 90,
+					CategoryIDs: []string{"01KG7CG1XR2FA63J6N4GCPCAT8", "01KG7CG1XR2FA63J6N4HCPCAT9", "01KG7CG1XR2FA63J6N4YCPCA26"},
+					TagIDs:      []string{"01KTAG1XN0BQ4KHKPHY5VTAG02", "01KTAG1XN0BQ4KHKPHY5VTAG03"},
+				},
+			},
+		},
+		// 5. Fernanda Lima — Hotel para Pets / Day Care — Coroa do Meio, Aracaju
+		{
+			User: models.User{
+				ID: "01KSSEPROVARACAJU00USER005", Name: "Fernanda Lima",
+				UserType: "provider", Email: "fernanda.lima.provider@petservices.local",
+				Password: pwd, CountryCode: "+55", AreaCode: "79", PhoneNumber: "991110005",
+				EmailVerified: true, ProfileComplete: true, Active: true,
+				Street: "Rua Niceu Dantas", Number: "150", Neighborhood: "Coroa do Meio",
+				City: "Aracaju", ZipCode: "49025-000", State: "SE", Country: "BR",
+				Latitude: -10.9681, Longitude: -37.0336,
+			},
+			Provider: models.Provider{
+				ID: "01KSSEPROVARACAJU00PROV005", BusinessName: "Hotel Pets Coroa do Meio",
+				Description:   "Hotel e creche para pets na orla de Aracaju. Hospedagem completa com alimentação individualizada e muita atenção.",
+				PriceRange:    "medium",
+				AverageRating: 4.5, Active: true,
+				Street: "Rua Niceu Dantas", Number: "150", Neighborhood: "Coroa do Meio",
+				City: "Aracaju", ZipCode: "49025-000", State: "SE", Country: "BR",
+				Latitude: -10.9681, Longitude: -37.0336,
+			},
+			Services: []svcSeed{
+				{
+					ID:          "01KSSEPROVARACAJU00SVC0501",
+					Name:        "Hospedagem (Hotel Pet)",
+					Description: "Hospedagem completa com alimentação, passeios diários e muita atenção. Ideal para viagens e fins de semana.",
+					Price:       160.00, PriceMinimum: 130.00, PriceMaximum: 210.00, Duration: 1440,
+					CategoryIDs: []string{"01KG7CG1XR2FA63J6N4ICPCA10", "01KG7CG1XR2FA63J6N4LCPCA13"},
+					TagIDs:      []string{"01KTAG1XN0BQ4KHKPHY5VTAG02", "01KTAG1XN0BQ4KHKPHY5VTAG03", "01KTAG1XN0BQ4KHKPHY5VTAG05"},
+				},
+				{
+					ID:          "01KSSEPROVARACAJU00SVC0502",
+					Name:        "Day Care para Pets",
+					Description: "Creche diurna com atividades lúdicas, socialização e alimentação. O pet fica feliz enquanto você trabalha.",
+					Price:       80.00, PriceMinimum: 65.00, PriceMaximum: 100.00, Duration: 480,
+					CategoryIDs: []string{"01KG7CG1XR2FA63J6N4JCPCA11", "01KG7CG1XR2FA63J6N4KCPCA12"},
+					TagIDs:      []string{"01KTAG1XN0BQ4KHKPHY5VTAG02", "01KTAG1XN0BQ4KHKPHY5VTAG03"},
+				},
+				{
+					ID:          "01KSSEPROVARACAJU00SVC0503",
+					Name:        "Pet Taxi",
+					Description: "Transporte seguro do seu pet para consultas, banhos ou hospedagem. Veículo adaptado e motorista experiente.",
+					Price:       60.00, PriceMinimum: 45.00, PriceMaximum: 90.00, Duration: 30,
+					CategoryIDs: []string{"01KG7CG1XR2FA63J6N4MCPCA14", "01KG7CG1XR2FA63J6N4NCPCA15"},
+					TagIDs:      []string{"01KTAG1XN0BQ4KHKPHY5VTAG02", "01KTAG1XN0BQ4KHKPHY5VTAG03"},
+				},
+			},
+		},
+	}
+
+	for _, entry := range entries {
+		user := entry.User
+		if err := db.Clauses(clause.OnConflict{
+			Columns: []clause.Column{{Name: "email"}},
+			DoUpdates: clause.AssignmentColumns([]string{
+				"name", "user_type", "password", "country_code", "area_code", "phone_number",
+				"email_verified", "profile_complete", "active", "street", "number",
+				"neighborhood", "city", "zip_code", "state", "country", "complement",
+				"latitude", "longitude",
+			}),
+		}).Create(&user).Error; err != nil {
+			return err
+		}
+
+		var persistedUser models.User
+		if err := db.Where("email = ?", user.Email).First(&persistedUser).Error; err != nil {
+			return err
+		}
+
+		provider := entry.Provider
+		provider.UserID = persistedUser.ID
+		if err := db.Clauses(clause.OnConflict{
+			Columns: []clause.Column{{Name: "user_id"}},
+			DoUpdates: clause.AssignmentColumns([]string{
+				"business_name", "description", "price_range", "average_rating", "active",
+				"street", "number", "neighborhood", "city", "zip_code", "state",
+				"country", "complement", "latitude", "longitude",
+			}),
+		}).Create(&provider).Error; err != nil {
+			return err
+		}
+
+		var persistedProvider models.Provider
+		if err := db.Where("user_id = ?", persistedUser.ID).First(&persistedProvider).Error; err != nil {
+			return err
+		}
+
+		for _, svc := range entry.Services {
+			categories := make([]models.Category, len(svc.CategoryIDs))
+			for i, id := range svc.CategoryIDs {
+				categories[i] = models.Category{ID: id}
+			}
+			tagModels := make([]models.Tag, len(svc.TagIDs))
+			for i, id := range svc.TagIDs {
+				tagModels[i] = models.Tag{ID: id}
+			}
+			service := models.Service{
+				ID:           svc.ID,
+				ProviderID:   persistedProvider.ID,
+				Name:         svc.Name,
+				Description:  svc.Description,
+				Price:        svc.Price,
+				PriceMinimum: svc.PriceMinimum,
+				PriceMaximum: svc.PriceMaximum,
+				Duration:     svc.Duration,
+				Active:       true,
+			}
+			if err := db.Clauses(clause.OnConflict{
+				Columns: []clause.Column{{Name: "id"}},
+				DoUpdates: clause.AssignmentColumns([]string{
+					"provider_id", "name", "description", "price",
+					"price_minimum", "price_maximum", "duration", "active",
+				}),
+			}).Create(&service).Error; err != nil {
+				return err
+			}
+			if err := db.Model(&service).Association("Categories").Replace(categories); err != nil {
+				return err
+			}
+			if err := db.Model(&service).Association("Tags").Replace(tagModels); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
