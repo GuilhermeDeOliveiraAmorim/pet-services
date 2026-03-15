@@ -10,13 +10,14 @@ import (
 )
 
 type PetFactory struct {
-	AddPet         *usecases.AddPetUseCase
-	AddPetPhoto    *usecases.AddPetPhotoUseCase
-	DeletePetPhoto *usecases.DeletePetPhotoUseCase
-	ListPets       *usecases.ListPetsUseCase
-	GetPet         *usecases.GetPetUseCase
-	UpdatePet      *usecases.UpdatePetUseCase
-	DeletePet      *usecases.DeletePetUseCase
+	AddPet          *usecases.AddPetUseCase
+	AddPetPhoto     *usecases.AddPetPhotoUseCase
+	DeletePetPhoto  *usecases.DeletePetPhotoUseCase
+	ListPets        *usecases.ListPetsUseCase
+	ListPetsByOwner *usecases.ListPetsByOwnerIDUseCase
+	GetPet          *usecases.GetPetUseCase
+	UpdatePet       *usecases.UpdatePetUseCase
+	DeletePet       *usecases.DeletePetUseCase
 }
 
 func NewPetFactory(db *gorm.DB, storageService storage.ObjectStorage, logger logging.LoggerInterface) *PetFactory {
@@ -26,12 +27,13 @@ func NewPetFactory(db *gorm.DB, storageService storage.ObjectStorage, logger log
 	photoRepo := repository_impl.NewPhotoRepository(db)
 
 	return &PetFactory{
-		AddPet:         usecases.NewAddPetUseCase(userRepo, specieRepo, petRepo, logger),
-		AddPetPhoto:    usecases.NewAddPetPhotoUseCase(userRepo, petRepo, photoRepo, storageService, logger),
-		DeletePetPhoto: usecases.NewDeletePetPhotoUseCase(userRepo, petRepo, photoRepo, storageService, logger),
-		ListPets:       usecases.NewListPetsUseCase(userRepo, petRepo, storageService, logger),
-		GetPet:         usecases.NewGetPetUseCase(userRepo, petRepo, storageService, logger),
-		UpdatePet:      usecases.NewUpdatePetUseCase(userRepo, specieRepo, petRepo, storageService, logger),
-		DeletePet:      usecases.NewDeletePetUseCase(userRepo, petRepo, logger),
+		AddPet:          usecases.NewAddPetUseCase(userRepo, specieRepo, petRepo, logger),
+		AddPetPhoto:     usecases.NewAddPetPhotoUseCase(userRepo, petRepo, photoRepo, storageService, logger),
+		DeletePetPhoto:  usecases.NewDeletePetPhotoUseCase(userRepo, petRepo, photoRepo, storageService, logger),
+		ListPets:        usecases.NewListPetsUseCase(userRepo, petRepo, storageService, logger),
+		ListPetsByOwner: usecases.NewListPetsByOwnerIDUseCase(userRepo, petRepo, storageService, logger),
+		GetPet:          usecases.NewGetPetUseCase(userRepo, petRepo, storageService, logger),
+		UpdatePet:       usecases.NewUpdatePetUseCase(userRepo, specieRepo, petRepo, storageService, logger),
+		DeletePet:       usecases.NewDeletePetUseCase(userRepo, petRepo, logger),
 	}
 }
