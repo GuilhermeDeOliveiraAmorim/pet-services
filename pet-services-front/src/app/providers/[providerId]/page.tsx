@@ -237,7 +237,7 @@ export default function ProviderDetailsPage() {
 
               <Grid
                 mt={6}
-                templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)" }}
+                templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
                 gap={{ base: 2, md: 3 }}
               >
                 <Box
@@ -320,7 +320,7 @@ export default function ProviderDetailsPage() {
                   mt={4}
                   templateColumns={{
                     base: "1fr",
-                    sm: "repeat(2, 1fr)",
+                    md: "repeat(2, 1fr)",
                     lg: "repeat(3, 1fr)",
                   }}
                   gap={{ base: 2, md: 3 }}
@@ -338,7 +338,7 @@ export default function ProviderDetailsPage() {
                         src={photo.url}
                         alt={`Foto do provider ${provider.businessName || ""}`}
                         w="full"
-                        h={{ base: "170px", sm: "210px", md: "220px" }}
+                        h={{ base: "170px", md: "210px", lg: "220px" }}
                         objectFit="cover"
                       />
                     </Box>
@@ -407,7 +407,12 @@ export default function ProviderDetailsPage() {
                         borderRadius={{ base: "xl", md: "2xl" }}
                         p={{ base: 3, md: 4 }}
                       >
-                        <Flex justify="space-between" align="center" gap={3}>
+                        <Flex
+                          justify="space-between"
+                          align={{ base: "flex-start", sm: "center" }}
+                          direction={{ base: "column", sm: "row" }}
+                          gap={2}
+                        >
                           <Text
                             fontSize={{ base: "xs" }}
                             color="gray.500"

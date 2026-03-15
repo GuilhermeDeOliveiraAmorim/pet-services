@@ -352,7 +352,7 @@ export default function RequestsPage() {
             <Button
               key={option.value}
               type="button"
-              size="sm"
+              size={{ base: "xs", sm: "sm" }}
               borderRadius="full"
               variant={statusFilter === option.value ? "solid" : "outline"}
               colorPalette={statusFilter === option.value ? "teal" : "gray"}
@@ -758,12 +758,21 @@ export default function RequestsPage() {
                               size="sm"
                             />
 
-                            <Flex mt={2} justify="space-between" align="center">
+                            <Flex
+                              mt={2}
+                              justify="space-between"
+                              align={{ base: "stretch", sm: "center" }}
+                              direction={{ base: "column", sm: "row" }}
+                              gap={{ base: 2, sm: 0 }}
+                            >
                               <Text fontSize={{ base: "xs" }} color="gray.500">
                                 {rejectReason.trim().length}/500
                               </Text>
 
-                              <HStack>
+                              <HStack
+                                wrap="wrap"
+                                justify={{ base: "flex-end", sm: "flex-start" }}
+                              >
                                 <Button
                                   size="sm"
                                   variant="ghost"
@@ -878,12 +887,21 @@ export default function RequestsPage() {
                               size="sm"
                             />
 
-                            <Flex mt={2} justify="space-between" align="center">
+                            <Flex
+                              mt={2}
+                              justify="space-between"
+                              align={{ base: "stretch", sm: "center" }}
+                              direction={{ base: "column", sm: "row" }}
+                              gap={{ base: 2, sm: 0 }}
+                            >
                               <Text fontSize={{ base: "xs" }} color="gray.500">
                                 {reviewComment.trim().length}/500
                               </Text>
 
-                              <HStack>
+                              <HStack
+                                wrap="wrap"
+                                justify={{ base: "flex-end", sm: "flex-start" }}
+                              >
                                 <Button
                                   size="sm"
                                   variant="ghost"
