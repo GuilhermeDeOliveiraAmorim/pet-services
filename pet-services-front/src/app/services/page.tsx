@@ -20,6 +20,25 @@ import {
   VStack,
 } from "@chakra-ui/react";
 
+const ChevronIcon = ({ open }: { open: boolean }) => (
+  <chakra.svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 20 20"
+    fill="currentColor"
+    w="3.5"
+    h="3.5"
+    transition="transform 0.2s ease"
+    transform={open ? "rotate(180deg)" : "rotate(0deg)"}
+    display="block"
+  >
+    <path
+      fillRule="evenodd"
+      d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+      clipRule="evenodd"
+    />
+  </chakra.svg>
+);
+
 import {
   useCategoryList,
   useServiceList,
@@ -483,12 +502,13 @@ function ServicesCatalogPageContent() {
       {/* ─── CATEGORY CHIPS BAR ────────────────────────────── */}
       <Box
         bg="white"
-        borderBottomWidth="1px"
+        borderBottomWidth={showAdvanced ? "0" : "1px"}
         borderColor="gray.200"
         position="sticky"
         top={0}
         zIndex={10}
       >
+        {/* Linha 1: chips de categoria */}
         <Flex
           gap={2}
           align="center"
@@ -496,7 +516,8 @@ function ServicesCatalogPageContent() {
           maxW="7xl"
           mx="auto"
           px={{ base: 4, lg: 8 }}
-          py={3}
+          pt={3}
+          pb={2}
         >
           {categories.map((cat) => (
             <Button
@@ -516,24 +537,60 @@ function ServicesCatalogPageContent() {
               {cat.name}
             </Button>
           ))}
+        </Flex>
 
+        {/* Linha 2: botão Filtros + limpar */}
+        <Flex
+          gap={2}
+          align="center"
+          maxW="7xl"
+          mx="auto"
+          px={{ base: 4, lg: 8 }}
+          pb={2}
+          borderTopWidth="1px"
+          borderColor="gray.100"
+          pt={2}
+        >
           <Button
             size="xs"
             borderRadius="full"
-            variant={showAdvanced ? "solid" : "outline"}
+            variant={showAdvanced ? "solid" : "subtle"}
             colorPalette={
               tagId || priceMin > 0 || priceMax > 0 || hasCoordinateInput
                 ? "teal"
                 : "gray"
             }
             onClick={() => setShowAdvanced((v) => !v)}
-            ml={categories.length > 0 ? "auto" : undefined}
             flexShrink={0}
+            gap={1.5}
+            pr={3}
           >
-            {showAdvanced ? "▲ Menos filtros" : "▼ Mais filtros"}
-            {tagId || priceMin > 0 || priceMax > 0 || hasCoordinateInput
-              ? " ●"
-              : ""}
+            Filtros
+            {(() => {
+              const count = [
+                Boolean(tagId),
+                priceMin > 0,
+                priceMax > 0,
+                hasCoordinateInput,
+              ].filter(Boolean).length;
+              return count > 0 ? (
+                <Badge
+                  as="span"
+                  borderRadius="full"
+                  px={1.5}
+                  py={0}
+                  fontSize="9px"
+                  lineHeight="16px"
+                  minW="16px"
+                  textAlign="center"
+                  colorPalette="teal"
+                  variant={showAdvanced ? "solid" : "surface"}
+                >
+                  {count}
+                </Badge>
+              ) : null;
+            })()}
+            <ChevronIcon open={showAdvanced} />
           </Button>
 
           {hasAnyFilter && (
@@ -545,7 +602,7 @@ function ServicesCatalogPageContent() {
               onClick={clearAllFilters}
               flexShrink={0}
             >
-              ✕ Limpar
+              ✕ Limpar filtros
             </Button>
           )}
         </Flex>
