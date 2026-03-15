@@ -1209,12 +1209,12 @@ export default function ProviderDashboardPage() {
                       borderRadius="xl"
                       bg="gray.50"
                       p={2}
-                      w="140px"
+                      w={{ base: "full", sm: "140px" }}
                     >
                       <chakra.img
                         src={photo.url}
                         alt={`Foto do provider ${provider.businessName || ""}`}
-                        w="124px"
+                        w="full"
                         h="124px"
                         objectFit="cover"
                         borderRadius="lg"
@@ -1245,7 +1245,13 @@ export default function ProviderDashboardPage() {
               </Text>
             )}
 
-            <HStack mt={4} align="end" gap={3} flexWrap="wrap">
+            <HStack
+              mt={4}
+              align={{ base: "stretch", md: "end" }}
+              gap={3}
+              flexWrap="wrap"
+              flexDir={{ base: "column", md: "row" }}
+            >
               <Box minW={{ base: "full", md: "420px" }}>
                 <Input
                   type="file"

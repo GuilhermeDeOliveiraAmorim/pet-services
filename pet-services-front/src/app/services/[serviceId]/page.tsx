@@ -309,8 +309,8 @@ export default function ServiceDetailsPage() {
                 mt={6}
                 templateColumns={{
                   base: "1fr",
-                  sm: "repeat(2, 1fr)",
-                  md: "repeat(3, 1fr)",
+                  md: "repeat(2, 1fr)",
+                  lg: "repeat(3, 1fr)",
                 }}
                 gap={{ base: 2, md: 3 }}
               >
@@ -409,7 +409,7 @@ export default function ServiceDetailsPage() {
                   mt={4}
                   templateColumns={{
                     base: "1fr",
-                    sm: "repeat(2, 1fr)",
+                    md: "repeat(2, 1fr)",
                     lg: "repeat(3, 1fr)",
                   }}
                   gap={{ base: 2, md: 3 }}
@@ -427,7 +427,7 @@ export default function ServiceDetailsPage() {
                         src={photo.url}
                         alt={`Foto do serviço ${service.name || ""}`}
                         w="full"
-                        h={{ base: "160px", sm: "200px", md: "220px" }}
+                        h={{ base: "160px", md: "200px", lg: "220px" }}
                         objectFit="cover"
                       />
                     </Box>
