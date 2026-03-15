@@ -465,7 +465,7 @@ function ServicesCatalogPageContent() {
 
           <Box w="full">
             <form onSubmit={handleSearch}>
-              <HStack gap={2}>
+              <HStack gap={2} align="stretch" flexDir={{ base: "column", sm: "row" }}>
                 <Box position="relative" flex={1}>
                   <Text
                     position="absolute"
@@ -503,6 +503,7 @@ function ServicesCatalogPageContent() {
                   _hover={{ bg: "teal.50" }}
                   flexShrink={0}
                   fontSize={{ base: "sm", md: "md" }}
+                  w={{ base: "full", sm: "auto" }}
                 >
                   Buscar
                 </Button>
@@ -612,6 +613,8 @@ function ServicesCatalogPageContent() {
         <Flex
           gap={2}
           align="center"
+          justify="space-between"
+          wrap="wrap"
           maxW="7xl"
           mx="auto"
           px={{ base: 4, lg: 8 }}
@@ -731,7 +734,7 @@ function ServicesCatalogPageContent() {
               >
                 Preço:
               </Text>
-              <HStack gap={2}>
+              <HStack gap={2} wrap="wrap">
                 <Box position="relative">
                   <Text
                     position="absolute"
@@ -1095,11 +1098,11 @@ function ServicesCatalogPageContent() {
 
           {/* Ordenação */}
           {!isLoading && !isError && total > 0 && (
-            <HStack gap={2} flexShrink={0}>
+            <HStack gap={2} flexShrink={0} wrap="wrap" justify={{ base: "flex-start", md: "flex-end" }}>
               <Text fontSize="xs" color="gray.500">
                 Ordenar:
               </Text>
-              <NativeSelect.Root size="sm" minW="160px">
+              <NativeSelect.Root size="sm" minW={{ base: "140px", sm: "160px" }}>
                 <NativeSelect.Field
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortBy)}
