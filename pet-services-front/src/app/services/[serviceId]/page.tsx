@@ -29,6 +29,7 @@ import {
 } from "@/application";
 import MainNav from "@/components/common/MainNav";
 import PageWrapper from "@/components/common/PageWrapper";
+import ProviderRating from "@/components/common/ProviderRating";
 import { UserTypes } from "@/domain";
 import { getApiErrorMessage } from "@/lib/api-error";
 
@@ -797,6 +798,12 @@ export default function ServiceDetailsPage() {
                     >
                       {provider.description || "Sem descrição informada."}
                     </Text>
+                    <ProviderRating
+                      rating={provider.averageRating}
+                      hideWhenZero
+                      mt={2}
+                      fontSize={{ base: "xs" }}
+                    />
                   </Box>
 
                   <Grid
