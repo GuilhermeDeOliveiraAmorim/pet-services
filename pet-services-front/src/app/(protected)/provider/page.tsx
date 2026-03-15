@@ -1194,9 +1194,9 @@ export default function ProviderDashboardPage() {
               </Text>
             </Box>
 
-            {provider.photos.length ? (
+            {(provider.photos ?? []).length ? (
               <Flex mt={3} gap={3} wrap="wrap">
-                {provider.photos.map((photo) => {
+                {(provider.photos ?? []).map((photo) => {
                   const photoId = String(photo.id);
                   const isCurrentDeletingPhoto =
                     deletingProviderPhotoId === photoId;

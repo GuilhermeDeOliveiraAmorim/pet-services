@@ -236,13 +236,13 @@ export default function ServiceCard({
             Adicione imagens para enriquecer a apresentação do serviço.
           </Text>
 
-          {service.photos.length === 0 ? (
+          {(service.photos ?? []).length === 0 ? (
             <Text mt={3} fontSize="xs" color="gray.500">
               Nenhuma foto cadastrada.
             </Text>
           ) : (
             <Flex mt={3} gap={3} wrap="wrap">
-              {service.photos.map((photo) => {
+              {(service.photos ?? []).map((photo) => {
                 const photoDeleteKey = `${service.id}:${photo.id}`;
                 const isCurrentDeletingPhoto =
                   deletingPhotoKey === photoDeleteKey;
