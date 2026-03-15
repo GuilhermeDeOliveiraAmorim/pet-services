@@ -3,6 +3,7 @@ export * from "./reference";
 export * from "./user";
 export * from "./pet";
 export * from "./specie";
+export * from "./breed";
 export * from "./provider";
 export * from "./service";
 export * from "./request";

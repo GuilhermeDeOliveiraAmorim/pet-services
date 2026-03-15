@@ -3,6 +3,7 @@ export type { UserGateway } from "./user-gateway";
 export type { ReferenceGateway } from "./reference-gateway";
 export type { PetGateway } from "./pet-gateway";
 export type { SpecieGateway } from "./specie-gateway";
+export type { BreedGateway } from "./breed-gateway";
 export type { ProviderGateway } from "./provider-gateway";
 export type { ServiceGateway } from "./service-gateway";
 export type { RequestGateway } from "./request-gateway";
