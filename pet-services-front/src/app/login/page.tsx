@@ -196,8 +196,8 @@ export default function LoginPage() {
                 </Text>
               </Box>
               <Flex
-                h="12"
-                w="12"
+                h={{ base: "10", md: "12" }}
+                w={{ base: "10", md: "12" }}
                 align="center"
                 justify="center"
                 borderRadius="2xl"
@@ -289,8 +289,10 @@ export default function LoginPage() {
               </Box>
 
               <Flex
-                align="center"
+                align={{ base: "flex-start", sm: "center" }}
                 justify="space-between"
+                direction={{ base: "column", sm: "row" }}
+                gap={{ base: 2, sm: 0 }}
                 fontSize="xs"
                 color="gray.500"
               >
