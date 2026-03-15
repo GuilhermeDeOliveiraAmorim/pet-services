@@ -119,5 +119,10 @@ func getMigrations() []Migration {
 			Description: "Seed de 5 providers com perfil e serviços em Aracaju/SE",
 			Up:          Migration20260315000000,
 		},
+		{
+			Version:     "20260315000001",
+			Description: "Seed de 4 owners com pets e interações (requests/reviews) com providers",
+			Up:          Migration20260315000001,
+		},
 	}
 }
