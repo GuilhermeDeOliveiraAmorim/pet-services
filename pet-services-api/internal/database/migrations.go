@@ -349,7 +349,7 @@ func Migration20260311000000(db *gorm.DB) error {
 		BusinessName:  "Provider Seed Pet Care",
 		Description:   "Perfil seed de provider para desenvolvimento local",
 		PriceRange:    "medium",
-		AverageRating: 4.8,
+		AverageRating: 0.0,
 		Active:        true,
 		Street:        "Avenida Paulista",
 		Number:        "1578",
@@ -574,6 +574,826 @@ func Migration20260311000002(db *gorm.DB) error {
 		}
 
 		if err := db.Model(&service).Association("Tags").Replace(tagModels); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+func Migration20260315000000(db *gorm.DB) error {
+	providerPassword, err := bcrypt.GenerateFromPassword([]byte("Provider@123"), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	type svcSeed struct {
+		ID           string
+		Name         string
+		Description  string
+		Price        float64
+		PriceMinimum float64
+		PriceMaximum float64
+		Duration     int
+		CategoryIDs  []string
+		TagIDs       []string
+	}
+
+	type seedEntry struct {
+		User     models.User
+		Provider models.Provider
+		Services []svcSeed
+	}
+
+	pwd := string(providerPassword)
+
+	entries := []seedEntry{
+		// 1. Ana Beatriz Santos — Pet Sitter / Passeio — Centro, Aracaju
+		{
+			User: models.User{
+				ID: "01KSSEPROVARACAJU00USER001", Name: "Ana Beatriz Santos",
+				UserType: "provider", Email: "ana.beatriz.provider@petservices.local",
+				Password: pwd, CountryCode: "+55", AreaCode: "79", PhoneNumber: "991110001",
+				EmailVerified: true, ProfileComplete: true, Active: true,
+				Street: "Rua São João", Number: "245", Neighborhood: "Centro",
+				City: "Aracaju", ZipCode: "49010-020", State: "SE", Country: "BR",
+				Latitude: -10.9099, Longitude: -37.0504,
+			},
+			Provider: models.Provider{
+				ID: "01KSSEPROVARACAJU00PROV001", BusinessName: "Ana Pet Care",
+				Description:   "Serviços de pet sitting e passeios em Aracaju. Cuidado especial para cães e gatos no Centro da cidade.",
+				PriceRange:    "low",
+				AverageRating: 0.0, Active: true,
+				Street: "Rua São João", Number: "245", Neighborhood: "Centro",
+				City: "Aracaju", ZipCode: "49010-020", State: "SE", Country: "BR",
+				Latitude: -10.9099, Longitude: -37.0504,
+			},
+			Services: []svcSeed{
+				{
+					ID:          "01KSSEPROVARACAJU00SVC0101",
+					Name:        "Pet Sitting em Casa",
+					Description: "Cuidado do seu pet no conforto da sua própria casa. Alimentação, brincadeiras e atenção o dia todo.",
+					Price:       100.00, PriceMinimum: 80.00, PriceMaximum: 150.00, Duration: 480,
+					CategoryIDs: []string{"01KG7CG1XN0BQ4KHKPHY5V5CAT"},
+					TagIDs:      []string{"01KTAG1XN0BQ4KHKPHY5VTAG01", "01KTAG1XN0BQ4KHKPHY5VTAG05"},
+				},
+				{
+					ID:          "01KSSEPROVARACAJU00SVC0102",
+					Name:        "Passeio Diário",
+					Description: "Passeios diários pelo Parque da Sementeira e orla de Aracaju. Duração de 45 a 60 minutos.",
+					Price:       35.00, PriceMinimum: 30.00, PriceMaximum: 50.00, Duration: 45,
+					CategoryIDs: []string{"01KG7CG1XR2FA63J6N46CPCAT1", "01KG7CG1XR2FA63J6N4ACPCAT2"},
+					TagIDs:      []string{"01KTAG1XN0BQ4KHKPHY5VTAG02", "01KTAG1XN0BQ4KHKPHY5VTAG05"},
+				},
+			},
+		},
+		// 2. Carlos Eduardo Oliveira — Veterinário — Farolândia, Aracaju
+		{
+			User: models.User{
+				ID: "01KSSEPROVARACAJU00USER002", Name: "Carlos Eduardo Oliveira",
+				UserType: "provider", Email: "carlos.eduardo.provider@petservices.local",
+				Password: pwd, CountryCode: "+55", AreaCode: "79", PhoneNumber: "991110002",
+				EmailVerified: true, ProfileComplete: true, Active: true,
+				Street: "Avenida Beira Mar", Number: "850", Neighborhood: "Farolândia",
+				City: "Aracaju", ZipCode: "49030-100", State: "SE", Country: "BR",
+				Latitude: -10.9581, Longitude: -37.0568,
+			},
+			Provider: models.Provider{
+				ID: "01KSSEPROVARACAJU00PROV002", BusinessName: "Clínica Vet Farolândia",
+				Description:   "Clínica veterinária completa no bairro Farolândia. Especializada em pequenos animais com atendimento humanizado.",
+				PriceRange:    "high",
+				AverageRating: 0.0, Active: true,
+				Street: "Avenida Beira Mar", Number: "850", Neighborhood: "Farolândia",
+				City: "Aracaju", ZipCode: "49030-100", State: "SE", Country: "BR",
+				Latitude: -10.9581, Longitude: -37.0568,
+			},
+			Services: []svcSeed{
+				{
+					ID:          "01KSSEPROVARACAJU00SVC0201",
+					Name:        "Consulta Veterinária",
+					Description: "Consulta clínica geral com anamnese completa, exame físico e orientações de saúde para seu pet.",
+					Price:       180.00, PriceMinimum: 150.00, PriceMaximum: 220.00, Duration: 45,
+					CategoryIDs: []string{"01KG7CG1XR2FA63J6N4ECPCAT6", "01KG7CG1XR2FA63J6N4FCPCAT7"},
+					TagIDs:      []string{"01KTAG1XN0BQ4KHKPHY5VTAG02", "01KTAG1XN0BQ4KHKPHY5VTAG03"},
+				},
+				{
+					ID:          "01KSSEPROVARACAJU00SVC0202",
+					Name:        "Vacinação",
+					Description: "Aplicação de vacinas essenciais e controle do cartão de vacinação do seu animal.",
+					Price:       120.00, PriceMinimum: 90.00, PriceMaximum: 160.00, Duration: 30,
+					CategoryIDs: []string{"01KG7CG1XR2FA63J6N4ECPCAT6", "01KG7CG1XR2FA63J6N5ACPCA28"},
+					TagIDs:      []string{"01KTAG1XN0BQ4KHKPHY5VTAG02", "01KTAG1XN0BQ4KHKPHY5VTAG03"},
+				},
+				{
+					ID:          "01KSSEPROVARACAJU00SVC0203",
+					Name:        "Emergência 24h",
+					Description: "Atendimento de emergência disponível 24 horas para situações críticas que exigem cuidados imediatos.",
+					Price:       350.00, PriceMinimum: 250.00, PriceMaximum: 600.00, Duration: 60,
+					CategoryIDs: []string{"01KG7CG1XR2FA63J6N4ECPCAT6", "01KG7CG1XR2FA63J6N4TCPCA21"},
+					TagIDs:      []string{"01KTAG1XN0BQ4KHKPHY5VTAG04"},
+				},
+			},
+		},
+		// 3. Mariana Costa — Banho e Tosa / Grooming — Atalaia, Aracaju
+		{
+			User: models.User{
+				ID: "01KSSEPROVARACAJU00USER003", Name: "Mariana Costa",
+				UserType: "provider", Email: "mariana.costa.provider@petservices.local",
+				Password: pwd, CountryCode: "+55", AreaCode: "79", PhoneNumber: "991110003",
+				EmailVerified: true, ProfileComplete: true, Active: true,
+				Street: "Avenida Oceanica", Number: "312", Neighborhood: "Atalaia",
+				City: "Aracaju", ZipCode: "49037-100", State: "SE", Country: "BR",
+				Latitude: -10.9856, Longitude: -37.0455,
+			},
+			Provider: models.Provider{
+				ID: "01KSSEPROVARACAJU00PROV003", BusinessName: "Mariana Grooming Atalaia",
+				Description:   "Pet shop e grooming especializado na Atalaia. Banho, tosa e estética para seu pet com produtos premium.",
+				PriceRange:    "medium",
+				AverageRating: 0.0, Active: true,
+				Street: "Avenida Oceanica", Number: "312", Neighborhood: "Atalaia",
+				City: "Aracaju", ZipCode: "49037-100", State: "SE", Country: "BR",
+				Latitude: -10.9856, Longitude: -37.0455,
+			},
+			Services: []svcSeed{
+				{
+					ID:          "01KSSEPROVARACAJU00SVC0301",
+					Name:        "Banho e Tosa Completo",
+					Description: "Serviço completo de banho e tosa para cães e gatos. Inclui secagem, escovação, limpeza de ouvidos e perfume.",
+					Price:       85.00, PriceMinimum: 65.00, PriceMaximum: 130.00, Duration: 90,
+					CategoryIDs: []string{"01KG7CG1XR2FA63J6N4CCPCAT4", "01KG7CG1XR2FA63J6N4DCPCAT5"},
+					TagIDs:      []string{"01KTAG1XN0BQ4KHKPHY5VTAG02", "01KTAG1XN0BQ4KHKPHY5VTAG03"},
+				},
+				{
+					ID:          "01KSSEPROVARACAJU00SVC0302",
+					Name:        "Tosa Higiênica",
+					Description: "Tosa higiênica nas regiões de patas, virilha, barriga e ao redor do ânus. Mantém o pet limpo e confortável.",
+					Price:       55.00, PriceMinimum: 40.00, PriceMaximum: 75.00, Duration: 45,
+					CategoryIDs: []string{"01KG7CG1XR2FA63J6N4CCPCAT4", "01KG7CG1XR2FA63J6N4WCPCA24"},
+					TagIDs:      []string{"01KTAG1XN0BQ4KHKPHY5VTAG02"},
+				},
+				{
+					ID:          "01KSSEPROVARACAJU00SVC0303",
+					Name:        "Corte de Unhas",
+					Description: "Corte e lixamento de unhas para cães e gatos. Procedimento rápido e seguro.",
+					Price:       25.00, PriceMinimum: 20.00, PriceMaximum: 35.00, Duration: 20,
+					CategoryIDs: []string{"01KG7CG1XR2FA63J6N4DCPCAT5", "01KG7CG1XR2FA63J6N4XCPCA25"},
+					TagIDs:      []string{"01KTAG1XN0BQ4KHKPHY5VTAG02", "01KTAG1XN0BQ4KHKPHY5VTAG03"},
+				},
+			},
+		},
+		// 4. Rafael Mendes — Adestramento — Jabotiana, Aracaju
+		{
+			User: models.User{
+				ID: "01KSSEPROVARACAJU00USER004", Name: "Rafael Mendes",
+				UserType: "provider", Email: "rafael.mendes.provider@petservices.local",
+				Password: pwd, CountryCode: "+55", AreaCode: "79", PhoneNumber: "991110004",
+				EmailVerified: true, ProfileComplete: true, Active: true,
+				Street: "Rua Prefeito Olavo Bilac", Number: "78", Neighborhood: "Jabotiana",
+				City: "Aracaju", ZipCode: "49095-000", State: "SE", Country: "BR",
+				Latitude: -10.9311, Longitude: -37.0820,
+			},
+			Provider: models.Provider{
+				ID: "01KSSEPROVARACAJU00PROV004", BusinessName: "Rafael Adestra Pets",
+				Description:   "Adestramento e treinamento comportamental para cães de todos os portes em Aracaju. Método de reforço positivo.",
+				PriceRange:    "medium",
+				AverageRating: 0.0, Active: true,
+				Street: "Rua Prefeito Olavo Bilac", Number: "78", Neighborhood: "Jabotiana",
+				City: "Aracaju", ZipCode: "49095-000", State: "SE", Country: "BR",
+				Latitude: -10.9311, Longitude: -37.0820,
+			},
+			Services: []svcSeed{
+				{
+					ID:          "01KSSEPROVARACAJU00SVC0401",
+					Name:        "Adestramento Básico",
+					Description: "Treino de comandos básicos: senta, fica, deita, não pula. Sessões de 1 hora com reforço positivo.",
+					Price:       200.00, PriceMinimum: 180.00, PriceMaximum: 250.00, Duration: 60,
+					CategoryIDs: []string{"01KG7CG1XR2FA63J6N4GCPCAT8", "01KG7CG1XR2FA63J6N4HCPCAT9"},
+					TagIDs:      []string{"01KTAG1XN0BQ4KHKPHY5VTAG02", "01KTAG1XN0BQ4KHKPHY5VTAG03"},
+				},
+				{
+					ID:          "01KSSEPROVARACAJU00SVC0402",
+					Name:        "Treinamento Avançado",
+					Description: "Treinamento avançado com foco em comportamento, socialização e obediência em ambientes externos.",
+					Price:       280.00, PriceMinimum: 250.00, PriceMaximum: 350.00, Duration: 90,
+					CategoryIDs: []string{"01KG7CG1XR2FA63J6N4GCPCAT8", "01KG7CG1XR2FA63J6N4HCPCAT9", "01KG7CG1XR2FA63J6N4YCPCA26"},
+					TagIDs:      []string{"01KTAG1XN0BQ4KHKPHY5VTAG02", "01KTAG1XN0BQ4KHKPHY5VTAG03"},
+				},
+			},
+		},
+		// 5. Fernanda Lima — Hotel para Pets / Day Care — Coroa do Meio, Aracaju
+		{
+			User: models.User{
+				ID: "01KSSEPROVARACAJU00USER005", Name: "Fernanda Lima",
+				UserType: "provider", Email: "fernanda.lima.provider@petservices.local",
+				Password: pwd, CountryCode: "+55", AreaCode: "79", PhoneNumber: "991110005",
+				EmailVerified: true, ProfileComplete: true, Active: true,
+				Street: "Rua Niceu Dantas", Number: "150", Neighborhood: "Coroa do Meio",
+				City: "Aracaju", ZipCode: "49025-000", State: "SE", Country: "BR",
+				Latitude: -10.9681, Longitude: -37.0336,
+			},
+			Provider: models.Provider{
+				ID: "01KSSEPROVARACAJU00PROV005", BusinessName: "Hotel Pets Coroa do Meio",
+				Description:   "Hotel e creche para pets na orla de Aracaju. Hospedagem completa com alimentação individualizada e muita atenção.",
+				PriceRange:    "medium",
+				AverageRating: 0.0, Active: true,
+				Street: "Rua Niceu Dantas", Number: "150", Neighborhood: "Coroa do Meio",
+				City: "Aracaju", ZipCode: "49025-000", State: "SE", Country: "BR",
+				Latitude: -10.9681, Longitude: -37.0336,
+			},
+			Services: []svcSeed{
+				{
+					ID:          "01KSSEPROVARACAJU00SVC0501",
+					Name:        "Hospedagem (Hotel Pet)",
+					Description: "Hospedagem completa com alimentação, passeios diários e muita atenção. Ideal para viagens e fins de semana.",
+					Price:       160.00, PriceMinimum: 130.00, PriceMaximum: 210.00, Duration: 1440,
+					CategoryIDs: []string{"01KG7CG1XR2FA63J6N4ICPCA10", "01KG7CG1XR2FA63J6N4LCPCA13"},
+					TagIDs:      []string{"01KTAG1XN0BQ4KHKPHY5VTAG02", "01KTAG1XN0BQ4KHKPHY5VTAG03", "01KTAG1XN0BQ4KHKPHY5VTAG05"},
+				},
+				{
+					ID:          "01KSSEPROVARACAJU00SVC0502",
+					Name:        "Day Care para Pets",
+					Description: "Creche diurna com atividades lúdicas, socialização e alimentação. O pet fica feliz enquanto você trabalha.",
+					Price:       80.00, PriceMinimum: 65.00, PriceMaximum: 100.00, Duration: 480,
+					CategoryIDs: []string{"01KG7CG1XR2FA63J6N4JCPCA11", "01KG7CG1XR2FA63J6N4KCPCA12"},
+					TagIDs:      []string{"01KTAG1XN0BQ4KHKPHY5VTAG02", "01KTAG1XN0BQ4KHKPHY5VTAG03"},
+				},
+				{
+					ID:          "01KSSEPROVARACAJU00SVC0503",
+					Name:        "Pet Taxi",
+					Description: "Transporte seguro do seu pet para consultas, banhos ou hospedagem. Veículo adaptado e motorista experiente.",
+					Price:       60.00, PriceMinimum: 45.00, PriceMaximum: 90.00, Duration: 30,
+					CategoryIDs: []string{"01KG7CG1XR2FA63J6N4MCPCA14", "01KG7CG1XR2FA63J6N4NCPCA15"},
+					TagIDs:      []string{"01KTAG1XN0BQ4KHKPHY5VTAG02", "01KTAG1XN0BQ4KHKPHY5VTAG03"},
+				},
+			},
+		},
+	}
+
+	for _, entry := range entries {
+		user := entry.User
+		if err := db.Clauses(clause.OnConflict{
+			Columns: []clause.Column{{Name: "email"}},
+			DoUpdates: clause.AssignmentColumns([]string{
+				"name", "user_type", "password", "country_code", "area_code", "phone_number",
+				"email_verified", "profile_complete", "active", "street", "number",
+				"neighborhood", "city", "zip_code", "state", "country", "complement",
+				"latitude", "longitude",
+			}),
+		}).Create(&user).Error; err != nil {
+			return err
+		}
+
+		var persistedUser models.User
+		if err := db.Where("email = ?", user.Email).First(&persistedUser).Error; err != nil {
+			return err
+		}
+
+		provider := entry.Provider
+		provider.UserID = persistedUser.ID
+		if err := db.Clauses(clause.OnConflict{
+			Columns: []clause.Column{{Name: "user_id"}},
+			DoUpdates: clause.AssignmentColumns([]string{
+				"business_name", "description", "price_range", "average_rating", "active",
+				"street", "number", "neighborhood", "city", "zip_code", "state",
+				"country", "complement", "latitude", "longitude",
+			}),
+		}).Create(&provider).Error; err != nil {
+			return err
+		}
+
+		var persistedProvider models.Provider
+		if err := db.Where("user_id = ?", persistedUser.ID).First(&persistedProvider).Error; err != nil {
+			return err
+		}
+
+		for _, svc := range entry.Services {
+			categories := make([]models.Category, len(svc.CategoryIDs))
+			for i, id := range svc.CategoryIDs {
+				categories[i] = models.Category{ID: id}
+			}
+			tagModels := make([]models.Tag, len(svc.TagIDs))
+			for i, id := range svc.TagIDs {
+				tagModels[i] = models.Tag{ID: id}
+			}
+			service := models.Service{
+				ID:           svc.ID,
+				ProviderID:   persistedProvider.ID,
+				Name:         svc.Name,
+				Description:  svc.Description,
+				Price:        svc.Price,
+				PriceMinimum: svc.PriceMinimum,
+				PriceMaximum: svc.PriceMaximum,
+				Duration:     svc.Duration,
+				Active:       true,
+			}
+			if err := db.Clauses(clause.OnConflict{
+				Columns: []clause.Column{{Name: "id"}},
+				DoUpdates: clause.AssignmentColumns([]string{
+					"provider_id", "name", "description", "price",
+					"price_minimum", "price_maximum", "duration", "active",
+				}),
+			}).Create(&service).Error; err != nil {
+				return err
+			}
+			if err := db.Model(&service).Association("Categories").Replace(categories); err != nil {
+				return err
+			}
+			if err := db.Model(&service).Association("Tags").Replace(tagModels); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func Migration20260315000001(db *gorm.DB) error {
+	ownerPassword, err := bcrypt.GenerateFromPassword([]byte("Owner@123"), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	type ownerSeed struct {
+		User models.User
+	}
+
+	ownerEntries := []ownerSeed{
+		{
+			User: models.User{
+				ID:              "01KOWNU100000000000000001",
+				Name:            "Juliana Ferreira",
+				UserType:        "owner",
+				Email:           "juliana.ferreira.owner@petservices.local",
+				Password:        string(ownerPassword),
+				CountryCode:     "+55",
+				AreaCode:        "79",
+				PhoneNumber:     "991120101",
+				EmailVerified:   true,
+				ProfileComplete: true,
+				Active:          true,
+				Street:          "Rua Itabaiana",
+				Number:          "144",
+				Neighborhood:    "Centro",
+				City:            "Aracaju",
+				ZipCode:         "49010-170",
+				State:           "SE",
+				Country:         "BR",
+				Complement:      "Casa",
+				Latitude:        -10.9119,
+				Longitude:       -37.0519,
+			},
+		},
+		{
+			User: models.User{
+				ID:              "01KOWNU100000000000000002",
+				Name:            "Paulo Henrique Dias",
+				UserType:        "owner",
+				Email:           "paulo.dias.owner@petservices.local",
+				Password:        string(ownerPassword),
+				CountryCode:     "+55",
+				AreaCode:        "79",
+				PhoneNumber:     "991120102",
+				EmailVerified:   true,
+				ProfileComplete: true,
+				Active:          true,
+				Street:          "Avenida Hermes Fontes",
+				Number:          "930",
+				Neighborhood:    "Salgado Filho",
+				City:            "Aracaju",
+				ZipCode:         "49020-550",
+				State:           "SE",
+				Country:         "BR",
+				Complement:      "Apto 402",
+				Latitude:        -10.9325,
+				Longitude:       -37.0586,
+			},
+		},
+		{
+			User: models.User{
+				ID:              "01KOWNU100000000000000003",
+				Name:            "Camila Nunes",
+				UserType:        "owner",
+				Email:           "camila.nunes.owner@petservices.local",
+				Password:        string(ownerPassword),
+				CountryCode:     "+55",
+				AreaCode:        "79",
+				PhoneNumber:     "991120103",
+				EmailVerified:   true,
+				ProfileComplete: true,
+				Active:          true,
+				Street:          "Rua Delmiro Gouveia",
+				Number:          "81",
+				Neighborhood:    "Atalaia",
+				City:            "Aracaju",
+				ZipCode:         "49037-530",
+				State:           "SE",
+				Country:         "BR",
+				Complement:      "Casa 2",
+				Latitude:        -10.9861,
+				Longitude:       -37.0484,
+			},
+		},
+		{
+			User: models.User{
+				ID:              "01KOWNU100000000000000004",
+				Name:            "Diego Matos",
+				UserType:        "owner",
+				Email:           "diego.matos.owner@petservices.local",
+				Password:        string(ownerPassword),
+				CountryCode:     "+55",
+				AreaCode:        "79",
+				PhoneNumber:     "991120104",
+				EmailVerified:   true,
+				ProfileComplete: true,
+				Active:          true,
+				Street:          "Rua Porto da Folha",
+				Number:          "302",
+				Neighborhood:    "Siqueira Campos",
+				City:            "Aracaju",
+				ZipCode:         "49075-070",
+				State:           "SE",
+				Country:         "BR",
+				Complement:      "Fundos",
+				Latitude:        -10.9184,
+				Longitude:       -37.0738,
+			},
+		},
+	}
+
+	ownersByEmail := make(map[string]models.User, len(ownerEntries))
+	for _, entry := range ownerEntries {
+		user := entry.User
+		if err := db.Clauses(clause.OnConflict{
+			Columns: []clause.Column{{Name: "email"}},
+			DoUpdates: clause.AssignmentColumns([]string{
+				"name", "user_type", "password", "country_code", "area_code", "phone_number",
+				"email_verified", "profile_complete", "active", "street", "number",
+				"neighborhood", "city", "zip_code", "state", "country", "complement",
+				"latitude", "longitude",
+			}),
+		}).Create(&user).Error; err != nil {
+			return err
+		}
+
+		var persistedUser models.User
+		if err := db.Where("email = ?", user.Email).First(&persistedUser).Error; err != nil {
+			return err
+		}
+		ownersByEmail[user.Email] = persistedUser
+	}
+
+	type petSeed struct {
+		ID         string
+		OwnerEmail string
+		Name       string
+		SpeciesID  string
+		Age        int
+		Weight     float64
+		Notes      string
+	}
+
+	petSeeds := []petSeed{
+		{
+			ID:         "01KOWNP100000000000000001",
+			OwnerEmail: "juliana.ferreira.owner@petservices.local",
+			Name:       "Bento",
+			SpeciesID:  "01KG7BG1XN0BQ4KHKPHY5V5ZEW",
+			Age:        4,
+			Weight:     12.30,
+			Notes:      "Cachorro dócil, se adapta bem a passeios.",
+		},
+		{
+			ID:         "01KOWNP100000000000000002",
+			OwnerEmail: "juliana.ferreira.owner@petservices.local",
+			Name:       "Nina",
+			SpeciesID:  "01KG7BG1XR2FA63J6N46CPVCKS",
+			Age:        2,
+			Weight:     4.10,
+			Notes:      "Gata tranquila, gosta de rotina estável.",
+		},
+		{
+			ID:         "01KOWNP100000000000000003",
+			OwnerEmail: "paulo.dias.owner@petservices.local",
+			Name:       "Thor",
+			SpeciesID:  "01KG7BG1XN0BQ4KHKPHY5V5ZEW",
+			Age:        5,
+			Weight:     21.80,
+			Notes:      "Cão ativo, precisa de enriquecimento diário.",
+		},
+		{
+			ID:         "01KOWNP100000000000000004",
+			OwnerEmail: "camila.nunes.owner@petservices.local",
+			Name:       "Lua",
+			SpeciesID:  "01KG7BG1XR2FA63J6N46CPVCKS",
+			Age:        3,
+			Weight:     4.90,
+			Notes:      "Gata curiosa e sociável.",
+		},
+		{
+			ID:         "01KOWNP100000000000000005",
+			OwnerEmail: "camila.nunes.owner@petservices.local",
+			Name:       "Bob",
+			SpeciesID:  "01KG7BG1XN0BQ4KHKPHY5V5ZEW",
+			Age:        1,
+			Weight:     9.70,
+			Notes:      "Filhote, em fase de socialização.",
+		},
+		{
+			ID:         "01KOWNP100000000000000006",
+			OwnerEmail: "diego.matos.owner@petservices.local",
+			Name:       "Mel",
+			SpeciesID:  "01KG7BG1XN0BQ4KHKPHY5V5ZEW",
+			Age:        6,
+			Weight:     14.20,
+			Notes:      "Cadela calma, responde bem a comandos básicos.",
+		},
+	}
+
+	petsByID := make(map[string]models.Pet, len(petSeeds))
+	for _, seed := range petSeeds {
+		owner, ok := ownersByEmail[seed.OwnerEmail]
+		if !ok {
+			return gorm.ErrRecordNotFound
+		}
+
+		pet := models.Pet{
+			ID:        seed.ID,
+			UserID:    owner.ID,
+			Name:      seed.Name,
+			SpeciesID: seed.SpeciesID,
+			Age:       seed.Age,
+			Weight:    seed.Weight,
+			Notes:     seed.Notes,
+			Active:    true,
+		}
+
+		if err := db.Clauses(clause.OnConflict{
+			Columns: []clause.Column{{Name: "id"}},
+			DoUpdates: clause.AssignmentColumns([]string{
+				"user_id", "name", "species_id", "age", "weight", "notes", "active",
+			}),
+		}).Create(&pet).Error; err != nil {
+			return err
+		}
+
+		var persistedPet models.Pet
+		if err := db.Where("id = ?", pet.ID).First(&persistedPet).Error; err != nil {
+			return err
+		}
+		petsByID[pet.ID] = persistedPet
+	}
+
+	providerEmails := []string{
+		"ana.beatriz.provider@petservices.local",
+		"carlos.eduardo.provider@petservices.local",
+		"mariana.costa.provider@petservices.local",
+		"rafael.mendes.provider@petservices.local",
+		"fernanda.lima.provider@petservices.local",
+	}
+
+	providersByEmail := make(map[string]models.Provider, len(providerEmails))
+	for _, email := range providerEmails {
+		var providerUser models.User
+		if err := db.Where("email = ?", email).First(&providerUser).Error; err != nil {
+			return err
+		}
+
+		var provider models.Provider
+		if err := db.Where("user_id = ?", providerUser.ID).First(&provider).Error; err != nil {
+			return err
+		}
+
+		providersByEmail[email] = provider
+	}
+
+	type requestSeed struct {
+		ID            string
+		OwnerEmail    string
+		ProviderEmail string
+		ServiceName   string
+		PetID         string
+		Notes         string
+		Status        string
+		RejectReason  string
+	}
+
+	requestSeeds := []requestSeed{
+		{
+			ID:            "01KOWNR100000000000000001",
+			OwnerEmail:    "juliana.ferreira.owner@petservices.local",
+			ProviderEmail: "ana.beatriz.provider@petservices.local",
+			ServiceName:   "Passeio Diário",
+			PetID:         "01KOWNP100000000000000001",
+			Notes:         "Preciso de passeios de segunda a sexta pela manhã.",
+			Status:        "completed",
+			RejectReason:  "",
+		},
+		{
+			ID:            "01KOWNR100000000000000002",
+			OwnerEmail:    "juliana.ferreira.owner@petservices.local",
+			ProviderEmail: "fernanda.lima.provider@petservices.local",
+			ServiceName:   "Day Care para Pets",
+			PetID:         "01KOWNP100000000000000002",
+			Notes:         "Gostaria de iniciar com dois dias por semana.",
+			Status:        "pending",
+			RejectReason:  "",
+		},
+		{
+			ID:            "01KOWNR100000000000000003",
+			OwnerEmail:    "paulo.dias.owner@petservices.local",
+			ProviderEmail: "rafael.mendes.provider@petservices.local",
+			ServiceName:   "Adestramento Básico",
+			PetID:         "01KOWNP100000000000000003",
+			Notes:         "Thor precisa melhorar obediência durante passeios.",
+			Status:        "completed",
+			RejectReason:  "",
+		},
+		{
+			ID:            "01KOWNR100000000000000004",
+			OwnerEmail:    "camila.nunes.owner@petservices.local",
+			ProviderEmail: "mariana.costa.provider@petservices.local",
+			ServiceName:   "Banho e Tosa Completo",
+			PetID:         "01KOWNP100000000000000005",
+			Notes:         "Bob tem pele sensível, usar shampoo hipoalergênico.",
+			Status:        "completed",
+			RejectReason:  "",
+		},
+		{
+			ID:            "01KOWNR100000000000000005",
+			OwnerEmail:    "camila.nunes.owner@petservices.local",
+			ProviderEmail: "mariana.costa.provider@petservices.local",
+			ServiceName:   "Corte de Unhas",
+			PetID:         "01KOWNP100000000000000004",
+			Notes:         "A Lua fica ansiosa, favor condução tranquila.",
+			Status:        "rejected",
+			RejectReason:  "Agenda indisponível para o horário solicitado.",
+		},
+		{
+			ID:            "01KOWNR100000000000000006",
+			OwnerEmail:    "diego.matos.owner@petservices.local",
+			ProviderEmail: "carlos.eduardo.provider@petservices.local",
+			ServiceName:   "Consulta Veterinária",
+			PetID:         "01KOWNP100000000000000006",
+			Notes:         "Consulta de rotina para check-up anual.",
+			Status:        "completed",
+			RejectReason:  "",
+		},
+		{
+			ID:            "01KOWNR100000000000000007",
+			OwnerEmail:    "diego.matos.owner@petservices.local",
+			ProviderEmail: "carlos.eduardo.provider@petservices.local",
+			ServiceName:   "Vacinação",
+			PetID:         "01KOWNP100000000000000006",
+			Notes:         "Atualização das vacinas obrigatórias.",
+			Status:        "accepted",
+			RejectReason:  "",
+		},
+		{
+			ID:            "01KOWNR100000000000000008",
+			OwnerEmail:    "paulo.dias.owner@petservices.local",
+			ProviderEmail: "fernanda.lima.provider@petservices.local",
+			ServiceName:   "Hospedagem (Hotel Pet)",
+			PetID:         "01KOWNP100000000000000003",
+			Notes:         "Reserva para fim de semana prolongado.",
+			Status:        "pending",
+			RejectReason:  "",
+		},
+	}
+
+	providerServiceCache := map[string]models.Service{}
+
+	affectedProviderIDs := map[string]struct{}{}
+	for _, seed := range requestSeeds {
+		owner, ok := ownersByEmail[seed.OwnerEmail]
+		if !ok {
+			return gorm.ErrRecordNotFound
+		}
+
+		provider, ok := providersByEmail[seed.ProviderEmail]
+		if !ok {
+			return gorm.ErrRecordNotFound
+		}
+
+		pet, ok := petsByID[seed.PetID]
+		if !ok {
+			return gorm.ErrRecordNotFound
+		}
+
+		serviceCacheKey := seed.ProviderEmail + "|" + seed.ServiceName
+		service, found := providerServiceCache[serviceCacheKey]
+		if !found {
+			if err := db.Where("provider_id = ? AND name = ?", provider.ID, seed.ServiceName).First(&service).Error; err != nil {
+				return err
+			}
+			providerServiceCache[serviceCacheKey] = service
+		}
+
+		request := models.Request{
+			ID:           seed.ID,
+			UserID:       owner.ID,
+			ProviderID:   provider.ID,
+			ServiceID:    service.ID,
+			PetID:        pet.ID,
+			Notes:        seed.Notes,
+			Status:       seed.Status,
+			RejectReason: seed.RejectReason,
+			Active:       true,
+		}
+
+		if err := db.Clauses(clause.OnConflict{
+			Columns: []clause.Column{{Name: "id"}},
+			DoUpdates: clause.AssignmentColumns([]string{
+				"user_id", "provider_id", "service_id", "pet_id", "notes", "status", "reject_reason", "active",
+			}),
+		}).Create(&request).Error; err != nil {
+			return err
+		}
+
+		affectedProviderIDs[provider.ID] = struct{}{}
+	}
+
+	type reviewSeed struct {
+		ID            string
+		OwnerEmail    string
+		ProviderEmail string
+		Rating        float64
+		Comment       string
+	}
+
+	reviewSeeds := []reviewSeed{
+		{
+			ID:            "01KOWNV100000000000000001",
+			OwnerEmail:    "juliana.ferreira.owner@petservices.local",
+			ProviderEmail: "ana.beatriz.provider@petservices.local",
+			Rating:        4.8,
+			Comment:       "Excelente cuidado com o Bento. Comunicação rápida e muito carinho com os pets.",
+		},
+		{
+			ID:            "01KOWNV100000000000000002",
+			OwnerEmail:    "paulo.dias.owner@petservices.local",
+			ProviderEmail: "rafael.mendes.provider@petservices.local",
+			Rating:        4.9,
+			Comment:       "Treinamento muito eficiente. Thor evoluiu bastante em poucas sessões.",
+		},
+		{
+			ID:            "01KOWNV100000000000000003",
+			OwnerEmail:    "camila.nunes.owner@petservices.local",
+			ProviderEmail: "mariana.costa.provider@petservices.local",
+			Rating:        4.7,
+			Comment:       "Ótimo atendimento, equipe cuidadosa e serviço de banho excelente.",
+		},
+		{
+			ID:            "01KOWNV100000000000000004",
+			OwnerEmail:    "diego.matos.owner@petservices.local",
+			ProviderEmail: "carlos.eduardo.provider@petservices.local",
+			Rating:        5.0,
+			Comment:       "Consulta muito completa, explicações claras e ótimo acolhimento.",
+		},
+	}
+
+	for _, seed := range reviewSeeds {
+		owner, ok := ownersByEmail[seed.OwnerEmail]
+		if !ok {
+			return gorm.ErrRecordNotFound
+		}
+
+		provider, ok := providersByEmail[seed.ProviderEmail]
+		if !ok {
+			return gorm.ErrRecordNotFound
+		}
+
+		review := models.Review{
+			ID:         seed.ID,
+			UserID:     owner.ID,
+			ProviderID: provider.ID,
+			Rating:     seed.Rating,
+			Comment:    seed.Comment,
+			Active:     true,
+		}
+
+		if err := db.Clauses(clause.OnConflict{
+			Columns: []clause.Column{{Name: "id"}},
+			DoUpdates: clause.AssignmentColumns([]string{
+				"user_id", "provider_id", "rating", "comment", "active",
+			}),
+		}).Create(&review).Error; err != nil {
+			return err
+		}
+
+		affectedProviderIDs[provider.ID] = struct{}{}
+	}
+
+	for providerID := range affectedProviderIDs {
+		var avgRating float64
+		if err := db.Model(&models.Review{}).
+			Where("provider_id = ? AND active = ?", providerID, true).
+			Select("COALESCE(AVG(rating), 0)").
+			Scan(&avgRating).Error; err != nil {
+			return err
+		}
+
+		if err := db.Model(&models.Provider{}).
+			Where("id = ?", providerID).
+			Update("average_rating", avgRating).Error; err != nil {
 			return err
 		}
 	}

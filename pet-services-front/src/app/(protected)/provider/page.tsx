@@ -44,8 +44,7 @@ import AddProviderForm from "./components/AddProviderForm";
 import ServiceFormCard from "./components/ServiceFormCard";
 import ServicesListSection from "./components/ServicesListSection";
 import ChangePasswordCard from "@/components/account/ChangePasswordCard";
-import MainNav from "@/components/common/MainNav";
-import PageWrapper from "@/components/common/PageWrapper";
+import { MainNav, PageWrapper, ProviderRating } from "@/components/common";
 
 type Feedback = {
   type: "success" | "error";
@@ -1097,6 +1096,14 @@ export default function ProviderDashboardPage() {
                   ? `Provider identificado: ${provider.businessName}`
                   : "Aguardando identificação do provider..."}
               </Text>
+              {provider ? (
+                <ProviderRating
+                  mt={2}
+                  rating={provider.averageRating}
+                  labelPrefix="Avaliação média:"
+                  fontSize="xs"
+                />
+              ) : null}
               {providerError ? (
                 <Text mt={1.5} fontSize="xs" color="red.600">
                   {getApiErrorMessage(
@@ -1187,9 +1194,9 @@ export default function ProviderDashboardPage() {
               </Text>
             </Box>
 
-            {provider.photos.length ? (
+            {(provider.photos ?? []).length ? (
               <Flex mt={3} gap={3} wrap="wrap">
-                {provider.photos.map((photo) => {
+                {(provider.photos ?? []).map((photo) => {
                   const photoId = String(photo.id);
                   const isCurrentDeletingPhoto =
                     deletingProviderPhotoId === photoId;

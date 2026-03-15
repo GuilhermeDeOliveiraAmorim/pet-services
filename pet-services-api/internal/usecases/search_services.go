@@ -11,6 +11,22 @@ import (
 	"pet-services-api/internal/storage"
 )
 
+func haversineDistanceKm(lat1, lon1, lat2, lon2 float64) float64 {
+	const earthRadiusKm = 6371.0
+	toRad := func(v float64) float64 {
+		return v * math.Pi / 180
+	}
+
+	dLat := toRad(lat2 - lat1)
+	dLon := toRad(lon2 - lon1)
+	a := math.Sin(dLat/2)*math.Sin(dLat/2) +
+		math.Cos(toRad(lat1))*math.Cos(toRad(lat2))*
+			math.Sin(dLon/2)*math.Sin(dLon/2)
+	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+
+	return earthRadiusKm * c
+}
+
 type SearchServicesInput struct {
 	Query      string
 	CategoryID string
@@ -103,9 +119,23 @@ func (uc *SearchServicesUseCase) Execute(ctx context.Context, input SearchServic
 	for i, svc := range services {
 		// Buscar dados do provider
 		businessName := ""
+		averageRating := 0.0
+		reviewCount := 0
+		var distanceKm *float64
 		provider, err := uc.providerRepository.FindByID(svc.ProviderID)
 		if err == nil && provider != nil {
 			businessName = provider.BusinessName
+			averageRating = provider.AverageRating
+			reviewCount = len(provider.Reviews)
+
+			if input.Latitude != 0 && input.Longitude != 0 {
+				providerLat := provider.Address.Location.Latitude
+				providerLon := provider.Address.Location.Longitude
+				if providerLat != 0 || providerLon != 0 {
+					d := haversineDistanceKm(input.Latitude, input.Longitude, providerLat, providerLon)
+					distanceKm = &d
+				}
+			}
 		}
 
 		// Assinar URLs das fotos
@@ -125,20 +155,23 @@ func (uc *SearchServicesUseCase) Execute(ctx context.Context, input SearchServic
 		}
 
 		serviceItems[i] = &ServiceListItem{
-			ID:           svc.ID,
-			ProviderID:   svc.ProviderID,
-			BusinessName: businessName,
-			Name:         svc.Name,
-			Description:  svc.Description,
-			Price:        svc.Price,
-			PriceMinimum: svc.PriceMinimum,
-			PriceMaximum: svc.PriceMaximum,
-			Duration:     svc.Duration,
-			Photos:       svc.Photos,
-			Categories:   svc.Categories,
-			Tags:         svc.Tags,
-			Active:       svc.Active,
-			CreatedAt:    svc.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+			ID:            svc.ID,
+			ProviderID:    svc.ProviderID,
+			BusinessName:  businessName,
+			AverageRating: averageRating,
+			ReviewCount:   reviewCount,
+			DistanceKm:    distanceKm,
+			Name:          svc.Name,
+			Description:   svc.Description,
+			Price:         svc.Price,
+			PriceMinimum:  svc.PriceMinimum,
+			PriceMaximum:  svc.PriceMaximum,
+			Duration:      svc.Duration,
+			Photos:        svc.Photos,
+			Categories:    svc.Categories,
+			Tags:          svc.Tags,
+			Active:        svc.Active,
+			CreatedAt:     svc.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		}
 	}
 

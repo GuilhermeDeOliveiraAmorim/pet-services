@@ -130,7 +130,7 @@ export class ServiceGatewayAxios implements ServiceGateway {
 
     const { data } = await this.http.get<{
       services: unknown[];
-      total: number;
+      total_items: number;
     }>("/services", { params });
 
     return {
@@ -139,7 +139,7 @@ export class ServiceGatewayAxios implements ServiceGateway {
             mapServiceFromApi(s as Record<string, unknown>),
           )
         : [],
-      total: data.total ?? 0,
+      total: data.total_items ?? 0,
     };
   }
 
@@ -167,7 +167,7 @@ export class ServiceGatewayAxios implements ServiceGateway {
 
     const { data } = await this.http.get<{
       services: unknown[];
-      total: number;
+      total_items: number;
     }>("/services/search", { params });
 
     return {
@@ -176,7 +176,7 @@ export class ServiceGatewayAxios implements ServiceGateway {
             mapServiceFromApi(s as Record<string, unknown>),
           )
         : [],
-      total: data.total ?? 0,
+      total: data.total_items ?? 0,
     };
   }
 

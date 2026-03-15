@@ -7,6 +7,9 @@ export interface Service extends Base {
   providerId: string;
   name: string;
   description: string;
+  averageRating: number;
+  reviewCount: number;
+  distanceKm?: number;
   price: number;
   priceMinimum: number;
   priceMaximum: number;

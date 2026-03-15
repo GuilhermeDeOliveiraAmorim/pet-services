@@ -16,9 +16,8 @@ import {
   VStack,
 } from "@chakra-ui/react";
 
-import { useProviderGet, useServiceList } from "@/application";
-import MainNav from "@/components/common/MainNav";
-import PageWrapper from "@/components/common/PageWrapper";
+import { useProviderGet, useReviewList, useServiceList } from "@/application";
+import { MainNav, PageWrapper, ProviderRating } from "@/components/common";
 import { getApiErrorMessage } from "@/lib/api-error";
 
 type PhotoView = {
@@ -68,6 +67,14 @@ const formatMoney = (value: number): string => {
   }).format(value);
 };
 
+const formatRating = (value: number): string => {
+  if (!Number.isFinite(value)) {
+    return "0.0";
+  }
+
+  return value.toFixed(1);
+};
+
 export default function ProviderDetailsPage() {
   const params = useParams<{ providerId: string }>();
   const providerId = params?.providerId;
@@ -89,8 +96,26 @@ export default function ProviderDetailsPage() {
     enabled: Boolean(providerId),
   });
 
+  const {
+    data: reviewsData,
+    isLoading: isLoadingReviews,
+    error: reviewsError,
+  } = useReviewList(
+    providerId
+      ? {
+          providerId,
+          page: 1,
+          pageSize: 10,
+        }
+      : undefined,
+    {
+      enabled: Boolean(providerId),
+    },
+  );
+
   const provider = providerData?.provider;
   const services = servicesData?.services ?? [];
+  const reviews = reviewsData?.reviews ?? [];
   const providerPhotos = normalizePhotos(provider?.photos);
 
   const providerErrorMessage = providerError
@@ -101,6 +126,13 @@ export default function ProviderDetailsPage() {
     ? getApiErrorMessage(
         servicesError,
         "Não foi possível carregar os serviços publicados.",
+      )
+    : "";
+
+  const reviewsErrorMessage = reviewsError
+    ? getApiErrorMessage(
+        reviewsError,
+        "Não foi possível carregar as avaliações deste provider.",
       )
     : "";
 
@@ -196,9 +228,11 @@ export default function ProviderDetailsPage() {
                     Faixa: {provider.priceRange}
                   </Badge>
                 ) : null}
-                <Badge borderRadius="full" px={3} py={1} colorPalette="cyan">
-                  Avaliação média: {provider.averageRating?.toFixed(1) ?? "0.0"}
-                </Badge>
+                <ProviderRating
+                  rating={provider.averageRating}
+                  totalReviews={reviewsData?.total}
+                  showCount
+                />
               </HStack>
 
               <Grid
@@ -255,7 +289,9 @@ export default function ProviderDetailsPage() {
                   {provider.address.city || provider.address.state ? (
                     <Text mt={1} fontSize={{ base: "xs" }} color="gray.600">
                       {provider.address.city}
-                      {provider.address.city && provider.address.state ? " - " : ""}
+                      {provider.address.city && provider.address.state
+                        ? " - "
+                        : ""}
                       {provider.address.state}
                     </Text>
                   ) : null}
@@ -309,10 +345,115 @@ export default function ProviderDetailsPage() {
                   ))}
                 </Grid>
               ) : (
-                <Text mt={4} fontSize={{ base: "xs", sm: "sm" }} color="gray.500">
+                <Text
+                  mt={4}
+                  fontSize={{ base: "xs", sm: "sm" }}
+                  color="gray.500"
+                >
                   Este provider ainda não possui fotos.
                 </Text>
               )}
+            </Box>
+
+            <Box
+              borderRadius={{ base: "2xl", md: "3xl" }}
+              bg="white"
+              borderWidth="1px"
+              borderColor="gray.200"
+              p={{ base: 4, sm: 5, md: 7 }}
+            >
+              <Flex align="center" justify="space-between" wrap="wrap" gap={3}>
+                <Heading
+                  as="h2"
+                  size={{ base: "sm", md: "md" }}
+                  color="gray.900"
+                  fontSize={{ base: "sm", md: "md" }}
+                >
+                  Avaliações
+                </Heading>
+                {isLoadingReviews ? (
+                  <HStack gap={2} color="gray.500">
+                    <Spinner size="xs" />
+                    <Text fontSize={{ base: "xs", sm: "sm" }}>
+                      Carregando...
+                    </Text>
+                  </HStack>
+                ) : null}
+              </Flex>
+
+              {reviewsErrorMessage ? (
+                <Box
+                  mt={4}
+                  borderRadius={{ base: "lg", md: "xl" }}
+                  borderWidth="1px"
+                  borderColor="orange.200"
+                  bg="orange.50"
+                  p={{ base: 3, md: 4 }}
+                >
+                  <Text fontSize={{ base: "xs", sm: "sm" }} color="orange.700">
+                    {reviewsErrorMessage}
+                  </Text>
+                </Box>
+              ) : null}
+
+              {!isLoadingReviews && !reviewsErrorMessage ? (
+                reviews.length ? (
+                  <VStack mt={4} align="stretch" gap={3}>
+                    {reviews.map((review) => (
+                      <Box
+                        key={review.id}
+                        borderWidth="1px"
+                        borderColor="gray.200"
+                        borderRadius={{ base: "xl", md: "2xl" }}
+                        p={{ base: 3, md: 4 }}
+                      >
+                        <Flex justify="space-between" align="center" gap={3}>
+                          <Text
+                            fontSize={{ base: "xs" }}
+                            color="gray.500"
+                            textTransform="uppercase"
+                          >
+                            Avaliação
+                          </Text>
+                          <Badge
+                            borderRadius="full"
+                            px={3}
+                            py={1}
+                            colorPalette="teal"
+                            variant="subtle"
+                            fontSize={{ base: "xs" }}
+                          >
+                            Nota {formatRating(review.rating)}
+                          </Badge>
+                        </Flex>
+
+                        <Text
+                          mt={2}
+                          fontSize={{ base: "xs", sm: "sm" }}
+                          color="gray.700"
+                        >
+                          {review.comment || "Sem comentário."}
+                        </Text>
+
+                        <Text mt={2} fontSize={{ base: "xs" }} color="gray.500">
+                          Publicado em{" "}
+                          {new Date(review.createdAt).toLocaleDateString(
+                            "pt-BR",
+                          )}
+                        </Text>
+                      </Box>
+                    ))}
+                  </VStack>
+                ) : (
+                  <Text
+                    mt={4}
+                    fontSize={{ base: "xs", sm: "sm" }}
+                    color="gray.500"
+                  >
+                    Este provider ainda não possui avaliações.
+                  </Text>
+                )
+              ) : null}
             </Box>
 
             <Box
@@ -381,11 +522,21 @@ export default function ProviderDetailsPage() {
                             >
                               {service.name}
                             </Text>
-                            <Text mt={1} fontSize={{ base: "xs", sm: "sm" }} color="gray.600">
-                              {service.description || "Sem descrição informada."}
+                            <Text
+                              mt={1}
+                              fontSize={{ base: "xs", sm: "sm" }}
+                              color="gray.600"
+                            >
+                              {service.description ||
+                                "Sem descrição informada."}
                             </Text>
-                            <Text mt={2} fontSize={{ base: "xs" }} color="gray.500">
-                              {formatMoney(service.price)} · {service.duration} min
+                            <Text
+                              mt={2}
+                              fontSize={{ base: "xs" }}
+                              color="gray.500"
+                            >
+                              {formatMoney(service.price)} · {service.duration}{" "}
+                              min
                             </Text>
                           </Box>
 
@@ -409,7 +560,11 @@ export default function ProviderDetailsPage() {
                     ))}
                   </VStack>
                 ) : (
-                  <Text mt={4} fontSize={{ base: "xs", sm: "sm" }} color="gray.500">
+                  <Text
+                    mt={4}
+                    fontSize={{ base: "xs", sm: "sm" }}
+                    color="gray.500"
+                  >
                     Este provider ainda não possui serviços publicados.
                   </Text>
                 )

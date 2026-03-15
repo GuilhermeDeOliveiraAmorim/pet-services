@@ -15,6 +15,18 @@ import { mapRequestFromApi } from "@/infra/mappers/request-mapper";
 export class RequestGatewayAxios implements RequestGateway {
   constructor(private readonly httpClient: AxiosInstance) {}
 
+  private extractRequestFromActionResponse(
+    data: Record<string, unknown>,
+  ): Record<string, unknown> {
+    const request = data.request;
+
+    if (request && typeof request === "object") {
+      return request as Record<string, unknown>;
+    }
+
+    return data;
+  }
+
   async addRequest(input: AddRequestInput): Promise<Request> {
     const payload = {
       provider_id: input.providerId,
@@ -25,7 +37,7 @@ export class RequestGatewayAxios implements RequestGateway {
 
     const response = await this.httpClient.post<Record<string, unknown>>(
       "/requests",
-      payload
+      payload,
     );
 
     return mapRequestFromApi(response.data);
@@ -33,15 +45,13 @@ export class RequestGatewayAxios implements RequestGateway {
 
   async getRequest(input: GetRequestInput): Promise<Request> {
     const response = await this.httpClient.get<Record<string, unknown>>(
-      `/requests/${input.id}`
+      `/requests/${input.id}`,
     );
 
     return mapRequestFromApi(response.data);
   }
 
-  async listRequests(
-    input?: ListRequestsInput
-  ): Promise<ListRequestsOutput> {
+  async listRequests(input?: ListRequestsInput): Promise<ListRequestsOutput> {
     const params = new URLSearchParams();
 
     if (input?.userId) params.append("user_id", input.userId);
@@ -73,30 +83,36 @@ export class RequestGatewayAxios implements RequestGateway {
 
   async acceptRequest(input: AcceptRequestInput): Promise<Request> {
     const response = await this.httpClient.patch<Record<string, unknown>>(
-      `/requests/${input.id}/accept`
+      `/requests/${input.id}/accept`,
     );
 
-    return mapRequestFromApi(response.data);
+    return mapRequestFromApi(
+      this.extractRequestFromActionResponse(response.data),
+    );
   }
 
   async rejectRequest(input: RejectRequestInput): Promise<Request> {
     const payload = {
-      reject_reason: input.rejectReason,
+      reason: input.rejectReason,
     };
 
     const response = await this.httpClient.patch<Record<string, unknown>>(
       `/requests/${input.id}/reject`,
-      payload
+      payload,
     );
 
-    return mapRequestFromApi(response.data);
+    return mapRequestFromApi(
+      this.extractRequestFromActionResponse(response.data),
+    );
   }
 
   async completeRequest(input: CompleteRequestInput): Promise<Request> {
     const response = await this.httpClient.patch<Record<string, unknown>>(
-      `/requests/${input.id}/complete`
+      `/requests/${input.id}/complete`,
     );
 
-    return mapRequestFromApi(response.data);
+    return mapRequestFromApi(
+      this.extractRequestFromActionResponse(response.data),
+    );
   }
 }

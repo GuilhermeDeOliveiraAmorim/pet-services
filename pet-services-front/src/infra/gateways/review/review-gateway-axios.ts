@@ -11,19 +11,32 @@ import { mapReviewFromApi } from "@/infra/mappers/review-mapper";
 export class ReviewGatewayAxios implements ReviewGateway {
   constructor(private readonly httpClient: AxiosInstance) {}
 
+  private extractReviewFromActionResponse(
+    data: Record<string, unknown>,
+  ): Record<string, unknown> {
+    const review = data.review;
+
+    if (review && typeof review === "object") {
+      return review as Record<string, unknown>;
+    }
+
+    return data;
+  }
+
   async createReview(input: CreateReviewInput): Promise<Review> {
     const payload = {
-      provider_id: input.providerId,
       rating: input.rating,
       comment: input.comment,
     };
 
     const response = await this.httpClient.post<Record<string, unknown>>(
-      "/reviews",
-      payload
+      `/providers/${input.providerId}/reviews`,
+      payload,
     );
 
-    return mapReviewFromApi(response.data);
+    return mapReviewFromApi(
+      this.extractReviewFromActionResponse(response.data),
+    );
   }
 
   async listReviews(input?: ListReviewsInput): Promise<ListReviewsOutput> {
@@ -39,6 +52,9 @@ export class ReviewGatewayAxios implements ReviewGateway {
 
     const response = await this.httpClient.get<{
       reviews?: Record<string, unknown>[];
+      total_items?: number;
+      current_page?: number;
+      items_per_page?: number;
       total?: number;
       page?: number;
       page_size?: number;
@@ -48,9 +64,9 @@ export class ReviewGatewayAxios implements ReviewGateway {
 
     return {
       reviews,
-      total: response.data.total || 0,
-      page: response.data.page || 1,
-      pageSize: response.data.page_size || 10,
+      total: response.data.total_items || 0,
+      page: response.data.current_page || 1,
+      pageSize: response.data.items_per_page || 10,
     };
   }
 }
