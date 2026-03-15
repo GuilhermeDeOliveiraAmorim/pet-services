@@ -415,8 +415,8 @@ function ServicesCatalogPageContent() {
       </Box>
 
       {/* ─── HERO ──────────────────────────────────────────── */}
-      <Box bg="teal.600" px={{ base: 4, md: 8 }} py={{ base: 12, md: 20 }}>
-        <VStack gap={{ base: 5, md: 6 }} maxW="2xl" mx="auto">
+      <Box bg="teal.600" px={{ base: 4, md: 8 }} py={{ base: 7, md: 12 }}>
+        <VStack gap={{ base: 4, md: 5 }} maxW="2xl" mx="auto">
           <VStack gap={2} textAlign="center">
             <Heading
               as="h1"
