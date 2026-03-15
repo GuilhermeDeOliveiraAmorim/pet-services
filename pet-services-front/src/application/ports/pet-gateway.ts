@@ -7,10 +7,7 @@ import type {
 import type { DeletePetOutput } from "../usecases/pet/delete-pet";
 import type { ListPetsOutput } from "../usecases/pet/list-pets";
 import type { DeletePetPhotoOutput } from "../usecases/pet/delete-pet-photo";
-import type {
-  AddPetPhotoInput,
-  AddPetPhotoOutput,
-} from "../usecases/pet/add-pet-photo";
+import type { AddPetPhotoOutput } from "../usecases/pet/add-pet-photo";
 
 export interface PetGateway {
   addPet(input: AddPetInput): Promise<AddPetOutput>;
