@@ -910,15 +910,19 @@ function ServicesCatalogPageContent() {
 
       {/* ─── MAIN RESULTS ──────────────────────────────────── */}
       <Box maxW="7xl" mx="auto" px={{ base: 4, lg: 8 }} py={{ base: 6, md: 8 }}>
-        {/* Sort + count bar */}
-        {!isLoading && !isError && (total > 0 || hasAnyFilter) && (
-          <Flex
-            justify="space-between"
-            align="center"
-            mb={6}
-            gap={3}
-            flexWrap="wrap"
-          >
+        {/* Contagem + ordenação */}
+        <Flex
+          justify="space-between"
+          align="center"
+          mb={5}
+          gap={3}
+          flexWrap="wrap"
+          minH="32px"
+        >
+          {/* Contagem */}
+          {isLoading ? (
+            <Skeleton h="5" w="40" borderRadius="md" />
+          ) : isError ? null : (
             <Text
               fontSize={{ base: "sm", md: "md" }}
               color="gray.700"
@@ -941,11 +945,14 @@ function ServicesCatalogPageContent() {
                     </>
                   ) : null}
                 </>
-              ) : (
+              ) : hasAnyFilter ? (
                 "Nenhum resultado para os filtros aplicados"
-              )}
+              ) : null}
             </Text>
+          )}
 
+          {/* Ordenação */}
+          {!isLoading && !isError && total > 0 && (
             <HStack gap={2} flexShrink={0}>
               <Text fontSize="xs" color="gray.500">
                 Ordenar:
@@ -965,8 +972,8 @@ function ServicesCatalogPageContent() {
                 <NativeSelect.Indicator />
               </NativeSelect.Root>
             </HStack>
-          </Flex>
-        )}
+          )}
+        </Flex>
 
         {/* Loading skeleton */}
         {isLoading && (
