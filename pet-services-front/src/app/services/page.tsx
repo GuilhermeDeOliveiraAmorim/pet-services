@@ -31,6 +31,11 @@ import { Link as ChakraLink } from "@chakra-ui/react";
 
 const PAGE_SIZE = 12;
 
+type LocationFeedback = {
+  type: "success" | "error";
+  message: string;
+};
+
 const formatMoney = (value: number): string => {
   if (!Number.isFinite(value) || value <= 0) return "";
   return new Intl.NumberFormat("pt-BR", {
@@ -60,7 +65,24 @@ function ServicesCatalogPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [zipCode, setZipCode] = useState(searchParams.get("zip_code") ?? "");
-  const [locationFeedback, setLocationFeedback] = useState("");
+  const [qInput, setQInput] = useState(searchParams.get("q") ?? "");
+  const [priceMinInput, setPriceMinInput] = useState(
+    searchParams.get("price_min") ?? "",
+  );
+  const [priceMaxInput, setPriceMaxInput] = useState(
+    searchParams.get("price_max") ?? "",
+  );
+  const [latitudeInput, setLatitudeInput] = useState(
+    searchParams.get("latitude") ?? "",
+  );
+  const [longitudeInput, setLongitudeInput] = useState(
+    searchParams.get("longitude") ?? "",
+  );
+  const [radiusKmInput, setRadiusKmInput] = useState(
+    searchParams.get("radius_km") ?? "",
+  );
+  const [locationFeedback, setLocationFeedback] =
+    useState<LocationFeedback | null>(null);
   const [isResolvingZipCode, setIsResolvingZipCode] = useState(false);
 
   const q = searchParams.get("q") ?? "";
@@ -162,11 +184,27 @@ function ServicesCatalogPageContent() {
 
   const services = data?.services ?? [];
   const total = data?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const totalPages = total > 0 ? Math.ceil(total / PAGE_SIZE) : 0;
 
   useEffect(() => {
     setZipCode(searchParams.get("zip_code") ?? "");
+    setQInput(searchParams.get("q") ?? "");
+    setPriceMinInput(searchParams.get("price_min") ?? "");
+    setPriceMaxInput(searchParams.get("price_max") ?? "");
+    setLatitudeInput(searchParams.get("latitude") ?? "");
+    setLongitudeInput(searchParams.get("longitude") ?? "");
+    setRadiusKmInput(searchParams.get("radius_km") ?? "");
   }, [searchParams]);
+
+  useEffect(() => {
+    if (isLoading || isError || totalPages === 0 || page <= totalPages) {
+      return;
+    }
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", String(totalPages));
+    router.replace(`/services?${params.toString()}`);
+  }, [isError, isLoading, page, router, searchParams, totalPages]);
 
   const setParam = useCallback(
     (updates: Record<string, string>) => {
@@ -196,10 +234,9 @@ function ServicesCatalogPageContent() {
   const handleSearch = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      const fd = new FormData(e.currentTarget);
-      setParam({ q: String(fd.get("q") ?? "") });
+      setParam({ q: qInput });
     },
-    [setParam],
+    [qInput, setParam],
   );
 
   const fetchCoordinatesByZipCode = useCallback(
@@ -243,12 +280,15 @@ function ServicesCatalogPageContent() {
     const normalizedZipCode = zipCode.trim();
 
     if (!normalizedZipCode) {
-      setLocationFeedback("Informe o CEP para buscar as coordenadas.");
+      setLocationFeedback({
+        type: "error",
+        message: "Informe o CEP para buscar as coordenadas.",
+      });
       return;
     }
 
     setIsResolvingZipCode(true);
-    setLocationFeedback("");
+    setLocationFeedback(null);
 
     try {
       const coords = await fetchCoordinatesByZipCode(normalizedZipCode);
@@ -258,13 +298,18 @@ function ServicesCatalogPageContent() {
         longitude: String(coords.longitude),
         radius_km: radiusKm > 0 ? String(radiusKm) : "10",
       });
-      setLocationFeedback("Coordenadas preenchidas automaticamente pelo CEP.");
+      setLocationFeedback({
+        type: "success",
+        message: "Coordenadas preenchidas automaticamente pelo CEP.",
+      });
     } catch (error) {
-      setLocationFeedback(
-        error instanceof Error
-          ? error.message
-          : "Não foi possível buscar coordenadas pelo CEP.",
-      );
+      setLocationFeedback({
+        type: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Não foi possível buscar coordenadas pelo CEP.",
+      });
     } finally {
       setIsResolvingZipCode(false);
     }
@@ -272,7 +317,7 @@ function ServicesCatalogPageContent() {
 
   const handleClearLocationForm = useCallback(() => {
     setZipCode("");
-    setLocationFeedback("");
+    setLocationFeedback(null);
     setParam({
       zip_code: "",
       latitude: "",
@@ -322,7 +367,8 @@ function ServicesCatalogPageContent() {
               <HStack gap={2}>
                 <Input
                   name="q"
-                  defaultValue={q}
+                  value={qInput}
+                  onChange={(e) => setQInput(e.target.value)}
                   placeholder="Buscar por nome..."
                   size={{ base: "sm", md: "md" }}
                   flex={1}
@@ -395,7 +441,8 @@ function ServicesCatalogPageContent() {
               flex={{ base: 1, sm: "auto" }}
               minW={{ base: "auto", sm: "120px" }}
               borderRadius={{ base: "lg", md: "lg" }}
-              defaultValue={priceMin > 0 ? String(priceMin) : ""}
+              value={priceMinInput}
+              onChange={(e) => setPriceMinInput(e.target.value)}
               onBlur={(e) => setParam({ price_min: e.target.value })}
               fontSize={{ base: "sm" }}
             />
@@ -407,7 +454,8 @@ function ServicesCatalogPageContent() {
               flex={{ base: 1, sm: "auto" }}
               minW={{ base: "auto", sm: "120px" }}
               borderRadius={{ base: "lg", md: "lg" }}
-              defaultValue={priceMax > 0 ? String(priceMax) : ""}
+              value={priceMaxInput}
+              onChange={(e) => setPriceMaxInput(e.target.value)}
               onBlur={(e) => setParam({ price_max: e.target.value })}
               fontSize={{ base: "sm" }}
             />
@@ -520,7 +568,8 @@ function ServicesCatalogPageContent() {
                 placeholder="Latitude"
                 size={{ base: "sm", md: "md" }}
                 borderRadius={{ base: "lg", md: "xl" }}
-                defaultValue={latitude}
+                value={latitudeInput}
+                onChange={(e) => setLatitudeInput(e.target.value)}
                 onBlur={(e) => setParam({ latitude: e.target.value })}
                 fontSize={{ base: "sm" }}
               />
@@ -530,7 +579,8 @@ function ServicesCatalogPageContent() {
                 placeholder="Longitude"
                 size={{ base: "sm", md: "md" }}
                 borderRadius={{ base: "lg", md: "xl" }}
-                defaultValue={longitude}
+                value={longitudeInput}
+                onChange={(e) => setLongitudeInput(e.target.value)}
                 onBlur={(e) => setParam({ longitude: e.target.value })}
                 fontSize={{ base: "sm" }}
               />
@@ -541,7 +591,8 @@ function ServicesCatalogPageContent() {
                 placeholder="Raio (km)"
                 size={{ base: "sm", md: "md" }}
                 borderRadius={{ base: "lg", md: "xl" }}
-                defaultValue={radiusKm > 0 ? String(radiusKm) : ""}
+                value={radiusKmInput}
+                onChange={(e) => setRadiusKmInput(e.target.value)}
                 onBlur={(e) => setParam({ radius_km: e.target.value })}
                 fontSize={{ base: "sm" }}
               />
@@ -552,13 +603,20 @@ function ServicesCatalogPageContent() {
                 mt={4}
                 borderRadius={{ base: "lg", md: "xl" }}
                 borderWidth="1px"
-                borderColor="red.200"
-                bg="red.50"
+                borderColor={
+                  locationFeedback.type === "error" ? "red.200" : "green.200"
+                }
+                bg={locationFeedback.type === "error" ? "red.50" : "green.50"}
                 px={{ base: 3, md: 4 }}
                 py={3}
               >
-                <Text fontSize={{ base: "xs", sm: "sm" }} color="red.700">
-                  {locationFeedback}
+                <Text
+                  fontSize={{ base: "xs", sm: "sm" }}
+                  color={
+                    locationFeedback.type === "error" ? "red.700" : "green.700"
+                  }
+                >
+                  {locationFeedback.message}
                 </Text>
               </Box>
             ) : null}
@@ -676,7 +734,7 @@ function ServicesCatalogPageContent() {
         )}
 
         {/* Lista vazia */}
-        {!isLoading && !isError && services.length === 0 && (
+        {!isLoading && !isError && services.length === 0 && total === 0 && (
           <Flex
             borderRadius={{ base: "xl", md: "2xl" }}
             borderWidth="1px"
@@ -700,6 +758,21 @@ function ServicesCatalogPageContent() {
               Tente ajustar os filtros de busca
             </Text>
           </Flex>
+        )}
+
+        {!isLoading && !isError && services.length === 0 && total > 0 && (
+          <Box
+            borderRadius={{ base: "xl", md: "2xl" }}
+            borderWidth="1px"
+            borderColor="orange.200"
+            bg="orange.50"
+            p={{ base: 3, md: 5 }}
+          >
+            <Text fontSize={{ base: "xs", sm: "sm" }} color="orange.700">
+              A página atual não possui itens. Use a paginação abaixo para
+              navegar pelos resultados.
+            </Text>
+          </Box>
         )}
 
         {/* Grid de cards */}
@@ -834,78 +907,77 @@ function ServicesCatalogPageContent() {
                 </ChakraLink>
               ))}
             </Grid>
-
-            {/* Paginação */}
-            {totalPages > 1 && (
-              <Flex
-                justify="center"
-                gap={{ base: 1, md: 2 }}
-                wrap="wrap"
-                mt={4}
-                flexShrink={0}
-              >
-                <Button
-                  size={{ base: "xs", md: "sm" }}
-                  variant="outline"
-                  borderRadius="full"
-                  disabled={page <= 1}
-                  onClick={() => setPage(page - 1)}
-                  fontSize={{ base: "xs", md: "sm" }}
-                >
-                  ← Ant
-                </Button>
-
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter(
-                    (p) =>
-                      p === 1 || p === totalPages || Math.abs(p - page) <= 2,
-                  )
-                  .reduce<(number | "...")[]>((acc, p, i, arr) => {
-                    if (i > 0 && p - (arr[i - 1] as number) > 1) {
-                      acc.push("...");
-                    }
-                    acc.push(p);
-                    return acc;
-                  }, [])
-                  .map((item, i) =>
-                    item === "..." ? (
-                      <Text
-                        key={`ellipsis-${i}`}
-                        alignSelf="center"
-                        px={1}
-                        color="gray.400"
-                        fontSize={{ base: "xs", md: "sm" }}
-                      >
-                        …
-                      </Text>
-                    ) : (
-                      <Button
-                        key={item}
-                        size={{ base: "xs", md: "sm" }}
-                        borderRadius="full"
-                        variant={item === page ? "solid" : "outline"}
-                        colorPalette={item === page ? "teal" : "gray"}
-                        onClick={() => setPage(item as number)}
-                        fontSize={{ base: "xs", md: "sm" }}
-                      >
-                        {item}
-                      </Button>
-                    ),
-                  )}
-
-                <Button
-                  size={{ base: "xs", md: "sm" }}
-                  variant="outline"
-                  borderRadius="full"
-                  disabled={page >= totalPages}
-                  onClick={() => setPage(page + 1)}
-                  fontSize={{ base: "xs", md: "sm" }}
-                >
-                  Prox →
-                </Button>
-              </Flex>
-            )}
           </>
+        )}
+
+        {/* Paginação */}
+        {!isLoading && !isError && totalPages > 1 && (
+          <Flex
+            justify="center"
+            gap={{ base: 1, md: 2 }}
+            wrap="wrap"
+            mt={4}
+            flexShrink={0}
+          >
+            <Button
+              size={{ base: "xs", md: "sm" }}
+              variant="outline"
+              borderRadius="full"
+              disabled={page <= 1}
+              onClick={() => setPage(page - 1)}
+              fontSize={{ base: "xs", md: "sm" }}
+            >
+              ← Ant
+            </Button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter(
+                (p) => p === 1 || p === totalPages || Math.abs(p - page) <= 2,
+              )
+              .reduce<(number | "...")[]>((acc, p, i, arr) => {
+                if (i > 0 && p - (arr[i - 1] as number) > 1) {
+                  acc.push("...");
+                }
+                acc.push(p);
+                return acc;
+              }, [])
+              .map((item, i) =>
+                item === "..." ? (
+                  <Text
+                    key={`ellipsis-${i}`}
+                    alignSelf="center"
+                    px={1}
+                    color="gray.400"
+                    fontSize={{ base: "xs", md: "sm" }}
+                  >
+                    …
+                  </Text>
+                ) : (
+                  <Button
+                    key={item}
+                    size={{ base: "xs", md: "sm" }}
+                    borderRadius="full"
+                    variant={item === page ? "solid" : "outline"}
+                    colorPalette={item === page ? "teal" : "gray"}
+                    onClick={() => setPage(item as number)}
+                    fontSize={{ base: "xs", md: "sm" }}
+                  >
+                    {item}
+                  </Button>
+                ),
+              )}
+
+            <Button
+              size={{ base: "xs", md: "sm" }}
+              variant="outline"
+              borderRadius="full"
+              disabled={page >= totalPages}
+              onClick={() => setPage(page + 1)}
+              fontSize={{ base: "xs", md: "sm" }}
+            >
+              Prox →
+            </Button>
+          </Flex>
         )}
       </VStack>
     </PageWrapper>
