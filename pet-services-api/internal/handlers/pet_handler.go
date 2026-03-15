@@ -137,6 +137,76 @@ func (h *PetHandler) ListPets(c *gin.Context) {
 	c.JSON(http.StatusOK, output)
 }
 
+// ListPetsByOwnerID godoc
+// @Summary Lista pets por ID de owner
+// @Tags Pets
+// @Accept json
+// @Produce json
+// @Param user_id path string true "ID do owner"
+// @Param page query int false "Número da página"
+// @Param page_size query int false "Itens por página"
+// @Success 200 {object} usecases.ListPetsOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Failure 401 {object} exceptions.ProblemDetails
+// @Failure 403 {object} exceptions.ProblemDetails
+// @Failure 404 {object} exceptions.ProblemDetails
+// @Failure 500 {object} exceptions.ProblemDetails
+// @Security Bearer
+// @Router /users/{user_id}/pets [get]
+func (h *PetHandler) ListPetsByOwnerID(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	requesterUserID, exists := c.Get("user_id")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Usuário não autenticado",
+			Detail: "Não foi possível obter o ID do usuário autenticado",
+		})
+		h.Logger.LogBadRequest(ctx, "PetHandler.ListPetsByOwnerID", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
+		return
+	}
+
+	ownerID := c.Param("user_id")
+	if ownerID == "" {
+		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "ID do owner ausente",
+			Detail: "O ID do owner é obrigatório",
+		})
+		h.Logger.LogBadRequest(ctx, "PetHandler.ListPetsByOwnerID", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		return
+	}
+
+	page := 1
+	pageSize := 10
+	if p := c.Query("page"); p != "" {
+		if val, err := strconv.Atoi(p); err == nil && val > 0 {
+			page = val
+		}
+	}
+	if ps := c.Query("page_size"); ps != "" {
+		if val, err := strconv.Atoi(ps); err == nil && val > 0 {
+			pageSize = val
+		}
+	}
+
+	input := usecases.ListPetsByOwnerIDInput{
+		RequesterUserID: requesterUserID.(string),
+		OwnerID:         ownerID,
+		Page:            page,
+		PageSize:        pageSize,
+	}
+
+	output, errs := h.PetFactory.ListPetsByOwner.Execute(ctx, input)
+	if len(errs) > 0 {
+		exceptions.HandleErrors(c, errs)
+		return
+	}
+
+	c.JSON(http.StatusOK, output)
+}
+
 // GetPet godoc
 // @Summary Obtém detalhes de um pet
 // @Tags Pets
