@@ -498,17 +498,6 @@ function ServicesCatalogPageContent() {
           px={{ base: 4, lg: 8 }}
           py={3}
         >
-          {categories.length > 0 && (
-            <Text
-              fontSize="xs"
-              fontWeight="semibold"
-              color="gray.500"
-              mr={1}
-              flexShrink={0}
-            >
-              Categoria:
-            </Text>
-          )}
           {categories.map((cat) => (
             <Button
               key={String(cat.id)}
@@ -568,10 +557,15 @@ function ServicesCatalogPageContent() {
           bg="gray.50"
           borderBottomWidth="1px"
           borderColor="gray.200"
-          px={{ base: 4, lg: 8 }}
           py={{ base: 4, md: 5 }}
         >
-          <VStack gap={4} maxW="7xl" mx="auto" align="stretch">
+          <VStack
+            gap={4}
+            maxW="7xl"
+            mx="auto"
+            px={{ base: 4, lg: 8 }}
+            align="stretch"
+          >
             {tags.length > 0 && (
               <Flex gap={2} align="center" wrap="wrap">
                 <Text
