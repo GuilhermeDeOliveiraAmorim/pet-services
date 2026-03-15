@@ -8,6 +8,7 @@ import {
   VStack,
   chakra,
 } from "@chakra-ui/react";
+import { useRef, type ChangeEvent } from "react";
 import type { Pet } from "@/domain";
 
 type PetListCardProps = {
@@ -16,8 +17,11 @@ type PetListCardProps = {
   errorMessage: string;
   isUpdatingPet: boolean;
   deletingPetId: string | null;
+  addingPhotoPetId: string | null;
+  isUploadingPetPhoto: boolean;
   onEditPet: (pet: Pet) => void;
   onDeletePet: (petId: string) => void;
+  onAddPhotoToPet: (petId: string, file: File) => Promise<void>;
 };
 
 export default function PetListCard({
@@ -26,9 +30,14 @@ export default function PetListCard({
   errorMessage,
   isUpdatingPet,
   deletingPetId,
+  addingPhotoPetId,
+  isUploadingPetPhoto,
   onEditPet,
   onDeletePet,
+  onAddPhotoToPet,
 }: PetListCardProps) {
+  const petPhotoInputRef = useRef<HTMLInputElement | null>(null);
+
   const sortedPets = [...pets].sort((a, b) => {
     const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
     const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
@@ -58,6 +67,29 @@ export default function PetListCard({
       month: "2-digit",
       year: "numeric",
     }).format(date);
+  };
+
+  const handleSelectPetPhoto = (petId: string) => {
+    const input = petPhotoInputRef.current;
+    if (!input) {
+      return;
+    }
+
+    input.dataset.petId = petId;
+    input.click();
+  };
+
+  const handlePetPhotoChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    const petId = event.target.dataset.petId;
+
+    if (!file || !petId) {
+      event.target.value = "";
+      return;
+    }
+
+    await onAddPhotoToPet(petId, file);
+    event.target.value = "";
   };
 
   return (
@@ -97,6 +129,16 @@ export default function PetListCard({
           <Text fontSize={{ base: "xs", sm: "sm" }}>Carregando pets...</Text>
         </HStack>
       ) : null}
+
+      <input
+        ref={petPhotoInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: "none" }}
+        onChange={(event) => {
+          void handlePetPhotoChange(event);
+        }}
+      />
 
       {!isLoading && errorMessage ? (
         <Text fontSize={{ base: "xs", sm: "sm" }} color="red.600">
@@ -179,10 +221,29 @@ export default function PetListCard({
                   <HStack mt={2} gap={2}>
                     <Button
                       size="xs"
+                      borderRadius="full"
+                      variant="subtle"
+                      onClick={() => handleSelectPetPhoto(pet.id)}
+                      disabled={
+                        isUpdatingPet ||
+                        Boolean(deletingPetId) ||
+                        isUploadingPetPhoto
+                      }
+                    >
+                      {addingPhotoPetId === pet.id
+                        ? "Enviando foto..."
+                        : "Adicionar foto"}
+                    </Button>
+                    <Button
+                      size="xs"
                       variant="outline"
                       borderRadius="full"
                       onClick={() => onEditPet(pet)}
-                      disabled={isUpdatingPet || Boolean(deletingPetId)}
+                      disabled={
+                        isUpdatingPet ||
+                        Boolean(deletingPetId) ||
+                        isUploadingPetPhoto
+                      }
                     >
                       Editar
                     </Button>
@@ -194,7 +255,11 @@ export default function PetListCard({
                       _hover={{ bg: "red.600" }}
                       _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
                       onClick={() => onDeletePet(pet.id)}
-                      disabled={isUpdatingPet || Boolean(deletingPetId)}
+                      disabled={
+                        isUpdatingPet ||
+                        Boolean(deletingPetId) ||
+                        isUploadingPetPhoto
+                      }
                     >
                       {deletingPetId === pet.id ? "Excluindo..." : "Excluir"}
                     </Button>

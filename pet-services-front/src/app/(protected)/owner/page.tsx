@@ -16,6 +16,7 @@ import {
 import {
   useBreedsList,
   usePetAdd,
+  usePetAddPhoto,
   usePetDelete,
   usePetListByOwnerId,
   usePetUpdate,
@@ -64,6 +65,7 @@ export default function OwnerDashboardPage() {
     null,
   );
   const [deletingPetId, setDeletingPetId] = useState<string | null>(null);
+  const [addingPhotoPetId, setAddingPhotoPetId] = useState<string | null>(null);
   const [petActionFeedback, setPetActionFeedback] =
     useState<PetActionFeedback | null>(null);
 
@@ -117,6 +119,17 @@ export default function OwnerDashboardPage() {
       });
     },
   });
+
+  const { mutateAsync: addPetPhoto, isPending: isUploadingPetPhoto } =
+    usePetAddPhoto({
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["pets", "owner"] });
+        setPetActionFeedback({
+          type: "success",
+          message: "Foto do pet adicionada com sucesso.",
+        });
+      },
+    });
 
   const {
     data: ownerPetsData,
@@ -329,6 +342,25 @@ export default function OwnerDashboardPage() {
     }
   };
 
+  const handleAddPhotoToPet = async (petId: string, file: File) => {
+    setPetActionFeedback(null);
+    setAddingPhotoPetId(petId);
+
+    try {
+      await addPetPhoto({ petId, photo: file });
+    } catch (error) {
+      setPetActionFeedback({
+        type: "error",
+        message: getApiErrorMessage(
+          error,
+          "Não foi possível enviar a foto do pet.",
+        ),
+      });
+    } finally {
+      setAddingPhotoPetId(null);
+    }
+  };
+
   return (
     <PageWrapper gap={10}>
       <MainNav />
@@ -341,8 +373,11 @@ export default function OwnerDashboardPage() {
         errorMessage={ownerPetsFeedback}
         isUpdatingPet={isUpdatingPet}
         deletingPetId={deletingPetId}
+        addingPhotoPetId={addingPhotoPetId}
+        isUploadingPetPhoto={isUploadingPetPhoto}
         onEditPet={handleOpenEditPet}
         onDeletePet={handleRequestDeletePet}
+        onAddPhotoToPet={handleAddPhotoToPet}
       />
 
       {petUpdateFeedback ? (

@@ -6,4 +6,5 @@ export {
   usePetList,
   usePetListByOwnerId,
   usePetDeletePhoto,
+  usePetAddPhoto,
 } from "./use-pet";
