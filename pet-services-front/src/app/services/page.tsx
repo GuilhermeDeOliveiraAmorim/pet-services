@@ -154,6 +154,12 @@ function ServicesCatalogPageContent() {
     parsedLatitude <= 90 &&
     parsedLongitude >= -180 &&
     parsedLongitude <= 180;
+  const zipCodeLabel = zipCode.trim();
+  const locationSummary = hasValidCoordinates
+    ? zipCodeLabel
+      ? `📍 CEP ${zipCodeLabel}`
+      : "📍 Usando sua localização"
+    : "📍 Defina sua localização";
   const shouldUseSearch = hasTextQuery || hasValidCoordinates;
   const mapsQuery = hasValidCoordinates
     ? `${parsedLatitude},${parsedLongitude}`
@@ -499,6 +505,62 @@ function ServicesCatalogPageContent() {
         </VStack>
       </Box>
 
+      {/* ─── LOCATION SUMMARY (PRIMARY FILTER) ─────────────── */}
+      <Box bg="white" borderBottomWidth="1px" borderColor="teal.100">
+        <Flex
+          maxW="7xl"
+          mx="auto"
+          px={{ base: 4, lg: 8 }}
+          py={{ base: 3, md: 3.5 }}
+          align={{ base: "stretch", md: "center" }}
+          justify="space-between"
+          gap={3}
+          wrap="wrap"
+        >
+          <VStack align="start" gap={0.5}>
+            <Text
+              fontSize="10px"
+              fontWeight="bold"
+              letterSpacing="0.08em"
+              textTransform="uppercase"
+              color="teal.700"
+            >
+              Localização da busca
+            </Text>
+            <Text
+              fontSize={{ base: "sm", md: "md" }}
+              fontWeight="semibold"
+              color={hasValidCoordinates ? "gray.800" : "orange.700"}
+            >
+              {locationSummary}
+            </Text>
+          </VStack>
+
+          <HStack gap={2} wrap="wrap">
+            <Button
+              size="xs"
+              borderRadius="full"
+              variant={showAdvanced ? "solid" : "outline"}
+              colorPalette="teal"
+              onClick={() => setShowAdvanced(true)}
+            >
+              Alterar
+            </Button>
+            {!hasValidCoordinates && (
+              <Button
+                size="xs"
+                borderRadius="full"
+                colorPalette="teal"
+                onClick={handleUseMyLocation}
+                loading={isResolvingZipCode}
+              >
+                Usar minha localização
+              </Button>
+            )}
+          </HStack>
+        </Flex>
+      </Box>
+
       {/* ─── CATEGORY CHIPS BAR ────────────────────────────── */}
       <Box
         bg="white"
@@ -759,14 +821,14 @@ function ServicesCatalogPageContent() {
                 <Button
                   type="button"
                   size="sm"
-                  variant="outline"
+                  variant="solid"
                   colorPalette="teal"
                   borderRadius="lg"
                   onClick={handleSearchByZipCode}
                   loading={isResolvingZipCode}
                   flexShrink={0}
                 >
-                  Buscar por CEP
+                  Definir por CEP
                 </Button>
                 <Button
                   type="button"
