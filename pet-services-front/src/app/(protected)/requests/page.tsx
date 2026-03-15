@@ -10,11 +10,18 @@ import {
   Heading,
   HStack,
   Spinner,
+  Textarea,
   Text,
   VStack,
 } from "@chakra-ui/react";
 
-import { useRequestList, useUserProfile } from "@/application";
+import {
+  useRequestAccept,
+  useRequestComplete,
+  useRequestList,
+  useRequestReject,
+  useUserProfile,
+} from "@/application";
 import MainNav from "@/components/common/MainNav";
 import PageWrapper from "@/components/common/PageWrapper";
 import { UserTypes } from "@/domain";
@@ -85,11 +92,25 @@ const formatDateTime = (value?: string): string => {
 
 export default function RequestsPage() {
   const [statusFilter, setStatusFilter] = useState<RequestStatusFilter>("all");
+  const [actionSuccessMessage, setActionSuccessMessage] = useState("");
+  const [actionErrorMessage, setActionErrorMessage] = useState("");
+  const [rejectingRequestId, setRejectingRequestId] = useState<string | null>(
+    null,
+  );
+  const [actionRequestId, setActionRequestId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
   const {
     data: profileData,
     isLoading: isLoadingProfile,
     error: profileError,
   } = useUserProfile();
+
+  const { mutateAsync: acceptRequest, isPending: isAccepting } =
+    useRequestAccept();
+  const { mutateAsync: rejectRequest, isPending: isRejecting } =
+    useRequestReject();
+  const { mutateAsync: completeRequest, isPending: isCompleting } =
+    useRequestComplete();
 
   const user = profileData?.user;
   const canListRequests =
@@ -126,6 +147,84 @@ export default function RequestsPage() {
         "Não foi possível carregar o perfil do usuário.",
       )
     : "";
+
+  const isProviderUser = user?.userType === UserTypes.Provider;
+
+  const clearActionMessages = () => {
+    setActionSuccessMessage("");
+    setActionErrorMessage("");
+  };
+
+  const handleAcceptRequest = async (requestId: string) => {
+    clearActionMessages();
+    setActionRequestId(requestId);
+
+    try {
+      await acceptRequest({ id: requestId });
+      setActionSuccessMessage("Solicitação aceita com sucesso.");
+    } catch (error) {
+      setActionErrorMessage(
+        getApiErrorMessage(error, "Não foi possível aceitar a solicitação."),
+      );
+    } finally {
+      setActionRequestId(null);
+    }
+  };
+
+  const handleCompleteRequest = async (requestId: string) => {
+    clearActionMessages();
+    setActionRequestId(requestId);
+
+    try {
+      await completeRequest({ id: requestId });
+      setActionSuccessMessage("Solicitação concluída com sucesso.");
+    } catch (error) {
+      setActionErrorMessage(
+        getApiErrorMessage(error, "Não foi possível concluir a solicitação."),
+      );
+    } finally {
+      setActionRequestId(null);
+    }
+  };
+
+  const handleOpenReject = (requestId: string) => {
+    clearActionMessages();
+    setRejectingRequestId(requestId);
+    setRejectReason("");
+  };
+
+  const handleCancelReject = () => {
+    setRejectingRequestId(null);
+    setRejectReason("");
+  };
+
+  const handleRejectRequest = async () => {
+    if (!rejectingRequestId) {
+      return;
+    }
+
+    const reason = rejectReason.trim();
+    if (!reason) {
+      setActionErrorMessage("Informe o motivo da recusa.");
+      return;
+    }
+
+    clearActionMessages();
+    setActionRequestId(rejectingRequestId);
+
+    try {
+      await rejectRequest({ id: rejectingRequestId, rejectReason: reason });
+      setActionSuccessMessage("Solicitação recusada com sucesso.");
+      setRejectingRequestId(null);
+      setRejectReason("");
+    } catch (error) {
+      setActionErrorMessage(
+        getApiErrorMessage(error, "Não foi possível recusar a solicitação."),
+      );
+    } finally {
+      setActionRequestId(null);
+    }
+  };
 
   return (
     <PageWrapper gap={8}>
@@ -229,6 +328,34 @@ export default function RequestsPage() {
 
       {!isLoadingProfile && canListRequests ? (
         <>
+          {actionSuccessMessage ? (
+            <Box
+              borderRadius={{ base: "2xl", md: "3xl" }}
+              borderWidth="1px"
+              borderColor="green.200"
+              bg="green.50"
+              p={{ base: 4, md: 6 }}
+            >
+              <Text fontSize={{ base: "xs", sm: "sm" }} color="green.700">
+                {actionSuccessMessage}
+              </Text>
+            </Box>
+          ) : null}
+
+          {actionErrorMessage ? (
+            <Box
+              borderRadius={{ base: "2xl", md: "3xl" }}
+              borderWidth="1px"
+              borderColor="red.200"
+              bg="red.50"
+              p={{ base: 4, md: 6 }}
+            >
+              <Text fontSize={{ base: "xs", sm: "sm" }} color="red.700">
+                {actionErrorMessage}
+              </Text>
+            </Box>
+          ) : null}
+
           {isLoadingRequests ? (
             <Flex
               borderRadius={{ base: "2xl", md: "3xl" }}
@@ -280,6 +407,16 @@ export default function RequestsPage() {
             <VStack align="stretch" gap={4}>
               {requests.map((request) => {
                 const status = normalizeStatus(request.status);
+                const isLoadingCurrentAction =
+                  actionRequestId === request.id &&
+                  (isAccepting || isRejecting || isCompleting);
+                const canAccept =
+                  isProviderUser && request.status === "pending";
+                const canReject =
+                  isProviderUser && request.status === "pending";
+                const canComplete =
+                  isProviderUser && request.status === "accepted";
+                const isRejectFormOpen = rejectingRequestId === request.id;
 
                 return (
                   <Box
@@ -455,6 +592,119 @@ export default function RequestsPage() {
                         {formatDateTime(request.updatedAt || undefined)}
                       </Text>
                     </HStack>
+
+                    {(canAccept || canReject || canComplete) && (
+                      <Box mt={4}>
+                        <Text
+                          fontSize={{ base: "xs" }}
+                          color="gray.500"
+                          textTransform="uppercase"
+                        >
+                          Ações do provider
+                        </Text>
+
+                        <HStack mt={2} gap={2} wrap="wrap">
+                          {canAccept ? (
+                            <Button
+                              size="sm"
+                              colorPalette="green"
+                              onClick={() =>
+                                void handleAcceptRequest(request.id)
+                              }
+                              disabled={isLoadingCurrentAction}
+                            >
+                              {isAccepting && actionRequestId === request.id
+                                ? "Aceitando..."
+                                : "Aceitar"}
+                            </Button>
+                          ) : null}
+
+                          {canReject ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              colorPalette="red"
+                              onClick={() => handleOpenReject(request.id)}
+                              disabled={isLoadingCurrentAction}
+                            >
+                              Recusar
+                            </Button>
+                          ) : null}
+
+                          {canComplete ? (
+                            <Button
+                              size="sm"
+                              colorPalette="blue"
+                              onClick={() =>
+                                void handleCompleteRequest(request.id)
+                              }
+                              disabled={isLoadingCurrentAction}
+                            >
+                              {isCompleting && actionRequestId === request.id
+                                ? "Concluindo..."
+                                : "Concluir"}
+                            </Button>
+                          ) : null}
+                        </HStack>
+
+                        {isRejectFormOpen ? (
+                          <Box
+                            mt={3}
+                            borderRadius={{ base: "lg", md: "xl" }}
+                            borderWidth="1px"
+                            borderColor="red.200"
+                            bg="red.50"
+                            p={3}
+                          >
+                            <Text
+                              fontSize={{ base: "xs", sm: "sm" }}
+                              color="red.700"
+                              mb={2}
+                            >
+                              Informe o motivo da recusa
+                            </Text>
+
+                            <Textarea
+                              value={rejectReason}
+                              onChange={(event) =>
+                                setRejectReason(event.target.value)
+                              }
+                              placeholder="Descreva por que a solicitação foi recusada"
+                              maxLength={500}
+                              bg="white"
+                              size="sm"
+                            />
+
+                            <Flex mt={2} justify="space-between" align="center">
+                              <Text fontSize={{ base: "xs" }} color="gray.500">
+                                {rejectReason.trim().length}/500
+                              </Text>
+
+                              <HStack>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={handleCancelReject}
+                                  disabled={isLoadingCurrentAction}
+                                >
+                                  Cancelar
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  colorPalette="red"
+                                  onClick={() => void handleRejectRequest()}
+                                  disabled={isLoadingCurrentAction}
+                                >
+                                  {isRejecting && actionRequestId === request.id
+                                    ? "Recusando..."
+                                    : "Confirmar recusa"}
+                                </Button>
+                              </HStack>
+                            </Flex>
+                          </Box>
+                        ) : null}
+                      </Box>
+                    )}
                   </Box>
                 );
               })}
