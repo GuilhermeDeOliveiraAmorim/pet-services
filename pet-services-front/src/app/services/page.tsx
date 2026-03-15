@@ -930,11 +930,14 @@ function ServicesCatalogPageContent() {
             >
               {total > 0 ? (
                 <>
+                  Exibindo{" "}
+                  <Text as="span" fontWeight="bold" color="teal.700">
+                    {services.length}
+                  </Text>{" "}
+                  serviço{services.length !== 1 ? "s" : ""} de{" "}
                   <Text as="span" fontWeight="bold" color="teal.700">
                     {total}
-                  </Text>{" "}
-                  serviço{total !== 1 ? "s" : ""} encontrado
-                  {total !== 1 ? "s" : ""}
+                  </Text>
                   {q ? (
                     <>
                       {" "}
@@ -949,6 +952,76 @@ function ServicesCatalogPageContent() {
                 "Nenhum resultado para os filtros aplicados"
               ) : null}
             </Text>
+          )}
+
+          {/* Paginação */}
+          {!isLoading && !isError && totalPages > 1 && (
+            <Flex
+              gap={1.5}
+              align="center"
+              wrap="wrap"
+              justify="center"
+              flex={1}
+            >
+              <Button
+                size="xs"
+                variant="outline"
+                borderRadius="full"
+                disabled={page <= 1}
+                onClick={() => setPage(page - 1)}
+                fontSize="xs"
+              >
+                ← Anterior
+              </Button>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(
+                  (p) => p === 1 || p === totalPages || Math.abs(p - page) <= 2,
+                )
+                .reduce<(number | "...")[]>((acc, p, i, arr) => {
+                  if (i > 0 && p - (arr[i - 1] as number) > 1) {
+                    acc.push("...");
+                  }
+                  acc.push(p);
+                  return acc;
+                }, [])
+                .map((item, i) =>
+                  item === "..." ? (
+                    <Text
+                      key={`ellipsis-top-${i}`}
+                      alignSelf="center"
+                      px={1}
+                      color="gray.400"
+                      fontSize="xs"
+                    >
+                      …
+                    </Text>
+                  ) : (
+                    <Button
+                      key={item}
+                      size="xs"
+                      borderRadius="full"
+                      variant={item === page ? "solid" : "outline"}
+                      colorPalette={item === page ? "teal" : "gray"}
+                      onClick={() => setPage(item as number)}
+                      fontSize="xs"
+                    >
+                      {item}
+                    </Button>
+                  ),
+                )}
+
+              <Button
+                size="xs"
+                variant="outline"
+                borderRadius="full"
+                disabled={page >= totalPages}
+                onClick={() => setPage(page + 1)}
+                fontSize="xs"
+              >
+                Próximo →
+              </Button>
+            </Flex>
           )}
 
           {/* Ordenação */}
@@ -1283,76 +1356,6 @@ function ServicesCatalogPageContent() {
               );
             })}
           </Grid>
-        )}
-
-        {/* ─── Pagination ─────────────────────────────────── */}
-        {!isLoading && !isError && totalPages > 1 && (
-          <Flex
-            justify="center"
-            gap={{ base: 1, md: 2 }}
-            wrap="wrap"
-            mt={8}
-            flexShrink={0}
-          >
-            <Button
-              size={{ base: "xs", md: "sm" }}
-              variant="outline"
-              borderRadius="full"
-              disabled={page <= 1}
-              onClick={() => setPage(page - 1)}
-              fontSize={{ base: "xs", md: "sm" }}
-            >
-              ← Anterior
-            </Button>
-
-            {Array.from({ length: totalPages }, (_, i) => i + 1)
-              .filter(
-                (p) => p === 1 || p === totalPages || Math.abs(p - page) <= 2,
-              )
-              .reduce<(number | "...")[]>((acc, p, i, arr) => {
-                if (i > 0 && p - (arr[i - 1] as number) > 1) {
-                  acc.push("...");
-                }
-                acc.push(p);
-                return acc;
-              }, [])
-              .map((item, i) =>
-                item === "..." ? (
-                  <Text
-                    key={`ellipsis-${i}`}
-                    alignSelf="center"
-                    px={1}
-                    color="gray.400"
-                    fontSize={{ base: "xs", md: "sm" }}
-                  >
-                    …
-                  </Text>
-                ) : (
-                  <Button
-                    key={item}
-                    size={{ base: "xs", md: "sm" }}
-                    borderRadius="full"
-                    variant={item === page ? "solid" : "outline"}
-                    colorPalette={item === page ? "teal" : "gray"}
-                    onClick={() => setPage(item as number)}
-                    fontSize={{ base: "xs", md: "sm" }}
-                  >
-                    {item}
-                  </Button>
-                ),
-              )}
-
-            <Button
-              size={{ base: "xs", md: "sm" }}
-              variant="outline"
-              borderRadius="full"
-              disabled={page >= totalPages}
-              onClick={() => setPage(page + 1)}
-              fontSize={{ base: "xs", md: "sm" }}
-            >
-              Próximo →
-            </Button>
-          </Flex>
         )}
       </Box>
     </Box>
