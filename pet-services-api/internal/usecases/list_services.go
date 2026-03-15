@@ -22,20 +22,23 @@ type ListServicesInput struct {
 }
 
 type ServiceListItem struct {
-	ID           string              `json:"id"`
-	ProviderID   string              `json:"provider_id"`
-	BusinessName string              `json:"business_name"`
-	Name         string              `json:"name"`
-	Description  string              `json:"description"`
-	Price        float64             `json:"price"`
-	PriceMinimum float64             `json:"price_minimum"`
-	PriceMaximum float64             `json:"price_maximum"`
-	Duration     int                 `json:"duration"`
-	Photos       []entities.Photo    `json:"photos"`
-	Categories   []entities.Category `json:"categories"`
-	Tags         []entities.Tag      `json:"tags"`
-	Active       bool                `json:"active"`
-	CreatedAt    string              `json:"created_at"`
+	ID            string              `json:"id"`
+	ProviderID    string              `json:"provider_id"`
+	BusinessName  string              `json:"business_name"`
+	AverageRating float64             `json:"average_rating"`
+	ReviewCount   int                 `json:"review_count"`
+	DistanceKm    *float64            `json:"distance_km,omitempty"`
+	Name          string              `json:"name"`
+	Description   string              `json:"description"`
+	Price         float64             `json:"price"`
+	PriceMinimum  float64             `json:"price_minimum"`
+	PriceMaximum  float64             `json:"price_maximum"`
+	Duration      int                 `json:"duration"`
+	Photos        []entities.Photo    `json:"photos"`
+	Categories    []entities.Category `json:"categories"`
+	Tags          []entities.Tag      `json:"tags"`
+	Active        bool                `json:"active"`
+	CreatedAt     string              `json:"created_at"`
 }
 
 type ListServicesOutput struct {
@@ -101,9 +104,13 @@ func (uc *ListServicesUseCase) Execute(ctx context.Context, input ListServicesIn
 	for i, svc := range services {
 		// Buscar dados do provider
 		businessName := ""
+		averageRating := 0.0
+		reviewCount := 0
 		provider, err := uc.providerRepository.FindByID(svc.ProviderID)
 		if err == nil && provider != nil {
 			businessName = provider.BusinessName
+			averageRating = provider.AverageRating
+			reviewCount = len(provider.Reviews)
 		}
 
 		// Assinar URLs das fotos
@@ -123,20 +130,22 @@ func (uc *ListServicesUseCase) Execute(ctx context.Context, input ListServicesIn
 		}
 
 		serviceItems[i] = &ServiceListItem{
-			ID:           svc.ID,
-			ProviderID:   svc.ProviderID,
-			BusinessName: businessName,
-			Name:         svc.Name,
-			Description:  svc.Description,
-			Price:        svc.Price,
-			PriceMinimum: svc.PriceMinimum,
-			PriceMaximum: svc.PriceMaximum,
-			Duration:     svc.Duration,
-			Photos:       svc.Photos,
-			Categories:   svc.Categories,
-			Tags:         svc.Tags,
-			Active:       svc.Active,
-			CreatedAt:    svc.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+			ID:            svc.ID,
+			ProviderID:    svc.ProviderID,
+			BusinessName:  businessName,
+			AverageRating: averageRating,
+			ReviewCount:   reviewCount,
+			Name:          svc.Name,
+			Description:   svc.Description,
+			Price:         svc.Price,
+			PriceMinimum:  svc.PriceMinimum,
+			PriceMaximum:  svc.PriceMaximum,
+			Duration:      svc.Duration,
+			Photos:        svc.Photos,
+			Categories:    svc.Categories,
+			Tags:          svc.Tags,
+			Active:        svc.Active,
+			CreatedAt:     svc.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		}
 	}
 
