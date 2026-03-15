@@ -90,6 +90,13 @@ const formatDuration = (min: number): string => {
   return m > 0 ? `${h}h${m}min` : `${h}h`;
 };
 
+const formatDistance = (distanceKm?: number): string => {
+  if (!Number.isFinite(distanceKm) || !distanceKm || distanceKm <= 0) {
+    return "";
+  }
+  return `${distanceKm.toFixed(1)} km`;
+};
+
 const effectivePrice = (s: {
   price: number;
   priceMinimum: number;
@@ -1241,6 +1248,9 @@ function ServicesCatalogPageContent() {
                   ? ((service.photos[0] as { url?: string })?.url ?? null)
                   : null;
               const durationLabel = formatDuration(service.duration);
+              const rating = Number(service.averageRating ?? 0);
+              const reviews = Number(service.reviewCount ?? 0);
+              const distanceLabel = formatDistance(service.distanceKm);
               const priceTxt = priceLabel(
                 service.price,
                 service.priceMinimum,
@@ -1339,6 +1349,25 @@ function ServicesCatalogPageContent() {
                         >
                           {service.name}
                         </Heading>
+                        <Flex mt={1.5} gap={2.5} wrap="wrap" align="center">
+                          <Text
+                            fontSize="xs"
+                            color="gray.700"
+                            fontWeight="medium"
+                          >
+                            ⭐ {rating > 0 ? rating.toFixed(1) : "Novo"} (
+                            {reviews})
+                          </Text>
+                          {distanceLabel && (
+                            <Text
+                              fontSize="xs"
+                              color="gray.600"
+                              fontWeight="medium"
+                            >
+                              📍 {distanceLabel}
+                            </Text>
+                          )}
+                        </Flex>
                         {service.description && (
                           <Text
                             mt={1}

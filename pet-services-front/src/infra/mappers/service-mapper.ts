@@ -22,6 +22,12 @@ interface RawService {
   deactivatedAt?: string;
   providerId?: string;
   provider_id?: string;
+  averageRating?: number;
+  average_rating?: number;
+  reviewCount?: number;
+  review_count?: number;
+  distanceKm?: number;
+  distance_km?: number;
   name?: string;
   description?: string;
   price?: number;
@@ -45,6 +51,9 @@ export const mapServiceFromApi = (service?: RawService | null): Service => {
     updatedAt: raw.updated_at ?? raw.updatedAt ?? null,
     deactivatedAt: raw.deactivated_at ?? raw.deactivatedAt ?? null,
     providerId: raw.providerId ?? raw.provider_id ?? "",
+    averageRating: raw.averageRating ?? raw.average_rating ?? 0,
+    reviewCount: raw.reviewCount ?? raw.review_count ?? 0,
+    distanceKm: raw.distanceKm ?? raw.distance_km,
     name: raw.name ?? "",
     description: raw.description ?? "",
     price: raw.price ?? 0,
