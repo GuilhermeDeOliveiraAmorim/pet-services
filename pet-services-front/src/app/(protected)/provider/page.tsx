@@ -46,6 +46,7 @@ import ServicesListSection from "./components/ServicesListSection";
 import ChangePasswordCard from "@/components/account/ChangePasswordCard";
 import MainNav from "@/components/common/MainNav";
 import PageWrapper from "@/components/common/PageWrapper";
+import ProviderRating from "@/components/common/ProviderRating";
 
 type Feedback = {
   type: "success" | "error";
@@ -1097,13 +1098,13 @@ export default function ProviderDashboardPage() {
                   ? `Provider identificado: ${provider.businessName}`
                   : "Aguardando identificação do provider..."}
               </Text>
-              {provider?.averageRating !== undefined ? (
-                <Text mt={1} fontSize="xs" color="gray.500">
-                  Avaliação média:{" "}
-                  <chakra.span fontWeight="semibold" color="gray.700">
-                    ★ {provider.averageRating.toFixed(1)}
-                  </chakra.span>
-                </Text>
+              {provider ? (
+                <ProviderRating
+                  mt={2}
+                  rating={provider.averageRating}
+                  labelPrefix="Avaliação média:"
+                  fontSize="xs"
+                />
               ) : null}
               {providerError ? (
                 <Text mt={1.5} fontSize="xs" color="red.600">

@@ -19,6 +19,7 @@ import {
 import { useProviderGet, useReviewList, useServiceList } from "@/application";
 import MainNav from "@/components/common/MainNav";
 import PageWrapper from "@/components/common/PageWrapper";
+import ProviderRating from "@/components/common/ProviderRating";
 import { getApiErrorMessage } from "@/lib/api-error";
 
 type PhotoView = {
@@ -229,12 +230,11 @@ export default function ProviderDetailsPage() {
                     Faixa: {provider.priceRange}
                   </Badge>
                 ) : null}
-                <Badge borderRadius="full" px={3} py={1} colorPalette="cyan">
-                  ★ {formatRating(provider.averageRating)}
-                  {typeof reviewsData?.total === "number"
-                    ? ` · ${reviewsData.total} avaliações`
-                    : ""}
-                </Badge>
+                <ProviderRating
+                  rating={provider.averageRating}
+                  totalReviews={reviewsData?.total}
+                  showCount
+                />
               </HStack>
 
               <Grid
