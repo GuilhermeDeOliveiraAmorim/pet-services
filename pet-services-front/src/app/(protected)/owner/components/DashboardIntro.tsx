@@ -1,6 +1,14 @@
 import { Box, Flex, Text, VStack } from "@chakra-ui/react";
 
-export default function DashboardIntro() {
+type DashboardIntroProps = {
+  hasPets: boolean;
+  petsCount: number;
+};
+
+export default function DashboardIntro({
+  hasPets,
+  petsCount,
+}: DashboardIntroProps) {
   return (
     <VStack align="stretch" gap={{ base: 4, md: 6 }}>
       <Box>
@@ -48,7 +56,7 @@ export default function DashboardIntro() {
           fontSize={{ base: "base", md: "lg" }}
           fontWeight="semibold"
         >
-          {"🐾"}
+          {hasPets ? "✅" : "🐾"}
         </Flex>
         <Text
           mt={3}
@@ -56,11 +64,12 @@ export default function DashboardIntro() {
           fontWeight="semibold"
           color="gray.900"
         >
-          Sem dados ainda
+          {hasPets ? "Tudo pronto" : "Comece por aqui"}
         </Text>
         <Text mt={2} fontSize={{ base: "xs", sm: "sm" }} color="gray.600">
-          Quando você cadastrar seu primeiro pet ou agendar um serviço, as
-          informações vão aparecer aqui.
+          {hasPets
+            ? `Você já tem ${petsCount} pet${petsCount > 1 ? "s" : ""} cadastrado${petsCount > 1 ? "s" : ""}. Edite os dados, adicione fotos e acompanhe seus agendamentos.`
+            : "Cadastre seu primeiro pet no formulário abaixo para liberar agendamentos e histórico no painel."}
         </Text>
       </Box>
     </VStack>

@@ -371,7 +371,10 @@ export default function OwnerDashboardPage() {
     <PageWrapper gap={10}>
       <MainNav />
 
-      <DashboardIntro />
+      <DashboardIntro
+        hasPets={ownerPets.length > 0}
+        petsCount={ownerPets.length}
+      />
 
       <PetListCard
         pets={ownerPets}
