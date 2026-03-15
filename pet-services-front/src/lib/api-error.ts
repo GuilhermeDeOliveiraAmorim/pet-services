@@ -32,6 +32,10 @@ export const getApiProblemDetails = (
     return undefined;
   }
 
+  if (typeof data !== "object") {
+    return undefined;
+  }
+
   if ("errors" in data && Array.isArray(data.errors)) {
     const first = data.errors[0];
     return isProblemDetails(first) ? first : undefined;

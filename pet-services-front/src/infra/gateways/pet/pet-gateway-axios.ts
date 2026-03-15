@@ -159,6 +159,16 @@ export class PetGatewayAxios implements PetGateway {
     };
   }
 
+  async listPetsByOwnerId(ownerId: string): Promise<ListPetsOutput> {
+    const { data } = await this.http.get<{ pets: PetApi[] }>(
+      `/users/${ownerId}/pets`,
+    );
+
+    return {
+      pets: (data.pets ?? []).map(mapPetApiToDomain),
+    };
+  }
+
   async deletePetPhoto(
     petId: string | number,
     photoId: string | number,
