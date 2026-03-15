@@ -44,9 +44,7 @@ import AddProviderForm from "./components/AddProviderForm";
 import ServiceFormCard from "./components/ServiceFormCard";
 import ServicesListSection from "./components/ServicesListSection";
 import ChangePasswordCard from "@/components/account/ChangePasswordCard";
-import MainNav from "@/components/common/MainNav";
-import PageWrapper from "@/components/common/PageWrapper";
-import ProviderRating from "@/components/common/ProviderRating";
+import { MainNav, PageWrapper, ProviderRating } from "@/components/common";
 
 type Feedback = {
   type: "success" | "error";

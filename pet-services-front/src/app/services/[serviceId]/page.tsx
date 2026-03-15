@@ -27,9 +27,7 @@ import {
   useServiceGet,
   useUserProfile,
 } from "@/application";
-import MainNav from "@/components/common/MainNav";
-import PageWrapper from "@/components/common/PageWrapper";
-import ProviderRating from "@/components/common/ProviderRating";
+import { MainNav, PageWrapper, ProviderRating } from "@/components/common";
 import { UserTypes } from "@/domain";
 import { getApiErrorMessage } from "@/lib/api-error";
 

@@ -17,9 +17,7 @@ import {
 } from "@chakra-ui/react";
 
 import { useProviderGet, useReviewList, useServiceList } from "@/application";
-import MainNav from "@/components/common/MainNav";
-import PageWrapper from "@/components/common/PageWrapper";
-import ProviderRating from "@/components/common/ProviderRating";
+import { MainNav, PageWrapper, ProviderRating } from "@/components/common";
 import { getApiErrorMessage } from "@/lib/api-error";
 
 type PhotoView = {
