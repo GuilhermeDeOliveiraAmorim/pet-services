@@ -124,10 +124,6 @@ export default function OwnerDashboardPage() {
     usePetAddPhoto({
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["pets", "owner"] });
-        setPetActionFeedback({
-          type: "success",
-          message: "Foto do pet adicionada com sucesso.",
-        });
       },
     });
 
@@ -342,18 +338,28 @@ export default function OwnerDashboardPage() {
     }
   };
 
-  const handleAddPhotoToPet = async (petId: string, file: File) => {
+  const handleAddPhotosToPet = async (petId: string, files: File[]) => {
     setPetActionFeedback(null);
     setAddingPhotoPetId(petId);
 
     try {
-      await addPetPhoto({ petId, photo: file });
+      for (const file of files) {
+        await addPetPhoto({ petId, photo: file });
+      }
+
+      setPetActionFeedback({
+        type: "success",
+        message:
+          files.length === 1
+            ? "Foto do pet adicionada com sucesso."
+            : `${files.length} fotos do pet adicionadas com sucesso.`,
+      });
     } catch (error) {
       setPetActionFeedback({
         type: "error",
         message: getApiErrorMessage(
           error,
-          "Não foi possível enviar a foto do pet.",
+          "Não foi possível enviar as fotos do pet.",
         ),
       });
     } finally {
@@ -377,7 +383,7 @@ export default function OwnerDashboardPage() {
         isUploadingPetPhoto={isUploadingPetPhoto}
         onEditPet={handleOpenEditPet}
         onDeletePet={handleRequestDeletePet}
-        onAddPhotoToPet={handleAddPhotoToPet}
+        onAddPhotosToPet={handleAddPhotosToPet}
       />
 
       {petUpdateFeedback ? (

@@ -21,7 +21,7 @@ type PetListCardProps = {
   isUploadingPetPhoto: boolean;
   onEditPet: (pet: Pet) => void;
   onDeletePet: (petId: string) => void;
-  onAddPhotoToPet: (petId: string, file: File) => Promise<void>;
+  onAddPhotosToPet: (petId: string, files: File[]) => Promise<void>;
 };
 
 export default function PetListCard({
@@ -34,7 +34,7 @@ export default function PetListCard({
   isUploadingPetPhoto,
   onEditPet,
   onDeletePet,
-  onAddPhotoToPet,
+  onAddPhotosToPet,
 }: PetListCardProps) {
   const petPhotoInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -80,15 +80,15 @@ export default function PetListCard({
   };
 
   const handlePetPhotoChange = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0] ?? null;
+    const files = Array.from(event.target.files ?? []);
     const petId = event.target.dataset.petId;
 
-    if (!file || !petId) {
+    if (!files.length || !petId) {
       event.target.value = "";
       return;
     }
 
-    await onAddPhotoToPet(petId, file);
+    await onAddPhotosToPet(petId, files);
     event.target.value = "";
   };
 
@@ -134,6 +134,7 @@ export default function PetListCard({
         ref={petPhotoInputRef}
         type="file"
         accept="image/*"
+        multiple
         style={{ display: "none" }}
         onChange={(event) => {
           void handlePetPhotoChange(event);
@@ -217,6 +218,36 @@ export default function PetListCard({
                   <Text fontSize="xs" color="gray.600">
                     Observações: {pet.notes?.trim() || "Nenhuma observação"}
                   </Text>
+                  <Text fontSize="xs" color="gray.600">
+                    Fotos: {pet.photos?.length ?? 0}
+                  </Text>
+
+                  {pet.photos && pet.photos.length > 1 ? (
+                    <HStack mt={1} gap={2} wrap="wrap">
+                      {pet.photos.slice(1, 5).map((photo, index) =>
+                        photo.url ? (
+                          <Box
+                            key={`${pet.id}-photo-${photo.id || index}`}
+                            w="34px"
+                            h="34px"
+                            borderRadius="md"
+                            overflow="hidden"
+                            borderWidth="1px"
+                            borderColor="gray.200"
+                            bg="white"
+                          >
+                            <chakra.img
+                              src={photo.url}
+                              alt={`Foto ${index + 2} de ${pet.name || "pet"}`}
+                              w="full"
+                              h="full"
+                              objectFit="cover"
+                            />
+                          </Box>
+                        ) : null,
+                      )}
+                    </HStack>
+                  ) : null}
 
                   <HStack mt={2} gap={2}>
                     <Button
@@ -231,8 +262,8 @@ export default function PetListCard({
                       }
                     >
                       {addingPhotoPetId === pet.id
-                        ? "Enviando foto..."
-                        : "Adicionar foto"}
+                        ? "Enviando fotos..."
+                        : "Adicionar fotos"}
                     </Button>
                     <Button
                       size="xs"
