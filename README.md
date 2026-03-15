@@ -19,16 +19,40 @@ Criar uma solução que simplifique o processo de encontrar, comparar e solicita
 - **Gestão de Solicitações**: Acompanhe o status das suas solicitações e histórico de serviços
 - **Sistema de Avaliações**: Compartilhe e consulte avaliações de outros tutores sobre os prestadores
 
+## 📦 Atualizações Recentes (Mar/2026)
+
+- **Catálogo de serviços evoluído**:
+  - Paginação no catálogo e na busca
+  - Filtros por categoria, tag e faixa de preço
+  - Busca textual com ordenação por relevância, preço e duração
+  - Busca por localização (CEP, geolocalização do navegador e raio em km)
+- **API de serviços enriquecida**:
+  - Resposta padronizada com `total_items`
+  - Campos de avaliação no item de serviço (`average_rating`, `review_count`)
+  - Distância aproximada (`distance_km`) quando há coordenadas na busca
+- **Fluxo completo de solicitações**:
+  - Página de solicitações com filtro por status
+  - Ações do provider: aceitar, recusar (com motivo) e concluir
+  - Fluxo do owner para avaliar provider após solicitação concluída
+- **Detalhes de provider e serviço aprimorados**:
+  - Exibição de avaliação média e volume de avaliações
+  - Melhorias na apresentação de fotos e dados comerciais
+- **Seeds de desenvolvimento expandidos**:
+  - Base com providers, owners, pets, requests e reviews em cenário realista
+  - Dados focados em Aracaju/SE para facilitar testes de localização e catálogo
+- **Operação da stack simplificada**:
+  - Novo comando `make rebuild-up` no Makefile raiz
+  - Compose da infra com API, Front, Postgres, MinIO e Mailpit
+
 ## Estrutura do Projeto
 
 ```
-pets-services/
-├── pet-services-api/         # Código-fonte da API principal (Go)
-│   ├── Dockerfile            # Dockerfile da API
-│   ├── docker-compose.yml    # Compose legado (não usar, infra está em outro compose)
-│   └── ...                   # Demais arquivos e pastas
-└── pet-services-infra/       # Infraestrutura (Docker Compose para API, banco e MinIO)
-    └── docker-compose.yml    # Compose principal para desenvolvimento
+pet-services/
+├── pet-services-api/         # API principal (Go)
+├── pet-services-front/       # Frontend web (Next.js + React + TypeScript)
+├── pet-services-mobile/      # App mobile
+├── pet-services-infra/       # Infra local (Docker Compose)
+└── Makefile                  # Atalhos para subir/parar/rebuildar a stack
 ```
 
 ## Como rodar o projeto
@@ -37,8 +61,18 @@ pets-services/
 
 - Docker e Docker Compose instalados
 - Go 1.21+ (apenas para desenvolvimento local da API)
+- Node.js 20+ (apenas para desenvolvimento local do front)
 
-### Subindo toda a stack (API, banco e MinIO)
+### Comandos rápidos (raiz do monorepo)
+
+```sh
+make up         # sobe a stack em background
+make logs       # acompanha logs
+make down       # derruba a stack
+make rebuild-up # derruba, rebuilda e sobe novamente
+```
+
+### Subindo toda a stack (API, Front, banco, MinIO e Mailpit)
 
 1. Acesse a pasta de infraestrutura:
    ```sh
@@ -50,13 +84,16 @@ pets-services/
    ```
 
 - A API estará disponível em: http://localhost:8080
-- O MinIO estará disponível em: http://localhost:9001 (console)
-  - Usuário: `minio`
-  - Senha: `minio123`
-- O banco Postgres estará em: localhost:5432
-  - Usuário: `postgres`
-  - Senha: `postgres`
-  - Banco: `pet_services`
+- O Front estará disponível em: http://localhost:3000
+- O MinIO estará disponível em:
+  - Console: http://localhost:9001
+  - API S3: http://localhost:9002
+  - Credenciais: definidas por `MINIO_ROOT_USER` e `MINIO_ROOT_PASSWORD`
+- O banco Postgres estará em: localhost:5433 (container expõe 5432 internamente)
+  - Credenciais: definidas por `DB_USER`, `DB_PASS` e `DB_NAME`
+- O Mailpit (SMTP dev + inbox) estará em:
+  - SMTP: localhost:1025
+  - UI: http://localhost:8025
 
 ### Configurações de Ambiente (Infra)
 
@@ -64,7 +101,7 @@ No arquivo `.env` dentro de `pet-services-infra/`, mantenha pelo menos estas var
 
 - `ENV=development` no desenvolvimento local
 - `ENV=production` em produção
-- `VOLUME_PATH=/caminho/no/seu/disco` para persistência de dados do MinIO
+- `MINIO_DATA_PATH=/caminho/no/seu/disco` para persistência dos dados do MinIO
 
 #### Modo do Gin por ambiente
 
@@ -75,25 +112,25 @@ A API define o modo do Gin automaticamente com base em `ENV`:
 
 #### MinIO com volume configurável
 
-O MinIO usa bind mount com `VOLUME_PATH`, permitindo escolher o disco/pasta de persistência sem alterar o compose.
+O MinIO usa bind mount com `MINIO_DATA_PATH`, permitindo escolher o disco/pasta de persistência sem alterar o compose.
 
 Exemplo:
 
 ```sh
-VOLUME_PATH=/media/seu-usuario/SeuDisco/minio
+MINIO_DATA_PATH=/media/seu-usuario/SeuDisco/minio
 ```
 
 ### Seeds automáticos no startup
 
-Ao subir a API com migrações, são garantidos 2 users de desenvolvimento (idempotente):
+Ao subir a API com migrações, são garantidos seeds idempotentes para acelerar QA local:
 
-- Owner:
-  - Email: `owner.seed@petservices.local`
-  - Senha: `Owner@123`
-- Provider:
-  - Email: `provider.seed@petservices.local`
-  - Senha: `Provider@123`
-  - Perfil de provider já criado e vinculado
+- Usuários básicos seed:
+  - Owner: `owner.seed@petservices.local` / `Owner@123`
+  - Provider: `provider.seed@petservices.local` / `Provider@123`
+- Cenário expandido:
+  - 5 providers com perfis e serviços em Aracaju/SE
+  - 4 owners adicionais com pets vinculados
+  - Solicitações em múltiplos status e avaliações já criadas
 
 Se você subir novamente os containers, os seeds são ignorados/atualizados sem duplicar registros.
 
@@ -123,7 +160,7 @@ make test
 ## Observações
 
 - O compose da pasta infra é o principal para desenvolvimento local.
-- O compose da API pode ser removido ou mantido apenas para referência.
+- O compose da API é legado para referência local isolada.
 - Ajuste variáveis de ambiente conforme necessário para integração com outros serviços.
 
 ---
