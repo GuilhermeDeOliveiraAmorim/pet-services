@@ -6,10 +6,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   useBreedsList,
   usePetAdd,
+  usePetListByOwnerId,
   useSpeciesList,
   useUserAddPhoto,
   useUserProfile,
 } from "@/application";
+import { UserTypes } from "@/domain";
 import ChangePasswordCard from "@/components/account/ChangePasswordCard";
 import MainNav from "@/components/common/MainNav";
 import PageWrapper from "@/components/common/PageWrapper";
@@ -17,12 +19,14 @@ import { getApiErrorMessage } from "@/lib/api-error";
 
 import DashboardIntro from "./components/DashboardIntro";
 import PetFormCard from "./components/PetFormCard";
+import PetListCard from "./components/PetListCard";
 import PhotoUploadCard from "./components/PhotoUploadCard";
 
 export default function OwnerDashboardPage() {
   const queryClient = useQueryClient();
   const { data, isLoading } = useUserProfile();
   const user = data?.user;
+  const isOwnerUser = user?.userType === UserTypes.Owner;
 
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const [petName, setPetName] = useState("");
@@ -52,6 +56,7 @@ export default function OwnerDashboardPage() {
   } = usePetAdd({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+      queryClient.invalidateQueries({ queryKey: ["pets", "owner"] });
       setPetName("");
       setPetSpeciesId("");
       setPetBreed("");
@@ -60,6 +65,16 @@ export default function OwnerDashboardPage() {
       setPetNotes("");
     },
   });
+
+  const {
+    data: ownerPetsData,
+    isLoading: isLoadingOwnerPets,
+    error: ownerPetsError,
+  } = usePetListByOwnerId(isOwnerUser ? user?.id : undefined, {
+    enabled: isOwnerUser && Boolean(user?.id),
+  });
+
+  const ownerPets = ownerPetsData?.pets ?? [];
 
   const {
     data: speciesData,
@@ -109,6 +124,17 @@ export default function OwnerDashboardPage() {
     return getApiErrorMessage(addPetError, "Não foi possível cadastrar o pet.");
   }, [addPetError]);
 
+  const ownerPetsFeedback = useMemo(() => {
+    if (!ownerPetsError) {
+      return "";
+    }
+
+    return getApiErrorMessage(
+      ownerPetsError,
+      "Não foi possível carregar os pets.",
+    );
+  }, [ownerPetsError]);
+
   const isPetFormValid =
     Boolean(petName.trim()) &&
     Boolean(petSpeciesId.trim()) &&
@@ -148,6 +174,12 @@ export default function OwnerDashboardPage() {
       <MainNav />
 
       <DashboardIntro />
+
+      <PetListCard
+        pets={ownerPets}
+        isLoading={isLoadingOwnerPets}
+        errorMessage={ownerPetsFeedback}
+      />
 
       <PetFormCard
         petName={petName}
