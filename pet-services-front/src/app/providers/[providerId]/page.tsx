@@ -230,7 +230,10 @@ export default function ProviderDetailsPage() {
                   </Badge>
                 ) : null}
                 <Badge borderRadius="full" px={3} py={1} colorPalette="cyan">
-                  Avaliação média: {provider.averageRating?.toFixed(1) ?? "0.0"}
+                  ★ {formatRating(provider.averageRating)}
+                  {typeof reviewsData?.total === "number"
+                    ? ` · ${reviewsData.total} avaliações`
+                    : ""}
                 </Badge>
               </HStack>
 

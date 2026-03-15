@@ -1097,6 +1097,14 @@ export default function ProviderDashboardPage() {
                   ? `Provider identificado: ${provider.businessName}`
                   : "Aguardando identificação do provider..."}
               </Text>
+              {provider?.averageRating !== undefined ? (
+                <Text mt={1} fontSize="xs" color="gray.500">
+                  Avaliação média:{" "}
+                  <chakra.span fontWeight="semibold" color="gray.700">
+                    ★ {provider.averageRating.toFixed(1)}
+                  </chakra.span>
+                </Text>
+              ) : null}
               {providerError ? (
                 <Text mt={1.5} fontSize="xs" color="red.600">
                   {getApiErrorMessage(

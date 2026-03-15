@@ -797,6 +797,18 @@ export default function ServiceDetailsPage() {
                     >
                       {provider.description || "Sem descrição informada."}
                     </Text>
+                    {provider.averageRating > 0 ? (
+                      <Badge
+                        mt={2}
+                        borderRadius="full"
+                        px={3}
+                        py={1}
+                        colorPalette="cyan"
+                        fontSize={{ base: "xs" }}
+                      >
+                        ★ {provider.averageRating.toFixed(1)}
+                      </Badge>
+                    ) : null}
                   </Box>
 
                   <Grid
