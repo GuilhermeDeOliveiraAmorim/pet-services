@@ -20,6 +20,8 @@ import {
   useRequestComplete,
   useRequestList,
   useRequestReject,
+  useReviewCreate,
+  useReviewList,
   useUserProfile,
 } from "@/application";
 import MainNav from "@/components/common/MainNav";
@@ -99,6 +101,11 @@ export default function RequestsPage() {
   );
   const [actionRequestId, setActionRequestId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState("");
+  const [reviewingRequestId, setReviewingRequestId] = useState<string | null>(
+    null,
+  );
+  const [reviewRating, setReviewRating] = useState<number>(5);
+  const [reviewComment, setReviewComment] = useState("");
   const {
     data: profileData,
     isLoading: isLoadingProfile,
@@ -111,6 +118,8 @@ export default function RequestsPage() {
     useRequestReject();
   const { mutateAsync: completeRequest, isPending: isCompleting } =
     useRequestComplete();
+  const { mutateAsync: createReview, isPending: isCreatingReview } =
+    useReviewCreate();
 
   const user = profileData?.user;
   const canListRequests =
@@ -134,6 +143,27 @@ export default function RequestsPage() {
   });
 
   const requests = requestsData?.requests ?? [];
+
+  const { data: ownerReviewsData } = useReviewList(
+    {
+      userId: user?.id,
+      page: 1,
+      pageSize: 100,
+    },
+    {
+      enabled: !isLoadingProfile && user?.userType === UserTypes.Owner,
+    },
+  );
+
+  const reviewedProviderIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const review of ownerReviewsData?.reviews ?? []) {
+      if (review.providerId) {
+        ids.add(review.providerId);
+      }
+    }
+    return ids;
+  }, [ownerReviewsData?.reviews]);
   const requestsErrorMessage = requestsError
     ? getApiErrorMessage(
         requestsError,
@@ -149,6 +179,7 @@ export default function RequestsPage() {
     : "";
 
   const isProviderUser = user?.userType === UserTypes.Provider;
+  const isOwnerUser = user?.userType === UserTypes.Owner;
 
   const clearActionMessages = () => {
     setActionSuccessMessage("");
@@ -220,6 +251,50 @@ export default function RequestsPage() {
     } catch (error) {
       setActionErrorMessage(
         getApiErrorMessage(error, "Não foi possível recusar a solicitação."),
+      );
+    } finally {
+      setActionRequestId(null);
+    }
+  };
+
+  const handleOpenReview = (requestId: string) => {
+    clearActionMessages();
+    setReviewingRequestId(requestId);
+    setReviewRating(5);
+    setReviewComment("");
+  };
+
+  const handleCancelReview = () => {
+    setReviewingRequestId(null);
+    setReviewRating(5);
+    setReviewComment("");
+  };
+
+  const handleCreateReview = async (providerId: string, requestId: string) => {
+    clearActionMessages();
+    setActionRequestId(requestId);
+
+    const comment = reviewComment.trim();
+    if (!comment) {
+      setActionErrorMessage("Escreva um comentário para enviar a avaliação.");
+      setActionRequestId(null);
+      return;
+    }
+
+    try {
+      await createReview({
+        providerId,
+        rating: reviewRating,
+        comment,
+      });
+
+      setActionSuccessMessage("Avaliação enviada com sucesso.");
+      setReviewingRequestId(null);
+      setReviewRating(5);
+      setReviewComment("");
+    } catch (error) {
+      setActionErrorMessage(
+        getApiErrorMessage(error, "Não foi possível enviar a avaliação."),
       );
     } finally {
       setActionRequestId(null);
@@ -417,6 +492,14 @@ export default function RequestsPage() {
                 const canComplete =
                   isProviderUser && request.status === "accepted";
                 const isRejectFormOpen = rejectingRequestId === request.id;
+                const canReview =
+                  isOwnerUser &&
+                  request.status === "completed" &&
+                  Boolean(request.providerId);
+                const isAlreadyReviewed =
+                  !!request.providerId &&
+                  reviewedProviderIds.has(request.providerId);
+                const isReviewFormOpen = reviewingRequestId === request.id;
 
                 return (
                   <Box
@@ -698,6 +781,141 @@ export default function RequestsPage() {
                                   {isRejecting && actionRequestId === request.id
                                     ? "Recusando..."
                                     : "Confirmar recusa"}
+                                </Button>
+                              </HStack>
+                            </Flex>
+                          </Box>
+                        ) : null}
+                      </Box>
+                    )}
+
+                    {canReview && (
+                      <Box mt={4}>
+                        <Text
+                          fontSize={{ base: "xs" }}
+                          color="gray.500"
+                          textTransform="uppercase"
+                        >
+                          Ações do owner
+                        </Text>
+
+                        {isAlreadyReviewed ? (
+                          <Badge
+                            mt={2}
+                            borderRadius="full"
+                            px={3}
+                            py={1}
+                            colorPalette="green"
+                            variant="subtle"
+                            fontSize={{ base: "xs" }}
+                          >
+                            Você já avaliou este provider
+                          </Badge>
+                        ) : (
+                          <HStack mt={2} gap={2} wrap="wrap">
+                            <Button
+                              size="sm"
+                              colorPalette="teal"
+                              onClick={() => handleOpenReview(request.id)}
+                              disabled={
+                                isCreatingReview ||
+                                actionRequestId === request.id
+                              }
+                            >
+                              Avaliar provider
+                            </Button>
+                          </HStack>
+                        )}
+
+                        {isReviewFormOpen && !isAlreadyReviewed ? (
+                          <Box
+                            mt={3}
+                            borderRadius={{ base: "lg", md: "xl" }}
+                            borderWidth="1px"
+                            borderColor="teal.200"
+                            bg="teal.50"
+                            p={3}
+                          >
+                            <Text
+                              fontSize={{ base: "xs", sm: "sm" }}
+                              color="teal.700"
+                              mb={2}
+                            >
+                              Avalie o atendimento do provider
+                            </Text>
+
+                            <HStack mb={2} gap={2} wrap="wrap">
+                              {[1, 2, 3, 4, 5].map((value) => (
+                                <Button
+                                  key={value}
+                                  size="sm"
+                                  variant={
+                                    reviewRating === value ? "solid" : "outline"
+                                  }
+                                  colorPalette={
+                                    reviewRating === value ? "teal" : "gray"
+                                  }
+                                  onClick={() => setReviewRating(value)}
+                                  disabled={
+                                    isCreatingReview ||
+                                    (actionRequestId === request.id &&
+                                      isCreatingReview)
+                                  }
+                                >
+                                  {value}
+                                </Button>
+                              ))}
+                            </HStack>
+
+                            <Textarea
+                              value={reviewComment}
+                              onChange={(event) =>
+                                setReviewComment(event.target.value)
+                              }
+                              placeholder="Conte como foi sua experiência"
+                              maxLength={500}
+                              bg="white"
+                              size="sm"
+                            />
+
+                            <Flex mt={2} justify="space-between" align="center">
+                              <Text fontSize={{ base: "xs" }} color="gray.500">
+                                {reviewComment.trim().length}/500
+                              </Text>
+
+                              <HStack>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={handleCancelReview}
+                                  disabled={
+                                    isCreatingReview ||
+                                    (actionRequestId === request.id &&
+                                      isCreatingReview)
+                                  }
+                                >
+                                  Cancelar
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  colorPalette="teal"
+                                  onClick={() =>
+                                    void handleCreateReview(
+                                      request.providerId,
+                                      request.id,
+                                    )
+                                  }
+                                  disabled={
+                                    !request.providerId ||
+                                    isCreatingReview ||
+                                    (actionRequestId === request.id &&
+                                      isCreatingReview)
+                                  }
+                                >
+                                  {isCreatingReview &&
+                                  actionRequestId === request.id
+                                    ? "Enviando..."
+                                    : "Enviar avaliação"}
                                 </Button>
                               </HStack>
                             </Flex>

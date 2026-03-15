@@ -1,8 +1,14 @@
 import { useMemo } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type UseQueryOptions,
+} from "@tanstack/react-query";
 import {
   CreateReviewInput,
   ListReviewsInput,
+  ListReviewsOutput,
 } from "@/application/usecases/review";
 import { createReviewCases } from "@/application/factories/review-usecase-factory";
 import { createApiContext } from "@/infra";
@@ -21,6 +27,11 @@ const REVIEW_KEYS = {
     [...REVIEW_KEYS.lists(), filters] as const,
 };
 
+type ListReviewsOptions = Omit<
+  UseQueryOptions<ListReviewsOutput, Error>,
+  "queryKey" | "queryFn"
+>;
+
 export function useReviewCreate() {
   const queryClient = useQueryClient();
   const { createReview } = useReviewUseCases();
@@ -33,11 +44,15 @@ export function useReviewCreate() {
   });
 }
 
-export function useReviewList(input?: ListReviewsInput) {
+export function useReviewList(
+  input?: ListReviewsInput,
+  options?: ListReviewsOptions,
+) {
   const { listReviews } = useReviewUseCases();
 
   return useQuery({
     queryKey: REVIEW_KEYS.list(input),
     queryFn: () => listReviews.execute(input),
+    ...options,
   });
 }
