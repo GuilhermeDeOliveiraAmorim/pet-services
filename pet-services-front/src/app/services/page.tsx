@@ -465,7 +465,11 @@ function ServicesCatalogPageContent() {
 
           <Box w="full">
             <form onSubmit={handleSearch}>
-              <HStack gap={2} align="stretch" flexDir={{ base: "column", sm: "row" }}>
+              <HStack
+                gap={2}
+                align="stretch"
+                flexDir={{ base: "column", sm: "row" }}
+              >
                 <Box position="relative" flex={1}>
                   <Text
                     position="absolute"
@@ -1098,11 +1102,19 @@ function ServicesCatalogPageContent() {
 
           {/* Ordenação */}
           {!isLoading && !isError && total > 0 && (
-            <HStack gap={2} flexShrink={0} wrap="wrap" justify={{ base: "flex-start", md: "flex-end" }}>
+            <HStack
+              gap={2}
+              flexShrink={0}
+              wrap="wrap"
+              justify={{ base: "flex-start", md: "flex-end" }}
+            >
               <Text fontSize="xs" color="gray.500">
                 Ordenar:
               </Text>
-              <NativeSelect.Root size="sm" minW={{ base: "140px", sm: "160px" }}>
+              <NativeSelect.Root
+                size="sm"
+                minW={{ base: "140px", sm: "160px" }}
+              >
                 <NativeSelect.Field
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortBy)}
