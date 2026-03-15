@@ -18,6 +18,7 @@ export interface PetGateway {
   updatePet(input: UpdatePetInput): Promise<UpdatePetOutput>;
   deletePet(petId: string | number): Promise<DeletePetOutput>;
   listPets(): Promise<ListPetsOutput>;
+  listPetsByOwnerId(ownerId: string): Promise<ListPetsOutput>;
   addPetPhoto(petId: string | number, photo: File): Promise<AddPetPhotoOutput>;
   deletePetPhoto(
     petId: string | number,

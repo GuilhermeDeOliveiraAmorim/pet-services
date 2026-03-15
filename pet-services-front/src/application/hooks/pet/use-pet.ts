@@ -13,6 +13,7 @@ import type {
   DeletePetOutput,
   DeletePetPhotoOutput,
   GetPetOutput,
+  ListPetsByOwnerIdOutput,
   ListPetsOutput,
   UpdatePetInput,
   UpdatePetOutput,
@@ -52,6 +53,11 @@ type ListPetsOptions = Omit<
   "queryKey" | "queryFn"
 >;
 
+type ListPetsByOwnerIdOptions = Omit<
+  UseQueryOptions<ListPetsByOwnerIdOutput, Error>,
+  "queryKey" | "queryFn"
+>;
+
 type DeletePetPhotoOptions = Omit<
   UseMutationOptions<
     DeletePetPhotoOutput,
@@ -79,10 +85,7 @@ export const usePetAdd = (options?: AddPetOptions) => {
   });
 };
 
-export const usePetGet = (
-  petId?: string | number,
-  options?: GetPetOptions,
-) => {
+export const usePetGet = (petId?: string | number, options?: GetPetOptions) => {
   const { getPet } = usePetUseCases();
 
   return useQuery({
@@ -121,12 +124,25 @@ export const usePetList = (options?: ListPetsOptions) => {
   });
 };
 
+export const usePetListByOwnerId = (
+  ownerId?: string,
+  options?: ListPetsByOwnerIdOptions,
+) => {
+  const { listPetsByOwnerId } = usePetUseCases();
+
+  return useQuery({
+    queryKey: ["pets", "owner", ownerId],
+    queryFn: () => listPetsByOwnerId.execute(ownerId!),
+    enabled: Boolean(ownerId),
+    ...options,
+  });
+};
+
 export const usePetDeletePhoto = (options?: DeletePetPhotoOptions) => {
   const { deletePetPhoto } = usePetUseCases();
 
   return useMutation({
-    mutationFn: (input) =>
-      deletePetPhoto.execute(input.petId, input.photoId),
+    mutationFn: (input) => deletePetPhoto.execute(input.petId, input.photoId),
     ...options,
   });
 };

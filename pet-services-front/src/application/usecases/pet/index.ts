@@ -8,6 +8,8 @@ export type { DeletePetOutput } from "./delete-pet";
 export { DeletePetUseCase } from "./delete-pet";
 export type { ListPetsOutput } from "./list-pets";
 export { ListPetsUseCase } from "./list-pets";
+export type { ListPetsByOwnerIdOutput } from "./list-pets-by-owner-id";
+export { ListPetsByOwnerIdUseCase } from "./list-pets-by-owner-id";
 export type { DeletePetPhotoOutput } from "./delete-pet-photo";
 export { DeletePetPhotoUseCase } from "./delete-pet-photo";
 export type { AddPetPhotoInput, AddPetPhotoOutput } from "./add-pet-photo";
