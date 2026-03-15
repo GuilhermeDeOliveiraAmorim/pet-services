@@ -18,6 +18,7 @@ type HandlerFactory struct {
 	HealthHandler    *HealthHandler
 	ReferenceHandler *ReferenceHandler
 	SpecieHandler    *SpecieHandler
+	BreedHandler     *BreedHandler
 	PetHandler       *PetHandler
 	ProviderHandler  *ProviderHandler
 	ServiceHandler   *ServiceHandler
@@ -36,6 +37,7 @@ func NewHandlerFactory(inputFactory database.StorageInput, logger logging.Logger
 	healthFactory := factories.NewHealthFactory(inputFactory.DB, logger)
 	referenceFactory := factories.NewReferenceFactory(logger)
 	specieFactory := factories.NewSpecieFactory(inputFactory.DB, logger)
+	breedFactory := factories.NewBreedFactory(inputFactory.DB, logger)
 	petFactory := factories.NewPetFactory(inputFactory.DB, storageService, logger)
 	providerFactory := factories.NewProviderFactory(inputFactory.DB, storageService, logger)
 	serviceFactory := factories.NewServiceFactory(inputFactory.DB, storageService, logger)
@@ -49,6 +51,7 @@ func NewHandlerFactory(inputFactory database.StorageInput, logger logging.Logger
 		HealthHandler:    NewHealthHandler(healthFactory, logger),
 		ReferenceHandler: NewReferenceHandler(referenceFactory, logger),
 		SpecieHandler:    NewSpecieHandler(specieFactory, logger),
+		BreedHandler:     NewBreedHandler(breedFactory, logger),
 		PetHandler:       NewPetHandler(petFactory, logger),
 		ProviderHandler:  NewProviderHandler(providerFactory, logger),
 		ServiceHandler:   NewServiceHandler(serviceFactory, logger),

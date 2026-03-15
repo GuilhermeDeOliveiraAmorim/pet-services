@@ -124,5 +124,10 @@ func getMigrations() []Migration {
 			Description: "Seed de 4 owners com pets e interações (requests/reviews) com providers",
 			Up:          Migration20260315000001,
 		},
+		{
+			Version:     "20260315000002",
+			Description: "Criar tabela de raças, adicionar campo breed em pets e seed de raças para cachorro/gato",
+			Up:          Migration20260315000002,
+		},
 	}
 }

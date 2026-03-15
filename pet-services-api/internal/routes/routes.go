@@ -156,6 +156,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	publicUtil := r.Group("/util")
 	{
 		publicUtil.GET("/species", handlerFactory.SpecieHandler.ListSpecies)
+		publicUtil.GET("/species/:species_id/breeds", handlerFactory.BreedHandler.ListBreeds)
 		publicUtil.GET("/categories", handlerFactory.CategoryHandler.ListCategories)
 	}
 

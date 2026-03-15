@@ -10,6 +10,7 @@ type Pet struct {
 	UserID  string  `json:"user_id"`
 	Name    string  `json:"name"`
 	Species Species `json:"specie"`
+	Breed   string  `json:"breed"`
 	Age     int     `json:"age"`
 	Weight  float64 `json:"weight"`
 	Notes   string  `json:"notes"`
@@ -23,7 +24,7 @@ type PetRepository interface {
 	Update(pet *Pet) error
 }
 
-func NewPet(userID string, name string, specie Species, age int, weight float64, notes string) (*Pet, []exceptions.ProblemDetails) {
+func NewPet(userID string, name string, specie Species, breed string, age int, weight float64, notes string) (*Pet, []exceptions.ProblemDetails) {
 	var problems []exceptions.ProblemDetails
 
 	if userID == "" {
@@ -52,6 +53,13 @@ func NewPet(userID string, name string, specie Species, age int, weight float64,
 		}))
 	}
 
+	if len(breed) > 100 {
+		problems = append(problems, exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "Raça muito longa",
+			Detail: "A raça do pet deve ter no máximo 100 caracteres",
+		}))
+	}
+
 	if age < 0 {
 		problems = append(problems, exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
 			Title:  "Idade do pet inválida",
@@ -75,6 +83,7 @@ func NewPet(userID string, name string, specie Species, age int, weight float64,
 		UserID:  userID,
 		Name:    name,
 		Species: specie,
+		Breed:   breed,
 		Age:     age,
 		Weight:  weight,
 		Notes:   notes,
