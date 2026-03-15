@@ -22,6 +22,7 @@ import {
 
 import {
   useAuthSession,
+  usePetListByOwnerId,
   useProviderGet,
   useRequestAdd,
   useServiceGet,
@@ -132,7 +133,16 @@ export default function ServiceDetailsPage() {
 
   const currentUser = profileData?.user;
   const isOwnerUser = currentUser?.userType === UserTypes.Owner;
-  const ownerPets = currentUser?.pets || [];
+
+  const {
+    data: ownerPetsData,
+    isLoading: isLoadingOwnerPets,
+    error: ownerPetsError,
+  } = usePetListByOwnerId(isOwnerUser ? currentUser?.id : undefined, {
+    enabled: isAuthenticated && isOwnerUser && Boolean(currentUser?.id),
+  });
+
+  const ownerPets = ownerPetsData?.pets ?? [];
 
   const servicePhotos = useMemo(
     () => normalizePhotos(service?.photos),
@@ -156,6 +166,13 @@ export default function ServiceDetailsPage() {
     ? getApiErrorMessage(
         profileError,
         "Não foi possível carregar o perfil para solicitar o serviço.",
+      )
+    : "";
+
+  const ownerPetsErrorMessage = ownerPetsError
+    ? getApiErrorMessage(
+        ownerPetsError,
+        "Não foi possível carregar seus pets no momento.",
       )
     : "";
 
@@ -592,6 +609,36 @@ export default function ServiceDetailsPage() {
                 </Box>
               ) : null}
 
+              {isAuthenticated &&
+              !isLoadingProfile &&
+              isOwnerUser &&
+              isLoadingOwnerPets ? (
+                <HStack mt={4} gap={2} color="gray.500">
+                  <Spinner size="xs" />
+                  <Text fontSize={{ base: "xs", sm: "sm" }}>
+                    Carregando pets...
+                  </Text>
+                </HStack>
+              ) : null}
+
+              {isAuthenticated &&
+              !isLoadingProfile &&
+              isOwnerUser &&
+              ownerPetsErrorMessage ? (
+                <Box
+                  mt={4}
+                  borderRadius={{ base: "lg", md: "xl" }}
+                  borderWidth="1px"
+                  borderColor="orange.200"
+                  bg="orange.50"
+                  p={{ base: 3, md: 4 }}
+                >
+                  <Text fontSize={{ base: "xs", sm: "sm" }} color="orange.700">
+                    {ownerPetsErrorMessage}
+                  </Text>
+                </Box>
+              ) : null}
+
               {isAuthenticated && !isLoadingProfile && !profileErrorMessage ? (
                 <>
                   {!isOwnerUser ? (
@@ -605,7 +652,10 @@ export default function ServiceDetailsPage() {
                     </Text>
                   ) : null}
 
-                  {isOwnerUser && !ownerPets.length ? (
+                  {isOwnerUser &&
+                  !isLoadingOwnerPets &&
+                  !ownerPetsErrorMessage &&
+                  !ownerPets.length ? (
                     <VStack align="stretch" mt={4} gap={3}>
                       <Text
                         fontSize={{ base: "xs", sm: "sm" }}
@@ -627,7 +677,10 @@ export default function ServiceDetailsPage() {
                     </VStack>
                   ) : null}
 
-                  {isOwnerUser && ownerPets.length ? (
+                  {isOwnerUser &&
+                  !isLoadingOwnerPets &&
+                  !ownerPetsErrorMessage &&
+                  ownerPets.length ? (
                     <chakra.form onSubmit={handleAddRequest}>
                       <VStack align="stretch" mt={4} gap={{ base: 3, md: 4 }}>
                         <Box>

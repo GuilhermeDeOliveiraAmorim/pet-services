@@ -12,6 +12,7 @@ type Pet struct {
 	UserID        string         `gorm:"type:char(26);not null;index" json:"user_id"`
 	Name          string         `gorm:"type:varchar(50);not null" json:"name"`
 	SpeciesID     string         `gorm:"type:char(26);not null;index" json:"species_id"`
+	Breed         string         `gorm:"type:varchar(100)" json:"breed"`
 	Age           int            `gorm:"type:int" json:"age"`
 	Weight        float64        `gorm:"type:decimal(6,2)" json:"weight"`
 	Notes         string         `gorm:"type:varchar(500)" json:"notes"`
@@ -47,6 +48,7 @@ func (p *Pet) ToEntity() *entities.Pet {
 		UserID:  p.UserID,
 		Name:    p.Name,
 		Species: *p.Species.ToEntity(),
+		Breed:   p.Breed,
 		Age:     p.Age,
 		Weight:  p.Weight,
 		Notes:   p.Notes,
@@ -59,6 +61,7 @@ func (p *Pet) FromEntity(entity *entities.Pet) {
 	p.UserID = entity.UserID
 	p.Name = entity.Name
 	p.SpeciesID = entity.Species.ID
+	p.Breed = entity.Breed
 	p.Age = entity.Age
 	p.Weight = entity.Weight
 	p.Notes = entity.Notes

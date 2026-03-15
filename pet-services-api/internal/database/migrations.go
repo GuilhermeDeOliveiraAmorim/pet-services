@@ -12,6 +12,7 @@ func Migration20260110000000(db *gorm.DB) error {
 	return db.AutoMigrate(
 		&models.User{},
 		&models.Species{},
+		&models.Breed{},
 		&models.Category{},
 		&models.Tag{},
 		&models.Photo{},
@@ -401,6 +402,7 @@ func Migration20260311000001(db *gorm.DB) error {
 			UserID:    ownerUser.ID,
 			Name:      "Thor",
 			SpeciesID: "01KG7BG1XN0BQ4KHKPHY5V5ZEW", // Cachorro
+			Breed:     "Labrador",
 			Age:       3,
 			Weight:    18.40,
 			Notes:     "Pet seed owner - cachorro",
@@ -411,6 +413,7 @@ func Migration20260311000001(db *gorm.DB) error {
 			UserID:    ownerUser.ID,
 			Name:      "Mia",
 			SpeciesID: "01KG7BG1XR2FA63J6N46CPVCKS", // Gato
+			Breed:     "Siamês",
 			Age:       2,
 			Weight:    4.70,
 			Notes:     "Pet seed owner - gato",
@@ -425,6 +428,7 @@ func Migration20260311000001(db *gorm.DB) error {
 				"user_id",
 				"name",
 				"species_id",
+				"breed",
 				"age",
 				"weight",
 				"notes",
@@ -1046,6 +1050,7 @@ func Migration20260315000001(db *gorm.DB) error {
 		OwnerEmail string
 		Name       string
 		SpeciesID  string
+		Breed      string
 		Age        int
 		Weight     float64
 		Notes      string
@@ -1057,6 +1062,7 @@ func Migration20260315000001(db *gorm.DB) error {
 			OwnerEmail: "juliana.ferreira.owner@petservices.local",
 			Name:       "Bento",
 			SpeciesID:  "01KG7BG1XN0BQ4KHKPHY5V5ZEW",
+			Breed:      "Beagle",
 			Age:        4,
 			Weight:     12.30,
 			Notes:      "Cachorro dócil, se adapta bem a passeios.",
@@ -1066,6 +1072,7 @@ func Migration20260315000001(db *gorm.DB) error {
 			OwnerEmail: "juliana.ferreira.owner@petservices.local",
 			Name:       "Nina",
 			SpeciesID:  "01KG7BG1XR2FA63J6N46CPVCKS",
+			Breed:      "Persa",
 			Age:        2,
 			Weight:     4.10,
 			Notes:      "Gata tranquila, gosta de rotina estável.",
@@ -1075,6 +1082,7 @@ func Migration20260315000001(db *gorm.DB) error {
 			OwnerEmail: "paulo.dias.owner@petservices.local",
 			Name:       "Thor",
 			SpeciesID:  "01KG7BG1XN0BQ4KHKPHY5V5ZEW",
+			Breed:      "Pastor Alemão",
 			Age:        5,
 			Weight:     21.80,
 			Notes:      "Cão ativo, precisa de enriquecimento diário.",
@@ -1084,6 +1092,7 @@ func Migration20260315000001(db *gorm.DB) error {
 			OwnerEmail: "camila.nunes.owner@petservices.local",
 			Name:       "Lua",
 			SpeciesID:  "01KG7BG1XR2FA63J6N46CPVCKS",
+			Breed:      "Maine Coon",
 			Age:        3,
 			Weight:     4.90,
 			Notes:      "Gata curiosa e sociável.",
@@ -1093,6 +1102,7 @@ func Migration20260315000001(db *gorm.DB) error {
 			OwnerEmail: "camila.nunes.owner@petservices.local",
 			Name:       "Bob",
 			SpeciesID:  "01KG7BG1XN0BQ4KHKPHY5V5ZEW",
+			Breed:      "Golden Retriever",
 			Age:        1,
 			Weight:     9.70,
 			Notes:      "Filhote, em fase de socialização.",
@@ -1102,6 +1112,7 @@ func Migration20260315000001(db *gorm.DB) error {
 			OwnerEmail: "diego.matos.owner@petservices.local",
 			Name:       "Mel",
 			SpeciesID:  "01KG7BG1XN0BQ4KHKPHY5V5ZEW",
+			Breed:      "Vira-lata",
 			Age:        6,
 			Weight:     14.20,
 			Notes:      "Cadela calma, responde bem a comandos básicos.",
@@ -1120,6 +1131,7 @@ func Migration20260315000001(db *gorm.DB) error {
 			UserID:    owner.ID,
 			Name:      seed.Name,
 			SpeciesID: seed.SpeciesID,
+			Breed:     seed.Breed,
 			Age:       seed.Age,
 			Weight:    seed.Weight,
 			Notes:     seed.Notes,
@@ -1129,7 +1141,7 @@ func Migration20260315000001(db *gorm.DB) error {
 		if err := db.Clauses(clause.OnConflict{
 			Columns: []clause.Column{{Name: "id"}},
 			DoUpdates: clause.AssignmentColumns([]string{
-				"user_id", "name", "species_id", "age", "weight", "notes", "active",
+				"user_id", "name", "species_id", "breed", "age", "weight", "notes", "active",
 			}),
 		}).Create(&pet).Error; err != nil {
 			return err
@@ -1394,6 +1406,45 @@ func Migration20260315000001(db *gorm.DB) error {
 		if err := db.Model(&models.Provider{}).
 			Where("id = ?", providerID).
 			Update("average_rating", avgRating).Error; err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func Migration20260315000002(db *gorm.DB) error {
+	if err := db.AutoMigrate(&models.Breed{}, &models.Pet{}); err != nil {
+		return err
+	}
+
+	breedSeeds := []models.Breed{
+		{ID: "01KBS000000000000000000001", Name: "Vira-lata", SpeciesID: "01KG7BG1XN0BQ4KHKPHY5V5ZEW", Active: true},
+		{ID: "01KBS000000000000000000002", Name: "Labrador", SpeciesID: "01KG7BG1XN0BQ4KHKPHY5V5ZEW", Active: true},
+		{ID: "01KBS000000000000000000003", Name: "Golden Retriever", SpeciesID: "01KG7BG1XN0BQ4KHKPHY5V5ZEW", Active: true},
+		{ID: "01KBS000000000000000000004", Name: "Poodle", SpeciesID: "01KG7BG1XN0BQ4KHKPHY5V5ZEW", Active: true},
+		{ID: "01KBS000000000000000000005", Name: "Shih Tzu", SpeciesID: "01KG7BG1XN0BQ4KHKPHY5V5ZEW", Active: true},
+		{ID: "01KBS000000000000000000006", Name: "Bulldog Francês", SpeciesID: "01KG7BG1XN0BQ4KHKPHY5V5ZEW", Active: true},
+		{ID: "01KBS000000000000000000007", Name: "Pastor Alemão", SpeciesID: "01KG7BG1XN0BQ4KHKPHY5V5ZEW", Active: true},
+		{ID: "01KBS000000000000000000008", Name: "Beagle", SpeciesID: "01KG7BG1XN0BQ4KHKPHY5V5ZEW", Active: true},
+
+		{ID: "01KBS000000000000000000009", Name: "Vira-lata", SpeciesID: "01KG7BG1XR2FA63J6N46CPVCKS", Active: true},
+		{ID: "01KBS00000000000000000000A", Name: "Siamês", SpeciesID: "01KG7BG1XR2FA63J6N46CPVCKS", Active: true},
+		{ID: "01KBS00000000000000000000B", Name: "Persa", SpeciesID: "01KG7BG1XR2FA63J6N46CPVCKS", Active: true},
+		{ID: "01KBS00000000000000000000C", Name: "Maine Coon", SpeciesID: "01KG7BG1XR2FA63J6N46CPVCKS", Active: true},
+		{ID: "01KBS00000000000000000000D", Name: "Angorá", SpeciesID: "01KG7BG1XR2FA63J6N46CPVCKS", Active: true},
+		{ID: "01KBS00000000000000000000E", Name: "Ragdoll", SpeciesID: "01KG7BG1XR2FA63J6N46CPVCKS", Active: true},
+		{ID: "01KBS00000000000000000000F", Name: "Bengal", SpeciesID: "01KG7BG1XR2FA63J6N46CPVCKS", Active: true},
+		{ID: "01KBS00000000000000000000G", Name: "Sphynx", SpeciesID: "01KG7BG1XR2FA63J6N46CPVCKS", Active: true},
+	}
+
+	for _, breed := range breedSeeds {
+		if err := db.Clauses(clause.OnConflict{
+			Columns: []clause.Column{{Name: "species_id"}, {Name: "name"}},
+			DoUpdates: clause.AssignmentColumns([]string{
+				"active",
+			}),
+		}).Create(&breed).Error; err != nil {
 			return err
 		}
 	}

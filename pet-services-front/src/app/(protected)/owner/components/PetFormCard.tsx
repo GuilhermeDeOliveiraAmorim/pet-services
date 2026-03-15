@@ -20,11 +20,13 @@ type SpecieOption = {
 type PetFormCardProps = {
   petName: string;
   petSpeciesId: string;
+  petBreed: string;
   petAge: string;
   petWeight: string;
   petNotes: string;
   onPetNameChange: (value: string) => void;
   onPetSpeciesIdChange: (value: string) => void;
+  onPetBreedChange: (value: string) => void;
   onPetAgeChange: (value: string) => void;
   onPetWeightChange: (value: string) => void;
   onPetNotesChange: (value: string) => void;
@@ -35,17 +37,23 @@ type PetFormCardProps = {
   petFeedback: string;
   hasSpeciesError: boolean;
   isLoadingSpecies: boolean;
+  hasBreedsError: boolean;
+  isLoadingBreeds: boolean;
   specieOptions: SpecieOption[];
+  breedOptions: SpecieOption[];
+  showBreedField: boolean;
 };
 
 export default function PetFormCard({
   petName,
   petSpeciesId,
+  petBreed,
   petAge,
   petWeight,
   petNotes,
   onPetNameChange,
   onPetSpeciesIdChange,
+  onPetBreedChange,
   onPetAgeChange,
   onPetWeightChange,
   onPetNotesChange,
@@ -56,7 +64,11 @@ export default function PetFormCard({
   petFeedback,
   hasSpeciesError,
   isLoadingSpecies,
+  hasBreedsError,
+  isLoadingBreeds,
   specieOptions,
+  breedOptions,
+  showBreedField,
 }: PetFormCardProps) {
   return (
     <Box
@@ -158,6 +170,48 @@ export default function PetFormCard({
                 <NativeSelect.Indicator color="gray.500" />
               </NativeSelect.Root>
             </Box>
+
+            {showBreedField ? (
+              <Box minW={0}>
+                <Text
+                  fontSize={{ base: "xs", sm: "sm" }}
+                  fontWeight="medium"
+                  color="gray.700"
+                  mb={2}
+                >
+                  Raça
+                </Text>
+                <NativeSelect.Root
+                  size="md"
+                  w="full"
+                  minW={0}
+                  disabled={isLoadingBreeds || hasBreedsError}
+                >
+                  <NativeSelect.Field
+                    name="breed"
+                    value={petBreed}
+                    onChange={(event) => onPetBreedChange(event.target.value)}
+                    h={{ base: "10", md: "11" }}
+                    borderRadius={{ base: "lg", md: "xl" }}
+                    bg="gray.50"
+                    borderColor="gray.200"
+                    borderWidth="1px"
+                    focusRingColor="teal.200"
+                    fontSize={{ base: "sm", md: "base" }}
+                  >
+                    <option value="">
+                      {isLoadingBreeds ? "Carregando..." : "Selecione a raça"}
+                    </option>
+                    {breedOptions.map((option) => (
+                      <option key={option.value} value={option.label}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </NativeSelect.Field>
+                  <NativeSelect.Indicator color="gray.500" />
+                </NativeSelect.Root>
+              </Box>
+            ) : null}
 
             <Box minW={0}>
               <Text
@@ -265,6 +319,11 @@ export default function PetFormCard({
           {hasSpeciesError ? (
             <Text fontSize={{ base: "xs" }} color="red.600">
               Não foi possível carregar as espécies.
+            </Text>
+          ) : null}
+          {hasBreedsError ? (
+            <Text fontSize={{ base: "xs" }} color="red.600">
+              Não foi possível carregar as raças para a espécie selecionada.
             </Text>
           ) : null}
         </VStack>

@@ -6,6 +6,7 @@ export interface Pet extends Base {
   userId: string;
   name: string;
   specie: Species;
+  breed: string;
   age: number;
   weight: number;
   notes: string;

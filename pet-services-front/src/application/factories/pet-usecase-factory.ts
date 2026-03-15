@@ -6,6 +6,7 @@ import {
   UpdatePetUseCase,
   DeletePetUseCase,
   ListPetsUseCase,
+  ListPetsByOwnerIdUseCase,
   DeletePetPhotoUseCase,
 } from "../usecases/pet";
 
@@ -17,6 +18,7 @@ export const createPetCases = (gateway: PetGateway) => {
     updatePet: new UpdatePetUseCase(gateway),
     deletePet: new DeletePetUseCase(gateway),
     listPets: new ListPetsUseCase(gateway),
+    listPetsByOwnerId: new ListPetsByOwnerIdUseCase(gateway),
     deletePetPhoto: new DeletePetPhotoUseCase(gateway),
   };
 };

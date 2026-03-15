@@ -12,6 +12,7 @@ import (
 type AddPetInputBody struct {
 	Name      string  `json:"name"`
 	SpeciesID string  `json:"species_id"`
+	Breed     string  `json:"breed"`
 	Age       int     `json:"age"`
 	Weight    float64 `json:"weight"`
 	Notes     string  `json:"notes"`
@@ -21,6 +22,7 @@ type AddPetInput struct {
 	UserID    string  `json:"user_id"`
 	Name      string  `json:"name"`
 	SpeciesID string  `json:"species_id"`
+	Breed     string  `json:"breed"`
 	Age       int     `json:"age"`
 	Weight    float64 `json:"weight"`
 	Notes     string  `json:"notes"`
@@ -84,7 +86,7 @@ func (uc *AddPetUseCase) Execute(ctx context.Context, input AddPetInput) (*AddPe
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar espécie", err)
 	}
 
-	pet, problems := entities.NewPet(input.UserID, input.Name, *specie, input.Age, input.Weight, input.Notes)
+	pet, problems := entities.NewPet(input.UserID, input.Name, *specie, input.Breed, input.Age, input.Weight, input.Notes)
 	if len(problems) > 0 {
 		uc.logger.LogMultipleBadRequests(ctx, from, "Pet inválido", problems)
 		return nil, problems
