@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Grid,
   HStack,
   Spinner,
@@ -13,12 +14,20 @@ type PetListCardProps = {
   pets: Pet[];
   isLoading: boolean;
   errorMessage: string;
+  isUpdatingPet: boolean;
+  deletingPetId: string | null;
+  onEditPet: (pet: Pet) => void;
+  onDeletePet: (petId: string) => void;
 };
 
 export default function PetListCard({
   pets,
   isLoading,
   errorMessage,
+  isUpdatingPet,
+  deletingPetId,
+  onEditPet,
+  onDeletePet,
 }: PetListCardProps) {
   const sortedPets = [...pets].sort((a, b) => {
     const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
@@ -166,6 +175,30 @@ export default function PetListCard({
                   <Text fontSize="xs" color="gray.600">
                     Observações: {pet.notes?.trim() || "Nenhuma observação"}
                   </Text>
+
+                  <HStack mt={2} gap={2}>
+                    <Button
+                      size="xs"
+                      variant="outline"
+                      borderRadius="full"
+                      onClick={() => onEditPet(pet)}
+                      disabled={isUpdatingPet || Boolean(deletingPetId)}
+                    >
+                      Editar
+                    </Button>
+                    <Button
+                      size="xs"
+                      borderRadius="full"
+                      bg="red.500"
+                      color="white"
+                      _hover={{ bg: "red.600" }}
+                      _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
+                      onClick={() => onDeletePet(pet.id)}
+                      disabled={isUpdatingPet || Boolean(deletingPetId)}
+                    >
+                      {deletingPetId === pet.id ? "Excluindo..." : "Excluir"}
+                    </Button>
+                  </HStack>
                 </VStack>
               </HStack>
             </Box>
