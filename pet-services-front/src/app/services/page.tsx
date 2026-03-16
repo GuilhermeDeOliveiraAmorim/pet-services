@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -125,10 +125,12 @@ function ServicesCatalogPageContent() {
   const [locationFeedback, setLocationFeedback] =
     useState<LocationFeedback | null>(null);
   const [isResolvingZipCode, setIsResolvingZipCode] = useState(false);
+  const autoResolvedZipCodeRef = useRef<string | null>(null);
   const [sortBy, setSortBy] = useState<SortBy>("relevance");
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const q = searchParams.get("q") ?? "";
+  const zipCodeParam = searchParams.get("zip_code") ?? "";
   const categoryId = searchParams.get("category_id") ?? "";
   const tagId = searchParams.get("tag_id") ?? "";
   const latitude = searchParams.get("latitude") ?? "";
@@ -380,6 +382,54 @@ function ServicesCatalogPageContent() {
       setIsResolvingZipCode(false);
     }
   }, [fetchCoordinatesByZipCode, radiusKm, setParam, zipCode]);
+
+  useEffect(() => {
+    const normalizedZipCode = zipCodeParam.trim();
+
+    if (!normalizedZipCode) {
+      autoResolvedZipCodeRef.current = null;
+      return;
+    }
+
+    if (hasValidCoordinates || isResolvingZipCode) {
+      autoResolvedZipCodeRef.current = normalizedZipCode;
+      return;
+    }
+
+    if (autoResolvedZipCodeRef.current === normalizedZipCode) {
+      return;
+    }
+
+    autoResolvedZipCodeRef.current = normalizedZipCode;
+
+    void (async () => {
+      setIsResolvingZipCode(true);
+      setLocationFeedback(null);
+      try {
+        const coords = await fetchCoordinatesByZipCode(normalizedZipCode);
+        setParam({
+          zip_code: normalizedZipCode,
+          latitude: String(coords.latitude),
+          longitude: String(coords.longitude),
+          radius_km: radiusKm > 0 ? String(radiusKm) : "10",
+        });
+      } catch {
+        setLocationFeedback({
+          type: "error",
+          message: "Não foi possível buscar coordenadas pelo CEP.",
+        });
+      } finally {
+        setIsResolvingZipCode(false);
+      }
+    })();
+  }, [
+    fetchCoordinatesByZipCode,
+    hasValidCoordinates,
+    isResolvingZipCode,
+    radiusKm,
+    setParam,
+    zipCodeParam,
+  ]);
 
   const handleClearLocationForm = useCallback(() => {
     setZipCode("");

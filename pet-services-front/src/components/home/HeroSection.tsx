@@ -4,6 +4,7 @@ import {
   Heading,
   HStack,
   Input,
+  NativeSelect,
   Text,
 } from "@chakra-ui/react";
 
@@ -48,62 +49,74 @@ export default function HeroSection() {
           região.
         </Text>
 
-        <HStack
-          w="full"
-          maxW="xl"
-          align="stretch"
-          gap="0"
-          borderWidth="1px"
-          borderColor="gray.300"
-          borderRadius="full"
-          overflow="hidden"
-          bg="white"
-          flexWrap={{ base: "wrap", md: "nowrap" }}
-        >
-          <Input
-            flex="1"
-            minW={{ base: "full", md: "0" }}
-            border="none"
-            borderRadius="0"
-            px="4"
-            py="2"
-            fontSize="sm"
-            color="gray.700"
-            placeholder="Onde você está?"
-            _focusVisible={{ boxShadow: "none" }}
-          />
-
-          <Box
-            as="select"
+        <form action="/services" method="get" style={{ width: "100%" }}>
+          <HStack
+            w="full"
+            maxW="xl"
+            align="stretch"
+            gap="0"
+            borderWidth="1px"
+            borderColor="gray.300"
+            borderRadius="full"
+            overflow="hidden"
             bg="white"
-            px="4"
-            py="2"
-            fontSize="sm"
-            color="gray.700"
-            border="none"
-            outline="none"
-            minW={{ base: "full", md: "280px" }}
+            flexWrap={{ base: "wrap", md: "nowrap" }}
           >
-            <option value="">Qual serviço seu pet precisa?</option>
-            {serviceOptions.map((option) => (
-              <option key={option.label} value={option.label}>
-                {option.label}
-              </option>
-            ))}
-          </Box>
+            <Input
+              name="zip_code"
+              flex="1"
+              minW={{ base: "full", md: "220px" }}
+              border="none"
+              borderRadius="0"
+              px="4"
+              py="2"
+              fontSize="sm"
+              color="gray.700"
+              placeholder="CEP (ex: 01310-100)"
+              _focusVisible={{ boxShadow: "none" }}
+            />
 
-          <Button
-            borderRadius="0"
-            px="6"
-            bg="teal.400"
-            color="white"
-            fontSize="sm"
-            fontWeight="semibold"
-            _hover={{ bg: "teal.500" }}
-          >
-            Buscar
-          </Button>
-        </HStack>
+            <NativeSelect.Root
+              flexShrink={0}
+              w={{ base: "full", md: "280px" }}
+              minW={{ base: "full", md: "280px" }}
+              border="none"
+              borderRadius="0"
+            >
+              <NativeSelect.Field
+                name="q"
+                bg="white"
+                px="4"
+                py="2"
+                fontSize="sm"
+                color="gray.700"
+                border="none"
+              >
+                <option value="">Qual serviço seu pet precisa?</option>
+                {serviceOptions.map((option) => (
+                  <option key={option.label} value={option.label}>
+                    {option.label}
+                  </option>
+                ))}
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
+
+            <Button
+              type="submit"
+              flexShrink={0}
+              borderRadius="0"
+              px="6"
+              bg="teal.400"
+              color="white"
+              fontSize="sm"
+              fontWeight="semibold"
+              _hover={{ bg: "teal.500" }}
+            >
+              Buscar
+            </Button>
+          </HStack>
+        </form>
       </Box>
     </Box>
   );
