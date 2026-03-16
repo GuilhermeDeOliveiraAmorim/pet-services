@@ -80,6 +80,8 @@ export default function MainNav({
         alignItems="center"
         gap="2"
         _hover={{ textDecoration: "none" }}
+        _focus={{ outline: "none", boxShadow: "none" }}
+        _focusVisible={{ outline: "none", boxShadow: "none" }}
       >
         <Image
           src="/pawIcon.svg"
@@ -111,6 +113,8 @@ export default function MainNav({
                 textDecoration: "none",
                 color: "gray.800",
               }}
+              _focus={{ outline: "none", boxShadow: "none" }}
+              _focusVisible={{ outline: "none", boxShadow: "none" }}
             >
               {item.label}
             </ChakraLink>
@@ -130,6 +134,9 @@ export default function MainNav({
               borderColor="gray.300"
               color="gray.700"
               _hover={{ bg: "gray.50" }}
+              _focus={{ outline: "none", boxShadow: "none" }}
+              _focusVisible={{ outline: "none", boxShadow: "none" }}
+              _active={{ boxShadow: "none" }}
             >
               {isPending ? "Saindo..." : "Sair"}
             </Button>
@@ -150,6 +157,8 @@ export default function MainNav({
                 borderColor="gray.200"
                 borderRadius="full"
                 _hover={{ textDecoration: "none", bg: "gray.50" }}
+                _focus={{ outline: "none", boxShadow: "none" }}
+                _focusVisible={{ outline: "none", boxShadow: "none" }}
               >
                 Entrar
               </ChakraLink>
@@ -167,6 +176,8 @@ export default function MainNav({
                 bgGradient="linear(to-r, teal.400, cyan.400)"
                 color="white"
                 _hover={{ opacity: 0.92, textDecoration: "none" }}
+                _focus={{ outline: "none", boxShadow: "none" }}
+                _focusVisible={{ outline: "none", boxShadow: "none" }}
               >
                 Cadastre-se
               </ChakraLink>
