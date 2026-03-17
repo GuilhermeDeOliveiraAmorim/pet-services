@@ -122,7 +122,7 @@ MINIO_DATA_PATH=/media/seu-usuario/SeuDisco/minio
 
 ### Seeds automáticos no startup
 
-Ao subir a API com migrações, são garantidos seeds idempotentes para acelerar QA local:
+Ao subir a API com migrações, são garantidos seeds idempotentes para acelerar testes de QA local:
 
 - Usuários básicos seed:
   - Owner: `owner.seed@petservices.local` / `Owner@123`
