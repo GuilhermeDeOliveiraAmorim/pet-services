@@ -1,8 +1,13 @@
+"use client";
+
 import { Box, HStack, Link, Text } from "@chakra-ui/react";
+import { useSearchParams } from "next/navigation";
 
 import { serviceOptions } from "./service-options";
 
 export default function ServicesSection() {
+  const searchParams = useSearchParams();
+
   return (
     <HStack
       id="services"
@@ -31,11 +36,24 @@ export default function ServicesSection() {
     >
       {serviceOptions.map((item) => {
         const ItemIcon = item.icon;
+        const nextParams = new URLSearchParams();
+        const zipCode = searchParams.get("zip_code");
+        const latitude = searchParams.get("latitude");
+        const longitude = searchParams.get("longitude");
+        const radiusKm = searchParams.get("radius_km");
+
+        nextParams.set("q", item.label);
+        if (zipCode) nextParams.set("zip_code", zipCode);
+        if (latitude) nextParams.set("latitude", latitude);
+        if (longitude) nextParams.set("longitude", longitude);
+        if (radiusKm) nextParams.set("radius_km", radiusKm);
+
+        const href = `/services?${nextParams.toString()}`;
 
         return (
           <Link
             key={item.label}
-            href={item.href}
+            href={href}
             display="inline-flex"
             alignItems="center"
             cursor="pointer"

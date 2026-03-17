@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+
 import MainNav from "@/components/common/MainNav";
 import PageWrapper from "@/components/common/PageWrapper";
 import ContactSection from "@/components/home/ContactSection";
@@ -10,7 +12,9 @@ export default function Home() {
     <PageWrapper gap={16}>
       <MainNav />
       <HeroSection />
-      <ServicesSection />
+      <Suspense>
+        <ServicesSection />
+      </Suspense>
       <ContactSection />
       <HomeFooter />
     </PageWrapper>
