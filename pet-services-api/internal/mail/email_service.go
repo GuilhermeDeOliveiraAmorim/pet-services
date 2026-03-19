@@ -2,6 +2,7 @@ package mail
 
 import (
 	"fmt"
+	"html"
 	"net/smtp"
 	"os"
 )
@@ -9,6 +10,10 @@ import (
 type EmailService interface {
 	SendVerificationEmail(to, token string) error
 	SendPasswordResetEmail(to, token string) error
+	SendRequestCreatedEmail(to, providerName, ownerName, petName, serviceName, requestID string) error
+	SendRequestAcceptedEmail(to, ownerName, providerName, petName, requestID string) error
+	SendRequestRejectedEmail(to, ownerName, providerName, petName, reason, requestID string) error
+	SendRequestCompletedEmail(to, ownerName, providerName, petName, requestID string) error
 }
 
 type SMTPEmailService struct {
@@ -147,6 +152,196 @@ func (s *SMTPEmailService) SendPasswordResetEmail(to, token string) error {
 </body>
 </html>
 `, resetLink, resetLink)
+
+	return s.sendEmail(to, subject, body)
+}
+
+func (s *SMTPEmailService) SendRequestCreatedEmail(to, providerName, ownerName, petName, serviceName, requestID string) error {
+	subject := "Nova solicitacao recebida - Pet Services"
+
+	body := fmt.Sprintf(`
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+		body { margin: 0; padding: 0; background-color: #f4f7fb; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif; color: #1f2937; }
+		.wrapper { width: 100%%; padding: 28px 12px; }
+		.container { max-width: 620px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; }
+		.header { padding: 28px 24px; text-align: center; color: #ffffff; background: linear-gradient(135deg, #0f766e 0%%, #06b6d4 100%%); }
+		.header h1 { margin: 0; font-size: 28px; line-height: 1.2; }
+		.content { padding: 28px 24px; font-size: 16px; line-height: 1.6; }
+		.details { background-color: #f0fdfa; border: 1px solid #99f6e4; border-radius: 10px; padding: 14px; margin-top: 16px; }
+		.footer { text-align: center; padding: 20px 16px 26px 16px; font-size: 12px; color: #6b7280; }
+	</style>
+</head>
+<body>
+	<div class="wrapper">
+		<div class="container">
+			<div class="header">
+				<h1>Nova solicitacao</h1>
+			</div>
+			<div class="content">
+				<p>Ola %s,</p>
+				<p>Voce recebeu uma nova solicitacao de servico.</p>
+				<div class="details">
+					<p><strong>Cliente:</strong> %s</p>
+					<p><strong>Pet:</strong> %s</p>
+					<p><strong>Servico:</strong> %s</p>
+					<p><strong>ID da solicitacao:</strong> %s</p>
+				</div>
+			</div>
+			<div class="footer">
+				&copy; 2026 Pet Services. Todos os direitos reservados.
+			</div>
+		</div>
+	</div>
+</body>
+</html>
+`, html.EscapeString(providerName), html.EscapeString(ownerName), html.EscapeString(petName), html.EscapeString(serviceName), html.EscapeString(requestID))
+
+	return s.sendEmail(to, subject, body)
+}
+
+func (s *SMTPEmailService) SendRequestAcceptedEmail(to, ownerName, providerName, petName, requestID string) error {
+	subject := "Sua solicitacao foi aceita - Pet Services"
+
+	body := fmt.Sprintf(`
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+		body { margin: 0; padding: 0; background-color: #f4f7fb; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif; color: #1f2937; }
+		.wrapper { width: 100%%; padding: 28px 12px; }
+		.container { max-width: 620px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; }
+		.header { padding: 28px 24px; text-align: center; color: #ffffff; background: linear-gradient(135deg, #15803d 0%%, #22c55e 100%%); }
+		.header h1 { margin: 0; font-size: 28px; line-height: 1.2; }
+		.content { padding: 28px 24px; font-size: 16px; line-height: 1.6; }
+		.details { background-color: #f0fdf4; border: 1px solid #86efac; border-radius: 10px; padding: 14px; margin-top: 16px; }
+		.footer { text-align: center; padding: 20px 16px 26px 16px; font-size: 12px; color: #6b7280; }
+	</style>
+</head>
+<body>
+	<div class="wrapper">
+		<div class="container">
+			<div class="header">
+				<h1>Solicitacao aceita</h1>
+			</div>
+			<div class="content">
+				<p>Ola %s,</p>
+				<p>Sua solicitacao foi aceita com sucesso.</p>
+				<div class="details">
+					<p><strong>Prestador:</strong> %s</p>
+					<p><strong>Pet:</strong> %s</p>
+					<p><strong>ID da solicitacao:</strong> %s</p>
+				</div>
+			</div>
+			<div class="footer">
+				&copy; 2026 Pet Services. Todos os direitos reservados.
+			</div>
+		</div>
+	</div>
+</body>
+</html>
+`, html.EscapeString(ownerName), html.EscapeString(providerName), html.EscapeString(petName), html.EscapeString(requestID))
+
+	return s.sendEmail(to, subject, body)
+}
+
+func (s *SMTPEmailService) SendRequestRejectedEmail(to, ownerName, providerName, petName, reason, requestID string) error {
+	subject := "Sua solicitacao foi rejeitada - Pet Services"
+
+	body := fmt.Sprintf(`
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+		body { margin: 0; padding: 0; background-color: #f4f7fb; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif; color: #1f2937; }
+		.wrapper { width: 100%%; padding: 28px 12px; }
+		.container { max-width: 620px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; }
+		.header { padding: 28px 24px; text-align: center; color: #ffffff; background: linear-gradient(135deg, #b91c1c 0%%, #ef4444 100%%); }
+		.header h1 { margin: 0; font-size: 28px; line-height: 1.2; }
+		.content { padding: 28px 24px; font-size: 16px; line-height: 1.6; }
+		.details { background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; padding: 14px; margin-top: 16px; }
+		.footer { text-align: center; padding: 20px 16px 26px 16px; font-size: 12px; color: #6b7280; }
+	</style>
+</head>
+<body>
+	<div class="wrapper">
+		<div class="container">
+			<div class="header">
+				<h1>Solicitacao rejeitada</h1>
+			</div>
+			<div class="content">
+				<p>Ola %s,</p>
+				<p>Sua solicitacao foi rejeitada.</p>
+				<div class="details">
+					<p><strong>Prestador:</strong> %s</p>
+					<p><strong>Pet:</strong> %s</p>
+					<p><strong>Motivo:</strong> %s</p>
+					<p><strong>ID da solicitacao:</strong> %s</p>
+				</div>
+			</div>
+			<div class="footer">
+				&copy; 2026 Pet Services. Todos os direitos reservados.
+			</div>
+		</div>
+	</div>
+</body>
+</html>
+`, html.EscapeString(ownerName), html.EscapeString(providerName), html.EscapeString(petName), html.EscapeString(reason), html.EscapeString(requestID))
+
+	return s.sendEmail(to, subject, body)
+}
+
+func (s *SMTPEmailService) SendRequestCompletedEmail(to, ownerName, providerName, petName, requestID string) error {
+	subject := "Sua solicitacao foi concluida - Pet Services"
+
+	body := fmt.Sprintf(`
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+		body { margin: 0; padding: 0; background-color: #f4f7fb; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif; color: #1f2937; }
+		.wrapper { width: 100%%; padding: 28px 12px; }
+		.container { max-width: 620px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; }
+		.header { padding: 28px 24px; text-align: center; color: #ffffff; background: linear-gradient(135deg, #1d4ed8 0%%, #3b82f6 100%%); }
+		.header h1 { margin: 0; font-size: 28px; line-height: 1.2; }
+		.content { padding: 28px 24px; font-size: 16px; line-height: 1.6; }
+		.details { background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 14px; margin-top: 16px; }
+		.footer { text-align: center; padding: 20px 16px 26px 16px; font-size: 12px; color: #6b7280; }
+	</style>
+</head>
+<body>
+	<div class="wrapper">
+		<div class="container">
+			<div class="header">
+				<h1>Solicitacao concluida</h1>
+			</div>
+			<div class="content">
+				<p>Ola %s,</p>
+				<p>Seu atendimento foi concluido com sucesso.</p>
+				<div class="details">
+					<p><strong>Prestador:</strong> %s</p>
+					<p><strong>Pet:</strong> %s</p>
+					<p><strong>ID da solicitacao:</strong> %s</p>
+				</div>
+			</div>
+			<div class="footer">
+				&copy; 2026 Pet Services. Todos os direitos reservados.
+			</div>
+		</div>
+	</div>
+</body>
+</html>
+`, html.EscapeString(ownerName), html.EscapeString(providerName), html.EscapeString(petName), html.EscapeString(requestID))
 
 	return s.sendEmail(to, subject, body)
 }
