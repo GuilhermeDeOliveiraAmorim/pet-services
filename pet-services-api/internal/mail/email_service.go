@@ -10,6 +10,7 @@ import (
 type EmailService interface {
 	SendVerificationEmail(to, token string) error
 	SendWelcomeAfterVerificationEmail(to, name string) error
+	SendLoginBlockedAlertEmail(to, name, reason string) error
 	SendPasswordResetEmail(to, token string) error
 	SendPasswordChangedAlertEmail(to, name string) error
 	SendPasswordResetSuccessEmail(to, name string) error
@@ -146,6 +147,52 @@ func (s *SMTPEmailService) SendWelcomeAfterVerificationEmail(to, name string) er
 </body>
 </html>
 `, html.EscapeString(name))
+
+	return s.sendEmail(to, subject, body)
+}
+
+func (s *SMTPEmailService) SendLoginBlockedAlertEmail(to, name, reason string) error {
+	subject := "Alerta de seguranca: tentativa de login bloqueada - Pet Services"
+
+	body := fmt.Sprintf(`
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+		body { margin: 0; padding: 0; background-color: #f4f7fb; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif; color: #1f2937; }
+		.wrapper { width: 100%%; padding: 28px 12px; }
+		.container { max-width: 620px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; }
+		.header { padding: 28px 24px; text-align: center; color: #ffffff; background: linear-gradient(135deg, #b91c1c 0%%, #ef4444 100%%); }
+		.header h1 { margin: 0; font-size: 26px; line-height: 1.2; }
+		.content { padding: 28px 24px; font-size: 16px; line-height: 1.6; }
+		.callout { background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; padding: 14px; margin: 18px 0; }
+		.footer { text-align: center; padding: 20px 16px 26px 16px; font-size: 12px; color: #6b7280; }
+	</style>
+</head>
+<body>
+	<div class="wrapper">
+		<div class="container">
+			<div class="header">
+				<h1>Tentativa de login bloqueada</h1>
+			</div>
+			<div class="content">
+				<p>Ola %s,</p>
+				<p>Identificamos uma tentativa de login que foi bloqueada.</p>
+				<div class="callout">
+					<p><strong>Motivo:</strong> %s</p>
+					<p>Se nao foi voce, recomendamos revisar a seguranca da sua conta.</p>
+				</div>
+			</div>
+			<div class="footer">
+				&copy; 2026 Pet Services. Todos os direitos reservados.
+			</div>
+		</div>
+	</div>
+</body>
+</html>
+`, html.EscapeString(name), html.EscapeString(reason))
 
 	return s.sendEmail(to, subject, body)
 }
