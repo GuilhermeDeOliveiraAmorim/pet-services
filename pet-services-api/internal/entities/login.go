@@ -14,8 +14,6 @@ type Login struct {
 	Password string `json:"password"`
 }
 
-// MarshalJSON omits the Password field on serialization to prevent accidental
-// exposure in logs, responses, or debug output. Unmarshaling is unaffected.
 func (l Login) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
 		Email string `json:"email"`

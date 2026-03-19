@@ -62,17 +62,14 @@ func NewHandlerFactory(inputFactory database.StorageInput, logger logging.Logger
 	}
 }
 func initializeStorageService(logger logging.LoggerInterface) storage.ObjectStorage {
-	// Try to initialize GCS if configured
 	if gcsService, err := storage.NewGCSServiceFromEnv(); err == nil {
 		logger.LogInfo(context.Background(), "StorageService", "Google Cloud Storage inicializado")
 		return gcsService
 	}
 
-	// Fall back to MinIO
 	minioService, err := storage.NewMinioServiceFromEnv()
 	if err != nil {
 		logger.LogError(context.Background(), "StorageService", "Falha ao configurar armazenamento", err)
-		// Return nil service - will cause errors if storage is used
 		return nil
 	}
 
