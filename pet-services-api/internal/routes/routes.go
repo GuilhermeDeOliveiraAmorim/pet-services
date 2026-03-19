@@ -140,10 +140,15 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	{
 		authorizedUser.GET("/:user_id/pets", handlerFactory.PetHandler.ListPetsByOwnerID)
 		authorizedUser.GET("/:user_id", handlerFactory.UserHandler.GetUserByID)
-		authorizedUser.GET("", handlerFactory.UserHandler.ListUsers)
 		authorizedUser.DELETE("", handlerFactory.UserHandler.DeleteUser)
 		authorizedUser.POST("/reactivate", handlerFactory.UserHandler.ReactivateUser)
 		authorizedUser.POST("/deactivate", handlerFactory.UserHandler.DeactivateUser)
+	}
+
+	authorizedUserAdmin := r.Group("/users")
+	authorizedUserAdmin.Use(middlewareFactory.AuthMiddleware(), profileComplete, middlewareFactory.AdminOnlyMiddleware())
+	{
+		authorizedUserAdmin.GET("", handlerFactory.UserHandler.ListUsers)
 	}
 
 	publicReference := r.Group("/reference")

@@ -21,10 +21,9 @@ type RequestPasswordResetInput struct {
 }
 
 type RequestPasswordResetOutput struct {
-	Message    string    `json:"message,omitempty"`
-	Detail     string    `json:"detail,omitempty"`
-	ResetToken string    `json:"reset_token,omitempty"`
-	ExpiresAt  time.Time `json:"expires_at,omitempty"`
+	Message   string    `json:"message,omitempty"`
+	Detail    string    `json:"detail,omitempty"`
+	ExpiresAt time.Time `json:"expires_at,omitempty"`
 }
 
 type RequestPasswordResetUseCase struct {
@@ -87,9 +86,8 @@ func (uc *RequestPasswordResetUseCase) Execute(ctx context.Context, input Reques
 	}
 
 	return &RequestPasswordResetOutput{
-		Message:    "Instruções enviadas",
-		Detail:     "Se o email existir, um link de redefinição foi gerado",
-		ResetToken: tokenStr,
-		ExpiresAt:  expiresAt,
+		Message:   "Instruções enviadas",
+		Detail:    "Se o email existir, um link de redefinição foi gerado",
+		ExpiresAt: expiresAt,
 	}, nil
 }

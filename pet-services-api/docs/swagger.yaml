@@ -21,6 +21,23 @@ definitions:
       zip_code:
         type: string
     type: object
+  entities.Breed:
+    properties:
+      active:
+        type: boolean
+      created_at:
+        type: string
+      deactivated_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      species_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
   entities.Category:
     properties:
       active:
@@ -56,6 +73,8 @@ definitions:
         type: boolean
       age:
         type: integer
+      breed:
+        type: string
       created_at:
         type: string
       deactivated_at:
@@ -354,6 +373,8 @@ definitions:
     properties:
       age:
         type: integer
+      breed:
+        type: string
       name:
         type: string
       notes:
@@ -675,7 +696,7 @@ definitions:
       provider_id:
         type: string
       user:
-        $ref: '#/definitions/entities.User'
+        $ref: '#/definitions/usecases.UserOutput'
     type: object
   usecases.GetProviderOutput:
     properties:
@@ -707,7 +728,7 @@ definitions:
   usecases.GetUserByIDOutput:
     properties:
       user:
-        $ref: '#/definitions/entities.User'
+        $ref: '#/definitions/usecases.UserOutput'
     type: object
   usecases.HealthCheckAPIOutput:
     properties:
@@ -718,6 +739,13 @@ definitions:
     properties:
       status:
         type: string
+    type: object
+  usecases.ListBreedsOutput:
+    properties:
+      breeds:
+        items:
+          $ref: '#/definitions/entities.Breed'
+        type: array
     type: object
   usecases.ListCategoriesOutput:
     properties:
@@ -831,7 +859,7 @@ definitions:
         $ref: '#/definitions/usecases.PaginationMetadata'
       users:
         items:
-          $ref: '#/definitions/entities.User'
+          $ref: '#/definitions/usecases.UserOutput'
         type: array
     type: object
   usecases.LoginUserInput:
@@ -858,7 +886,7 @@ definitions:
       refresh_token:
         type: string
       user:
-        $ref: '#/definitions/entities.User'
+        $ref: '#/definitions/usecases.UserOutput'
     type: object
   usecases.LogoutInputBody:
     properties:
@@ -1002,8 +1030,6 @@ definitions:
         type: string
       message:
         type: string
-      reset_token:
-        type: string
     type: object
   usecases.ResendVerificationEmailInput:
     properties:
@@ -1021,8 +1047,6 @@ definitions:
       expires_at:
         type: string
       message:
-        type: string
-      verify_token:
         type: string
     type: object
   usecases.ResetPasswordInput:
@@ -1071,6 +1095,8 @@ definitions:
     properties:
       active:
         type: boolean
+      average_rating:
+        type: number
       business_name:
         type: string
       categories:
@@ -1081,6 +1107,8 @@ definitions:
         type: string
       description:
         type: string
+      distance_km:
+        type: number
       duration:
         type: integer
       id:
@@ -1099,6 +1127,8 @@ definitions:
         type: number
       provider_id:
         type: string
+      review_count:
+        type: integer
       tags:
         items:
           $ref: '#/definitions/entities.Tag'
@@ -1108,6 +1138,8 @@ definitions:
     properties:
       age:
         type: integer
+      breed:
+        type: string
       name:
         type: string
       notes:
@@ -1169,6 +1201,46 @@ definitions:
         type: string
       user:
         $ref: '#/definitions/entities.User'
+    type: object
+  usecases.UserLoginOutput:
+    properties:
+      email:
+        type: string
+    type: object
+  usecases.UserOutput:
+    properties:
+      active:
+        type: boolean
+      address:
+        $ref: '#/definitions/entities.Address'
+      created_at:
+        type: string
+      deactivated_at:
+        type: string
+      email_verified:
+        type: boolean
+      id:
+        type: string
+      login:
+        $ref: '#/definitions/usecases.UserLoginOutput'
+      name:
+        type: string
+      pets:
+        items:
+          $ref: '#/definitions/entities.Pet'
+        type: array
+      phone:
+        $ref: '#/definitions/entities.Phone'
+      photos:
+        items:
+          $ref: '#/definitions/entities.Photo'
+        type: array
+      profile_complete:
+        type: boolean
+      updated_at:
+        type: string
+      user_type:
+        type: string
     type: object
   usecases.VerifyEmailInput:
     properties:
@@ -3084,6 +3156,34 @@ paths:
       summary: Lista espécies
       tags:
       - Espécies
+  /species/{species_id}/breeds:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID da espécie
+        in: path
+        name: species_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.ListBreedsOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Lista raças por espécie
+      tags:
+      - Raças
   /tags:
     get:
       consumes:
@@ -3223,6 +3323,56 @@ paths:
       summary: Busca usuário por ID
       tags:
       - Usuários
+  /users/{user_id}/pets:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID do owner
+        in: path
+        name: user_id
+        required: true
+        type: string
+      - description: Número da página
+        in: query
+        name: page
+        type: integer
+      - description: Itens por página
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.ListPetsOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Lista pets por ID de owner
+      tags:
+      - Pets
   /users/change-password:
     post:
       consumes:

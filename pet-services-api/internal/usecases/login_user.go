@@ -52,7 +52,7 @@ type LoginUserInput struct {
 }
 
 type LoginUserOutput struct {
-	User         *entities.User              `json:"user"`
+	User         *UserOutput                 `json:"user"`
 	AccessToken  string                      `json:"access_token"`
 	RefreshToken string                      `json:"refresh_token"`
 	ExpiresIn    int64                       `json:"expires_in"`
@@ -166,7 +166,7 @@ func (uc *LoginUserUseCase) Execute(ctx context.Context, input LoginUserInput) (
 	}
 
 	return &LoginUserOutput{
-		User:         user,
+		User:         NewUserOutput(user),
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 		ExpiresIn:    expiresIn,

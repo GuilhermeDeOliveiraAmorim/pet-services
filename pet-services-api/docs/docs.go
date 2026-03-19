@@ -2966,6 +2966,49 @@ const docTemplate = `{
                 }
             }
         },
+        "/species/{species_id}/breeds": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Raças"
+                ],
+                "summary": "Lista raças por espécie",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID da espécie",
+                        "name": "species_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/usecases.ListBreedsOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
         "/tags": {
             "get": {
                 "consumes": [
@@ -3498,6 +3541,84 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/users/{user_id}/pets": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pets"
+                ],
+                "summary": "Lista pets por ID de owner",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID do owner",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Número da página",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Itens por página",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/usecases.ListPetsOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -3529,6 +3650,32 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "zip_code": {
+                    "type": "string"
+                }
+            }
+        },
+        "entities.Breed": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "deactivated_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "species_id": {
+                    "type": "string"
+                },
+                "updated_at": {
                     "type": "string"
                 }
             }
@@ -3586,6 +3733,9 @@ const docTemplate = `{
                 },
                 "age": {
                     "type": "integer"
+                },
+                "breed": {
+                    "type": "string"
                 },
                 "created_at": {
                     "type": "string"
@@ -4041,6 +4191,9 @@ const docTemplate = `{
             "properties": {
                 "age": {
                     "type": "integer"
+                },
+                "breed": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -4542,7 +4695,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user": {
-                    "$ref": "#/definitions/entities.User"
+                    "$ref": "#/definitions/usecases.UserOutput"
                 }
             }
         },
@@ -4592,7 +4745,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "user": {
-                    "$ref": "#/definitions/entities.User"
+                    "$ref": "#/definitions/usecases.UserOutput"
                 }
             }
         },
@@ -4609,6 +4762,17 @@ const docTemplate = `{
             "properties": {
                 "status": {
                     "type": "string"
+                }
+            }
+        },
+        "usecases.ListBreedsOutput": {
+            "type": "object",
+            "properties": {
+                "breeds": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.Breed"
+                    }
                 }
             }
         },
@@ -4785,7 +4949,7 @@ const docTemplate = `{
                 "users": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/entities.User"
+                        "$ref": "#/definitions/usecases.UserOutput"
                     }
                 }
             }
@@ -4826,7 +4990,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user": {
-                    "$ref": "#/definitions/entities.User"
+                    "$ref": "#/definitions/usecases.UserOutput"
                 }
             }
         },
@@ -5049,9 +5213,6 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
-                },
-                "reset_token": {
-                    "type": "string"
                 }
             }
         },
@@ -5079,9 +5240,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "message": {
-                    "type": "string"
-                },
-                "verify_token": {
                     "type": "string"
                 }
             }
@@ -5157,6 +5315,9 @@ const docTemplate = `{
                 "active": {
                     "type": "boolean"
                 },
+                "average_rating": {
+                    "type": "number"
+                },
                 "business_name": {
                     "type": "string"
                 },
@@ -5171,6 +5332,9 @@ const docTemplate = `{
                 },
                 "description": {
                     "type": "string"
+                },
+                "distance_km": {
+                    "type": "number"
                 },
                 "duration": {
                     "type": "integer"
@@ -5199,6 +5363,9 @@ const docTemplate = `{
                 "provider_id": {
                     "type": "string"
                 },
+                "review_count": {
+                    "type": "integer"
+                },
                 "tags": {
                     "type": "array",
                     "items": {
@@ -5212,6 +5379,9 @@ const docTemplate = `{
             "properties": {
                 "age": {
                     "type": "integer"
+                },
+                "breed": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -5306,6 +5476,67 @@ const docTemplate = `{
                 },
                 "user": {
                     "$ref": "#/definitions/entities.User"
+                }
+            }
+        },
+        "usecases.UserLoginOutput": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "usecases.UserOutput": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "address": {
+                    "$ref": "#/definitions/entities.Address"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "deactivated_at": {
+                    "type": "string"
+                },
+                "email_verified": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "login": {
+                    "$ref": "#/definitions/usecases.UserLoginOutput"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "pets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.Pet"
+                    }
+                },
+                "phone": {
+                    "$ref": "#/definitions/entities.Phone"
+                },
+                "photos": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.Photo"
+                    }
+                },
+                "profile_complete": {
+                    "type": "boolean"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_type": {
+                    "type": "string"
                 }
             }
         },

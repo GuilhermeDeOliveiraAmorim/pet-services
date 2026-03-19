@@ -22,10 +22,9 @@ type ResendVerificationEmailInput struct {
 }
 
 type ResendVerificationEmailOutput struct {
-	Message     string    `json:"message,omitempty"`
-	Detail      string    `json:"detail,omitempty"`
-	VerifyToken string    `json:"verify_token,omitempty"`
-	ExpiresAt   time.Time `json:"expires_at,omitempty"`
+	Message   string    `json:"message,omitempty"`
+	Detail    string    `json:"detail,omitempty"`
+	ExpiresAt time.Time `json:"expires_at,omitempty"`
 }
 
 type ResendVerificationEmailUseCase struct {
@@ -101,9 +100,8 @@ func (uc *ResendVerificationEmailUseCase) Execute(ctx context.Context, input Res
 	}
 
 	return &ResendVerificationEmailOutput{
-		Message:     "Email de verificação reenviado",
-		Detail:      "Verifique sua caixa de entrada para completar a verificação",
-		VerifyToken: tokenStr,
-		ExpiresAt:   expiresAt,
+		Message:   "Email de verificação reenviado",
+		Detail:    "Verifique sua caixa de entrada para completar a verificação",
+		ExpiresAt: expiresAt,
 	}, nil
 }
