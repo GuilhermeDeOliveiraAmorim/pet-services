@@ -53,10 +53,7 @@ func (uc *CheckPhoneExistsUseCase) Execute(ctx context.Context, input CheckPhone
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao verificar telefone", err)
 	}
 
-	message := "Telefone disponível"
-	if exists {
-		message = "Telefone já cadastrado"
-	}
+	message := "Solicitação processada"
 
 	return &CheckPhoneExistsOutput{
 		Exists:  exists,

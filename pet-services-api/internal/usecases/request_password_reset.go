@@ -57,7 +57,11 @@ func (uc *RequestPasswordResetUseCase) Execute(ctx context.Context, input Reques
 	user, err := uc.userRepository.FindByEmail(input.Email)
 	if err != nil {
 		if err.Error() == consts.UserNotFoundError {
-			return nil, uc.logger.LogNotFound(ctx, from, "Usuário não encontrado", errors.New("Não foi possível encontrar um usuário com o email informado"))
+			return &RequestPasswordResetOutput{
+				Message:   "Instruções enviadas",
+				Detail:    "Se o email existir, um link de redefinição foi gerado",
+				ExpiresAt: time.Now().Add(uc.ttl),
+			}, nil
 		}
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar usuário", err)
 	}

@@ -100,14 +100,14 @@ func (uc *LoginUserUseCase) Execute(ctx context.Context, input LoginUserInput) (
 	user, err := uc.userRepository.FindByEmail(input.Email)
 	if err != nil {
 		if err.Error() == consts.UserNotFoundError {
-			return nil, uc.logger.LogNotFound(ctx, from, "Usuário não encontrado", errors.New("Não foi possível encontrar um usuário com o email informado"))
+			return nil, uc.logger.LogUnauthorized(ctx, from, "Credenciais inválidas", errors.New("Credenciais inválidas"))
 		}
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar usuário", err)
 	}
 
 	login := entities.Login{Email: user.Login.Email, Password: user.Login.Password}
 	if !login.CompareAndDecrypt(user.Login.Password, input.Password) {
-		return nil, uc.logger.LogUnauthorized(ctx, from, "Credenciais inválidas", errors.New("Email ou senha incorretos"))
+		return nil, uc.logger.LogUnauthorized(ctx, from, "Credenciais inválidas", errors.New("Credenciais inválidas"))
 	}
 
 	if !user.Active {

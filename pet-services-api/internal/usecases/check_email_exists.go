@@ -46,10 +46,7 @@ func (uc *CheckEmailExistsUseCase) Execute(ctx context.Context, input CheckEmail
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao verificar email", err)
 	}
 
-	message := "Email disponível"
-	if exists {
-		message = "Email já cadastrado"
-	}
+	message := "Solicitação processada"
 
 	return &CheckEmailExistsOutput{
 		Exists:  exists,
