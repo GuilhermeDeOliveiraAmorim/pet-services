@@ -27,9 +27,9 @@ type UpdateUserInput struct {
 }
 
 type UpdateUserOutput struct {
-	Message string         `json:"message,omitempty"`
-	Detail  string         `json:"detail,omitempty"`
-	User    *entities.User `json:"user,omitempty"`
+	Message string      `json:"message,omitempty"`
+	Detail  string      `json:"detail,omitempty"`
+	User    *UserOutput `json:"user,omitempty"`
 }
 
 type UpdateUserUseCase struct {
@@ -141,6 +141,6 @@ func (uc *UpdateUserUseCase) Execute(ctx context.Context, input UpdateUserInput)
 	return &UpdateUserOutput{
 		Message: "Usuário atualizado com sucesso",
 		Detail:  "Os dados do usuário foram atualizados",
-		User:    user,
+		User:    NewUserOutput(user),
 	}, nil
 }

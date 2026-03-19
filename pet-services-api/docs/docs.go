@@ -4043,59 +4043,6 @@ const docTemplate = `{
                 }
             }
         },
-        "entities.User": {
-            "type": "object",
-            "properties": {
-                "active": {
-                    "type": "boolean"
-                },
-                "address": {
-                    "$ref": "#/definitions/entities.Address"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "deactivated_at": {
-                    "type": "string"
-                },
-                "email_verified": {
-                    "type": "boolean"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "login": {
-                    "$ref": "#/definitions/entities.Login"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "pets": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/entities.Pet"
-                    }
-                },
-                "phone": {
-                    "$ref": "#/definitions/entities.Phone"
-                },
-                "photos": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/entities.Photo"
-                    }
-                },
-                "profile_complete": {
-                    "type": "boolean"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "user_type": {
-                    "type": "string"
-                }
-            }
-        },
         "exceptions.ProblemDetails": {
             "type": "object",
             "properties": {
@@ -5469,7 +5416,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user": {
-                    "$ref": "#/definitions/entities.User"
+                    "$ref": "#/definitions/usecases.UserOutput"
                 }
             }
         },

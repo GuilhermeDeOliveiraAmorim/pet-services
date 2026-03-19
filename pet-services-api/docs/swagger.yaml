@@ -276,41 +276,6 @@ definitions:
       updated_at:
         type: string
     type: object
-  entities.User:
-    properties:
-      active:
-        type: boolean
-      address:
-        $ref: '#/definitions/entities.Address'
-      created_at:
-        type: string
-      deactivated_at:
-        type: string
-      email_verified:
-        type: boolean
-      id:
-        type: string
-      login:
-        $ref: '#/definitions/entities.Login'
-      name:
-        type: string
-      pets:
-        items:
-          $ref: '#/definitions/entities.Pet'
-        type: array
-      phone:
-        $ref: '#/definitions/entities.Phone'
-      photos:
-        items:
-          $ref: '#/definitions/entities.Photo'
-        type: array
-      profile_complete:
-        type: boolean
-      updated_at:
-        type: string
-      user_type:
-        type: string
-    type: object
   exceptions.ProblemDetails:
     properties:
       detail:
@@ -1196,7 +1161,7 @@ definitions:
       message:
         type: string
       user:
-        $ref: '#/definitions/entities.User'
+        $ref: '#/definitions/usecases.UserOutput'
     type: object
   usecases.UserLoginOutput:
     properties:
