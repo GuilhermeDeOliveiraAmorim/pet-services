@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"encoding/json"
 	"pet-services-api/internal/exceptions"
 	"regexp"
 	"strings"
@@ -11,6 +12,14 @@ import (
 type Login struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+// MarshalJSON omits the Password field on serialization to prevent accidental
+// exposure in logs, responses, or debug output. Unmarshaling is unaffected.
+func (l Login) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Email string `json:"email"`
+	}{Email: l.Email})
 }
 
 func NewLogin(email, password string) (*Login, []exceptions.ProblemDetails) {
