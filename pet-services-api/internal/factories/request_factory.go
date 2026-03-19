@@ -2,6 +2,7 @@ package factories
 
 import (
 	"pet-services-api/internal/logging"
+	"pet-services-api/internal/mail"
 	"pet-services-api/internal/repository_impl"
 	"pet-services-api/internal/storage"
 	"pet-services-api/internal/usecases"
@@ -18,19 +19,20 @@ type RequestFactory struct {
 	GetRequest      *usecases.GetRequestUseCase
 }
 
-func NewRequestFactory(db *gorm.DB, storageService storage.ObjectStorage, logger logging.LoggerInterface) *RequestFactory {
+func NewRequestFactory(db *gorm.DB, storageService storage.ObjectStorage, mailService mail.EmailService, logger logging.LoggerInterface) *RequestFactory {
 	userRepo := repository_impl.NewUserRepository(db)
 	petRepo := repository_impl.NewPetRepository(db)
 	serviceRepo := repository_impl.NewServiceRepository(db)
 	providerRepo := repository_impl.NewProviderRepository(db)
 	requestRepo := repository_impl.NewRequestRepository(db)
+	reviewRepo := repository_impl.NewReviewRepository(db)
 
 	return &RequestFactory{
-		AddRequest:      usecases.NewAddRequestUseCase(userRepo, petRepo, serviceRepo, providerRepo, requestRepo, logger),
+		AddRequest:      usecases.NewAddRequestUseCase(userRepo, petRepo, serviceRepo, providerRepo, requestRepo, mailService, logger),
 		ListRequests:    usecases.NewListRequestsUseCase(userRepo, requestRepo, providerRepo, serviceRepo, storageService, logger),
-		AcceptRequest:   usecases.NewAcceptRequestUseCase(userRepo, providerRepo, requestRepo, logger),
-		CompleteRequest: usecases.NewCompleteRequestUseCase(userRepo, providerRepo, requestRepo, logger),
-		RejectRequest:   usecases.NewRejectRequestUseCase(userRepo, providerRepo, requestRepo, logger),
+		AcceptRequest:   usecases.NewAcceptRequestUseCase(userRepo, providerRepo, requestRepo, mailService, logger),
+		CompleteRequest: usecases.NewCompleteRequestUseCase(userRepo, providerRepo, requestRepo, reviewRepo, mailService, logger),
+		RejectRequest:   usecases.NewRejectRequestUseCase(userRepo, providerRepo, requestRepo, mailService, logger),
 		GetRequest:      usecases.NewGetRequestUseCase(userRepo, providerRepo, requestRepo, storageService, logger),
 	}
 }

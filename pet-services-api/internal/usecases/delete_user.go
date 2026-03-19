@@ -7,6 +7,7 @@ import (
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
+	"pet-services-api/internal/mail"
 )
 
 type DeleteUserInput struct {
@@ -20,12 +21,14 @@ type DeleteUserOutput struct {
 
 type DeleteUserUseCase struct {
 	userRepository entities.UserRepository
+	emailService   mail.EmailService
 	logger         logging.LoggerInterface
 }
 
-func NewDeleteUserUseCase(userRepository entities.UserRepository, logger logging.LoggerInterface) *DeleteUserUseCase {
+func NewDeleteUserUseCase(userRepository entities.UserRepository, emailService mail.EmailService, logger logging.LoggerInterface) *DeleteUserUseCase {
 	return &DeleteUserUseCase{
 		userRepository: userRepository,
+		emailService:   emailService,
 		logger:         logger,
 	}
 }
@@ -53,6 +56,10 @@ func (uc *DeleteUserUseCase) Execute(ctx context.Context, input DeleteUserInput)
 
 	if err := uc.userRepository.Update(user); err != nil {
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao deletar usuário", err)
+	}
+
+	if err := uc.emailService.SendAccountDeletedEmail(user.Login.Email, user.Name); err != nil {
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao enviar email de conta removida", err)
 	}
 
 	return &DeleteUserOutput{

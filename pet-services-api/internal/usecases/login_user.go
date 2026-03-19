@@ -3,6 +3,8 @@ package usecases
 import (
 	"context"
 	"errors"
+	"strings"
+	"sync"
 	"time"
 
 	"pet-services-api/internal/auth"
@@ -10,8 +12,37 @@ import (
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
+	"pet-services-api/internal/mail"
 	"pet-services-api/internal/storage"
 )
+
+var blockedLoginAlertLimiter = newLoginBlockedAlertLimiter(30 * time.Minute)
+
+type loginBlockedAlertLimiter struct {
+	mu       sync.Mutex
+	cooldown time.Duration
+	lastSent map[string]time.Time
+}
+
+func newLoginBlockedAlertLimiter(cooldown time.Duration) *loginBlockedAlertLimiter {
+	return &loginBlockedAlertLimiter{
+		cooldown: cooldown,
+		lastSent: make(map[string]time.Time),
+	}
+}
+
+func (l *loginBlockedAlertLimiter) allow(key string, now time.Time) bool {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	last, ok := l.lastSent[key]
+	if ok && now.Sub(last) < l.cooldown {
+		return false
+	}
+
+	l.lastSent[key] = now
+	return true
+}
 
 type LoginUserInput struct {
 	Email     string `json:"email"`
@@ -32,15 +63,30 @@ type LoginUserUseCase struct {
 	userRepository         entities.UserRepository
 	refreshTokenRepository entities.RefreshTokenRepository
 	storage                storage.ObjectStorage
+	emailService           mail.EmailService
 	logger                 logging.LoggerInterface
 }
 
-func NewLoginUserUseCase(userRepo entities.UserRepository, refreshRepo entities.RefreshTokenRepository, storageService storage.ObjectStorage, logger logging.LoggerInterface) *LoginUserUseCase {
+func NewLoginUserUseCase(userRepo entities.UserRepository, refreshRepo entities.RefreshTokenRepository, storageService storage.ObjectStorage, emailService mail.EmailService, logger logging.LoggerInterface) *LoginUserUseCase {
 	return &LoginUserUseCase{
 		userRepository:         userRepo,
 		refreshTokenRepository: refreshRepo,
 		storage:                storageService,
+		emailService:           emailService,
 		logger:                 logger,
+	}
+}
+
+func (uc *LoginUserUseCase) notifyBlockedLoginAttempt(ctx context.Context, user *entities.User, reason string) {
+	const from = "LoginUserUseCase.notifyBlockedLoginAttempt"
+
+	key := strings.ToLower(strings.TrimSpace(user.Login.Email)) + ":" + reason
+	if !blockedLoginAlertLimiter.allow(key, time.Now()) {
+		return
+	}
+
+	if err := uc.emailService.SendLoginBlockedAlertEmail(user.Login.Email, user.Name, reason); err != nil {
+		uc.logger.LogWarning(ctx, from, "Falha ao enviar alerta de login bloqueado", err)
 	}
 }
 
@@ -65,10 +111,12 @@ func (uc *LoginUserUseCase) Execute(ctx context.Context, input LoginUserInput) (
 	}
 
 	if !user.Active {
+		uc.notifyBlockedLoginAttempt(ctx, user, "Conta desativada")
 		return nil, uc.logger.LogForbidden(ctx, from, "Conta desativada", errors.New("Sua conta foi desativada. Entre em contato com o suporte para reativar"))
 	}
 
 	if !user.EmailVerified {
+		uc.notifyBlockedLoginAttempt(ctx, user, "Email nao verificado")
 		return nil, uc.logger.LogForbidden(ctx, from, "Email não verificado", errors.New("Verifique seu email antes de fazer login. Utilize a opção de reenviar email de verificação"))
 	}
 

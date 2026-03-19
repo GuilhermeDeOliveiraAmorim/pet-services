@@ -8,6 +8,7 @@ import (
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
+	"pet-services-api/internal/mail"
 )
 
 type CreateReviewInput struct {
@@ -23,17 +24,18 @@ type CreateReviewInputBody struct {
 }
 
 type CreateReviewOutput struct {
-	Message string          `json:"message,omitempty"`
-	Detail  string          `json:"detail,omitempty"`
+	Message string           `json:"message,omitempty"`
+	Detail  string           `json:"detail,omitempty"`
 	Review  *entities.Review `json:"review,omitempty"`
 }
 
 type CreateReviewUseCase struct {
-	userRepository    entities.UserRepository
+	userRepository     entities.UserRepository
 	providerRepository entities.ProviderRepository
-	requestRepository entities.RequestRepository
-	reviewRepository  entities.ReviewRepository
-	logger            logging.LoggerInterface
+	requestRepository  entities.RequestRepository
+	reviewRepository   entities.ReviewRepository
+	emailService       mail.EmailService
+	logger             logging.LoggerInterface
 }
 
 func NewCreateReviewUseCase(
@@ -41,14 +43,16 @@ func NewCreateReviewUseCase(
 	providerRepository entities.ProviderRepository,
 	requestRepository entities.RequestRepository,
 	reviewRepository entities.ReviewRepository,
+	emailService mail.EmailService,
 	logger logging.LoggerInterface,
 ) *CreateReviewUseCase {
 	return &CreateReviewUseCase{
-		userRepository:    userRepository,
+		userRepository:     userRepository,
 		providerRepository: providerRepository,
-		requestRepository: requestRepository,
-		reviewRepository:  reviewRepository,
-		logger:            logger,
+		requestRepository:  requestRepository,
+		reviewRepository:   reviewRepository,
+		emailService:       emailService,
+		logger:             logger,
 	}
 }
 
@@ -75,7 +79,7 @@ func (uc *CreateReviewUseCase) Execute(ctx context.Context, input CreateReviewIn
 		return nil, uc.logger.LogForbidden(ctx, from, "Acesso negado", errors.New("Somente usuários do tipo owner podem criar reviews"))
 	}
 
-	_, err = uc.providerRepository.FindByID(input.ProviderID)
+	provider, err := uc.providerRepository.FindByID(input.ProviderID)
 	if err != nil {
 		if err.Error() == consts.ProviderNotFoundError {
 			return nil, uc.logger.LogNotFound(ctx, from, "Provedor não encontrado", errors.New("Não foi possível encontrar o provedor informado"))
@@ -99,6 +103,24 @@ func (uc *CreateReviewUseCase) Execute(ctx context.Context, input CreateReviewIn
 
 	if err := uc.reviewRepository.Create(review); err != nil {
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao criar review", err)
+	}
+
+	providerUser, err := uc.userRepository.FindByID(provider.UserID)
+	if err != nil {
+		if err.Error() == consts.UserNotFoundError {
+			return nil, uc.logger.LogNotFound(ctx, from, "Usuário do provedor não encontrado", errors.New("Não foi possível encontrar o usuário vinculado ao provedor"))
+		}
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar usuário do provedor", err)
+	}
+
+	if err := uc.emailService.SendReviewReceivedEmail(
+		providerUser.Login.Email,
+		provider.BusinessName,
+		user.Name,
+		review.Rating,
+		review.Comment,
+	); err != nil {
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao enviar email de nova review", err)
 	}
 
 	return &CreateReviewOutput{

@@ -39,13 +39,13 @@ func NewUserFactory(db *gorm.DB, storageService storage.ObjectStorage, mailServi
 		GetProfile:       usecases.NewGetProfileUseCase(userRepo, providerRepo, storageService, logger),
 		ListUsers:        usecases.NewListUsersUseCase(userRepo, storageService, logger),
 		UpdateUser:       usecases.NewUpdateUserUseCase(userRepo, storageService, logger),
-		DeleteUser:       usecases.NewDeleteUserUseCase(userRepo, logger),
-		ReactivateUser:   usecases.NewReactivateUserUseCase(userRepo, logger),
-		DeactivateUser:   usecases.NewDeactivateUserUseCase(userRepo, tokenRepo, logger),
+		DeleteUser:       usecases.NewDeleteUserUseCase(userRepo, mailService, logger),
+		ReactivateUser:   usecases.NewReactivateUserUseCase(userRepo, mailService, logger),
+		DeactivateUser:   usecases.NewDeactivateUserUseCase(userRepo, tokenRepo, mailService, logger),
 		GetUserByID:      usecases.NewGetUserByIDUseCase(userRepo, storageService, logger),
 		CheckEmailExists: usecases.NewCheckEmailExistsUseCase(userRepo, logger),
 		CheckPhoneExists: usecases.NewCheckPhoneExistsUseCase(userRepo, logger),
-		ChangePassword:   usecases.NewChangePasswordUseCase(userRepo, logger),
+		ChangePassword:   usecases.NewChangePasswordUseCase(userRepo, mailService, logger),
 		AddUserPhoto:     usecases.NewAddUserPhotoUseCase(userRepo, photoRepo, storageService, logger),
 	}
 }

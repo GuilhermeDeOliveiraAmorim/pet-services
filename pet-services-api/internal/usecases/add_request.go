@@ -8,6 +8,7 @@ import (
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
+	"pet-services-api/internal/mail"
 )
 
 type AddRequestInputBody struct {
@@ -24,9 +25,9 @@ type AddRequestInput struct {
 }
 
 type AddRequestOutput struct {
-	Message string             `json:"message,omitempty"`
-	Detail  string             `json:"detail,omitempty"`
-	Request *entities.Request  `json:"request,omitempty"`
+	Message string            `json:"message,omitempty"`
+	Detail  string            `json:"detail,omitempty"`
+	Request *entities.Request `json:"request,omitempty"`
 }
 
 type AddRequestUseCase struct {
@@ -35,6 +36,7 @@ type AddRequestUseCase struct {
 	serviceRepository  entities.ServiceRepository
 	providerRepository entities.ProviderRepository
 	requestRepository  entities.RequestRepository
+	emailService       mail.EmailService
 	logger             logging.LoggerInterface
 }
 
@@ -44,6 +46,7 @@ func NewAddRequestUseCase(
 	serviceRepository entities.ServiceRepository,
 	providerRepository entities.ProviderRepository,
 	requestRepository entities.RequestRepository,
+	emailService mail.EmailService,
 	logger logging.LoggerInterface,
 ) *AddRequestUseCase {
 	return &AddRequestUseCase{
@@ -52,6 +55,7 @@ func NewAddRequestUseCase(
 		serviceRepository:  serviceRepository,
 		providerRepository: providerRepository,
 		requestRepository:  requestRepository,
+		emailService:       emailService,
 		logger:             logger,
 	}
 }
@@ -135,6 +139,36 @@ func (uc *AddRequestUseCase) Execute(ctx context.Context, input AddRequestInput)
 
 	if err := uc.requestRepository.Create(requestEntity); err != nil {
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao criar solicitação", err)
+	}
+
+	providerUser, err := uc.userRepository.FindByID(provider.UserID)
+	if err != nil {
+		if err.Error() == consts.UserNotFoundError {
+			return nil, uc.logger.LogNotFound(ctx, from, "Usuário do provedor não encontrado", errors.New("Não foi possível encontrar o usuário vinculado ao provedor"))
+		}
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar usuário do provedor", err)
+	}
+
+	if err := uc.emailService.SendRequestCreatedEmail(
+		providerUser.Login.Email,
+		provider.BusinessName,
+		user.Name,
+		pet.Name,
+		service.Name,
+		requestEntity.ID,
+	); err != nil {
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao enviar email de nova solicitação", err)
+	}
+
+	if err := uc.emailService.SendRequestCreatedOwnerConfirmationEmail(
+		user.Login.Email,
+		user.Name,
+		provider.BusinessName,
+		pet.Name,
+		service.Name,
+		requestEntity.ID,
+	); err != nil {
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao enviar email de confirmação da solicitação", err)
 	}
 
 	return &AddRequestOutput{

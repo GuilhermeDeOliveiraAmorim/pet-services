@@ -9,6 +9,7 @@ import (
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
+	"pet-services-api/internal/mail"
 )
 
 type RejectRequestInput struct {
@@ -31,6 +32,7 @@ type RejectRequestUseCase struct {
 	userRepository     entities.UserRepository
 	providerRepository entities.ProviderRepository
 	requestRepository  entities.RequestRepository
+	emailService       mail.EmailService
 	logger             logging.LoggerInterface
 }
 
@@ -38,12 +40,14 @@ func NewRejectRequestUseCase(
 	userRepository entities.UserRepository,
 	providerRepository entities.ProviderRepository,
 	requestRepository entities.RequestRepository,
+	emailService mail.EmailService,
 	logger logging.LoggerInterface,
 ) *RejectRequestUseCase {
 	return &RejectRequestUseCase{
 		userRepository:     userRepository,
 		providerRepository: providerRepository,
 		requestRepository:  requestRepository,
+		emailService:       emailService,
 		logger:             logger,
 	}
 }
@@ -108,6 +112,25 @@ func (uc *RejectRequestUseCase) Execute(ctx context.Context, input RejectRequest
 
 	if err := uc.requestRepository.Update(request); err != nil {
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao atualizar solicitação", err)
+	}
+
+	owner, err := uc.userRepository.FindByID(request.UserID)
+	if err != nil {
+		if err.Error() == consts.UserNotFoundError {
+			return nil, uc.logger.LogNotFound(ctx, from, "Usuário dono da solicitação não encontrado", errors.New("Não foi possível encontrar o usuário dono da solicitação"))
+		}
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar dono da solicitação", err)
+	}
+
+	if err := uc.emailService.SendRequestRejectedEmail(
+		owner.Login.Email,
+		owner.Name,
+		user.Name,
+		request.Pet.Name,
+		reason,
+		request.ID,
+	); err != nil {
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao enviar email de solicitação rejeitada", err)
 	}
 
 	uc.logger.LogInfo(ctx, from, "Solicitação rejeitada com sucesso")
