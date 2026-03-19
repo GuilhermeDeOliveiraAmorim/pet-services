@@ -160,6 +160,17 @@ func (uc *AddRequestUseCase) Execute(ctx context.Context, input AddRequestInput)
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao enviar email de nova solicitação", err)
 	}
 
+	if err := uc.emailService.SendRequestCreatedOwnerConfirmationEmail(
+		user.Login.Email,
+		user.Name,
+		provider.BusinessName,
+		pet.Name,
+		service.Name,
+		requestEntity.ID,
+	); err != nil {
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao enviar email de confirmação da solicitação", err)
+	}
+
 	return &AddRequestOutput{
 		Message: "Solicitação criada com sucesso",
 		Detail:  "A solicitação foi enviada para o provedor",
