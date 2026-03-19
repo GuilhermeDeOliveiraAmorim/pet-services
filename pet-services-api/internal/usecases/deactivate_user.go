@@ -8,6 +8,7 @@ import (
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
+	"pet-services-api/internal/mail"
 )
 
 type DeactivateUserInput struct {
@@ -22,13 +23,15 @@ type DeactivateUserOutput struct {
 type DeactivateUserUseCase struct {
 	userRepository         entities.UserRepository
 	refreshTokenRepository entities.RefreshTokenRepository
+	emailService           mail.EmailService
 	logger                 logging.LoggerInterface
 }
 
-func NewDeactivateUserUseCase(userRepo entities.UserRepository, refreshTokenRepo entities.RefreshTokenRepository, logger logging.LoggerInterface) *DeactivateUserUseCase {
+func NewDeactivateUserUseCase(userRepo entities.UserRepository, refreshTokenRepo entities.RefreshTokenRepository, emailService mail.EmailService, logger logging.LoggerInterface) *DeactivateUserUseCase {
 	return &DeactivateUserUseCase{
 		userRepository:         userRepo,
 		refreshTokenRepository: refreshTokenRepo,
+		emailService:           emailService,
 		logger:                 logger,
 	}
 }
@@ -63,6 +66,10 @@ func (uc *DeactivateUserUseCase) Execute(ctx context.Context, input DeactivateUs
 
 	if err := uc.refreshTokenRepository.RevokeAllByUserID(input.UserID); err != nil {
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao revogar tokens", err)
+	}
+
+	if err := uc.emailService.SendAccountDeactivatedEmail(user.Login.Email, user.Name); err != nil {
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao enviar email de conta desativada", err)
 	}
 
 	return &DeactivateUserOutput{

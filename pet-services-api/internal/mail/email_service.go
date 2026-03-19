@@ -12,6 +12,9 @@ type EmailService interface {
 	SendPasswordResetEmail(to, token string) error
 	SendPasswordChangedAlertEmail(to, name string) error
 	SendPasswordResetSuccessEmail(to, name string) error
+	SendAccountDeactivatedEmail(to, name string) error
+	SendAccountReactivatedEmail(to, name string) error
+	SendAccountDeletedEmail(to, name string) error
 	SendRequestCreatedEmail(to, providerName, ownerName, petName, serviceName, requestID string) error
 	SendRequestAcceptedEmail(to, ownerName, providerName, petName, requestID string) error
 	SendRequestRejectedEmail(to, ownerName, providerName, petName, reason, requestID string) error
@@ -234,6 +237,141 @@ func (s *SMTPEmailService) SendPasswordResetSuccessEmail(to, name string) error 
 				<p>Sua senha foi redefinida com sucesso.</p>
 				<div class="callout">
 					<p>Se voce nao solicitou esta redefinicao, proteja sua conta imediatamente e entre em contato com o suporte.</p>
+				</div>
+			</div>
+			<div class="footer">
+				&copy; 2026 Pet Services. Todos os direitos reservados.
+			</div>
+		</div>
+	</div>
+</body>
+</html>
+`, html.EscapeString(name))
+
+	return s.sendEmail(to, subject, body)
+}
+
+func (s *SMTPEmailService) SendAccountDeactivatedEmail(to, name string) error {
+	subject := "Conta desativada - Pet Services"
+
+	body := fmt.Sprintf(`
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+		body { margin: 0; padding: 0; background-color: #f4f7fb; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif; color: #1f2937; }
+		.wrapper { width: 100%%; padding: 28px 12px; }
+		.container { max-width: 620px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; }
+		.header { padding: 28px 24px; text-align: center; color: #ffffff; background: linear-gradient(135deg, #6b7280 0%%, #9ca3af 100%%); }
+		.header h1 { margin: 0; font-size: 28px; line-height: 1.2; }
+		.content { padding: 28px 24px; font-size: 16px; line-height: 1.6; }
+		.callout { background-color: #f3f4f6; border: 1px solid #d1d5db; border-radius: 10px; padding: 14px; margin: 18px 0; }
+		.footer { text-align: center; padding: 20px 16px 26px 16px; font-size: 12px; color: #6b7280; }
+	</style>
+</head>
+<body>
+	<div class="wrapper">
+		<div class="container">
+			<div class="header">
+				<h1>Conta desativada</h1>
+			</div>
+			<div class="content">
+				<p>Ola %s,</p>
+				<p>Sua conta foi desativada com sucesso.</p>
+				<div class="callout">
+					<p>Todos os tokens ativos foram revogados por seguranca. Quando desejar, voce pode reativar a conta.</p>
+				</div>
+			</div>
+			<div class="footer">
+				&copy; 2026 Pet Services. Todos os direitos reservados.
+			</div>
+		</div>
+	</div>
+</body>
+</html>
+`, html.EscapeString(name))
+
+	return s.sendEmail(to, subject, body)
+}
+
+func (s *SMTPEmailService) SendAccountReactivatedEmail(to, name string) error {
+	subject := "Conta reativada - Pet Services"
+
+	body := fmt.Sprintf(`
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+		body { margin: 0; padding: 0; background-color: #f4f7fb; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif; color: #1f2937; }
+		.wrapper { width: 100%%; padding: 28px 12px; }
+		.container { max-width: 620px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; }
+		.header { padding: 28px 24px; text-align: center; color: #ffffff; background: linear-gradient(135deg, #0f766e 0%%, #06b6d4 100%%); }
+		.header h1 { margin: 0; font-size: 28px; line-height: 1.2; }
+		.content { padding: 28px 24px; font-size: 16px; line-height: 1.6; }
+		.callout { background-color: #f0fdfa; border: 1px solid #99f6e4; border-radius: 10px; padding: 14px; margin: 18px 0; }
+		.footer { text-align: center; padding: 20px 16px 26px 16px; font-size: 12px; color: #6b7280; }
+	</style>
+</head>
+<body>
+	<div class="wrapper">
+		<div class="container">
+			<div class="header">
+				<h1>Conta reativada</h1>
+			</div>
+			<div class="content">
+				<p>Ola %s,</p>
+				<p>Sua conta foi reativada com sucesso.</p>
+				<div class="callout">
+					<p>Agora voce ja pode fazer login novamente e continuar usando a plataforma.</p>
+				</div>
+			</div>
+			<div class="footer">
+				&copy; 2026 Pet Services. Todos os direitos reservados.
+			</div>
+		</div>
+	</div>
+</body>
+</html>
+`, html.EscapeString(name))
+
+	return s.sendEmail(to, subject, body)
+}
+
+func (s *SMTPEmailService) SendAccountDeletedEmail(to, name string) error {
+	subject := "Conta removida - Pet Services"
+
+	body := fmt.Sprintf(`
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+		body { margin: 0; padding: 0; background-color: #f4f7fb; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif; color: #1f2937; }
+		.wrapper { width: 100%%; padding: 28px 12px; }
+		.container { max-width: 620px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; }
+		.header { padding: 28px 24px; text-align: center; color: #ffffff; background: linear-gradient(135deg, #7f1d1d 0%%, #b91c1c 100%%); }
+		.header h1 { margin: 0; font-size: 28px; line-height: 1.2; }
+		.content { padding: 28px 24px; font-size: 16px; line-height: 1.6; }
+		.callout { background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; padding: 14px; margin: 18px 0; }
+		.footer { text-align: center; padding: 20px 16px 26px 16px; font-size: 12px; color: #6b7280; }
+	</style>
+</head>
+<body>
+	<div class="wrapper">
+		<div class="container">
+			<div class="header">
+				<h1>Conta removida</h1>
+			</div>
+			<div class="content">
+				<p>Ola %s,</p>
+				<p>Sua conta foi removida com sucesso.</p>
+				<div class="callout">
+					<p>Se esta acao nao foi realizada por voce, entre em contato com o suporte imediatamente.</p>
 				</div>
 			</div>
 			<div class="footer">
