@@ -33,7 +33,7 @@ func NewTokenFactory(db *gorm.DB, mailService mail.EmailService, ttl time.Durati
 		RequestPasswordReset:    usecases.NewRequestPasswordResetUseCase(userRepo, tokenRepo, mailService, ttl, logger),
 		ResetPassword:           usecases.NewResetPasswordUseCase(userRepo, tokenRepo, mailService, logger),
 		ResendVerificationEmail: usecases.NewResendVerificationEmailUseCase(userRepo, tokenRepo, mailService, ttl, logger),
-		VerifyEmail:             usecases.NewVerifyEmailUseCase(userRepo, tokenRepo, logger),
+		VerifyEmail:             usecases.NewVerifyEmailUseCase(userRepo, tokenRepo, mailService, logger),
 		Logger:                  logger,
 	}
 }

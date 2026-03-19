@@ -9,6 +9,7 @@ import (
 
 type EmailService interface {
 	SendVerificationEmail(to, token string) error
+	SendWelcomeAfterVerificationEmail(to, name string) error
 	SendPasswordResetEmail(to, token string) error
 	SendPasswordChangedAlertEmail(to, name string) error
 	SendPasswordResetSuccessEmail(to, name string) error
@@ -100,6 +101,51 @@ func (s *SMTPEmailService) SendVerificationEmail(to, token string) error {
 </body>
 </html>
 `, verifyLink, verifyLink)
+
+	return s.sendEmail(to, subject, body)
+}
+
+func (s *SMTPEmailService) SendWelcomeAfterVerificationEmail(to, name string) error {
+	subject := "Conta ativada com sucesso - Pet Services"
+
+	body := fmt.Sprintf(`
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+		body { margin: 0; padding: 0; background-color: #f4f7fb; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif; color: #1f2937; }
+		.wrapper { width: 100%%; padding: 28px 12px; }
+		.container { max-width: 620px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; }
+		.header { padding: 28px 24px; text-align: center; color: #ffffff; background: linear-gradient(135deg, #0f766e 0%%, #06b6d4 100%%); }
+		.header h1 { margin: 0; font-size: 28px; line-height: 1.2; }
+		.content { padding: 28px 24px; font-size: 16px; line-height: 1.6; }
+		.callout { background-color: #f0fdfa; border: 1px solid #99f6e4; border-radius: 10px; padding: 14px; margin: 18px 0; }
+		.footer { text-align: center; padding: 20px 16px 26px 16px; font-size: 12px; color: #6b7280; }
+	</style>
+</head>
+<body>
+	<div class="wrapper">
+		<div class="container">
+			<div class="header">
+				<h1>Conta ativada</h1>
+			</div>
+			<div class="content">
+				<p>Ola %s,</p>
+				<p>Seu e-mail foi verificado e sua conta esta ativa.</p>
+				<div class="callout">
+					<p>Agora voce ja pode completar seu perfil e aproveitar os servicos da plataforma.</p>
+				</div>
+			</div>
+			<div class="footer">
+				&copy; 2026 Pet Services. Todos os direitos reservados.
+			</div>
+		</div>
+	</div>
+</body>
+</html>
+`, html.EscapeString(name))
 
 	return s.sendEmail(to, subject, body)
 }
