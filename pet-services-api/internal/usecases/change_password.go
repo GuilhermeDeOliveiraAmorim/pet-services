@@ -8,6 +8,7 @@ import (
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
+	"pet-services-api/internal/mail"
 )
 
 type ChangePasswordInput struct {
@@ -28,12 +29,14 @@ type ChangePasswordOutput struct {
 
 type ChangePasswordUseCase struct {
 	userRepository entities.UserRepository
+	emailService   mail.EmailService
 	logger         logging.LoggerInterface
 }
 
-func NewChangePasswordUseCase(userRepo entities.UserRepository, logger logging.LoggerInterface) *ChangePasswordUseCase {
+func NewChangePasswordUseCase(userRepo entities.UserRepository, emailService mail.EmailService, logger logging.LoggerInterface) *ChangePasswordUseCase {
 	return &ChangePasswordUseCase{
 		userRepository: userRepo,
+		emailService:   emailService,
 		logger:         logger,
 	}
 }
@@ -77,6 +80,10 @@ func (uc *ChangePasswordUseCase) Execute(ctx context.Context, input ChangePasswo
 
 	if err := uc.userRepository.Update(user); err != nil {
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao salvar usuário", err)
+	}
+
+	if err := uc.emailService.SendPasswordChangedAlertEmail(user.Login.Email, user.Name); err != nil {
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao enviar alerta de segurança por email", err)
 	}
 
 	return &ChangePasswordOutput{

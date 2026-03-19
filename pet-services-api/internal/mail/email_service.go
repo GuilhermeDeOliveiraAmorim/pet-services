@@ -10,6 +10,8 @@ import (
 type EmailService interface {
 	SendVerificationEmail(to, token string) error
 	SendPasswordResetEmail(to, token string) error
+	SendPasswordChangedAlertEmail(to, name string) error
+	SendPasswordResetSuccessEmail(to, name string) error
 	SendRequestCreatedEmail(to, providerName, ownerName, petName, serviceName, requestID string) error
 	SendRequestAcceptedEmail(to, ownerName, providerName, petName, requestID string) error
 	SendRequestRejectedEmail(to, ownerName, providerName, petName, reason, requestID string) error
@@ -152,6 +154,96 @@ func (s *SMTPEmailService) SendPasswordResetEmail(to, token string) error {
 </body>
 </html>
 `, resetLink, resetLink)
+
+	return s.sendEmail(to, subject, body)
+}
+
+func (s *SMTPEmailService) SendPasswordChangedAlertEmail(to, name string) error {
+	subject := "Alerta de seguranca: senha alterada - Pet Services"
+
+	body := fmt.Sprintf(`
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+		body { margin: 0; padding: 0; background-color: #f4f7fb; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif; color: #1f2937; }
+		.wrapper { width: 100%%; padding: 28px 12px; }
+		.container { max-width: 620px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; }
+		.header { padding: 28px 24px; text-align: center; color: #ffffff; background: linear-gradient(135deg, #1d4ed8 0%%, #3b82f6 100%%); }
+		.header h1 { margin: 0; font-size: 28px; line-height: 1.2; }
+		.content { padding: 28px 24px; font-size: 16px; line-height: 1.6; }
+		.callout { background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 14px; margin: 18px 0; }
+		.footer { text-align: center; padding: 20px 16px 26px 16px; font-size: 12px; color: #6b7280; }
+	</style>
+</head>
+<body>
+	<div class="wrapper">
+		<div class="container">
+			<div class="header">
+				<h1>Senha alterada</h1>
+			</div>
+			<div class="content">
+				<p>Ola %s,</p>
+				<p>Este e um alerta de seguranca confirmando que a senha da sua conta foi alterada com sucesso.</p>
+				<div class="callout">
+					<p>Se voce nao reconhece esta alteracao, redefina sua senha imediatamente e entre em contato com o suporte.</p>
+				</div>
+			</div>
+			<div class="footer">
+				&copy; 2026 Pet Services. Todos os direitos reservados.
+			</div>
+		</div>
+	</div>
+</body>
+</html>
+`, html.EscapeString(name))
+
+	return s.sendEmail(to, subject, body)
+}
+
+func (s *SMTPEmailService) SendPasswordResetSuccessEmail(to, name string) error {
+	subject := "Senha redefinida com sucesso - Pet Services"
+
+	body := fmt.Sprintf(`
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+		body { margin: 0; padding: 0; background-color: #f4f7fb; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif; color: #1f2937; }
+		.wrapper { width: 100%%; padding: 28px 12px; }
+		.container { max-width: 620px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; }
+		.header { padding: 28px 24px; text-align: center; color: #ffffff; background: linear-gradient(135deg, #15803d 0%%, #22c55e 100%%); }
+		.header h1 { margin: 0; font-size: 28px; line-height: 1.2; }
+		.content { padding: 28px 24px; font-size: 16px; line-height: 1.6; }
+		.callout { background-color: #f0fdf4; border: 1px solid #86efac; border-radius: 10px; padding: 14px; margin: 18px 0; }
+		.footer { text-align: center; padding: 20px 16px 26px 16px; font-size: 12px; color: #6b7280; }
+	</style>
+</head>
+<body>
+	<div class="wrapper">
+		<div class="container">
+			<div class="header">
+				<h1>Senha redefinida</h1>
+			</div>
+			<div class="content">
+				<p>Ola %s,</p>
+				<p>Sua senha foi redefinida com sucesso.</p>
+				<div class="callout">
+					<p>Se voce nao solicitou esta redefinicao, proteja sua conta imediatamente e entre em contato com o suporte.</p>
+				</div>
+			</div>
+			<div class="footer">
+				&copy; 2026 Pet Services. Todos os direitos reservados.
+			</div>
+		</div>
+	</div>
+</body>
+</html>
+`, html.EscapeString(name))
 
 	return s.sendEmail(to, subject, body)
 }

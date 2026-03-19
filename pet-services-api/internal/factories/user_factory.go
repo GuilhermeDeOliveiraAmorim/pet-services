@@ -45,7 +45,7 @@ func NewUserFactory(db *gorm.DB, storageService storage.ObjectStorage, mailServi
 		GetUserByID:      usecases.NewGetUserByIDUseCase(userRepo, storageService, logger),
 		CheckEmailExists: usecases.NewCheckEmailExistsUseCase(userRepo, logger),
 		CheckPhoneExists: usecases.NewCheckPhoneExistsUseCase(userRepo, logger),
-		ChangePassword:   usecases.NewChangePasswordUseCase(userRepo, logger),
+		ChangePassword:   usecases.NewChangePasswordUseCase(userRepo, mailService, logger),
 		AddUserPhoto:     usecases.NewAddUserPhotoUseCase(userRepo, photoRepo, storageService, logger),
 	}
 }
