@@ -25,12 +25,13 @@ func NewRequestFactory(db *gorm.DB, storageService storage.ObjectStorage, mailSe
 	serviceRepo := repository_impl.NewServiceRepository(db)
 	providerRepo := repository_impl.NewProviderRepository(db)
 	requestRepo := repository_impl.NewRequestRepository(db)
+	reviewRepo := repository_impl.NewReviewRepository(db)
 
 	return &RequestFactory{
 		AddRequest:      usecases.NewAddRequestUseCase(userRepo, petRepo, serviceRepo, providerRepo, requestRepo, mailService, logger),
 		ListRequests:    usecases.NewListRequestsUseCase(userRepo, requestRepo, providerRepo, serviceRepo, storageService, logger),
 		AcceptRequest:   usecases.NewAcceptRequestUseCase(userRepo, providerRepo, requestRepo, mailService, logger),
-		CompleteRequest: usecases.NewCompleteRequestUseCase(userRepo, providerRepo, requestRepo, mailService, logger),
+		CompleteRequest: usecases.NewCompleteRequestUseCase(userRepo, providerRepo, requestRepo, reviewRepo, mailService, logger),
 		RejectRequest:   usecases.NewRejectRequestUseCase(userRepo, providerRepo, requestRepo, mailService, logger),
 		GetRequest:      usecases.NewGetRequestUseCase(userRepo, providerRepo, requestRepo, storageService, logger),
 	}

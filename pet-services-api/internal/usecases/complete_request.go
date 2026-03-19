@@ -3,6 +3,10 @@ package usecases
 import (
 	"context"
 	"errors"
+	"os"
+	"strconv"
+	"strings"
+	"time"
 
 	"pet-services-api/internal/consts"
 	"pet-services-api/internal/entities"
@@ -26,14 +30,34 @@ type CompleteRequestUseCase struct {
 	userRepository     entities.UserRepository
 	providerRepository entities.ProviderRepository
 	requestRepository  entities.RequestRepository
+	reviewRepository   entities.ReviewRepository
 	emailService       mail.EmailService
 	logger             logging.LoggerInterface
+}
+
+var reviewReminderDelay = resolveReviewReminderDelay()
+
+func resolveReviewReminderDelay() time.Duration {
+	const defaultDelay = 24 * time.Hour
+
+	raw := strings.TrimSpace(os.Getenv("REVIEW_REMINDER_DELAY_MINUTES"))
+	if raw == "" {
+		return defaultDelay
+	}
+
+	minutes, err := strconv.Atoi(raw)
+	if err != nil || minutes <= 0 {
+		return defaultDelay
+	}
+
+	return time.Duration(minutes) * time.Minute
 }
 
 func NewCompleteRequestUseCase(
 	userRepository entities.UserRepository,
 	providerRepository entities.ProviderRepository,
 	requestRepository entities.RequestRepository,
+	reviewRepository entities.ReviewRepository,
 	emailService mail.EmailService,
 	logger logging.LoggerInterface,
 ) *CompleteRequestUseCase {
@@ -41,9 +65,43 @@ func NewCompleteRequestUseCase(
 		userRepository:     userRepository,
 		providerRepository: providerRepository,
 		requestRepository:  requestRepository,
+		reviewRepository:   reviewRepository,
 		emailService:       emailService,
 		logger:             logger,
 	}
+}
+
+func (uc *CompleteRequestUseCase) scheduleReviewReminder(owner *entities.User, providerName, petName, requestID, providerID string) {
+	if owner == nil || owner.Login.Email == "" {
+		return
+	}
+
+	ownerID := owner.ID
+	ownerName := owner.Name
+	ownerEmail := owner.Login.Email
+
+	go func() {
+		const from = "CompleteRequestUseCase.scheduleReviewReminder"
+
+		timer := time.NewTimer(reviewReminderDelay)
+		defer timer.Stop()
+
+		<-timer.C
+
+		reviews, total, err := uc.reviewRepository.List(providerID, ownerID, 1, 1)
+		if err != nil {
+			uc.logger.LogWarning(context.Background(), from, "Erro ao verificar reviews para lembrete", err)
+			return
+		}
+
+		if total > 0 || len(reviews) > 0 {
+			return
+		}
+
+		if err := uc.emailService.SendReviewReminderEmail(ownerEmail, ownerName, providerName, petName, requestID); err != nil {
+			uc.logger.LogWarning(context.Background(), from, "Erro ao enviar lembrete de avaliação", err)
+		}
+	}()
 }
 
 func (uc *CompleteRequestUseCase) Execute(ctx context.Context, input CompleteRequestInput) (*CompleteRequestOutput, []exceptions.ProblemDetails) {
@@ -116,6 +174,8 @@ func (uc *CompleteRequestUseCase) Execute(ctx context.Context, input CompleteReq
 	); err != nil {
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao enviar email de solicitação concluída", err)
 	}
+
+	uc.scheduleReviewReminder(owner, user.Name, request.Pet.Name, request.ID, provider.ID)
 
 	uc.logger.LogInfo(ctx, from, "Solicitação concluída com sucesso")
 
