@@ -16,7 +16,6 @@ type CheckPhoneExistsInput struct {
 }
 
 type CheckPhoneExistsOutput struct {
-	Exists  bool   `json:"exists"`
 	Message string `json:"message,omitempty"`
 }
 
@@ -48,7 +47,7 @@ func (uc *CheckPhoneExistsUseCase) Execute(ctx context.Context, input CheckPhone
 		return nil, loggedErrors
 	}
 
-	exists, err := uc.userRepository.ExistsByPhone(input.CountryCode, input.AreaCode, input.Number)
+	_, err := uc.userRepository.ExistsByPhone(input.CountryCode, input.AreaCode, input.Number)
 	if err != nil {
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao verificar telefone", err)
 	}
@@ -56,7 +55,6 @@ func (uc *CheckPhoneExistsUseCase) Execute(ctx context.Context, input CheckPhone
 	message := "Solicitação processada"
 
 	return &CheckPhoneExistsOutput{
-		Exists:  exists,
 		Message: message,
 	}, nil
 }

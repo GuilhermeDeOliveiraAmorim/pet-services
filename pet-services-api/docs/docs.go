@@ -4467,9 +4467,6 @@ const docTemplate = `{
         "usecases.CheckEmailExistsOutput": {
             "type": "object",
             "properties": {
-                "exists": {
-                    "type": "boolean"
-                },
                 "message": {
                     "type": "string"
                 }
@@ -4492,9 +4489,6 @@ const docTemplate = `{
         "usecases.CheckPhoneExistsOutput": {
             "type": "object",
             "properties": {
-                "exists": {
-                    "type": "boolean"
-                },
                 "message": {
                     "type": "string"
                 }

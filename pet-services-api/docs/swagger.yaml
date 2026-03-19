@@ -550,8 +550,6 @@ definitions:
     type: object
   usecases.CheckEmailExistsOutput:
     properties:
-      exists:
-        type: boolean
       message:
         type: string
     type: object
@@ -566,8 +564,6 @@ definitions:
     type: object
   usecases.CheckPhoneExistsOutput:
     properties:
-      exists:
-        type: boolean
       message:
         type: string
     type: object
