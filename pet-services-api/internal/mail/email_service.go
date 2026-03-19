@@ -20,6 +20,7 @@ type EmailService interface {
 	SendRequestAcceptedEmail(to, ownerName, providerName, petName, requestID string) error
 	SendRequestRejectedEmail(to, ownerName, providerName, petName, reason, requestID string) error
 	SendRequestCompletedEmail(to, ownerName, providerName, petName, requestID string) error
+	SendReviewReceivedEmail(to, providerName, ownerName string, rating float64, comment string) error
 }
 
 type SMTPEmailService struct {
@@ -621,6 +622,53 @@ func (s *SMTPEmailService) SendRequestCompletedEmail(to, ownerName, providerName
 </body>
 </html>
 `, html.EscapeString(ownerName), html.EscapeString(providerName), html.EscapeString(petName), html.EscapeString(requestID))
+
+	return s.sendEmail(to, subject, body)
+}
+
+func (s *SMTPEmailService) SendReviewReceivedEmail(to, providerName, ownerName string, rating float64, comment string) error {
+	subject := "Voce recebeu uma nova review - Pet Services"
+
+	body := fmt.Sprintf(`
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+		body { margin: 0; padding: 0; background-color: #f4f7fb; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif; color: #1f2937; }
+		.wrapper { width: 100%%; padding: 28px 12px; }
+		.container { max-width: 620px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; }
+		.header { padding: 28px 24px; text-align: center; color: #ffffff; background: linear-gradient(135deg, #0f766e 0%%, #06b6d4 100%%); }
+		.header h1 { margin: 0; font-size: 28px; line-height: 1.2; }
+		.content { padding: 28px 24px; font-size: 16px; line-height: 1.6; }
+		.details { background-color: #f0fdfa; border: 1px solid #99f6e4; border-radius: 10px; padding: 14px; margin-top: 16px; }
+		.footer { text-align: center; padding: 20px 16px 26px 16px; font-size: 12px; color: #6b7280; }
+	</style>
+</head>
+<body>
+	<div class="wrapper">
+		<div class="container">
+			<div class="header">
+				<h1>Nova review recebida</h1>
+			</div>
+			<div class="content">
+				<p>Ola %s,</p>
+				<p>Seu perfil recebeu uma nova avaliacao.</p>
+				<div class="details">
+					<p><strong>Cliente:</strong> %s</p>
+					<p><strong>Nota:</strong> %.1f/5</p>
+					<p><strong>Comentario:</strong> %s</p>
+				</div>
+			</div>
+			<div class="footer">
+				&copy; 2026 Pet Services. Todos os direitos reservados.
+			</div>
+		</div>
+	</div>
+</body>
+</html>
+`, html.EscapeString(providerName), html.EscapeString(ownerName), rating, html.EscapeString(comment))
 
 	return s.sendEmail(to, subject, body)
 }

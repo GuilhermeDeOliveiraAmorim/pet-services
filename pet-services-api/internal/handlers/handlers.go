@@ -43,7 +43,7 @@ func NewHandlerFactory(inputFactory database.StorageInput, logger logging.Logger
 	serviceFactory := factories.NewServiceFactory(inputFactory.DB, storageService, logger)
 	requestFactory := factories.NewRequestFactory(inputFactory.DB, storageService, mailService, logger)
 	categoryFactory := factories.NewCategoryFactory(inputFactory.DB, logger)
-	reviewFactory := factories.NewReviewFactory(inputFactory.DB, logger)
+	reviewFactory := factories.NewReviewFactory(inputFactory.DB, mailService, logger)
 
 	return &HandlerFactory{
 		UserHandler:      NewUserHandler(userFactory, logger),
