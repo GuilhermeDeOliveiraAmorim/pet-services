@@ -86,6 +86,42 @@ API robusta e escalável para gerenciamento de serviços pet, desenvolvida em Go
 - ✅ Gerenciamento de conexões do banco
 - ✅ Migrações automáticas
 
+## ✉️ Notificações por E-mail
+
+### Eventos cobertos
+
+- ✅ Verificação de e-mail no cadastro
+- ✅ Boas-vindas após verificação de conta
+- ✅ Solicitação de reset de senha
+- ✅ Confirmação de senha redefinida
+- ✅ Alerta de alteração de senha
+- ✅ Alerta por tentativa de login bloqueada
+- ✅ Conta desativada
+- ✅ Conta reativada
+- ✅ Conta removida (soft delete)
+- ✅ Nova solicitação recebida pelo provider
+- ✅ Confirmação de solicitação enviada para owner
+- ✅ Solicitação aceita
+- ✅ Solicitação rejeitada
+- ✅ Solicitação concluída
+- ✅ Notificação de nova review para provider
+- ✅ Lembrete de avaliação para owner após solicitação concluída
+
+### Lembrete de avaliação assíncrono
+
+- O lembrete de avaliação é agendado em background após a conclusão da solicitação.
+- Antes de enviar, o sistema verifica se o owner já avaliou o provider.
+- Se já existir review, o lembrete não é enviado.
+
+Variável de ambiente opcional:
+
+```bash
+REVIEW_REMINDER_DELAY_MINUTES=1440
+```
+
+- Valor padrão: `1440` minutos (24 horas).
+- O agendamento atual é em memória do processo da API. Em caso de restart antes do tempo de disparo, o lembrete pode não ser enviado.
+
 ## 📊 Arquitetura
 
 A API segue os princípios de **Clean Architecture** com separação clara de responsabilidades:
@@ -784,6 +820,7 @@ test: adicionar testes de rate limiting
 ### Visão Geral
 
 A API suporta dois provedores de armazenamento:
+
 - **MinIO**: Para desenvolvimento local
 - **Google Cloud Storage (GCS)**: Para produção
 
@@ -799,6 +836,7 @@ docker-compose up -d
 ```
 
 **Variáveis necessárias:**
+
 ```env
 MINIO_ENDPOINT=minio:9000
 MINIO_ACCESS_KEY=petimages
@@ -815,6 +853,7 @@ MINIO_USE_SSL=false
 #### ⚡ Quick Start (5 minutos)
 
 1. **Criar Service Account no Google Cloud**
+
 ```bash
 gcloud iam service-accounts create pet-services \
   --display-name="Pet Services Storage"
@@ -828,17 +867,20 @@ gcloud iam service-accounts keys create sa-key.json \
 ```
 
 2. **Criar Bucket GCS**
+
 ```bash
 gsutil mb -l us-central1 gs://seu-bucket-nome
 ```
 
 3. **Configurar Variáveis de Ambiente**
+
 ```env
 IMAGE_BUCKET_NAME=seu-bucket-nome
 GOOGLE_APPLICATION_CREDENTIALS=/caminho/para/sa-key.json
 ```
 
 4. **Testar Conexão**
+
 ```bash
 go run ./cmd/test-gcs/main.go
 ```
@@ -846,6 +888,7 @@ go run ./cmd/test-gcs/main.go
 #### 📋 Configuração Completa
 
 **Pré-requisitos:**
+
 - Google Cloud Account
 - `gcloud` CLI instalado
 - Projeto Google Cloud criado
@@ -853,6 +896,7 @@ go run ./cmd/test-gcs/main.go
 **Passos detalhados:**
 
 1. **Autenticar no Google Cloud**
+
 ```bash
 curl https://sdk.cloud.google.com | bash
 gcloud auth login
@@ -860,6 +904,7 @@ gcloud config set project seu-gcp-project-id
 ```
 
 2. **Criar Service Account com Storage Admin**
+
 ```bash
 gcloud iam service-accounts create pet-services-storage \
   --display-name="Pet Services Storage"
@@ -870,12 +915,14 @@ gcloud projects add-iam-policy-binding seu-gcp-project-id \
 ```
 
 3. **Gerar e Baixar Chave JSON**
+
 ```bash
 gcloud iam service-accounts keys create service-account-key.json \
   --iam-account=pet-services-storage@seu-gcp-project-id.iam.gserviceaccount.com
 ```
 
 4. **Criar Bucket**
+
 ```bash
 gsutil mb -p seu-gcp-project-id -l us-central1 gs://pet-services-bucket
 
@@ -894,12 +941,14 @@ gsutil cors set cors.json gs://pet-services-bucket
 ```
 
 5. **Configurar .env**
+
 ```env
 IMAGE_BUCKET_NAME=pet-services-bucket
 GOOGLE_APPLICATION_CREDENTIALS=/app/service-account-key.json
 ```
 
 6. **Migrar Dados do MinIO (Opcional)**
+
 ```bash
 go run ./scripts/migrate-to-gcs/main.go \
   --minio-endpoint=localhost:9000 \
@@ -923,6 +972,7 @@ type ObjectStorage interface {
 ```
 
 **Seleção automática:**
+
 ```
 if IMAGE_BUCKET_NAME (ou GCS_BUCKET_NAME) configurado:
     ✅ Use Google Cloud Storage
@@ -933,18 +983,20 @@ else:
 #### 📝 Exemplos de Código
 
 **Upload de Foto**
+
 ```go
 func (h *PhotoHandler) Upload(c *gin.Context) {
     file, _ := c.FormFile("photo")
     f, _ := file.Open()
     defer f.Close()
-    
+
     objectName := fmt.Sprintf("users/%s/%s", userID, file.Filename)
     h.storageService.Upload(c.Request.Context(), objectName, f, file.Size, file.Header.Get("Content-Type"))
 }
 ```
 
 **Gerar URL Assinada (15 minutos)**
+
 ```go
 func (h *PhotoHandler) GetSignedURL(c *gin.Context) {
     url, _ := h.storageService.GenerateReadURL(
@@ -957,6 +1009,7 @@ func (h *PhotoHandler) GetSignedURL(c *gin.Context) {
 ```
 
 **Deletar Foto**
+
 ```go
 func (h *PhotoHandler) Delete(c *gin.Context) {
     h.storageService.Delete(c.Request.Context(), objectName)
@@ -973,11 +1026,13 @@ func (h *PhotoHandler) Delete(c *gin.Context) {
 #### ✅ Verificação
 
 **Testar conexão GCS:**
+
 ```bash
 go run ./cmd/test-gcs/main.go
 ```
 
 **Esperado:**
+
 ```
 ✅ Conectado ao Google Cloud Storage
 ✅ Bucket encontrado: seu-bucket
@@ -990,12 +1045,12 @@ go run ./cmd/test-gcs/main.go
 
 #### 🚨 Troubleshooting
 
-| Erro | Solução |
-|------|---------|
-| "bucket not found" | Verificar `IMAGE_BUCKET_NAME` e nome real do bucket |
-| "permission denied" | Service account precisa de `Storage Admin` role |
+| Erro                  | Solução                                             |
+| --------------------- | --------------------------------------------------- |
+| "bucket not found"    | Verificar `IMAGE_BUCKET_NAME` e nome real do bucket |
+| "permission denied"   | Service account precisa de `Storage Admin` role     |
 | "invalid credentials" | Verificar caminho e validade do arquivo sa-key.json |
-| "connection refused" | Verificar endpoint MinIO em desenvolvimento |
+| "connection refused"  | Verificar endpoint MinIO em desenvolvimento         |
 
 #### 📊 Migração Gradual (Opcional)
 
@@ -1004,18 +1059,18 @@ Para transição suave entre MinIO e GCS:
 **Fase 1:** Dev → MinIO, Staging → MinIO, Prod → GCS  
 **Fase 2:** Validar dados em GCS  
 **Fase 3:** Testar failover (GCS → MinIO)  
-**Fase 4:** Remover MinIO quando estável  
+**Fase 4:** Remover MinIO quando estável
 
 #### 🎯 Comparação
 
-| Aspecto | MinIO | GCS |
-|---------|-------|-----|
-| Desenvolvimento | ✅ Ideal | ❌ Overkill |
-| Produção | ⚠️ Complexo | ✅ Recomendado |
-| Custo | 🔴 Alto | 🟢 Baixo (~$0.02-$20/mês) |
-| Manutenção | 🔴 Manual | 🟢 Automática |
-| Escalabilidade | 🟡 Limitada | 🟢 Infinita |
-| Durabilidade | 🟡 Boa | 🟢 11 noves |
+| Aspecto         | MinIO       | GCS                       |
+| --------------- | ----------- | ------------------------- |
+| Desenvolvimento | ✅ Ideal    | ❌ Overkill               |
+| Produção        | ⚠️ Complexo | ✅ Recomendado            |
+| Custo           | 🔴 Alto     | 🟢 Baixo (~$0.02-$20/mês) |
+| Manutenção      | 🔴 Manual   | 🟢 Automática             |
+| Escalabilidade  | 🟡 Limitada | 🟢 Infinita               |
+| Durabilidade    | 🟡 Boa      | 🟢 11 noves               |
 
 ## 📞 Suporte e Contato
 
@@ -1030,4 +1085,4 @@ MIT License - veja [LICENSE](LICENSE) para detalhes.
 
 ---
 
-**Última atualização**: 18 de fevereiro de 2026  
+**Última atualização**: 18 de fevereiro de 2026
