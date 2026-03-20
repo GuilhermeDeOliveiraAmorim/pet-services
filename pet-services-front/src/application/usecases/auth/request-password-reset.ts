@@ -9,8 +9,6 @@ export interface RequestPasswordResetInput {
 export interface RequestPasswordResetOutput {
   message?: string;
   detail?: string;
-  resetToken?: string;
-  expiresAt?: string;
 }
 
 export class RequestPasswordResetUseCase {
