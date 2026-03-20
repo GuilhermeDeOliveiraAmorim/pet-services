@@ -791,9 +791,9 @@ export default function ProviderDashboardPage() {
           serviceId: editingServiceId,
           name: name.trim(),
           description: description.trim(),
-          price: hasFixedPrice ? parsedPrice : undefined,
-          priceMinimum: hasPriceRange ? parsedPriceMinimum : undefined,
-          priceMaximum: hasPriceRange ? parsedPriceMaximum : undefined,
+          price: hasFixedPrice ? parsedPrice : 0,
+          priceMinimum: hasPriceRange ? parsedPriceMinimum : 0,
+          priceMaximum: hasPriceRange ? parsedPriceMaximum : 0,
           duration: parsedDuration,
         });
 
