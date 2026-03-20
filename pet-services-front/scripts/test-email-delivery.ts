@@ -12,6 +12,7 @@ if (!email) {
 const apiBaseUrl = process.env.API_URL ?? "http://localhost:8080";
 const shouldVerify =
   String(process.env.DO_VERIFY_EMAIL ?? "false").toLowerCase() === "true";
+const verifyToken = process.env.TEST_VERIFY_TOKEN;
 
 const { authGateway } = createApiContext(apiBaseUrl);
 const { resendVerificationEmailUseCase, verifyEmailUseCase } =
@@ -30,16 +31,7 @@ const run = async () => {
   console.log({
     message: resend.message,
     detail: resend.detail,
-    verifyTokenReturned: Boolean(resend.verifyToken),
-    expiresAt: resend.expiresAt,
   });
-
-  if (!resend.verifyToken) {
-    console.error(
-      "\nO backend não retornou verify_token. Sem token não dá para validar a sequência.",
-    );
-    process.exit(1);
-  }
 
   if (!shouldVerify) {
     console.log(
@@ -54,9 +46,16 @@ const run = async () => {
     return;
   }
 
+  if (!verifyToken) {
+    console.error(
+      "\nDefina TEST_VERIFY_TOKEN para validar /auth/verify-email quando DO_VERIFY_EMAIL=true.",
+    );
+    process.exit(1);
+  }
+
   console.log("\n→ 2) Validando token no endpoint /auth/verify-email...");
   const verify = await verifyEmailUseCase.execute({
-    token: resend.verifyToken,
+    token: verifyToken,
   });
   console.log("Resposta da verificação:", verify);
   console.log("\n✅ Fluxo de reenvio + verificação executado com sucesso.");

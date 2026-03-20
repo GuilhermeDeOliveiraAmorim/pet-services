@@ -16,8 +16,8 @@ type GetProfileInput struct {
 }
 
 type GetProfileOutput struct {
-	User       *entities.User `json:"user"`
-	ProviderID string         `json:"provider_id,omitempty"`
+	User       *UserOutput `json:"user"`
+	ProviderID string      `json:"provider_id,omitempty"`
 }
 
 type GetProfileUseCase struct {
@@ -60,7 +60,7 @@ func (uc *GetProfileUseCase) Execute(ctx context.Context, input GetProfileInput)
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao gerar URLs das fotos", err)
 	}
 
-	output := &GetProfileOutput{User: user}
+	output := &GetProfileOutput{User: NewUserOutput(user)}
 
 	if user.IsProvider() {
 		provider, err := uc.providerRepository.FindByUserID(user.ID)

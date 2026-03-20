@@ -39,7 +39,7 @@ export class AuthGatewayAxios implements AuthGateway {
     };
 
     const { data } = await this.http.post<{
-      user: Record<string, any>;
+      user: Record<string, unknown>;
       access_token: string;
       refresh_token: string;
       expires_in: number;
@@ -98,15 +98,11 @@ export class AuthGatewayAxios implements AuthGateway {
     const { data } = await this.http.post<{
       message?: string;
       detail?: string;
-      reset_token?: string;
-      expires_at?: string;
     }>("/auth/request-password-reset", payload);
 
     return {
       message: data.message,
       detail: data.detail,
-      resetToken: data.reset_token,
-      expiresAt: data.expires_at,
     };
   }
 
@@ -135,15 +131,11 @@ export class AuthGatewayAxios implements AuthGateway {
     const { data } = await this.http.post<{
       message?: string;
       detail?: string;
-      verify_token?: string;
-      expires_at?: string;
     }>("/auth/resend-verification-email", payload);
 
     return {
       message: data.message,
       detail: data.detail,
-      verifyToken: data.verify_token,
-      expiresAt: data.expires_at,
     };
   }
 

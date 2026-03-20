@@ -10,6 +10,7 @@ import (
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
+	"pet-services-api/internal/mail"
 
 	"github.com/oklog/ulid/v2"
 	"gorm.io/gorm"
@@ -27,13 +28,15 @@ type VerifyEmailOutput struct {
 type VerifyEmailUseCase struct {
 	userRepository        entities.UserRepository
 	verifyTokenRepository entities.RefreshTokenRepository
+	emailService          mail.EmailService
 	logger                logging.LoggerInterface
 }
 
-func NewVerifyEmailUseCase(userRepo entities.UserRepository, verifyRepo entities.RefreshTokenRepository, logger logging.LoggerInterface) *VerifyEmailUseCase {
+func NewVerifyEmailUseCase(userRepo entities.UserRepository, verifyRepo entities.RefreshTokenRepository, emailService mail.EmailService, logger logging.LoggerInterface) *VerifyEmailUseCase {
 	return &VerifyEmailUseCase{
 		userRepository:        userRepo,
 		verifyTokenRepository: verifyRepo,
+		emailService:          emailService,
 		logger:                logger,
 	}
 }
@@ -114,6 +117,10 @@ func (uc *VerifyEmailUseCase) Execute(ctx context.Context, input VerifyEmailInpu
 
 	if err := uc.verifyTokenRepository.RevokePasswordResetByToken(input.Token); err != nil {
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao revogar token", err)
+	}
+
+	if err := uc.emailService.SendWelcomeAfterVerificationEmail(user.Login.Email, user.Name); err != nil {
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao enviar email de boas-vindas", err)
 	}
 
 	uc.logger.LogInfo(ctx, from, "Email verificado com sucesso: user_id="+user.ID)

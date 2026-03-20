@@ -2,7 +2,6 @@ import type { User } from "@/domain";
 
 interface RawLogin {
   email?: string;
-  password?: string;
 }
 interface RawPhone {
   countryCode?: string;
@@ -64,7 +63,6 @@ export const mapUserFromApi = (user?: RawUser | null): User => {
     userType: (raw.userType ?? raw.user_type ?? "owner") as User["userType"],
     login: {
       email: raw.login?.email ?? "",
-      password: raw.login?.password ?? "",
     },
     phone: {
       countryCode: raw.phone?.countryCode ?? raw.phone?.country_code ?? "",

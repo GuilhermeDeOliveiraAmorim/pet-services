@@ -9,6 +9,7 @@ import (
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
+	"pet-services-api/internal/mail"
 
 	"gorm.io/gorm"
 )
@@ -26,13 +27,15 @@ type ResetPasswordOutput struct {
 type ResetPasswordUseCase struct {
 	userRepository       entities.UserRepository
 	resetTokenRepository entities.RefreshTokenRepository
+	emailService         mail.EmailService
 	logger               logging.LoggerInterface
 }
 
-func NewResetPasswordUseCase(userRepo entities.UserRepository, resetRepo entities.RefreshTokenRepository, logger logging.LoggerInterface) *ResetPasswordUseCase {
+func NewResetPasswordUseCase(userRepo entities.UserRepository, resetRepo entities.RefreshTokenRepository, emailService mail.EmailService, logger logging.LoggerInterface) *ResetPasswordUseCase {
 	return &ResetPasswordUseCase{
 		userRepository:       userRepo,
 		resetTokenRepository: resetRepo,
+		emailService:         emailService,
 		logger:               logger,
 	}
 }
@@ -80,6 +83,10 @@ func (uc *ResetPasswordUseCase) Execute(ctx context.Context, input ResetPassword
 
 	if err := uc.userRepository.Update(user); err != nil {
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao salvar usuário", err)
+	}
+
+	if err := uc.emailService.SendPasswordResetSuccessEmail(user.Login.Email, user.Name); err != nil {
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao enviar confirmação de redefinição por email", err)
 	}
 
 	return &ResetPasswordOutput{

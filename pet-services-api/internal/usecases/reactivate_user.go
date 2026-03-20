@@ -8,6 +8,7 @@ import (
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
+	"pet-services-api/internal/mail"
 )
 
 type ReactivateUserInput struct {
@@ -21,12 +22,14 @@ type ReactivateUserOutput struct {
 
 type ReactivateUserUseCase struct {
 	userRepository entities.UserRepository
+	emailService   mail.EmailService
 	logger         logging.LoggerInterface
 }
 
-func NewReactivateUserUseCase(userRepo entities.UserRepository, logger logging.LoggerInterface) *ReactivateUserUseCase {
+func NewReactivateUserUseCase(userRepo entities.UserRepository, emailService mail.EmailService, logger logging.LoggerInterface) *ReactivateUserUseCase {
 	return &ReactivateUserUseCase{
 		userRepository: userRepo,
+		emailService:   emailService,
 		logger:         logger,
 	}
 }
@@ -57,6 +60,10 @@ func (uc *ReactivateUserUseCase) Execute(ctx context.Context, input ReactivateUs
 
 	if err := uc.userRepository.Update(user); err != nil {
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao reativar usuário", err)
+	}
+
+	if err := uc.emailService.SendAccountReactivatedEmail(user.Login.Email, user.Name); err != nil {
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao enviar email de conta reativada", err)
 	}
 
 	return &ReactivateUserOutput{
