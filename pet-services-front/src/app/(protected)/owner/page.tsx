@@ -24,6 +24,8 @@ import {
   useUserAddPhoto,
   useUserProfile,
 } from "@/application";
+import { USER_KEYS } from "@/application/hooks/user/user-query-keys";
+import { PET_KEYS } from "@/application/hooks/pet/pet-query-keys";
 import type { Pet } from "@/domain";
 import { UserTypes } from "@/domain";
 import ChangePasswordCard from "@/components/account/ChangePasswordCard";
@@ -78,7 +80,7 @@ export default function OwnerDashboardPage() {
     isSuccess: uploadSuccess,
   } = useUserAddPhoto({
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["user-profile"] }),
+      queryClient.invalidateQueries({ queryKey: USER_KEYS.profile() }),
   });
 
   const {
@@ -88,8 +90,8 @@ export default function OwnerDashboardPage() {
     isSuccess: addPetSuccess,
   } = usePetAdd({
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
-      queryClient.invalidateQueries({ queryKey: ["pets", "owner"] });
+      queryClient.invalidateQueries({ queryKey: USER_KEYS.profile() });
+      queryClient.invalidateQueries({ queryKey: PET_KEYS.byOwner() });
       setPetName("");
       setPetSpeciesId("");
       setPetBreed("");
@@ -101,7 +103,7 @@ export default function OwnerDashboardPage() {
 
   const { mutateAsync: updatePet, isPending: isUpdatingPet } = usePetUpdate({
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["pets", "owner"] });
+      queryClient.invalidateQueries({ queryKey: PET_KEYS.byOwner() });
       setEditingPet(null);
       setPetActionFeedback({
         type: "success",
@@ -112,7 +114,7 @@ export default function OwnerDashboardPage() {
 
   const { mutateAsync: deletePet, isPending: isDeletingPet } = usePetDelete({
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["pets", "owner"] });
+      queryClient.invalidateQueries({ queryKey: PET_KEYS.byOwner() });
       setPetActionFeedback({
         type: "success",
         message: "Pet excluído com sucesso.",
@@ -123,7 +125,7 @@ export default function OwnerDashboardPage() {
   const { mutateAsync: addPetPhoto, isPending: isUploadingPetPhoto } =
     usePetAddPhoto({
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["pets", "owner"] });
+        queryClient.invalidateQueries({ queryKey: PET_KEYS.byOwner() });
       },
     });
 

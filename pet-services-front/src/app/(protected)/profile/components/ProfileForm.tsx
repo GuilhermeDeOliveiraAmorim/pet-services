@@ -25,6 +25,7 @@ import {
   useUserAddPhoto,
   useUserUpdate,
 } from "@/application";
+import { USER_KEYS } from "@/application/hooks/user/user-query-keys";
 import { Send } from "lucide-react";
 import type { UpdateUserInput } from "@/application";
 import type { User } from "@/domain/entities/user";
@@ -47,7 +48,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
         const nextUser = response.user;
 
         queryClient.setQueryData<GetProfileOutput>(
-          ["user-profile"],
+          USER_KEYS.profile(),
           (previous) => {
             if (!previous) {
               return {
@@ -63,7 +64,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
         );
       }
 
-      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+      queryClient.invalidateQueries({ queryKey: USER_KEYS.profile() });
     },
   });
   const {
@@ -73,7 +74,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
     isSuccess: uploadSuccess,
   } = useUserAddPhoto({
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["user-profile"] }),
+      queryClient.invalidateQueries({ queryKey: USER_KEYS.profile() }),
   });
 
   const initialValues = useMemo(

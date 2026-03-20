@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import { PROVIDER_KEYS } from "@/application/hooks/provider/provider-query-keys";
+import { SERVICE_KEYS } from "@/application/hooks/service/service-query-keys";
+import { TAG_KEYS } from "@/application/hooks/tag/tag-query-keys";
+import { USER_KEYS } from "@/application/hooks/user/user-query-keys";
 import {
   Badge,
   Box,
@@ -72,32 +76,33 @@ export default function ProviderDashboardPage() {
   const { mutateAsync: addProvider, isPending: isAddingProvider } =
     useProviderAdd({
       onSuccess: () =>
-        queryClient.invalidateQueries({ queryKey: ["user-profile"] }),
+        queryClient.invalidateQueries({ queryKey: USER_KEYS.profile() }),
     });
   const { mutateAsync: updateProvider, isPending: isUpdatingProvider } =
     useProviderUpdate({
       onSuccess: (response, variables) => {
         if (response.provider) {
-          queryClient.setQueryData(["provider", response.provider.id], {
+          queryClient.setQueryData(PROVIDER_KEYS.detail(response.provider.id), {
             provider: response.provider,
           });
         }
 
         queryClient.invalidateQueries({
-          queryKey: ["provider", variables.providerId],
+          queryKey: PROVIDER_KEYS.detail(variables.providerId),
         });
       },
     });
   const { mutateAsync: addProviderPhoto, isPending: isAddingProviderPhoto } =
     useProviderAddPhoto({
       onSuccess: () =>
-        queryClient.invalidateQueries({ queryKey: ["provider"] }),
+        queryClient.invalidateQueries({ queryKey: PROVIDER_KEYS.all }),
     });
   const {
     mutateAsync: deleteProviderPhoto,
     isPending: isDeletingProviderPhoto,
   } = useProviderDeletePhoto({
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["provider"] }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: PROVIDER_KEYS.all }),
   });
 
   const provider = providerData?.provider;
@@ -125,50 +130,52 @@ export default function ProviderDashboardPage() {
   const { mutateAsync: addService, isPending: isAddingService } = useServiceAdd(
     {
       onSuccess: () =>
-        queryClient.invalidateQueries({ queryKey: ["services"] }),
+        queryClient.invalidateQueries({ queryKey: SERVICE_KEYS.lists() }),
     },
   );
   const { mutateAsync: updateService, isPending: isUpdatingService } =
     useServiceUpdate({
       onSuccess: () =>
-        queryClient.invalidateQueries({ queryKey: ["services"] }),
+        queryClient.invalidateQueries({ queryKey: SERVICE_KEYS.lists() }),
     });
   const { mutateAsync: deleteService, isPending: isDeletingService } =
     useServiceDelete({
       onSuccess: () =>
-        queryClient.invalidateQueries({ queryKey: ["services"] }),
+        queryClient.invalidateQueries({ queryKey: SERVICE_KEYS.lists() }),
     });
   const { mutateAsync: addServicePhoto, isPending: isAddingServicePhoto } =
     useServiceAddPhoto({
       onSuccess: () =>
-        queryClient.invalidateQueries({ queryKey: ["services"] }),
+        queryClient.invalidateQueries({ queryKey: SERVICE_KEYS.lists() }),
     });
   const { mutateAsync: deleteServicePhoto, isPending: isDeletingServicePhoto } =
     useServiceDeletePhoto({
       onSuccess: () =>
-        queryClient.invalidateQueries({ queryKey: ["services"] }),
+        queryClient.invalidateQueries({ queryKey: SERVICE_KEYS.lists() }),
     });
   const {
     mutateAsync: addServiceCategory,
     isPending: isAddingServiceCategory,
   } = useServiceAddCategory({
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["services"] }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: SERVICE_KEYS.lists() }),
   });
   const {
     mutateAsync: deleteServiceCategory,
     isPending: isDeletingServiceCategory,
   } = useServiceDeleteCategory({
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["services"] }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: SERVICE_KEYS.lists() }),
   });
   const { mutateAsync: deleteServiceTag, isPending: isDeletingServiceTag } =
     useServiceDeleteTag({
       onSuccess: () =>
-        queryClient.invalidateQueries({ queryKey: ["services"] }),
+        queryClient.invalidateQueries({ queryKey: SERVICE_KEYS.lists() }),
     });
   const { mutateAsync: addServiceTag, isPending: isAddingServiceTag } =
     useServiceAddTag({
       onSuccess: () =>
-        queryClient.invalidateQueries({ queryKey: ["services"] }),
+        queryClient.invalidateQueries({ queryKey: SERVICE_KEYS.lists() }),
     });
 
   const [name, setName] = useState("");
@@ -401,7 +408,7 @@ export default function ProviderDashboardPage() {
       if (response.tag) {
         const addedTag = response.tag;
         queryClient.setQueriesData<ListServicesOutput>(
-          { queryKey: ["services"] },
+          { queryKey: SERVICE_KEYS.lists() },
           (previous) => {
             if (!previous) {
               return previous;
@@ -432,7 +439,7 @@ export default function ProviderDashboardPage() {
         );
 
         queryClient.setQueriesData<ListTagsOutput>(
-          { queryKey: ["tags"] },
+          { queryKey: TAG_KEYS.lists() },
           (previous) => {
             if (!previous) {
               return previous;
@@ -455,7 +462,7 @@ export default function ProviderDashboardPage() {
         );
       }
 
-      queryClient.invalidateQueries({ queryKey: ["tags"] });
+      queryClient.invalidateQueries({ queryKey: TAG_KEYS.lists() });
 
       setSelectedTagByService((previous) => ({
         ...previous,
@@ -643,7 +650,7 @@ export default function ProviderDashboardPage() {
 
       if (response.provider?.id) {
         setCreatedProviderId(response.provider.id);
-        queryClient.setQueryData(["provider", response.provider.id], {
+        queryClient.setQueryData(PROVIDER_KEYS.detail(response.provider.id), {
           provider: response.provider,
         });
       }
