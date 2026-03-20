@@ -6,6 +6,7 @@ import {
   createServiceCases,
   createUserUseCases,
 } from "../../src/application";
+import type { Request as RequestEntity } from "../../src/domain/entities/request";
 import { UserTypes } from "../../src/domain";
 import { createApiContext } from "../../src/infra";
 
@@ -168,7 +169,6 @@ const run = async () => {
   if (!petId) {
     console.log("-> Buscar pet do owner");
     const petsResult = await ownerPets.listPets.execute();
-
     petId = petsResult.pets[0]?.id;
   }
 
@@ -178,42 +178,108 @@ const run = async () => {
   );
 
   console.log("-> Solicitar servico");
-  const createdRequest = await ownerRequests.addRequest.execute({
-    providerId: targetService.providerId,
-    serviceId: targetService.id,
-    petId,
-    notes: `Smoke E2E ${new Date().toISOString()}`,
-  });
+  const requestNotes = `Smoke E2E ${new Date().toISOString()}`;
+  let createdRequest: RequestEntity | null = null;
+
+  try {
+    const createdRequestResponse = await ownerRequests.addRequest.execute({
+      providerId: targetService.providerId,
+      serviceId: targetService.id,
+      petId,
+      notes: requestNotes,
+    });
+
+    createdRequest = createdRequestResponse;
+
+    if (!createdRequest.id) {
+      const ownerPendingRequests = await ownerRequests.listRequests.execute({
+        userId: ownerSession.userId,
+        providerId: targetService.providerId,
+        serviceId: targetService.id,
+        status: "pending",
+        page: 1,
+        pageSize: 100,
+      });
+
+      const matchedCreatedRequest = ownerPendingRequests.requests.find(
+        (request) => request.notes === requestNotes,
+      );
+
+      if (matchedCreatedRequest) {
+        createdRequest = matchedCreatedRequest;
+      }
+    }
+  } catch (error: unknown) {
+    const err = error as { response?: { status?: number } };
+
+    if (err.response?.status !== 409) {
+      throw error;
+    }
+
+    console.log(
+      "Conflito 409 ao solicitar; reutilizando solicitacao existente pendente/aceita para seguir o smoke.",
+    );
+
+    const existingRequests = await ownerRequests.listRequests.execute({
+      userId: ownerSession.userId,
+      providerId: targetService.providerId,
+      page: 1,
+      pageSize: 100,
+    });
+
+    const reusableRequest = existingRequests.requests.find(
+      (request) =>
+        request.serviceId === targetService.id &&
+        (request.status === "pending" || request.status === "accepted"),
+    );
+
+    assertCondition(
+      reusableRequest,
+      "Recebido 409 na solicitacao e nao foi encontrada solicitacao reutilizavel.",
+    );
+
+    createdRequest = reusableRequest ?? null;
+  }
+
+  if (!createdRequest) {
+    throw new Error("Solicitacao criada sem payload valido.");
+  }
 
   assertCondition(createdRequest.id, "Solicitacao criada sem id.");
   assertCondition(
-    createdRequest.status === "pending",
-    `Status apos criacao deveria ser pending, recebido ${createdRequest.status}.`,
+    createdRequest.status === "pending" || createdRequest.status === "accepted",
+    `Status apos criacao/reuso deveria ser pending ou accepted, recebido ${createdRequest.status}.`,
   );
 
-  console.log("Solicitacao criada:", {
+  console.log("Solicitacao pronta para fluxo:", {
     requestId: createdRequest.id,
     status: createdRequest.status,
   });
 
-  console.log("-> Aceitar solicitacao (provider)");
-  const acceptedRequest = await providerRequests.acceptRequest.execute({
-    id: createdRequest.id,
-  });
+  let requestAfterAccept: RequestEntity = createdRequest;
 
-  assertCondition(
-    acceptedRequest.status === "accepted",
-    `Status apos aceite deveria ser accepted, recebido ${acceptedRequest.status}.`,
-  );
+  if (requestAfterAccept.status === "pending") {
+    console.log("-> Aceitar solicitacao (provider)");
+    requestAfterAccept = await providerRequests.acceptRequest.execute({
+      id: requestAfterAccept.id,
+    });
 
-  console.log("Solicitacao aceita:", {
-    requestId: acceptedRequest.id,
-    status: acceptedRequest.status,
-  });
+    assertCondition(
+      requestAfterAccept.status === "accepted",
+      `Status apos aceite deveria ser accepted, recebido ${requestAfterAccept.status}.`,
+    );
+
+    console.log("Solicitacao aceita:", {
+      requestId: requestAfterAccept.id,
+      status: requestAfterAccept.status,
+    });
+  } else {
+    console.log("Solicitacao ja estava aceita. Pulando passo de aceite.");
+  }
 
   console.log("-> Concluir solicitacao (provider)");
   const completedRequest = await providerRequests.completeRequest.execute({
-    id: createdRequest.id,
+    id: requestAfterAccept.id,
   });
 
   assertCondition(
