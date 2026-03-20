@@ -11,6 +11,7 @@ import (
 
 type ProviderFactory struct {
 	AddProvider         *usecases.AddProviderUseCase
+	UpdateProvider      *usecases.UpdateProviderUseCase
 	AddProviderPhoto    *usecases.AddProviderPhotoUseCase
 	DeleteProviderPhoto *usecases.DeleteProviderPhotoUseCase
 	GetProvider         *usecases.GetProviderUseCase
@@ -25,6 +26,7 @@ func NewProviderFactory(db *gorm.DB, storageService storage.ObjectStorage, logge
 
 	return &ProviderFactory{
 		AddProvider:         usecases.NewAddProviderUseCase(userRepo, providerRepo, logger),
+		UpdateProvider:      usecases.NewUpdateProviderUseCase(userRepo, providerRepo, logger),
 		AddProviderPhoto:    usecases.NewAddProviderPhotoUseCase(userRepo, providerRepo, photoRepo, storageService, logger),
 		DeleteProviderPhoto: usecases.NewDeleteProviderPhotoUseCase(userRepo, providerRepo, photoRepo, storageService, logger),
 		GetProvider:         usecases.NewGetProviderUseCase(providerRepo, serviceRepo, storageService, logger),
