@@ -18,6 +18,7 @@ import type {
   UpdateProviderOutput,
 } from "@/application";
 import { createProviderCases } from "@/application/factories/provider-usecase-factory";
+import { PROVIDER_KEYS } from "@/application/hooks/provider/provider-query-keys";
 import { createApiContext } from "@/infra";
 
 const useProviderUseCases = () => {
@@ -86,7 +87,7 @@ export const useProviderGet = (
   const { getProvider } = useProviderUseCases();
 
   return useQuery({
-    queryKey: ["provider", providerId],
+    queryKey: PROVIDER_KEYS.detail(providerId!),
     queryFn: () => getProvider.execute(providerId!),
     enabled: Boolean(providerId),
     ...options,
@@ -115,7 +116,7 @@ export const useProviderList = (options?: ListProvidersOptions) => {
   const { listProviders } = useProviderUseCases();
 
   return useQuery({
-    queryKey: ["providers"],
+    queryKey: PROVIDER_KEYS.list(),
     queryFn: () => listProviders.execute(),
     ...options,
   });

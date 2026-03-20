@@ -19,6 +19,7 @@ import type {
   UpdatePetOutput,
 } from "@/application";
 import { createPetCases } from "@/application/factories/pet-usecase-factory";
+import { PET_KEYS } from "@/application/hooks/pet/pet-query-keys";
 import { createApiContext } from "@/infra";
 
 const usePetUseCases = () => {
@@ -89,7 +90,7 @@ export const usePetGet = (petId?: string | number, options?: GetPetOptions) => {
   const { getPet } = usePetUseCases();
 
   return useQuery({
-    queryKey: ["pet", petId],
+    queryKey: PET_KEYS.detail(petId!),
     queryFn: () => getPet.execute(petId!),
     enabled: Boolean(petId),
     ...options,
@@ -118,7 +119,7 @@ export const usePetList = (options?: ListPetsOptions) => {
   const { listPets } = usePetUseCases();
 
   return useQuery({
-    queryKey: ["pets"],
+    queryKey: PET_KEYS.list(),
     queryFn: () => listPets.execute(),
     ...options,
   });
@@ -131,7 +132,7 @@ export const usePetListByOwnerId = (
   const { listPetsByOwnerId } = usePetUseCases();
 
   return useQuery({
-    queryKey: ["pets", "owner", ownerId],
+    queryKey: PET_KEYS.byOwnerId(ownerId),
     queryFn: () => listPetsByOwnerId.execute(ownerId!),
     enabled: Boolean(ownerId),
     ...options,
