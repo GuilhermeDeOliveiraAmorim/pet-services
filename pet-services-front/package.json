@@ -21,7 +21,8 @@
     "test:provider-categories": "tsx scripts/provider/test-provider-categories-access.ts",
     "test:provider-tags": "tsx scripts/provider/test-provider-tags-access.ts",
     "test:profile-provider": "tsx scripts/provider/test-get-profile-provider-id.ts",
-    "test:profile-owner": "tsx scripts/provider/test-get-profile-owner-no-provider-id.ts"
+    "test:profile-owner": "tsx scripts/provider/test-get-profile-owner-no-provider-id.ts",
+    "test:e2e-smoke-critical": "tsx scripts/e2e/test-critical-flow-smoke.ts"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.34.0",
