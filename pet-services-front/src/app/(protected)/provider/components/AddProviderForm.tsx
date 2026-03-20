@@ -32,6 +32,7 @@ type Feedback = {
 };
 
 type AddProviderFormProps = {
+  mode?: "create" | "update";
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onPrefillFromProfile: () => void;
   canPrefillFromProfile: boolean;
@@ -68,6 +69,7 @@ type AddProviderFormProps = {
 };
 
 export default function AddProviderForm({
+  mode = "create",
   onSubmit,
   onPrefillFromProfile,
   canPrefillFromProfile,
@@ -257,6 +259,7 @@ export default function AddProviderForm({
   };
 
   const isBrazil = isBrazilCountry(country);
+  const isUpdateMode = mode === "update";
 
   return (
     <Box
@@ -277,11 +280,12 @@ export default function AddProviderForm({
           Provider
         </Text>
         <Text mt={2} fontSize="xl" fontWeight="semibold" color="gray.900">
-          Cadastrar provider
+          {isUpdateMode ? "Atualizar provider" : "Cadastrar provider"}
         </Text>
         <Text mt={2} fontSize="sm" color="gray.600">
-          Antes de criar serviços, você precisa cadastrar os dados do seu
-          provider.
+          {isUpdateMode
+            ? "Mantenha os dados do seu provider atualizados para refletir na vitrine e nas buscas."
+            : "Antes de criar serviços, você precisa cadastrar os dados do seu provider."}
         </Text>
       </Box>
 
@@ -787,7 +791,13 @@ export default function AddProviderForm({
               _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
               disabled={isSubmitting || isLoadingProviderContext}
             >
-              {isSubmitting ? "Cadastrando provider..." : "Cadastrar provider"}
+              {isSubmitting
+                ? isUpdateMode
+                  ? "Atualizando provider..."
+                  : "Cadastrando provider..."
+                : isUpdateMode
+                  ? "Salvar alterações"
+                  : "Cadastrar provider"}
             </Button>
           </HStack>
 
