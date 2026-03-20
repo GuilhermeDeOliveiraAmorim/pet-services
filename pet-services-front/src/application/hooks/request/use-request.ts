@@ -16,21 +16,13 @@ import {
 } from "@/application/usecases/request";
 import { createRequestCases } from "@/application/factories/request-usecase-factory";
 import { createApiContext } from "@/infra";
+import { REQUEST_KEYS } from "./request-query-keys";
 
 const useRequestUseCases = () => {
   return useMemo(() => {
     const { requestGateway } = createApiContext();
     return createRequestCases(requestGateway);
   }, []);
-};
-
-const REQUEST_KEYS = {
-  all: ["requests"] as const,
-  lists: () => [...REQUEST_KEYS.all, "list"] as const,
-  list: (filters?: ListRequestsInput) =>
-    [...REQUEST_KEYS.lists(), filters] as const,
-  details: () => [...REQUEST_KEYS.all, "detail"] as const,
-  detail: (id: string) => [...REQUEST_KEYS.details(), id] as const,
 };
 
 type ListRequestsOptions = Omit<
