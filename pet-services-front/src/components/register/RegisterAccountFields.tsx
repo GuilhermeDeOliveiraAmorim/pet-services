@@ -1,5 +1,13 @@
-import { type ChangeEvent } from "react";
-import { Box, Grid, Input, Text } from "@chakra-ui/react";
+import { type ChangeEvent, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import {
+  Box,
+  Grid,
+  IconButton,
+  Input,
+  InputGroup,
+  Text,
+} from "@chakra-ui/react";
 
 type RegisterAccountFieldsProps = {
   name: string;
@@ -18,6 +26,8 @@ export default function RegisterAccountFields({
   password,
   onPasswordChange,
 }: RegisterAccountFieldsProps) {
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
     <>
       <Grid gap={4} templateColumns={{ base: "1fr" }}>
@@ -72,24 +82,39 @@ export default function RegisterAccountFields({
           <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
             Senha
           </Text>
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            value={password}
-            onChange={(event: ChangeEvent<HTMLInputElement>) =>
-              onPasswordChange(event.target.value)
+          <InputGroup
+            endElement={
+              <IconButton
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                variant="ghost"
+                size="sm"
+                color="gray.500"
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </IconButton>
             }
-            h="11"
-            borderRadius="xl"
-            bg="gray.50"
-            borderColor="gray.200"
-            focusRingColor="teal.200"
-            placeholder="********"
-            required
-            autoComplete="new-password"
-            w="full"
-          />
+          >
+            <Input
+              id="password"
+              name="password"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                onPasswordChange(event.target.value)
+              }
+              h="11"
+              borderRadius="xl"
+              bg="gray.50"
+              borderColor="gray.200"
+              focusRingColor="teal.200"
+              placeholder="********"
+              required
+              autoComplete="new-password"
+              w="full"
+            />
+          </InputGroup>
         </Box>
       </Grid>
     </>
