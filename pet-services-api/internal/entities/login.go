@@ -21,14 +21,15 @@ func (l Login) MarshalJSON() ([]byte, error) {
 }
 
 func NewLogin(email, password string) (*Login, []exceptions.ProblemDetails) {
-	validationErrors := ValidateLogin(email, password)
+	normalizedEmail := strings.ToLower(strings.TrimSpace(email))
+	validationErrors := ValidateLogin(normalizedEmail, password)
 
 	if len(validationErrors) > 0 {
 		return nil, validationErrors
 	}
 
 	return &Login{
-		Email:    email,
+		Email:    normalizedEmail,
 		Password: password,
 	}, nil
 }
@@ -117,7 +118,7 @@ func (l *Login) DecryptPassword(password string) bool {
 }
 
 func (l *Login) SetEmail(newEmail string) {
-	l.Email = newEmail
+	l.Email = strings.ToLower(strings.TrimSpace(newEmail))
 }
 
 func (l *Login) SetPassword(rawPassword string) error {
