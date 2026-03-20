@@ -12,6 +12,31 @@ const generatedEmail = `auth-flow-${Date.now()}@example.com`;
 const email = process.env.TEST_EMAIL ?? generatedEmail;
 const verifyToken = process.env.TEST_VERIFY_TOKEN;
 
+type ErrorWithResponse = {
+  response?: {
+    status?: number;
+    data?: unknown;
+  };
+  message?: string;
+};
+
+const getErrorInfo = (error: unknown) => {
+  if (typeof error === "object" && error !== null) {
+    const err = error as ErrorWithResponse;
+    return {
+      status: err.response?.status,
+      data: err.response?.data,
+      message: err.message,
+    };
+  }
+
+  return {
+    status: undefined,
+    data: undefined,
+    message: String(error),
+  };
+};
+
 const run = async () => {
   console.log("→ Register user");
   await registerUserUseCase.execute({
@@ -54,7 +79,7 @@ const run = async () => {
       expiresIn: login.expiresIn,
     });
   } catch (error) {
-    const status = error?.response?.status;
+    const { status } = getErrorInfo(error);
 
     if (status === 401) {
       console.log(
@@ -75,9 +100,7 @@ const run = async () => {
 };
 
 run().catch((error) => {
-  const status = error?.response?.status;
-  const data = error?.response?.data;
-  const message = error?.message;
+  const { status, data, message } = getErrorInfo(error);
   console.error("Erro no fluxo de auth:", { status, data, message });
   process.exit(1);
 });
