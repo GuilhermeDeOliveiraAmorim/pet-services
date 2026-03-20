@@ -14,7 +14,6 @@ import {
   HStack,
   NativeSelect,
   Link as ChakraLink,
-  Spinner,
   Text,
   Textarea,
   VStack,
@@ -29,6 +28,7 @@ import {
   useUserProfile,
 } from "@/application";
 import { MainNav, PageWrapper, ProviderRating } from "@/components/common";
+import { ErrorState, LoadingState } from "@/components/ui";
 import { UserTypes } from "@/domain";
 import { getApiErrorMessage } from "@/lib/api-error";
 
@@ -255,37 +255,10 @@ export default function ServiceDetailsPage() {
           ← Voltar para início
         </ChakraLink>
 
-        {isLoadingService ? (
-          <Flex
-            borderRadius={{ base: "xl", md: "2xl" }}
-            borderWidth="1px"
-            borderColor="gray.200"
-            bg="white"
-            py={20}
-            justify="center"
-            align="center"
-            gap={3}
-            px={4}
-          >
-            <Spinner color="teal.500" size="sm" />
-            <Text fontSize={{ base: "xs", sm: "sm" }} color="gray.600">
-              Carregando...
-            </Text>
-          </Flex>
-        ) : null}
+        {isLoadingService ? <LoadingState /> : null}
 
         {!isLoadingService && serviceErrorMessage ? (
-          <Box
-            borderRadius={{ base: "xl", md: "2xl" }}
-            borderWidth="1px"
-            borderColor="red.200"
-            bg="red.50"
-            p={{ base: 3, md: 5 }}
-          >
-            <Text fontSize={{ base: "xs", sm: "sm" }} color="red.700">
-              {serviceErrorMessage}
-            </Text>
-          </Box>
+          <ErrorState message={serviceErrorMessage} />
         ) : null}
 
         {!isLoadingService && !serviceErrorMessage && service ? (
