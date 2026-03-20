@@ -149,12 +149,21 @@ func (r *serviceRepository) Search(query, categoryID, tagID string, latitude, lo
 		Preload("Photos").
 		Preload("Categories").
 		Preload("Tags").
+		Joins("INNER JOIN providers ON providers.id = services.provider_id").
+		Where("providers.active = ?", true).
 		Where("services.active = ?", true)
 
-	// Busca textual por nome ou descrição
+	// Busca textual por serviço, profissional e localização
 	if query != "" {
 		searchPattern := "%" + query + "%"
-		baseQuery = baseQuery.Where("services.name ILIKE ? OR services.description ILIKE ?", searchPattern, searchPattern)
+		baseQuery = baseQuery.Where(
+			"services.name ILIKE ? OR services.description ILIKE ? OR providers.business_name ILIKE ? OR providers.neighborhood ILIKE ? OR providers.city ILIKE ?",
+			searchPattern,
+			searchPattern,
+			searchPattern,
+			searchPattern,
+			searchPattern,
+		)
 	}
 
 	// Filtro por categoria
@@ -173,14 +182,8 @@ func (r *serviceRepository) Search(query, categoryID, tagID string, latitude, lo
 	if latitude != 0 && longitude != 0 && radiusKm > 0 {
 		// Fórmula Haversine para calcular distância em km
 		// earthRadiusKm = 6371
-		baseQuery = baseQuery.Joins("INNER JOIN providers ON providers.id = services.provider_id").
-			Where("providers.active = ?", true).
-			Where("(6371 * acos(cos(radians(?)) * cos(radians(providers.latitude)) * cos(radians(providers.longitude) - radians(?)) + sin(radians(?)) * sin(radians(providers.latitude)))) <= ?",
-				latitude, longitude, latitude, radiusKm)
-	} else {
-		// Apenas garantir que o provider está ativo
-		baseQuery = baseQuery.Joins("INNER JOIN providers ON providers.id = services.provider_id").
-			Where("providers.active = ?", true)
+		baseQuery = baseQuery.Where("(6371 * acos(cos(radians(?)) * cos(radians(providers.latitude)) * cos(radians(providers.longitude) - radians(?)) + sin(radians(?)) * sin(radians(providers.latitude)))) <= ?",
+			latitude, longitude, latitude, radiusKm)
 	}
 
 	// Filtro por faixa de preço
