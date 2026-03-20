@@ -20,6 +20,7 @@ import {
   usePetDelete,
   usePetListByOwnerId,
   usePetUpdate,
+  useRequestList,
   useSpeciesList,
   useUserProfile,
 } from "@/application";
@@ -121,7 +122,26 @@ export default function OwnerDashboardPage() {
     enabled: isOwnerUser && Boolean(user?.id),
   });
 
-  const ownerPets = ownerPetsData?.pets ?? [];
+  const ownerPets = useMemo(() => ownerPetsData?.pets ?? [], [ownerPetsData]);
+
+  const {
+    data: ownerRequestsData,
+    isLoading: isLoadingOwnerRequests,
+    error: ownerRequestsError,
+  } = useRequestList(
+    {
+      page: 1,
+      pageSize: 100,
+    },
+    {
+      enabled: isOwnerUser,
+    },
+  );
+
+  const ownerRequests = useMemo(
+    () => ownerRequestsData?.requests ?? [],
+    [ownerRequestsData],
+  );
 
   const {
     data: speciesData,
@@ -192,6 +212,92 @@ export default function OwnerDashboardPage() {
       "Não foi possível carregar os pets.",
     );
   }, [ownerPetsError]);
+
+  const ownerRequestsFeedback = useMemo(() => {
+    if (!ownerRequestsError) {
+      return "";
+    }
+
+    return getApiErrorMessage(
+      ownerRequestsError,
+      "Não foi possível carregar o resumo das solicitações.",
+    );
+  }, [ownerRequestsError]);
+
+  const petsWithPhotosCount = useMemo(
+    () => ownerPets.filter((pet) => (pet.photos?.length ?? 0) > 0).length,
+    [ownerPets],
+  );
+
+  const totalPetPhotosCount = useMemo(
+    () =>
+      ownerPets.reduce((total, pet) => total + (pet.photos?.length ?? 0), 0),
+    [ownerPets],
+  );
+
+  const pendingRequestsCount = useMemo(
+    () =>
+      ownerRequests.filter((request) => request.status === "pending").length,
+    [ownerRequests],
+  );
+
+  const activeRequestsCount = useMemo(
+    () =>
+      ownerRequests.filter(
+        (request) =>
+          request.status === "pending" || request.status === "accepted",
+      ).length,
+    [ownerRequests],
+  );
+
+  const completedRequestsCount = useMemo(
+    () =>
+      ownerRequests.filter((request) => request.status === "completed").length,
+    [ownerRequests],
+  );
+
+  const latestPetName = useMemo(() => {
+    if (!ownerPets.length) {
+      return "";
+    }
+
+    const [latestPet] = [...ownerPets].sort((first, second) => {
+      const firstDate = first.createdAt
+        ? new Date(first.createdAt).getTime()
+        : 0;
+      const secondDate = second.createdAt
+        ? new Date(second.createdAt).getTime()
+        : 0;
+
+      return secondDate - firstDate;
+    });
+
+    return latestPet?.name ?? "";
+  }, [ownerPets]);
+
+  const latestRequestLabel = useMemo(() => {
+    if (!ownerRequests.length) {
+      return "";
+    }
+
+    const [latestRequest] = [...ownerRequests].sort((first, second) => {
+      const firstDate = first.createdAt
+        ? new Date(first.createdAt).getTime()
+        : 0;
+      const secondDate = second.createdAt
+        ? new Date(second.createdAt).getTime()
+        : 0;
+
+      return secondDate - firstDate;
+    });
+
+    return (
+      latestRequest?.serviceName ||
+      latestRequest?.businessName ||
+      latestRequest?.pet?.name ||
+      ""
+    );
+  }, [ownerRequests]);
 
   const petUpdateFeedback = useMemo(() => {
     if (!petActionFeedback) {
@@ -341,8 +447,19 @@ export default function OwnerDashboardPage() {
       <MainNav />
 
       <DashboardIntro
+        userName={user?.name}
+        profileComplete={Boolean(user?.profileComplete)}
         hasPets={ownerPets.length > 0}
         petsCount={ownerPets.length}
+        petsWithPhotosCount={petsWithPhotosCount}
+        totalPetPhotosCount={totalPetPhotosCount}
+        activeRequestsCount={activeRequestsCount}
+        pendingRequestsCount={pendingRequestsCount}
+        completedRequestsCount={completedRequestsCount}
+        isLoadingRequests={isLoadingOwnerRequests}
+        requestsErrorMessage={ownerRequestsFeedback}
+        latestPetName={latestPetName}
+        latestRequestLabel={latestRequestLabel}
       />
 
       <PetListCard
@@ -413,85 +530,150 @@ export default function OwnerDashboardPage() {
               </Dialog.Header>
 
               <Dialog.Body>
-                <VStack align="stretch" gap={3}>
-                  <Input
-                    value={editPetName}
-                    onChange={(event) => setEditPetName(event.target.value)}
-                    placeholder="Nome"
-                    h="10"
-                  />
+                <VStack align="stretch" gap={4}>
+                  <Text fontSize="sm" color="gray.600" lineHeight="tall">
+                    Atualize os dados principais do seu pet. Campos como idade e
+                    peso ajudam no atendimento.
+                  </Text>
 
-                  <NativeSelect.Root size="md" w="full">
-                    <NativeSelect.Field
-                      value={editPetSpeciesId}
-                      onChange={(event) =>
-                        handleEditSpeciesChange(event.target.value)
-                      }
+                  <VStack align="stretch" gap={2}>
+                    <Text
+                      fontSize={{ base: "xs", sm: "sm" }}
+                      fontWeight="medium"
+                      color="gray.700"
+                    >
+                      Nome do pet
+                    </Text>
+                    <Input
+                      value={editPetName}
+                      onChange={(event) => setEditPetName(event.target.value)}
+                      placeholder="Ex: Mel"
                       h="10"
-                    >
-                      <option value="">Selecione a espécie</option>
-                      {specieOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </NativeSelect.Field>
-                    <NativeSelect.Indicator color="gray.500" />
-                  </NativeSelect.Root>
+                    />
+                  </VStack>
 
-                  {showEditBreedField ? (
-                    <NativeSelect.Root
-                      size="md"
-                      w="full"
-                      disabled={isLoadingEditBreeds || Boolean(editBreedsError)}
+                  <VStack align="stretch" gap={2}>
+                    <Text
+                      fontSize={{ base: "xs", sm: "sm" }}
+                      fontWeight="medium"
+                      color="gray.700"
                     >
+                      Espécie
+                    </Text>
+                    <NativeSelect.Root size="md" w="full">
                       <NativeSelect.Field
-                        value={editPetBreed}
+                        value={editPetSpeciesId}
                         onChange={(event) =>
-                          setEditPetBreed(event.target.value)
+                          handleEditSpeciesChange(event.target.value)
                         }
                         h="10"
                       >
-                        <option value="">
-                          {isLoadingEditBreeds
-                            ? "Carregando..."
-                            : "Selecione a raça"}
-                        </option>
-                        {editBreedOptions.map((option) => (
-                          <option key={option.value} value={option.label}>
+                        <option value="">Selecione a espécie</option>
+                        {specieOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
                             {option.label}
                           </option>
                         ))}
                       </NativeSelect.Field>
                       <NativeSelect.Indicator color="gray.500" />
                     </NativeSelect.Root>
-                  ) : null}
+                  </VStack>
 
-                  <Input
-                    type="number"
-                    value={editPetAge}
-                    onChange={(event) => setEditPetAge(event.target.value)}
-                    placeholder="Idade"
-                    h="10"
-                    min={0}
-                  />
+                  <VStack align="stretch" gap={2}>
+                    <Text
+                      fontSize={{ base: "xs", sm: "sm" }}
+                      fontWeight="medium"
+                      color="gray.700"
+                    >
+                      Raça
+                    </Text>
+                    {showEditBreedField ? (
+                      <NativeSelect.Root
+                        size="md"
+                        w="full"
+                        disabled={
+                          isLoadingEditBreeds || Boolean(editBreedsError)
+                        }
+                      >
+                        <NativeSelect.Field
+                          value={editPetBreed}
+                          onChange={(event) =>
+                            setEditPetBreed(event.target.value)
+                          }
+                          h="10"
+                        >
+                          <option value="">
+                            {isLoadingEditBreeds
+                              ? "Carregando..."
+                              : "Selecione a raça"}
+                          </option>
+                          {editBreedOptions.map((option) => (
+                            <option key={option.value} value={option.label}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </NativeSelect.Field>
+                        <NativeSelect.Indicator color="gray.500" />
+                      </NativeSelect.Root>
+                    ) : (
+                      <Text fontSize="xs" color="gray.500">
+                        Raça não disponível para a espécie selecionada.
+                      </Text>
+                    )}
+                  </VStack>
 
-                  <Input
-                    type="number"
-                    value={editPetWeight}
-                    onChange={(event) => setEditPetWeight(event.target.value)}
-                    placeholder="Peso"
-                    h="10"
-                    min={0}
-                    step="0.1"
-                  />
+                  <VStack align="stretch" gap={2}>
+                    <Text
+                      fontSize={{ base: "xs", sm: "sm" }}
+                      fontWeight="medium"
+                      color="gray.700"
+                    >
+                      Idade (anos)
+                    </Text>
+                    <Input
+                      type="number"
+                      value={editPetAge}
+                      onChange={(event) => setEditPetAge(event.target.value)}
+                      placeholder="Ex: 6"
+                      h="10"
+                      min={0}
+                    />
+                  </VStack>
 
-                  <Textarea
-                    value={editPetNotes}
-                    onChange={(event) => setEditPetNotes(event.target.value)}
-                    placeholder="Observações"
-                    minH="24"
-                  />
+                  <VStack align="stretch" gap={2}>
+                    <Text
+                      fontSize={{ base: "xs", sm: "sm" }}
+                      fontWeight="medium"
+                      color="gray.700"
+                    >
+                      Peso (kg)
+                    </Text>
+                    <Input
+                      type="number"
+                      value={editPetWeight}
+                      onChange={(event) => setEditPetWeight(event.target.value)}
+                      placeholder="Ex: 14.2"
+                      h="10"
+                      min={0}
+                      step="0.1"
+                    />
+                  </VStack>
+
+                  <VStack align="stretch" gap={2}>
+                    <Text
+                      fontSize={{ base: "xs", sm: "sm" }}
+                      fontWeight="medium"
+                      color="gray.700"
+                    >
+                      Observações
+                    </Text>
+                    <Textarea
+                      value={editPetNotes}
+                      onChange={(event) => setEditPetNotes(event.target.value)}
+                      placeholder="Ex: Rotina, temperamento, cuidados especiais..."
+                      minH="24"
+                    />
+                  </VStack>
 
                   <Dialog.Footer px={0}>
                     <Button
@@ -513,7 +695,7 @@ export default function OwnerDashboardPage() {
                       _hover={{ bg: "green.600" }}
                       _disabled={{ opacity: 0.7, cursor: "not-allowed" }}
                     >
-                      {isUpdatingPet ? "Salvando..." : "Salvar"}
+                      {isUpdatingPet ? "Salvando..." : "Salvar alterações"}
                     </Button>
                   </Dialog.Footer>
                 </VStack>

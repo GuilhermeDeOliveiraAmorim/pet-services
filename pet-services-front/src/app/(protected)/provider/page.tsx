@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { PROVIDER_KEYS } from "@/application/hooks/provider/provider-query-keys";
@@ -244,7 +244,7 @@ export default function ProviderDashboardPage() {
   const [providerLatitude, setProviderLatitude] = useState("");
   const [providerLongitude, setProviderLongitude] = useState("");
 
-  const services = servicesData?.services ?? [];
+  const services = useMemo(() => servicesData?.services ?? [], [servicesData]);
   const categories = categoriesData?.categories ?? [];
   const tags = tagsData?.tags ?? [];
   const isEditing = Boolean(editingServiceId);
@@ -1063,6 +1063,58 @@ export default function ProviderDashboardPage() {
     ? getApiErrorMessage(tagsError, "Não foi possível carregar as tags.")
     : null;
 
+  const servicesWithPhotosCount = useMemo(
+    () =>
+      services.filter((service) => (service.photos?.length ?? 0) > 0).length,
+    [services],
+  );
+
+  const servicesWithPriceRangeCount = useMemo(
+    () =>
+      services.filter(
+        (service) =>
+          Number(service.priceMinimum ?? 0) > 0 ||
+          Number(service.priceMaximum ?? 0) > 0,
+      ).length,
+    [services],
+  );
+
+  const totalCategoryLinks = useMemo(
+    () =>
+      services.reduce(
+        (total, service) => total + (service.categories?.length ?? 0),
+        0,
+      ),
+    [services],
+  );
+
+  const totalTagLinks = useMemo(
+    () =>
+      services.reduce(
+        (total, service) => total + (service.tags?.length ?? 0),
+        0,
+      ),
+    [services],
+  );
+
+  const averageDurationMinutes = useMemo(() => {
+    if (!services.length) {
+      return 0;
+    }
+
+    const totalDuration = services.reduce(
+      (total, service) => total + (Number(service.duration) || 0),
+      0,
+    );
+
+    return Math.round(totalDuration / services.length);
+  }, [services]);
+
+  const providerLocation =
+    provider?.address?.city && provider?.address?.state
+      ? `${provider.address.city} - ${provider.address.state}`
+      : provider?.address?.city || provider?.address?.state || "Não informado";
+
   return (
     <PageWrapper gap={10}>
       <MainNav />
@@ -1118,7 +1170,14 @@ export default function ProviderDashboardPage() {
             </Badge>
           </Flex>
 
-          <Grid gap={4} templateColumns={{ base: "1fr", md: "1fr 1fr" }}>
+          <Grid
+            gap={4}
+            templateColumns={{
+              base: "1fr",
+              md: "repeat(2, 1fr)",
+              xl: "repeat(4, 1fr)",
+            }}
+          >
             <Box
               borderRadius="2xl"
               borderWidth="1px"
@@ -1132,6 +1191,9 @@ export default function ProviderDashboardPage() {
               <Text mt={2} fontSize="2xl" fontWeight="bold" color="gray.900">
                 {services.length}
               </Text>
+              <Text mt={1} fontSize="xs" color="gray.600">
+                {servicesWithPhotosCount} com fotos publicadas
+              </Text>
             </Box>
 
             <Box
@@ -1142,51 +1204,110 @@ export default function ProviderDashboardPage() {
               p={4}
             >
               <Text fontSize="sm" fontWeight="semibold" color="gray.900">
-                Contexto do provider
+                Faixa de preço
               </Text>
-              <Text mt={2} fontSize="sm" color="gray.700">
-                {provider?.businessName
-                  ? `Provider identificado: ${provider.businessName}`
-                  : "Aguardando identificação do provider..."}
+              <Text mt={2} fontSize="2xl" fontWeight="bold" color="gray.900">
+                {servicesWithPriceRangeCount}
               </Text>
-              {provider ? (
-                <Box mt={2.5}>
-                  <ProviderRating
-                    rating={provider.averageRating}
-                    labelPrefix="Avaliação média:"
-                    fontSize="xs"
-                  />
-                </Box>
-              ) : null}
-              {providerError ? (
-                <Text mt={1.5} fontSize="xs" color="red.600">
-                  {getApiErrorMessage(
-                    providerError,
-                    "Não foi possível carregar os dados do provider.",
-                  )}
-                </Text>
-              ) : null}
+              <Text mt={1} fontSize="xs" color="gray.600">
+                serviços com preço mínimo e máximo
+              </Text>
+            </Box>
 
-              <Button
-                mt={4}
-                size="sm"
-                h="9"
-                px={5}
-                borderRadius="full"
-                variant="outline"
-                borderColor="gray.300"
-                color="gray.700"
-                _hover={{ bg: "gray.100" }}
-                disabled={!provider?.id}
-                onClick={() => {
-                  if (!provider?.id) return;
-                  router.push(`/providers/${provider.id}`);
-                }}
-              >
-                Ver página do provider
-              </Button>
+            <Box
+              borderRadius="2xl"
+              borderWidth="1px"
+              borderColor="gray.200"
+              bg="gray.50"
+              p={4}
+            >
+              <Text fontSize="sm" fontWeight="semibold" color="gray.900">
+                Duração média
+              </Text>
+              <Text mt={2} fontSize="2xl" fontWeight="bold" color="gray.900">
+                {averageDurationMinutes} min
+              </Text>
+              <Text mt={1} fontSize="xs" color="gray.600">
+                média dos atendimentos cadastrados
+              </Text>
+            </Box>
+
+            <Box
+              borderRadius="2xl"
+              borderWidth="1px"
+              borderColor="gray.200"
+              bg="gray.50"
+              p={4}
+            >
+              <Text fontSize="sm" fontWeight="semibold" color="gray.900">
+                Taxonomia
+              </Text>
+              <Text mt={2} fontSize="2xl" fontWeight="bold" color="gray.900">
+                {totalCategoryLinks + totalTagLinks}
+              </Text>
+              <Text mt={1} fontSize="xs" color="gray.600">
+                {totalCategoryLinks} categorias e {totalTagLinks} tags
+                vinculadas
+              </Text>
             </Box>
           </Grid>
+
+          <Box
+            mt={4}
+            borderRadius="2xl"
+            borderWidth="1px"
+            borderColor="gray.200"
+            bg="gray.50"
+            p={4}
+          >
+            <Text fontSize="sm" fontWeight="semibold" color="gray.900">
+              Contexto do provider
+            </Text>
+            <Text mt={2} fontSize="sm" color="gray.700">
+              {provider?.businessName
+                ? `Provider identificado: ${provider.businessName}`
+                : "Aguardando identificação do provider..."}
+            </Text>
+            <Text mt={1} fontSize="xs" color="gray.600">
+              Localização: {providerLocation}
+            </Text>
+            {provider ? (
+              <Box mt={2.5}>
+                <ProviderRating
+                  rating={provider.averageRating}
+                  labelPrefix="Avaliação média:"
+                  fontSize="xs"
+                />
+              </Box>
+            ) : null}
+            {providerError ? (
+              <Text mt={1.5} fontSize="xs" color="red.600">
+                {getApiErrorMessage(
+                  providerError,
+                  "Não foi possível carregar os dados do provider.",
+                )}
+              </Text>
+            ) : null}
+
+            <Button
+              mt={4}
+              size="sm"
+              h="9"
+              px={5}
+              borderRadius="full"
+              variant="outline"
+              borderColor="gray.300"
+              color="gray.700"
+              _hover={{ bg: "gray.100" }}
+              disabled={!provider?.id}
+              onClick={() => {
+                if (!provider?.id) return;
+                router.push(`/providers/${provider.id}`);
+              }}
+            >
+              Ver página do provider
+            </Button>
+          </Box>
         </Box>
 
         {shouldShowProviderForm ? (
