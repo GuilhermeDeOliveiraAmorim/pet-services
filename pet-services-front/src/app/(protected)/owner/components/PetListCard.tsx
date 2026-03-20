@@ -3,13 +3,13 @@ import {
   Button,
   Grid,
   HStack,
-  Spinner,
   Text,
   VStack,
   chakra,
 } from "@chakra-ui/react";
 import { useRef, type ChangeEvent } from "react";
 import type { Pet } from "@/domain";
+import { EmptyState, ErrorState, LoadingState } from "@/components/ui";
 
 type PetListCardProps = {
   pets: Pet[];
@@ -123,12 +123,7 @@ export default function PetListCard({
         </Text>
       </Box>
 
-      {isLoading ? (
-        <HStack gap={2} color="gray.500" py={2}>
-          <Spinner size="xs" />
-          <Text fontSize={{ base: "xs", sm: "sm" }}>Carregando pets...</Text>
-        </HStack>
-      ) : null}
+      {isLoading ? <LoadingState message="Carregando pets..." /> : null}
 
       <input
         ref={petPhotoInputRef}
@@ -142,15 +137,11 @@ export default function PetListCard({
       />
 
       {!isLoading && errorMessage ? (
-        <Text fontSize={{ base: "xs", sm: "sm" }} color="red.600">
-          {errorMessage}
-        </Text>
+        <ErrorState message={errorMessage} />
       ) : null}
 
       {!isLoading && !errorMessage && !pets.length ? (
-        <Text fontSize={{ base: "xs", sm: "sm" }} color="gray.600">
-          Você ainda não possui pets cadastrados.
-        </Text>
+        <EmptyState message="Você ainda não possui pets cadastrados." />
       ) : null}
 
       {!isLoading && !errorMessage && pets.length ? (

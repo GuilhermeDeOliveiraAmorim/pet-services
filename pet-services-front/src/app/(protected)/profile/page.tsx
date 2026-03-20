@@ -13,6 +13,7 @@ import {
 import { getApiErrorMessage } from "@/lib/api-error";
 import MainNav from "@/components/common/MainNav";
 import PageWrapper from "@/components/common/PageWrapper";
+import { ErrorState, LoadingState } from "@/components/ui";
 import ChangePasswordCard from "@/components/account/ChangePasswordCard";
 import ProfileForm from "./components/ProfileForm";
 
@@ -112,15 +113,11 @@ export default function ProfilePage() {
         </Flex>
 
         {isLoading ? (
-          <Text fontSize={{ base: "xs", sm: "sm" }} color="gray.500">
-            Carregando perfil...
-          </Text>
+          <LoadingState message="Carregando perfil..." />
         ) : user ? (
           <ProfileForm key={user.id} user={user} />
         ) : (
-          <Text fontSize={{ base: "xs", sm: "sm" }} color="gray.500">
-            Não foi possível carregar o perfil.
-          </Text>
+          <ErrorState message="Não foi possível carregar o perfil." />
         )}
       </Box>
 

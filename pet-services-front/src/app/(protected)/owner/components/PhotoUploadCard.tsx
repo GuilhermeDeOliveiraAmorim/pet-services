@@ -9,6 +9,7 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
+import { LoadingState } from "@/components/ui";
 
 type PhotoItem = {
   id: string;
@@ -70,9 +71,7 @@ export default function PhotoUploadCard({
       </Box>
 
       {isLoading ? (
-        <Text fontSize={{ base: "xs", sm: "sm" }} color="gray.500">
-          Carregando fotos...
-        </Text>
+        <LoadingState message="Carregando fotos..." />
       ) : (
         <VStack align="stretch" gap={{ base: 3, md: 4 }}>
           <Input
