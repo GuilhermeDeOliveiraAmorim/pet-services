@@ -1,6 +1,13 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -491,7 +498,7 @@ function ServicesCatalogPageContent() {
     <Box minH="100vh" bg="gray.50" color="gray.900">
       {/* Navbar */}
       <Box bg="white" borderBottomWidth="1px" borderColor="gray.200">
-        <Box maxW="7xl" mx="auto" px={{ base: 4, lg: 8 }}>
+        <Box maxW="6xl" mx="auto" px={{ base: 6, lg: 8 }}>
           <MainNav />
         </Box>
       </Box>
@@ -1524,7 +1531,7 @@ export default function ServicesCatalogPage() {
       fallback={
         <Box minH="100vh" bg="gray.50" color="gray.900">
           <Box bg="white" borderBottomWidth="1px" borderColor="gray.200">
-            <Box maxW="7xl" mx="auto" px={{ base: 4, lg: 8 }}>
+            <Box maxW="6xl" mx="auto" px={{ base: 6, lg: 8 }}>
               <MainNav />
             </Box>
           </Box>

@@ -2,6 +2,7 @@ import type { ChangeEvent } from "react";
 import { Box, Text, VStack } from "@chakra-ui/react";
 
 import type { Service } from "@/domain";
+import { EmptyState, ErrorState, LoadingState } from "@/components/ui";
 import ServiceCard from "./ServiceCard";
 
 type Feedback = {
@@ -126,21 +127,13 @@ export default function ServicesListSection({
       </Text>
 
       {isLoadingProviderContext || isLoadingServices ? (
-        <Text fontSize="sm" color="gray.500">
-          Carregando serviços...
-        </Text>
+        <LoadingState message="Carregando serviços..." />
       ) : !hasProvider ? (
-        <Text fontSize="sm" color="red.600">
-          Não encontramos um provider vinculado ao seu usuário.
-        </Text>
+        <ErrorState message="Não encontramos um provider vinculado ao seu usuário." />
       ) : listServicesErrorMessage ? (
-        <Text fontSize="sm" color="red.600">
-          {listServicesErrorMessage}
-        </Text>
+        <ErrorState message={listServicesErrorMessage} />
       ) : services.length === 0 ? (
-        <Text fontSize="sm" color="gray.500">
-          Você ainda não cadastrou serviços.
-        </Text>
+        <EmptyState message="Você ainda não cadastrou serviços." />
       ) : (
         <VStack align="stretch" gap={3}>
           {services.map((service) => {

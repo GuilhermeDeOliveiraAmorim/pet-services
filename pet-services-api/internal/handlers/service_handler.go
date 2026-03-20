@@ -132,7 +132,8 @@ func (h *ServiceHandler) GetService(c *gin.Context) {
 // @Tags Serviços
 // @Accept json
 // @Produce json
-// @Param q query string false "Busca textual (nome ou descrição)"
+// @Param query query string false "Busca textual (nome, descrição, profissional ou localização)"
+// @Param q query string false "Alias legado de query"
 // @Param category_id query string false "Filtro por categoria"
 // @Param tag_id query string false "Filtro por tag"
 // @Param latitude query number false "Latitude para busca geoespacial"
@@ -150,7 +151,10 @@ func (h *ServiceHandler) SearchServices(c *gin.Context) {
 
 	page := 1
 	pageSize := 10
-	query := c.Query("q")
+	query := c.Query("query")
+	if query == "" {
+		query = c.Query("q")
+	}
 	categoryID := c.Query("category_id")
 	tagID := c.Query("tag_id")
 

@@ -18,12 +18,14 @@ import {
 } from "@chakra-ui/react";
 
 import {
+  type GetProfileOutput,
   useReferenceCities,
   useReferenceCountries,
   useReferenceStates,
   useUserAddPhoto,
   useUserUpdate,
 } from "@/application";
+import { USER_KEYS } from "@/application/hooks/user/user-query-keys";
 import { Send } from "lucide-react";
 import type { UpdateUserInput } from "@/application";
 import type { User } from "@/domain/entities/user";
@@ -40,7 +42,31 @@ export default function ProfileForm({ user }: ProfileFormProps) {
     isPending: isSaving,
     error: updateError,
     isSuccess: updateSuccess,
-  } = useUserUpdate();
+  } = useUserUpdate({
+    onSuccess: (response) => {
+      if (response.user) {
+        const nextUser = response.user;
+
+        queryClient.setQueryData<GetProfileOutput>(
+          USER_KEYS.profile(),
+          (previous) => {
+            if (!previous) {
+              return {
+                user: nextUser,
+              } as GetProfileOutput;
+            }
+
+            return {
+              ...previous,
+              user: nextUser,
+            };
+          },
+        );
+      }
+
+      queryClient.invalidateQueries({ queryKey: USER_KEYS.profile() });
+    },
+  });
   const {
     mutateAsync: addUserPhoto,
     isPending: isUploadingPhoto,
@@ -48,7 +74,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
     isSuccess: uploadSuccess,
   } = useUserAddPhoto({
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["user-profile"] }),
+      queryClient.invalidateQueries({ queryKey: USER_KEYS.profile() }),
   });
 
   const initialValues = useMemo(

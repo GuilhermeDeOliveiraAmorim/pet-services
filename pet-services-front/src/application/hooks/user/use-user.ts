@@ -21,6 +21,7 @@ import type {
   UpdateUserOutput,
 } from "@/application";
 import { createUserUseCases } from "@/application/factories/user-usecase-factory";
+import { USER_KEYS } from "@/application/hooks/user/user-query-keys";
 import { createApiContext } from "@/infra";
 
 const useUserUseCases = () => {
@@ -92,7 +93,7 @@ export const useUserProfile = (options?: GetProfileOptions) => {
   const { getProfileUseCase } = useUserUseCases();
 
   return useQuery({
-    queryKey: ["user-profile"],
+    queryKey: USER_KEYS.profile(),
     queryFn: () => getProfileUseCase.execute(),
     ...options,
   });

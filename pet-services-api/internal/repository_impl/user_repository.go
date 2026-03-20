@@ -37,7 +37,7 @@ func (r *userRepository) FindByID(id string) (*entities.User, error) {
 
 func (r *userRepository) FindByEmail(email string) (*entities.User, error) {
 	var model models.User
-	err := r.db.Preload("Photos").Preload("Pets").First(&model, "email = ?", email).Error
+	err := r.db.Preload("Photos").Preload("Pets").First(&model, "LOWER(email) = LOWER(?)", email).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New(consts.UserNotFoundError)
@@ -49,7 +49,7 @@ func (r *userRepository) FindByEmail(email string) (*entities.User, error) {
 
 func (r *userRepository) ExistsByEmail(email string) (bool, error) {
 	var count int64
-	err := r.db.Model(&models.User{}).Where("email = ?", email).Count(&count).Error
+	err := r.db.Model(&models.User{}).Where("LOWER(email) = LOWER(?)", email).Count(&count).Error
 	return count > 0, err
 }
 

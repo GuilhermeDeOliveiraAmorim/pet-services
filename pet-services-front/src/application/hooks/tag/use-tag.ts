@@ -3,18 +3,13 @@ import { useQuery } from "@tanstack/react-query";
 import { ListTagsInput } from "@/application/usecases/tag";
 import { createTagCases } from "@/application/factories/tag-usecase-factory";
 import { createApiContext } from "@/infra";
+import { TAG_KEYS } from "./tag-query-keys";
 
 const useTagUseCases = () => {
   return useMemo(() => {
     const { tagGateway } = createApiContext();
     return createTagCases(tagGateway);
   }, []);
-};
-
-const TAG_KEYS = {
-  all: ["tags"] as const,
-  lists: () => [...TAG_KEYS.all, "list"] as const,
-  list: (filters?: ListTagsInput) => [...TAG_KEYS.lists(), filters] as const,
 };
 
 export function useTagList(input?: ListTagsInput) {

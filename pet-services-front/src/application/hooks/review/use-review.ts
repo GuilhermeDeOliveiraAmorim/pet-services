@@ -12,19 +12,13 @@ import {
 } from "@/application/usecases/review";
 import { createReviewCases } from "@/application/factories/review-usecase-factory";
 import { createApiContext } from "@/infra";
+import { REVIEW_KEYS } from "./review-query-keys";
 
 const useReviewUseCases = () => {
   return useMemo(() => {
     const { reviewGateway } = createApiContext();
     return createReviewCases(reviewGateway);
   }, []);
-};
-
-const REVIEW_KEYS = {
-  all: ["reviews"] as const,
-  lists: () => [...REVIEW_KEYS.all, "list"] as const,
-  list: (filters?: ListReviewsInput) =>
-    [...REVIEW_KEYS.lists(), filters] as const,
 };
 
 type ListReviewsOptions = Omit<

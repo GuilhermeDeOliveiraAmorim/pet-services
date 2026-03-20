@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Button,
@@ -21,12 +21,12 @@ import {
   usePetListByOwnerId,
   usePetUpdate,
   useSpeciesList,
-  useUserAddPhoto,
   useUserProfile,
 } from "@/application";
+import { USER_KEYS } from "@/application/hooks/user/user-query-keys";
+import { PET_KEYS } from "@/application/hooks/pet/pet-query-keys";
 import type { Pet } from "@/domain";
 import { UserTypes } from "@/domain";
-import ChangePasswordCard from "@/components/account/ChangePasswordCard";
 import MainNav from "@/components/common/MainNav";
 import PageWrapper from "@/components/common/PageWrapper";
 import { getApiErrorMessage } from "@/lib/api-error";
@@ -34,7 +34,6 @@ import { getApiErrorMessage } from "@/lib/api-error";
 import DashboardIntro from "./components/DashboardIntro";
 import PetFormCard from "./components/PetFormCard";
 import PetListCard from "./components/PetListCard";
-import PhotoUploadCard from "./components/PhotoUploadCard";
 
 type PetActionFeedback = {
   type: "success" | "error";
@@ -43,11 +42,10 @@ type PetActionFeedback = {
 
 export default function OwnerDashboardPage() {
   const queryClient = useQueryClient();
-  const { data, isLoading } = useUserProfile();
+  const { data } = useUserProfile();
   const user = data?.user;
   const isOwnerUser = user?.userType === UserTypes.Owner;
 
-  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const [petName, setPetName] = useState("");
   const [petSpeciesId, setPetSpeciesId] = useState("");
   const [petBreed, setPetBreed] = useState("");
@@ -69,18 +67,6 @@ export default function OwnerDashboardPage() {
   const [petActionFeedback, setPetActionFeedback] =
     useState<PetActionFeedback | null>(null);
 
-  const photoInputRef = useRef<HTMLInputElement | null>(null);
-
-  const {
-    mutateAsync: addUserPhoto,
-    isPending: isUploadingPhoto,
-    error: uploadError,
-    isSuccess: uploadSuccess,
-  } = useUserAddPhoto({
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["user-profile"] }),
-  });
-
   const {
     mutateAsync: addPet,
     isPending: isAddingPet,
@@ -88,8 +74,8 @@ export default function OwnerDashboardPage() {
     isSuccess: addPetSuccess,
   } = usePetAdd({
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
-      queryClient.invalidateQueries({ queryKey: ["pets", "owner"] });
+      queryClient.invalidateQueries({ queryKey: USER_KEYS.profile() });
+      queryClient.invalidateQueries({ queryKey: PET_KEYS.byOwner() });
       setPetName("");
       setPetSpeciesId("");
       setPetBreed("");
@@ -101,7 +87,7 @@ export default function OwnerDashboardPage() {
 
   const { mutateAsync: updatePet, isPending: isUpdatingPet } = usePetUpdate({
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["pets", "owner"] });
+      queryClient.invalidateQueries({ queryKey: PET_KEYS.byOwner() });
       setEditingPet(null);
       setPetActionFeedback({
         type: "success",
@@ -112,7 +98,7 @@ export default function OwnerDashboardPage() {
 
   const { mutateAsync: deletePet, isPending: isDeletingPet } = usePetDelete({
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["pets", "owner"] });
+      queryClient.invalidateQueries({ queryKey: PET_KEYS.byOwner() });
       setPetActionFeedback({
         type: "success",
         message: "Pet excluído com sucesso.",
@@ -123,7 +109,7 @@ export default function OwnerDashboardPage() {
   const { mutateAsync: addPetPhoto, isPending: isUploadingPetPhoto } =
     usePetAddPhoto({
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["pets", "owner"] });
+        queryClient.invalidateQueries({ queryKey: PET_KEYS.byOwner() });
       },
     });
 
@@ -188,14 +174,6 @@ export default function OwnerDashboardPage() {
 
   const showEditBreedField = editBreedOptions.length > 0;
 
-  const photoFeedback = useMemo(() => {
-    if (!uploadError) {
-      return "";
-    }
-
-    return getApiErrorMessage(uploadError, "Não foi possível enviar a foto.");
-  }, [uploadError]);
-
   const petFeedback = useMemo(() => {
     if (!addPetError) {
       return "";
@@ -256,15 +234,6 @@ export default function OwnerDashboardPage() {
   const handleEditSpeciesChange = (value: string) => {
     setEditPetSpeciesId(value);
     setEditPetBreed("");
-  };
-
-  const handlePhotoUpload = async () => {
-    if (!selectedPhoto) {
-      return;
-    }
-
-    await addUserPhoto({ file: selectedPhoto });
-    setSelectedPhoto(null);
   };
 
   const handleAddPet = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -426,20 +395,6 @@ export default function OwnerDashboardPage() {
         breedOptions={breedOptions}
         showBreedField={showBreedField}
       />
-
-      <PhotoUploadCard
-        isLoading={isLoading}
-        photoInputRef={photoInputRef}
-        selectedPhoto={selectedPhoto}
-        onSelectedPhotoChange={setSelectedPhoto}
-        onUpload={handlePhotoUpload}
-        isUploadingPhoto={isUploadingPhoto}
-        uploadSuccess={uploadSuccess}
-        photoFeedback={photoFeedback}
-        photos={user?.photos ?? []}
-      />
-
-      <ChangePasswordCard />
 
       <Dialog.Root
         open={Boolean(editingPet)}

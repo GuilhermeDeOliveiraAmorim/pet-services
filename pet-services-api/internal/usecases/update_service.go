@@ -13,23 +13,23 @@ import (
 )
 
 type UpdateServiceInputBody struct {
-	Name         string  `json:"name,omitempty"`
-	Description  string  `json:"description,omitempty"`
-	Price        float64 `json:"price,omitempty"`
-	PriceMinimum float64 `json:"price_minimum,omitempty"`
-	PriceMaximum float64 `json:"price_maximum,omitempty"`
-	Duration     int     `json:"duration,omitempty"`
+	Name         string   `json:"name,omitempty"`
+	Description  string   `json:"description,omitempty"`
+	Price        *float64 `json:"price,omitempty"`
+	PriceMinimum *float64 `json:"price_minimum,omitempty"`
+	PriceMaximum *float64 `json:"price_maximum,omitempty"`
+	Duration     *int     `json:"duration,omitempty"`
 }
 
 type UpdateServiceInput struct {
-	UserID       string  `json:"user_id"`
-	ServiceID    string  `json:"service_id"`
-	Name         string  `json:"name,omitempty"`
-	Description  string  `json:"description,omitempty"`
-	Price        float64 `json:"price,omitempty"`
-	PriceMinimum float64 `json:"price_minimum,omitempty"`
-	PriceMaximum float64 `json:"price_maximum,omitempty"`
-	Duration     int     `json:"duration,omitempty"`
+	UserID       string   `json:"user_id"`
+	ServiceID    string   `json:"service_id"`
+	Name         string   `json:"name,omitempty"`
+	Description  string   `json:"description,omitempty"`
+	Price        *float64 `json:"price,omitempty"`
+	PriceMinimum *float64 `json:"price_minimum,omitempty"`
+	PriceMaximum *float64 `json:"price_maximum,omitempty"`
+	Duration     *int     `json:"duration,omitempty"`
 }
 
 type UpdateServiceOutput struct {
@@ -123,28 +123,28 @@ func (uc *UpdateServiceUseCase) Execute(ctx context.Context, input UpdateService
 		service.Description = input.Description
 	}
 
-	if input.Price < 0 {
+	if input.Price != nil && *input.Price < 0 {
 		return nil, uc.logger.LogBadRequest(ctx, from, "Preço do serviço inválido", errors.New("O preço do serviço não pode ser negativo"))
 	}
 
-	if input.PriceMinimum < 0 {
+	if input.PriceMinimum != nil && *input.PriceMinimum < 0 {
 		return nil, uc.logger.LogBadRequest(ctx, from, "Preço mínimo do serviço inválido", errors.New("O preço mínimo do serviço não pode ser negativo"))
 	}
 
-	if input.PriceMaximum < 0 {
+	if input.PriceMaximum != nil && *input.PriceMaximum < 0 {
 		return nil, uc.logger.LogBadRequest(ctx, from, "Preço máximo do serviço inválido", errors.New("O preço máximo do serviço não pode ser negativo"))
 	}
 
-	if input.Price != 0 {
-		service.Price = input.Price
+	if input.Price != nil {
+		service.Price = *input.Price
 	}
 
-	if input.PriceMinimum != 0 {
-		service.PriceMinimum = input.PriceMinimum
+	if input.PriceMinimum != nil {
+		service.PriceMinimum = *input.PriceMinimum
 	}
 
-	if input.PriceMaximum != 0 {
-		service.PriceMaximum = input.PriceMaximum
+	if input.PriceMaximum != nil {
+		service.PriceMaximum = *input.PriceMaximum
 	}
 
 	if service.Price > 0 && (service.PriceMinimum > 0 || service.PriceMaximum > 0) {
@@ -159,12 +159,12 @@ func (uc *UpdateServiceUseCase) Execute(ctx context.Context, input UpdateService
 		return nil, uc.logger.LogBadRequest(ctx, from, "Preço ausente", errors.New("Defina um preço fixo ou uma faixa de preço para o serviço"))
 	}
 
-	if input.Duration < 0 {
+	if input.Duration != nil && *input.Duration < 0 {
 		return nil, uc.logger.LogBadRequest(ctx, from, "Duração do serviço inválida", errors.New("A duração do serviço não pode ser negativa"))
 	}
 
-	if input.Duration != 0 {
-		service.Duration = input.Duration
+	if input.Duration != nil {
+		service.Duration = *input.Duration
 	}
 
 	service.Updated()

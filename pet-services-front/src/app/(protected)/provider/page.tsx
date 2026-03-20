@@ -1,8 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import { PROVIDER_KEYS } from "@/application/hooks/provider/provider-query-keys";
+import { SERVICE_KEYS } from "@/application/hooks/service/service-query-keys";
+import { TAG_KEYS } from "@/application/hooks/tag/tag-query-keys";
+import { USER_KEYS } from "@/application/hooks/user/user-query-keys";
 import {
   Badge,
   Box,
@@ -24,6 +28,7 @@ import {
   useCategoryList,
   useProviderDeletePhoto,
   useProviderGet,
+  useProviderUpdate,
   type ListServicesOutput,
   useServiceAdd,
   useServiceAddCategory,
@@ -43,7 +48,6 @@ import { getApiErrorMessage } from "@/lib/api-error";
 import AddProviderForm from "./components/AddProviderForm";
 import ServiceFormCard from "./components/ServiceFormCard";
 import ServicesListSection from "./components/ServicesListSection";
-import ChangePasswordCard from "@/components/account/ChangePasswordCard";
 import { MainNav, PageWrapper, ProviderRating } from "@/components/common";
 
 type Feedback = {
@@ -71,18 +75,33 @@ export default function ProviderDashboardPage() {
   const { mutateAsync: addProvider, isPending: isAddingProvider } =
     useProviderAdd({
       onSuccess: () =>
-        queryClient.invalidateQueries({ queryKey: ["user-profile"] }),
+        queryClient.invalidateQueries({ queryKey: USER_KEYS.profile() }),
+    });
+  const { mutateAsync: updateProvider, isPending: isUpdatingProvider } =
+    useProviderUpdate({
+      onSuccess: (response, variables) => {
+        if (response.provider) {
+          queryClient.setQueryData(PROVIDER_KEYS.detail(response.provider.id), {
+            provider: response.provider,
+          });
+        }
+
+        queryClient.invalidateQueries({
+          queryKey: PROVIDER_KEYS.detail(variables.providerId),
+        });
+      },
     });
   const { mutateAsync: addProviderPhoto, isPending: isAddingProviderPhoto } =
     useProviderAddPhoto({
       onSuccess: () =>
-        queryClient.invalidateQueries({ queryKey: ["provider"] }),
+        queryClient.invalidateQueries({ queryKey: PROVIDER_KEYS.all }),
     });
   const {
     mutateAsync: deleteProviderPhoto,
     isPending: isDeletingProviderPhoto,
   } = useProviderDeletePhoto({
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["provider"] }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: PROVIDER_KEYS.all }),
   });
 
   const provider = providerData?.provider;
@@ -110,50 +129,52 @@ export default function ProviderDashboardPage() {
   const { mutateAsync: addService, isPending: isAddingService } = useServiceAdd(
     {
       onSuccess: () =>
-        queryClient.invalidateQueries({ queryKey: ["services"] }),
+        queryClient.invalidateQueries({ queryKey: SERVICE_KEYS.lists() }),
     },
   );
   const { mutateAsync: updateService, isPending: isUpdatingService } =
     useServiceUpdate({
       onSuccess: () =>
-        queryClient.invalidateQueries({ queryKey: ["services"] }),
+        queryClient.invalidateQueries({ queryKey: SERVICE_KEYS.lists() }),
     });
   const { mutateAsync: deleteService, isPending: isDeletingService } =
     useServiceDelete({
       onSuccess: () =>
-        queryClient.invalidateQueries({ queryKey: ["services"] }),
+        queryClient.invalidateQueries({ queryKey: SERVICE_KEYS.lists() }),
     });
   const { mutateAsync: addServicePhoto, isPending: isAddingServicePhoto } =
     useServiceAddPhoto({
       onSuccess: () =>
-        queryClient.invalidateQueries({ queryKey: ["services"] }),
+        queryClient.invalidateQueries({ queryKey: SERVICE_KEYS.lists() }),
     });
   const { mutateAsync: deleteServicePhoto, isPending: isDeletingServicePhoto } =
     useServiceDeletePhoto({
       onSuccess: () =>
-        queryClient.invalidateQueries({ queryKey: ["services"] }),
+        queryClient.invalidateQueries({ queryKey: SERVICE_KEYS.lists() }),
     });
   const {
     mutateAsync: addServiceCategory,
     isPending: isAddingServiceCategory,
   } = useServiceAddCategory({
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["services"] }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: SERVICE_KEYS.lists() }),
   });
   const {
     mutateAsync: deleteServiceCategory,
     isPending: isDeletingServiceCategory,
   } = useServiceDeleteCategory({
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["services"] }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: SERVICE_KEYS.lists() }),
   });
   const { mutateAsync: deleteServiceTag, isPending: isDeletingServiceTag } =
     useServiceDeleteTag({
       onSuccess: () =>
-        queryClient.invalidateQueries({ queryKey: ["services"] }),
+        queryClient.invalidateQueries({ queryKey: SERVICE_KEYS.lists() }),
     });
   const { mutateAsync: addServiceTag, isPending: isAddingServiceTag } =
     useServiceAddTag({
       onSuccess: () =>
-        queryClient.invalidateQueries({ queryKey: ["services"] }),
+        queryClient.invalidateQueries({ queryKey: SERVICE_KEYS.lists() }),
     });
 
   const [name, setName] = useState("");
@@ -229,10 +250,37 @@ export default function ProviderDashboardPage() {
   const isEditing = Boolean(editingServiceId);
   const isSubmitting = isAddingService || isUpdatingService;
   const isLoadingProviderContext = isLoadingUser || isLoadingProvider;
-  const shouldShowAddProviderForm =
-    !isLoadingProviderContext && !provider?.id && !providerId;
+  const shouldShowProviderForm = !isLoadingProviderContext;
 
   const currentUser = userData?.user;
+
+  useEffect(() => {
+    if (!provider) {
+      return;
+    }
+
+    setProviderBusinessName(provider.businessName ?? "");
+    setProviderDescription(provider.description ?? "");
+    setProviderPriceRange(provider.priceRange ?? "");
+    setProviderStreet(provider.address?.street ?? "");
+    setProviderAddressNumber(provider.address?.number ?? "");
+    setProviderNeighborhood(provider.address?.neighborhood ?? "");
+    setProviderCity(provider.address?.city ?? "");
+    setProviderZipCode(provider.address?.zipCode ?? "");
+    setProviderState(provider.address?.state ?? "");
+    setProviderCountry(provider.address?.country ?? "Brasil");
+    setProviderComplement(provider.address?.complement ?? "");
+    setProviderLatitude(
+      provider.address?.location?.latitude !== undefined
+        ? String(provider.address.location.latitude)
+        : "",
+    );
+    setProviderLongitude(
+      provider.address?.location?.longitude !== undefined
+        ? String(provider.address.location.longitude)
+        : "",
+    );
+  }, [provider]);
 
   const setTaxonomyFeedback = (
     serviceId: string,
@@ -359,7 +407,7 @@ export default function ProviderDashboardPage() {
       if (response.tag) {
         const addedTag = response.tag;
         queryClient.setQueriesData<ListServicesOutput>(
-          { queryKey: ["services"] },
+          { queryKey: SERVICE_KEYS.lists() },
           (previous) => {
             if (!previous) {
               return previous;
@@ -390,7 +438,7 @@ export default function ProviderDashboardPage() {
         );
 
         queryClient.setQueriesData<ListTagsOutput>(
-          { queryKey: ["tags"] },
+          { queryKey: TAG_KEYS.lists() },
           (previous) => {
             if (!previous) {
               return previous;
@@ -413,7 +461,7 @@ export default function ProviderDashboardPage() {
         );
       }
 
-      queryClient.invalidateQueries({ queryKey: ["tags"] });
+      queryClient.invalidateQueries({ queryKey: TAG_KEYS.lists() });
 
       setSelectedTagByService((previous) => ({
         ...previous,
@@ -530,16 +578,10 @@ export default function ProviderDashboardPage() {
     });
   };
 
-  const handleAddProvider = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleAddOrUpdateProvider = async (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
     event.preventDefault();
-
-    if (provider?.id) {
-      setProviderFeedback({
-        type: "error",
-        message: "Você já possui um provider cadastrado.",
-      });
-      return;
-    }
 
     const parsedLatitude = Number(providerLatitude);
     const parsedLongitude = Number(providerLongitude);
@@ -578,7 +620,7 @@ export default function ProviderDashboardPage() {
     }
 
     try {
-      const response = await addProvider({
+      const providerPayload = {
         businessName: providerBusinessName.trim(),
         description: providerDescription.trim(),
         priceRange: normalizedPriceRange,
@@ -596,12 +638,19 @@ export default function ProviderDashboardPage() {
             longitude: parsedLongitude,
           },
         },
-      });
+      };
+
+      const response = provider?.id
+        ? await updateProvider({
+            providerId: provider.id,
+            ...providerPayload,
+          })
+        : await addProvider(providerPayload);
 
       if (response.provider?.id) {
         setCreatedProviderId(response.provider.id);
-        queryClient.invalidateQueries({
-          queryKey: ["provider", response.provider.id],
+        queryClient.setQueryData(PROVIDER_KEYS.detail(response.provider.id), {
+          provider: response.provider,
         });
       }
 
@@ -610,14 +659,18 @@ export default function ProviderDashboardPage() {
         message:
           response.detail ||
           response.message ||
-          "Provider cadastrado com sucesso.",
+          (provider?.id
+            ? "Provider atualizado com sucesso."
+            : "Provider cadastrado com sucesso."),
       });
     } catch (error) {
       setProviderFeedback({
         type: "error",
         message: getApiErrorMessage(
           error,
-          "Não foi possível cadastrar o provider.",
+          provider?.id
+            ? "Não foi possível atualizar o provider."
+            : "Não foi possível cadastrar o provider.",
         ),
       });
     }
@@ -744,9 +797,9 @@ export default function ProviderDashboardPage() {
           serviceId: editingServiceId,
           name: name.trim(),
           description: description.trim(),
-          price: hasFixedPrice ? parsedPrice : undefined,
-          priceMinimum: hasPriceRange ? parsedPriceMinimum : undefined,
-          priceMaximum: hasPriceRange ? parsedPriceMaximum : undefined,
+          price: hasFixedPrice ? parsedPrice : 0,
+          priceMinimum: hasPriceRange ? parsedPriceMinimum : 0,
+          priceMaximum: hasPriceRange ? parsedPriceMaximum : 0,
           duration: parsedDuration,
         });
 
@@ -1091,18 +1144,19 @@ export default function ProviderDashboardPage() {
               <Text fontSize="sm" fontWeight="semibold" color="gray.900">
                 Contexto do provider
               </Text>
-              <Text mt={2} fontSize="sm" color="gray.600">
+              <Text mt={2} fontSize="sm" color="gray.700">
                 {provider?.businessName
                   ? `Provider identificado: ${provider.businessName}`
                   : "Aguardando identificação do provider..."}
               </Text>
               {provider ? (
-                <ProviderRating
-                  mt={2}
-                  rating={provider.averageRating}
-                  labelPrefix="Avaliação média:"
-                  fontSize="xs"
-                />
+                <Box mt={2.5}>
+                  <ProviderRating
+                    rating={provider.averageRating}
+                    labelPrefix="Avaliação média:"
+                    fontSize="xs"
+                  />
+                </Box>
               ) : null}
               {providerError ? (
                 <Text mt={1.5} fontSize="xs" color="red.600">
@@ -1114,10 +1168,15 @@ export default function ProviderDashboardPage() {
               ) : null}
 
               <Button
-                mt={3}
+                mt={4}
                 size="sm"
+                h="9"
+                px={5}
                 borderRadius="full"
                 variant="outline"
+                borderColor="gray.300"
+                color="gray.700"
+                _hover={{ bg: "gray.100" }}
                 disabled={!provider?.id}
                 onClick={() => {
                   if (!provider?.id) return;
@@ -1130,15 +1189,16 @@ export default function ProviderDashboardPage() {
           </Grid>
         </Box>
 
-        {shouldShowAddProviderForm ? (
+        {shouldShowProviderForm ? (
           <AddProviderForm
-            onSubmit={handleAddProvider}
+            onSubmit={handleAddOrUpdateProvider}
             onPrefillFromProfile={applyUserDefaultsToProviderForm}
             canPrefillFromProfile={Boolean(currentUser)}
-            isSubmitting={isAddingProvider}
+            isSubmitting={isAddingProvider || isUpdatingProvider}
             isLoadingProviderContext={isLoadingProviderContext}
             maxPriceRangeLength={PROVIDER_PRICE_RANGE_MAX_LENGTH}
             feedback={providerFeedback}
+            mode={provider?.id ? "update" : "create"}
             businessName={providerBusinessName}
             onBusinessNameChange={setProviderBusinessName}
             priceRange={providerPriceRange}
@@ -1425,8 +1485,6 @@ export default function ProviderDashboardPage() {
           </Dialog.Positioner>
         </Portal>
       </Dialog.Root>
-
-      <ChangePasswordCard />
     </PageWrapper>
   );
 }

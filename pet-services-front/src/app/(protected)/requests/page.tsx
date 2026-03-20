@@ -9,7 +9,6 @@ import {
   Grid,
   Heading,
   HStack,
-  Spinner,
   Textarea,
   Text,
   VStack,
@@ -26,6 +25,7 @@ import {
 } from "@/application";
 import MainNav from "@/components/common/MainNav";
 import PageWrapper from "@/components/common/PageWrapper";
+import { EmptyState, ErrorState, LoadingState } from "@/components/ui";
 import { UserTypes } from "@/domain";
 import { getApiErrorMessage } from "@/lib/api-error";
 
@@ -365,22 +365,7 @@ export default function RequestsPage() {
       </Box>
 
       {isLoadingProfile ? (
-        <Flex
-          borderRadius={{ base: "2xl", md: "3xl" }}
-          borderWidth="1px"
-          borderColor="gray.200"
-          bg="white"
-          py={12}
-          justify="center"
-          align="center"
-          gap={3}
-          px={4}
-        >
-          <Spinner color="teal.500" size="sm" />
-          <Text fontSize={{ base: "xs", sm: "sm" }} color="gray.600">
-            Carregando perfil...
-          </Text>
-        </Flex>
+        <LoadingState message="Carregando perfil..." />
       ) : null}
 
       {!isLoadingProfile && !canListRequests ? (
@@ -432,50 +417,15 @@ export default function RequestsPage() {
           ) : null}
 
           {isLoadingRequests ? (
-            <Flex
-              borderRadius={{ base: "2xl", md: "3xl" }}
-              borderWidth="1px"
-              borderColor="gray.200"
-              bg="white"
-              py={12}
-              justify="center"
-              align="center"
-              gap={3}
-              px={4}
-            >
-              <Spinner color="teal.500" size="sm" />
-              <Text fontSize={{ base: "xs", sm: "sm" }} color="gray.600">
-                Carregando solicitações...
-              </Text>
-            </Flex>
+            <LoadingState message="Carregando solicitações..." />
           ) : null}
 
           {!isLoadingRequests && requestsErrorMessage ? (
-            <Box
-              borderRadius={{ base: "2xl", md: "3xl" }}
-              borderWidth="1px"
-              borderColor="red.200"
-              bg="red.50"
-              p={{ base: 4, md: 6 }}
-            >
-              <Text fontSize={{ base: "xs", sm: "sm" }} color="red.700">
-                {requestsErrorMessage}
-              </Text>
-            </Box>
+            <ErrorState message={requestsErrorMessage} />
           ) : null}
 
           {!isLoadingRequests && !requestsErrorMessage && !requests.length ? (
-            <Box
-              borderRadius={{ base: "2xl", md: "3xl" }}
-              borderWidth="1px"
-              borderColor="gray.200"
-              bg="white"
-              p={{ base: 4, md: 6 }}
-            >
-              <Text fontSize={{ base: "xs", sm: "sm" }} color="gray.600">
-                Nenhuma solicitação encontrada para o filtro selecionado.
-              </Text>
-            </Box>
+            <EmptyState message="Nenhuma solicitação encontrada para o filtro selecionado." />
           ) : null}
 
           {!isLoadingRequests && !requestsErrorMessage && requests.length ? (

@@ -26,6 +26,7 @@ import type {
   UpdateServiceOutput,
 } from "@/application";
 import { createServiceCases } from "@/application/factories/service-usecase-factory";
+import { SERVICE_KEYS } from "@/application/hooks/service/service-query-keys";
 import { createApiContext } from "@/infra";
 
 const useServiceUseCases = () => {
@@ -139,7 +140,7 @@ export const useServiceGet = (
   const { getService } = useServiceUseCases();
 
   return useQuery({
-    queryKey: ["service", serviceId],
+    queryKey: SERVICE_KEYS.detail(serviceId!),
     queryFn: () => getService.execute(serviceId!),
     enabled: Boolean(serviceId),
     ...options,
@@ -169,7 +170,7 @@ export const useServiceList = (options?: ListServicesOptions) => {
   const input = options?.input;
 
   return useQuery({
-    queryKey: ["services", input],
+    queryKey: SERVICE_KEYS.list(input),
     queryFn: () => listServices.execute(input),
     ...options,
   });
@@ -180,7 +181,7 @@ export const useServiceSearch = (options?: SearchServicesOptions) => {
   const input = options?.input;
 
   return useQuery({
-    queryKey: ["services-search", input],
+    queryKey: SERVICE_KEYS.search(input),
     queryFn: () => searchServices.execute(input),
     ...options,
   });
