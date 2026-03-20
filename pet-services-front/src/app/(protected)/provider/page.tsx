@@ -183,6 +183,12 @@ export default function ProviderDashboardPage() {
   const [priceMinimum, setPriceMinimum] = useState("");
   const [priceMaximum, setPriceMaximum] = useState("");
   const [duration, setDuration] = useState("");
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editPrice, setEditPrice] = useState("");
+  const [editPriceMinimum, setEditPriceMinimum] = useState("");
+  const [editPriceMaximum, setEditPriceMaximum] = useState("");
+  const [editDuration, setEditDuration] = useState("");
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
   const [confirmDeleteServiceId, setConfirmDeleteServiceId] = useState<
     string | null
@@ -676,29 +682,38 @@ export default function ProviderDashboardPage() {
     }
   };
 
-  const resetForm = () => {
+  const resetCreateForm = () => {
     setName("");
     setDescription("");
     setPrice("");
     setPriceMinimum("");
     setPriceMaximum("");
     setDuration("");
+  };
+
+  const resetEditForm = () => {
+    setEditName("");
+    setEditDescription("");
+    setEditPrice("");
+    setEditPriceMinimum("");
+    setEditPriceMaximum("");
+    setEditDuration("");
     setEditingServiceId(null);
   };
 
   const fillFormForEdit = (service: Service) => {
     setEditingServiceId(service.id);
-    setName(service.name);
-    setDescription(service.description);
-    setPrice(String(service.price));
-    setPriceMinimum(String(service.priceMinimum));
-    setPriceMaximum(String(service.priceMaximum));
-    setDuration(String(service.duration));
+    setEditName(service.name);
+    setEditDescription(service.description);
+    setEditPrice(String(service.price));
+    setEditPriceMinimum(String(service.priceMinimum));
+    setEditPriceMaximum(String(service.priceMaximum));
+    setEditDuration(String(service.duration));
     setFeedback(null);
   };
 
   const handleCancelEdit = () => {
-    resetForm();
+    resetEditForm();
     setFeedback(null);
   };
 
@@ -714,17 +729,32 @@ export default function ProviderDashboardPage() {
       return;
     }
 
-    const hasFixedPrice = price.trim() !== "";
-    const hasPriceMinimum = priceMinimum.trim() !== "";
-    const hasPriceMaximum = priceMaximum.trim() !== "";
+    const currentName = editingServiceId ? editName : name;
+    const currentDescription = editingServiceId ? editDescription : description;
+    const currentPrice = editingServiceId ? editPrice : price;
+    const currentPriceMinimum = editingServiceId
+      ? editPriceMinimum
+      : priceMinimum;
+    const currentPriceMaximum = editingServiceId
+      ? editPriceMaximum
+      : priceMaximum;
+    const currentDuration = editingServiceId ? editDuration : duration;
+
+    const hasFixedPrice = currentPrice.trim() !== "";
+    const hasPriceMinimum = currentPriceMinimum.trim() !== "";
+    const hasPriceMaximum = currentPriceMaximum.trim() !== "";
     const hasPriceRange = hasPriceMinimum || hasPriceMaximum;
 
-    const parsedPrice = Number(price);
-    const parsedPriceMinimum = Number(priceMinimum);
-    const parsedPriceMaximum = Number(priceMaximum);
-    const parsedDuration = Number(duration);
+    const parsedPrice = Number(currentPrice);
+    const parsedPriceMinimum = Number(currentPriceMinimum);
+    const parsedPriceMaximum = Number(currentPriceMaximum);
+    const parsedDuration = Number(currentDuration);
 
-    if (!name.trim() || !description.trim() || Number.isNaN(parsedDuration)) {
+    if (
+      !currentName.trim() ||
+      !currentDescription.trim() ||
+      Number.isNaN(parsedDuration)
+    ) {
       setFeedback({
         type: "error",
         message: "Preencha todos os campos obrigatórios do serviço.",
@@ -795,8 +825,8 @@ export default function ProviderDashboardPage() {
       if (editingServiceId) {
         const response = await updateService({
           serviceId: editingServiceId,
-          name: name.trim(),
-          description: description.trim(),
+          name: currentName.trim(),
+          description: currentDescription.trim(),
           price: hasFixedPrice ? parsedPrice : 0,
           priceMinimum: hasPriceRange ? parsedPriceMinimum : 0,
           priceMaximum: hasPriceRange ? parsedPriceMaximum : 0,
@@ -813,8 +843,8 @@ export default function ProviderDashboardPage() {
       } else {
         const response = await addService({
           providerId: provider.id,
-          name: name.trim(),
-          description: description.trim(),
+          name: currentName.trim(),
+          description: currentDescription.trim(),
           price: hasFixedPrice ? parsedPrice : undefined,
           priceMinimum: hasPriceRange ? parsedPriceMinimum : undefined,
           priceMaximum: hasPriceRange ? parsedPriceMaximum : undefined,
@@ -830,7 +860,11 @@ export default function ProviderDashboardPage() {
         });
       }
 
-      resetForm();
+      if (editingServiceId) {
+        resetEditForm();
+      } else {
+        resetCreateForm();
+      }
     } catch (error) {
       setFeedback({
         type: "error",
@@ -870,7 +904,7 @@ export default function ProviderDashboardPage() {
       });
 
       if (editingServiceId === serviceId) {
-        resetForm();
+        resetEditForm();
       }
     } catch (error) {
       setFeedback({
@@ -1487,7 +1521,7 @@ export default function ProviderDashboardPage() {
 
         {provider?.id ? (
           <ServiceFormCard
-            isEditing={isEditing}
+            isEditing={false}
             onSubmit={handleSubmit}
             name={name}
             onNameChange={setName}
@@ -1502,9 +1536,11 @@ export default function ProviderDashboardPage() {
             description={description}
             onDescriptionChange={setDescription}
             isSubmitting={isSubmitting}
-            canSubmit={Boolean(provider?.id) && !isLoadingProviderContext}
+            canSubmit={
+              Boolean(provider?.id) && !isLoadingProviderContext && !isEditing
+            }
             onCancelEdit={handleCancelEdit}
-            feedback={feedback}
+            feedback={isEditing ? null : feedback}
           />
         ) : null}
 
@@ -1558,6 +1594,48 @@ export default function ProviderDashboardPage() {
           onRemoveTagFromService={handleRemoveTagFromService}
         />
       </VStack>
+
+      <Dialog.Root
+        open={isEditing}
+        onOpenChange={(details) => {
+          if (!details.open) {
+            handleCancelEdit();
+          }
+        }}
+      >
+        <Portal>
+          <Dialog.Backdrop bg="blackAlpha.500" />
+          <Dialog.Positioner p={4}>
+            <Dialog.Content maxW="3xl" w="full" borderRadius="3xl">
+              <Dialog.Header>
+                <Dialog.Title>Editar serviço</Dialog.Title>
+              </Dialog.Header>
+              <Dialog.Body>
+                <ServiceFormCard
+                  isEditing
+                  onSubmit={handleSubmit}
+                  name={editName}
+                  onNameChange={setEditName}
+                  duration={editDuration}
+                  onDurationChange={setEditDuration}
+                  price={editPrice}
+                  onPriceChange={setEditPrice}
+                  priceMinimum={editPriceMinimum}
+                  onPriceMinimumChange={setEditPriceMinimum}
+                  priceMaximum={editPriceMaximum}
+                  onPriceMaximumChange={setEditPriceMaximum}
+                  description={editDescription}
+                  onDescriptionChange={setEditDescription}
+                  isSubmitting={isSubmitting}
+                  canSubmit={Boolean(provider?.id) && !isLoadingProviderContext}
+                  onCancelEdit={handleCancelEdit}
+                  feedback={feedback}
+                />
+              </Dialog.Body>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root>
 
       <Dialog.Root
         open={Boolean(confirmDeleteServiceId)}
