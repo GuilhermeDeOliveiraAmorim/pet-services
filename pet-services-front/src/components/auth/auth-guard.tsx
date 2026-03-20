@@ -57,6 +57,11 @@ export const AuthGuard = ({
       return;
     }
 
+    if ((isOwnerArea || isProviderArea) && userType === UserTypes.Admin) {
+      router.replace("/");
+      return;
+    }
+
     if (isOwnerArea && userType === UserTypes.Provider) {
       router.replace("/provider");
       return;
@@ -96,6 +101,10 @@ export const AuthGuard = ({
   }
 
   if ((isOwnerArea || isProviderArea) && !userType) {
+    return null;
+  }
+
+  if ((isOwnerArea || isProviderArea) && userType === UserTypes.Admin) {
     return null;
   }
 
