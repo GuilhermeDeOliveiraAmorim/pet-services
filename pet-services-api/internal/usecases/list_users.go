@@ -22,7 +22,7 @@ type PaginationMetadata struct {
 }
 
 type ListUsersOutput struct {
-	Users      []*entities.User   `json:"users"`
+	Users      []*UserOutput      `json:"users"`
 	Pagination PaginationMetadata `json:"pagination"`
 }
 
@@ -70,8 +70,13 @@ func (uc *ListUsersUseCase) Execute(ctx context.Context, input ListUsersInput) (
 		totalPages++
 	}
 
+	outputUsers := make([]*UserOutput, 0, len(users))
+	for _, user := range users {
+		outputUsers = append(outputUsers, NewUserOutput(user))
+	}
+
 	return &ListUsersOutput{
-		Users: users,
+		Users: outputUsers,
 		Pagination: PaginationMetadata{
 			CurrentPage:  input.Page,
 			TotalPages:   totalPages,

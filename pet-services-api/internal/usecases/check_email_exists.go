@@ -14,7 +14,6 @@ type CheckEmailExistsInput struct {
 }
 
 type CheckEmailExistsOutput struct {
-	Exists  bool   `json:"exists"`
 	Message string `json:"message,omitempty"`
 }
 
@@ -41,18 +40,14 @@ func (uc *CheckEmailExistsUseCase) Execute(ctx context.Context, input CheckEmail
 		return nil, uc.logger.LogBadRequest(ctx, from, "Email inválido", errors.New("O formato do email está inválido"))
 	}
 
-	exists, err := uc.userRepository.ExistsByEmail(input.Email)
+	_, err := uc.userRepository.ExistsByEmail(input.Email)
 	if err != nil {
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao verificar email", err)
 	}
 
-	message := "Email disponível"
-	if exists {
-		message = "Email já cadastrado"
-	}
+	message := "Solicitação processada"
 
 	return &CheckEmailExistsOutput{
-		Exists:  exists,
 		Message: message,
 	}, nil
 }

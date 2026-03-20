@@ -22,10 +22,9 @@ type ResendVerificationEmailInput struct {
 }
 
 type ResendVerificationEmailOutput struct {
-	Message     string    `json:"message,omitempty"`
-	Detail      string    `json:"detail,omitempty"`
-	VerifyToken string    `json:"verify_token,omitempty"`
-	ExpiresAt   time.Time `json:"expires_at,omitempty"`
+	Message   string    `json:"message,omitempty"`
+	Detail    string    `json:"detail,omitempty"`
+	ExpiresAt time.Time `json:"expires_at,omitempty"`
 }
 
 type ResendVerificationEmailUseCase struct {
@@ -65,15 +64,20 @@ func (uc *ResendVerificationEmailUseCase) Execute(ctx context.Context, input Res
 	user, err := uc.userRepository.FindByEmail(input.Email)
 	if err != nil {
 		if err.Error() == consts.UserNotFoundError {
-			return nil, uc.logger.LogNotFound(ctx, from, "Usuário não encontrado", errors.New("Não foi possível encontrar um usuário com o email informado"))
+			return &ResendVerificationEmailOutput{
+				Message:   "Solicitação processada",
+				Detail:    "Se o email existir e estiver pendente de verificação, um novo link foi enviado",
+				ExpiresAt: time.Now().Add(uc.ttl),
+			}, nil
 		}
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar usuário", err)
 	}
 
 	if user.EmailVerified {
 		return &ResendVerificationEmailOutput{
-			Message: "Email já verificado",
-			Detail:  "Este email já foi verificado anteriormente",
+			Message:   "Solicitação processada",
+			Detail:    "Se o email existir e estiver pendente de verificação, um novo link foi enviado",
+			ExpiresAt: time.Now().Add(uc.ttl),
 		}, nil
 	}
 
@@ -101,9 +105,8 @@ func (uc *ResendVerificationEmailUseCase) Execute(ctx context.Context, input Res
 	}
 
 	return &ResendVerificationEmailOutput{
-		Message:     "Email de verificação reenviado",
-		Detail:      "Verifique sua caixa de entrada para completar a verificação",
-		VerifyToken: tokenStr,
-		ExpiresAt:   expiresAt,
+		Message:   "Solicitação processada",
+		Detail:    "Se o email existir e estiver pendente de verificação, um novo link foi enviado",
+		ExpiresAt: expiresAt,
 	}, nil
 }

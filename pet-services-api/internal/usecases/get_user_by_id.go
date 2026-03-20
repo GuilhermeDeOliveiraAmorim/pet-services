@@ -17,7 +17,7 @@ type GetUserByIDInput struct {
 }
 
 type GetUserByIDOutput struct {
-	User *entities.User `json:"user"`
+	User *UserOutput `json:"user"`
 }
 
 type GetUserByIDUseCase struct {
@@ -70,6 +70,6 @@ func (uc *GetUserByIDUseCase) Execute(ctx context.Context, input GetUserByIDInpu
 	}
 
 	return &GetUserByIDOutput{
-		User: user,
+		User: NewUserOutput(user),
 	}, nil
 }

@@ -17,7 +17,13 @@ func NewRefreshTokenRepository(db *gorm.DB) entities.RefreshTokenRepository {
 }
 
 func (r *refreshTokenRepository) Create(token *entities.RefreshToken) error {
-	return r.db.Create(token).Error
+	if token == nil {
+		return gorm.ErrInvalidData
+	}
+
+	model := *token
+	model.Token = entities.HashToken(token.Token)
+	return r.db.Create(&model).Error
 }
 
 func (r *refreshTokenRepository) FindByID(id string) (*entities.RefreshToken, error) {
@@ -30,8 +36,9 @@ func (r *refreshTokenRepository) FindByID(id string) (*entities.RefreshToken, er
 }
 
 func (r *refreshTokenRepository) FindByToken(tokenStr string) (*entities.RefreshToken, error) {
+	hashedToken := entities.HashToken(tokenStr)
 	var token entities.RefreshToken
-	err := r.db.First(&token, "token = ?", tokenStr).Error
+	err := r.db.Where("token = ? OR token = ?", hashedToken, tokenStr).First(&token).Error
 	if err != nil {
 		return nil, err
 	}
@@ -74,6 +81,7 @@ func (r *refreshTokenRepository) IsValid(token string) (bool, error) {
 func (r *refreshTokenRepository) CreatePasswordReset(token *entities.PasswordResetToken) error {
 	model := &models.PasswordResetToken{}
 	model.FromEntity(token)
+	model.Token = entities.HashToken(token.Token)
 	return r.db.Create(model).Error
 }
 
@@ -82,8 +90,9 @@ func (r *refreshTokenRepository) RevokeAllPasswordResetByUserID(userID string) e
 }
 
 func (r *refreshTokenRepository) FindValidPasswordResetByToken(token string) (*entities.PasswordResetToken, error) {
+	hashedToken := entities.HashToken(token)
 	var model models.PasswordResetToken
-	err := r.db.Where("token = ? AND revoked_at IS NULL AND expires_at > ?", token, time.Now()).First(&model).Error
+	err := r.db.Where("(token = ? OR token = ?) AND revoked_at IS NULL AND expires_at > ?", hashedToken, token, time.Now()).First(&model).Error
 	if err != nil {
 		return nil, err
 	}
@@ -91,5 +100,6 @@ func (r *refreshTokenRepository) FindValidPasswordResetByToken(token string) (*e
 }
 
 func (r *refreshTokenRepository) RevokePasswordResetByToken(token string) error {
-	return r.db.Model(&models.PasswordResetToken{}).Where("token = ? AND revoked_at IS NULL", token).Update("revoked_at", time.Now()).Error
+	hashedToken := entities.HashToken(token)
+	return r.db.Model(&models.PasswordResetToken{}).Where("(token = ? OR token = ?) AND revoked_at IS NULL", hashedToken, token).Update("revoked_at", time.Now()).Error
 }

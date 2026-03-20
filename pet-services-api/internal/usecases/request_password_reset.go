@@ -21,10 +21,9 @@ type RequestPasswordResetInput struct {
 }
 
 type RequestPasswordResetOutput struct {
-	Message    string    `json:"message,omitempty"`
-	Detail     string    `json:"detail,omitempty"`
-	ResetToken string    `json:"reset_token,omitempty"`
-	ExpiresAt  time.Time `json:"expires_at,omitempty"`
+	Message   string    `json:"message,omitempty"`
+	Detail    string    `json:"detail,omitempty"`
+	ExpiresAt time.Time `json:"expires_at,omitempty"`
 }
 
 type RequestPasswordResetUseCase struct {
@@ -58,7 +57,11 @@ func (uc *RequestPasswordResetUseCase) Execute(ctx context.Context, input Reques
 	user, err := uc.userRepository.FindByEmail(input.Email)
 	if err != nil {
 		if err.Error() == consts.UserNotFoundError {
-			return nil, uc.logger.LogNotFound(ctx, from, "Usuário não encontrado", errors.New("Não foi possível encontrar um usuário com o email informado"))
+			return &RequestPasswordResetOutput{
+				Message:   "Instruções enviadas",
+				Detail:    "Se o email existir, um link de redefinição foi gerado",
+				ExpiresAt: time.Now().Add(uc.ttl),
+			}, nil
 		}
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar usuário", err)
 	}
@@ -87,9 +90,8 @@ func (uc *RequestPasswordResetUseCase) Execute(ctx context.Context, input Reques
 	}
 
 	return &RequestPasswordResetOutput{
-		Message:    "Instruções enviadas",
-		Detail:     "Se o email existir, um link de redefinição foi gerado",
-		ResetToken: tokenStr,
-		ExpiresAt:  expiresAt,
+		Message:   "Instruções enviadas",
+		Detail:    "Se o email existir, um link de redefinição foi gerado",
+		ExpiresAt: expiresAt,
 	}, nil
 }

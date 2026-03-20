@@ -2,7 +2,6 @@ package usecases
 
 import (
 	"context"
-	"errors"
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
@@ -55,7 +54,10 @@ func (uc *RegisterUserUseCase) Execute(ctx context.Context, input RegisterUserIn
 	}
 
 	if exists {
-		return nil, uc.logger.LogConflict(ctx, from, "Email já cadastrado", errors.New("O email informado já está em uso por outro usuário"))
+		return &RegisterUserOutput{
+			Message: "Usuário registrado com sucesso",
+			Detail:  "O usuário foi criado com sucesso. Verifique seu email para ativar a conta",
+		}, nil
 	}
 
 	var problems []exceptions.ProblemDetails

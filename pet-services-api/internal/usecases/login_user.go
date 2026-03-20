@@ -52,7 +52,7 @@ type LoginUserInput struct {
 }
 
 type LoginUserOutput struct {
-	User         *entities.User              `json:"user"`
+	User         *UserOutput                 `json:"user"`
 	AccessToken  string                      `json:"access_token"`
 	RefreshToken string                      `json:"refresh_token"`
 	ExpiresIn    int64                       `json:"expires_in"`
@@ -100,14 +100,14 @@ func (uc *LoginUserUseCase) Execute(ctx context.Context, input LoginUserInput) (
 	user, err := uc.userRepository.FindByEmail(input.Email)
 	if err != nil {
 		if err.Error() == consts.UserNotFoundError {
-			return nil, uc.logger.LogNotFound(ctx, from, "Usuário não encontrado", errors.New("Não foi possível encontrar um usuário com o email informado"))
+			return nil, uc.logger.LogUnauthorized(ctx, from, "Credenciais inválidas", errors.New("Credenciais inválidas"))
 		}
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao buscar usuário", err)
 	}
 
 	login := entities.Login{Email: user.Login.Email, Password: user.Login.Password}
 	if !login.CompareAndDecrypt(user.Login.Password, input.Password) {
-		return nil, uc.logger.LogUnauthorized(ctx, from, "Credenciais inválidas", errors.New("Email ou senha incorretos"))
+		return nil, uc.logger.LogUnauthorized(ctx, from, "Credenciais inválidas", errors.New("Credenciais inválidas"))
 	}
 
 	if !user.Active {
@@ -166,7 +166,7 @@ func (uc *LoginUserUseCase) Execute(ctx context.Context, input LoginUserInput) (
 	}
 
 	return &LoginUserOutput{
-		User:         user,
+		User:         NewUserOutput(user),
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 		ExpiresIn:    expiresIn,

@@ -9,8 +9,6 @@ export interface ResendVerificationEmailInput {
 export interface ResendVerificationEmailOutput {
   message?: string;
   detail?: string;
-  verifyToken?: string;
-  expiresAt?: string;
 }
 
 export class ResendVerificationEmailUseCase {

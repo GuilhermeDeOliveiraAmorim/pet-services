@@ -2,9 +2,15 @@ import { createAuthUseCases } from "../src/application";
 import { createApiContext } from "../src/infra";
 
 const email = process.env.TEST_EMAIL;
+const verifyToken = process.env.TEST_VERIFY_TOKEN;
 
 if (!email) {
   console.error("Defina TEST_EMAIL no ambiente.");
+  process.exit(1);
+}
+
+if (!verifyToken) {
+  console.error("Defina TEST_VERIFY_TOKEN no ambiente.");
   process.exit(1);
 }
 
@@ -17,18 +23,13 @@ const run = async () => {
   console.log("→ Resend verification email");
   const resend = await resendVerificationEmailUseCase.execute({ email });
   console.log("Resend ok:", {
-    verifyToken: resend.verifyToken,
-    expiresAt: resend.expiresAt,
+    message: resend.message,
+    detail: resend.detail,
   });
-
-  if (!resend.verifyToken) {
-    console.error("Token de verificação não retornado.");
-    process.exit(1);
-  }
 
   console.log("→ Verify email");
   const verify = await verifyEmailUseCase.execute({
-    token: resend.verifyToken,
+    token: verifyToken,
   });
   console.log("Verify ok:", verify);
 };
