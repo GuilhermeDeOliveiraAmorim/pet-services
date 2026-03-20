@@ -2278,7 +2278,13 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Busca textual (nome ou descrição)",
+                        "description": "Busca textual (nome, descrição, profissional ou localização)",
+                        "name": "query",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Alias legado de query",
                         "name": "q",
                         "in": "query"
                     },

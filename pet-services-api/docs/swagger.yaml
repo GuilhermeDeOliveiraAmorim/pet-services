@@ -3108,7 +3108,11 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Busca textual (nome ou descrição)
+      - description: Busca textual (nome, descrição, profissional ou localização)
+        in: query
+        name: query
+        type: string
+      - description: Alias legado de query
         in: query
         name: q
         type: string
