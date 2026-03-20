@@ -18,6 +18,7 @@ import {
 
 import { useProviderGet, useReviewList, useServiceList } from "@/application";
 import { MainNav, PageWrapper, ProviderRating } from "@/components/common";
+import { EmptyState, ErrorState, LoadingState } from "@/components/ui";
 import { getApiErrorMessage } from "@/lib/api-error";
 
 type PhotoView = {
@@ -156,36 +157,11 @@ export default function ProviderDetailsPage() {
         </ChakraLink>
 
         {isLoadingProvider ? (
-          <Flex
-            borderRadius={{ base: "xl", md: "2xl" }}
-            borderWidth="1px"
-            borderColor="gray.200"
-            bg="white"
-            py={20}
-            justify="center"
-            align="center"
-            gap={3}
-            px={4}
-          >
-            <Spinner color="teal.500" size="sm" />
-            <Text fontSize={{ base: "xs", sm: "sm" }} color="gray.600">
-              Carregando dados do provider...
-            </Text>
-          </Flex>
+          <LoadingState message="Carregando dados do provider..." />
         ) : null}
 
         {!isLoadingProvider && providerErrorMessage ? (
-          <Box
-            borderRadius={{ base: "xl", md: "2xl" }}
-            borderWidth="1px"
-            borderColor="red.200"
-            bg="red.50"
-            p={{ base: 3, md: 5 }}
-          >
-            <Text fontSize={{ base: "xs", sm: "sm" }} color="red.700">
-              {providerErrorMessage}
-            </Text>
-          </Box>
+          <ErrorState message={providerErrorMessage} />
         ) : null}
 
         {!isLoadingProvider && !providerErrorMessage && provider ? (
@@ -450,13 +426,7 @@ export default function ProviderDetailsPage() {
                     ))}
                   </VStack>
                 ) : (
-                  <Text
-                    mt={4}
-                    fontSize={{ base: "xs", sm: "sm" }}
-                    color="gray.500"
-                  >
-                    Este provider ainda não possui avaliações.
-                  </Text>
+                  <EmptyState message="Este provider ainda não possui avaliações." />
                 )
               ) : null}
             </Box>
@@ -565,13 +535,7 @@ export default function ProviderDetailsPage() {
                     ))}
                   </VStack>
                 ) : (
-                  <Text
-                    mt={4}
-                    fontSize={{ base: "xs", sm: "sm" }}
-                    color="gray.500"
-                  >
-                    Este provider ainda não possui serviços publicados.
-                  </Text>
+                  <EmptyState message="Este provider ainda não possui serviços publicados." />
                 )
               ) : null}
             </Box>
