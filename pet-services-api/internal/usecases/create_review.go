@@ -105,6 +105,11 @@ func (uc *CreateReviewUseCase) Execute(ctx context.Context, input CreateReviewIn
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao criar review", err)
 	}
 
+	provider.AddReview(*review)
+	if err := uc.providerRepository.Update(provider); err != nil {
+		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao atualizar nota média do provedor", err)
+	}
+
 	providerUser, err := uc.userRepository.FindByID(provider.UserID)
 	if err != nil {
 		if err.Error() == consts.UserNotFoundError {
