@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -24,6 +24,7 @@ import {
   useCategoryList,
   useProviderDeletePhoto,
   useProviderGet,
+  useProviderUpdate,
   type ListServicesOutput,
   useServiceAdd,
   useServiceAddCategory,
@@ -72,6 +73,20 @@ export default function ProviderDashboardPage() {
     useProviderAdd({
       onSuccess: () =>
         queryClient.invalidateQueries({ queryKey: ["user-profile"] }),
+    });
+  const { mutateAsync: updateProvider, isPending: isUpdatingProvider } =
+    useProviderUpdate({
+      onSuccess: (response, variables) => {
+        if (response.provider) {
+          queryClient.setQueryData(["provider", response.provider.id], {
+            provider: response.provider,
+          });
+        }
+
+        queryClient.invalidateQueries({
+          queryKey: ["provider", variables.providerId],
+        });
+      },
     });
   const { mutateAsync: addProviderPhoto, isPending: isAddingProviderPhoto } =
     useProviderAddPhoto({
@@ -229,10 +244,37 @@ export default function ProviderDashboardPage() {
   const isEditing = Boolean(editingServiceId);
   const isSubmitting = isAddingService || isUpdatingService;
   const isLoadingProviderContext = isLoadingUser || isLoadingProvider;
-  const shouldShowAddProviderForm =
-    !isLoadingProviderContext && !provider?.id && !providerId;
+  const shouldShowProviderForm = !isLoadingProviderContext;
 
   const currentUser = userData?.user;
+
+  useEffect(() => {
+    if (!provider) {
+      return;
+    }
+
+    setProviderBusinessName(provider.businessName ?? "");
+    setProviderDescription(provider.description ?? "");
+    setProviderPriceRange(provider.priceRange ?? "");
+    setProviderStreet(provider.address?.street ?? "");
+    setProviderAddressNumber(provider.address?.number ?? "");
+    setProviderNeighborhood(provider.address?.neighborhood ?? "");
+    setProviderCity(provider.address?.city ?? "");
+    setProviderZipCode(provider.address?.zipCode ?? "");
+    setProviderState(provider.address?.state ?? "");
+    setProviderCountry(provider.address?.country ?? "Brasil");
+    setProviderComplement(provider.address?.complement ?? "");
+    setProviderLatitude(
+      provider.address?.location?.latitude !== undefined
+        ? String(provider.address.location.latitude)
+        : "",
+    );
+    setProviderLongitude(
+      provider.address?.location?.longitude !== undefined
+        ? String(provider.address.location.longitude)
+        : "",
+    );
+  }, [provider]);
 
   const setTaxonomyFeedback = (
     serviceId: string,
@@ -530,16 +572,10 @@ export default function ProviderDashboardPage() {
     });
   };
 
-  const handleAddProvider = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleAddOrUpdateProvider = async (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
     event.preventDefault();
-
-    if (provider?.id) {
-      setProviderFeedback({
-        type: "error",
-        message: "Você já possui um provider cadastrado.",
-      });
-      return;
-    }
 
     const parsedLatitude = Number(providerLatitude);
     const parsedLongitude = Number(providerLongitude);
@@ -578,7 +614,7 @@ export default function ProviderDashboardPage() {
     }
 
     try {
-      const response = await addProvider({
+      const providerPayload = {
         businessName: providerBusinessName.trim(),
         description: providerDescription.trim(),
         priceRange: normalizedPriceRange,
@@ -596,12 +632,19 @@ export default function ProviderDashboardPage() {
             longitude: parsedLongitude,
           },
         },
-      });
+      };
+
+      const response = provider?.id
+        ? await updateProvider({
+            providerId: provider.id,
+            ...providerPayload,
+          })
+        : await addProvider(providerPayload);
 
       if (response.provider?.id) {
         setCreatedProviderId(response.provider.id);
-        queryClient.invalidateQueries({
-          queryKey: ["provider", response.provider.id],
+        queryClient.setQueryData(["provider", response.provider.id], {
+          provider: response.provider,
         });
       }
 
@@ -610,14 +653,18 @@ export default function ProviderDashboardPage() {
         message:
           response.detail ||
           response.message ||
-          "Provider cadastrado com sucesso.",
+          (provider?.id
+            ? "Provider atualizado com sucesso."
+            : "Provider cadastrado com sucesso."),
       });
     } catch (error) {
       setProviderFeedback({
         type: "error",
         message: getApiErrorMessage(
           error,
-          "Não foi possível cadastrar o provider.",
+          provider?.id
+            ? "Não foi possível atualizar o provider."
+            : "Não foi possível cadastrar o provider.",
         ),
       });
     }
@@ -1130,15 +1177,16 @@ export default function ProviderDashboardPage() {
           </Grid>
         </Box>
 
-        {shouldShowAddProviderForm ? (
+        {shouldShowProviderForm ? (
           <AddProviderForm
-            onSubmit={handleAddProvider}
+            onSubmit={handleAddOrUpdateProvider}
             onPrefillFromProfile={applyUserDefaultsToProviderForm}
             canPrefillFromProfile={Boolean(currentUser)}
-            isSubmitting={isAddingProvider}
+            isSubmitting={isAddingProvider || isUpdatingProvider}
             isLoadingProviderContext={isLoadingProviderContext}
             maxPriceRangeLength={PROVIDER_PRICE_RANGE_MAX_LENGTH}
             feedback={providerFeedback}
+            mode={provider?.id ? "update" : "create"}
             businessName={providerBusinessName}
             onBusinessNameChange={setProviderBusinessName}
             priceRange={providerPriceRange}

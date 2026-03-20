@@ -18,6 +18,7 @@ import {
 } from "@chakra-ui/react";
 
 import {
+  type GetProfileOutput,
   useReferenceCities,
   useReferenceCountries,
   useReferenceStates,
@@ -40,7 +41,31 @@ export default function ProfileForm({ user }: ProfileFormProps) {
     isPending: isSaving,
     error: updateError,
     isSuccess: updateSuccess,
-  } = useUserUpdate();
+  } = useUserUpdate({
+    onSuccess: (response) => {
+      if (response.user) {
+        const nextUser = response.user;
+
+        queryClient.setQueryData<GetProfileOutput>(
+          ["user-profile"],
+          (previous) => {
+            if (!previous) {
+              return {
+                user: nextUser,
+              } as GetProfileOutput;
+            }
+
+            return {
+              ...previous,
+              user: nextUser,
+            };
+          },
+        );
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+    },
+  });
   const {
     mutateAsync: addUserPhoto,
     isPending: isUploadingPhoto,
