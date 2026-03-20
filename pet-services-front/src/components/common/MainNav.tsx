@@ -37,7 +37,8 @@ export default function MainNav({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  const { session, isAuthenticated, clearSession } = useAuthSession();
+  const { session, isAuthenticated, isHydrated, clearSession } =
+    useAuthSession();
   const { data: profileData } = useUserProfile({ enabled: isAuthenticated });
   const { mutateAsync: logout, isPending } = useAuthLogout();
   const registerHref = pathname?.startsWith("/partner")
@@ -127,7 +128,9 @@ export default function MainNav({
 
         {showActions ? (
           <HStack gap="3" align="center" display={{ base: "none", lg: "flex" }}>
-            {isAuthenticated ? (
+            {!isHydrated ? (
+              <Box w="10" h="9" />
+            ) : isAuthenticated ? (
               <Button
                 onClick={handleLogout}
                 disabled={isPending}
@@ -236,7 +239,7 @@ export default function MainNav({
             : null}
 
           {showActions ? (
-            isAuthenticated ? (
+            !isHydrated ? null : isAuthenticated ? (
               <Button
                 onClick={handleLogout}
                 disabled={isPending}
