@@ -48,7 +48,6 @@ import { getApiErrorMessage } from "@/lib/api-error";
 import AddProviderForm from "./components/AddProviderForm";
 import ServiceFormCard from "./components/ServiceFormCard";
 import ServicesListSection from "./components/ServicesListSection";
-import ChangePasswordCard from "@/components/account/ChangePasswordCard";
 import { MainNav, PageWrapper, ProviderRating } from "@/components/common";
 
 type Feedback = {
@@ -1145,18 +1144,19 @@ export default function ProviderDashboardPage() {
               <Text fontSize="sm" fontWeight="semibold" color="gray.900">
                 Contexto do provider
               </Text>
-              <Text mt={2} fontSize="sm" color="gray.600">
+              <Text mt={2} fontSize="sm" color="gray.700">
                 {provider?.businessName
                   ? `Provider identificado: ${provider.businessName}`
                   : "Aguardando identificação do provider..."}
               </Text>
               {provider ? (
-                <ProviderRating
-                  mt={2}
-                  rating={provider.averageRating}
-                  labelPrefix="Avaliação média:"
-                  fontSize="xs"
-                />
+                <Box mt={2.5}>
+                  <ProviderRating
+                    rating={provider.averageRating}
+                    labelPrefix="Avaliação média:"
+                    fontSize="xs"
+                  />
+                </Box>
               ) : null}
               {providerError ? (
                 <Text mt={1.5} fontSize="xs" color="red.600">
@@ -1168,10 +1168,15 @@ export default function ProviderDashboardPage() {
               ) : null}
 
               <Button
-                mt={3}
+                mt={4}
                 size="sm"
+                h="9"
+                px={5}
                 borderRadius="full"
                 variant="outline"
+                borderColor="gray.300"
+                color="gray.700"
+                _hover={{ bg: "gray.100" }}
                 disabled={!provider?.id}
                 onClick={() => {
                   if (!provider?.id) return;
@@ -1480,8 +1485,6 @@ export default function ProviderDashboardPage() {
           </Dialog.Positioner>
         </Portal>
       </Dialog.Root>
-
-      <ChangePasswordCard />
     </PageWrapper>
   );
 }
