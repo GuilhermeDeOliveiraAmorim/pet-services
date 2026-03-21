@@ -3,7 +3,6 @@ import HeroSection from "@/components/home/HeroSection";
 import SegmentBlocks from "@/components/home/SegmentBlocks";
 import QuickActionsBar from "@/components/home/QuickActionsBar";
 import HighlightsSection from "@/components/home/HighlightsSection";
-import PromoBannerSection from "@/components/home/PromoBannerSection";
 import PartnerCallToAction from "@/components/home/PartnerCallToAction";
 import InstitutionalSection from "@/components/home/InstitutionalSection";
 import Footer from "@/components/home/Footer";
@@ -13,12 +12,23 @@ export default function Home() {
     <>
       <MainNav />
       <HeroSection />
-      <SegmentBlocks />
+
+      {/* Barra de ações rápidas logo após o hero */}
       <QuickActionsBar />
+
+      {/* Blocos de segmentos/serviços */}
+      <SegmentBlocks />
+
+      {/* Destaques visuais (promoções, pets, serviços) */}
       <HighlightsSection />
-      <PromoBannerSection />
+
+      {/* Chamada para parceiros/ONGs/voluntários */}
       <PartnerCallToAction />
+
+      {/* Links institucionais e redes sociais */}
       <InstitutionalSection />
+
+      {/* Rodapé informativo */}
       <Footer />
     </>
   );
