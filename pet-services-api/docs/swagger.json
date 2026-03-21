@@ -308,6 +308,405 @@
                 }
             }
         },
+        "/adoption/listings": {
+            "get": {
+                "description": "Retorna a lista paginada de anúncios de adoção com status 'published'. Suporta filtros por sexo, porte, faixa etária, cidade e estado.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Adoção - Público"
+                ],
+                "summary": "Lista anúncios públicos de adoção",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Página (padrão: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Itens por página (padrão: 12, máx: 50)",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "male",
+                            "female"
+                        ],
+                        "type": "string",
+                        "description": "Sexo do animal",
+                        "name": "sex",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "small",
+                            "medium",
+                            "large"
+                        ],
+                        "type": "string",
+                        "description": "Porte do animal",
+                        "name": "size",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "puppy",
+                            "adult",
+                            "senior"
+                        ],
+                        "type": "string",
+                        "description": "Faixa etária",
+                        "name": "age_group",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID da cidade",
+                        "name": "city_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID do estado",
+                        "name": "state_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/usecases.ListPublicAdoptionListingsOutput"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Cria um novo anúncio de adoção vinculado ao perfil de responsável aprovado do usuário autenticado. O anúncio é criado com status 'draft'.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Adoção - Anúncios"
+                ],
+                "summary": "Cria um anúncio de adoção",
+                "parameters": [
+                    {
+                        "description": "Dados do anúncio",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/usecases.CreateAdoptionListingInputBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/usecases.CreateAdoptionListingOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/adoption/listings/me": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retorna a lista paginada de anúncios de adoção vinculados ao perfil de responsável do usuário autenticado, em todos os status.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Adoção - Anúncios"
+                ],
+                "summary": "Lista os anúncios de adoção do responsável autenticado",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Página (padrão: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Itens por página (padrão: 10, máx: 50)",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/usecases.ListMyAdoptionListingsOutput"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/adoption/listings/{listing_id}": {
+            "get": {
+                "description": "Retorna os dados completos de um anúncio de adoção com status 'published', incluindo dados do pet e do responsável.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Adoção - Público"
+                ],
+                "summary": "Retorna o detalhe de um anúncio público de adoção",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID do anúncio",
+                        "name": "listing_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/usecases.GetPublicAdoptionListingOutput"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Atualiza os dados de um anúncio de adoção em status 'draft' ou 'paused'. Apenas o responsável pelo anúncio pode editá-lo.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Adoção - Anúncios"
+                ],
+                "summary": "Atualiza um anúncio de adoção",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID do anúncio",
+                        "name": "listing_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Campos a atualizar",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/usecases.UpdateAdoptionListingInputBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/usecases.UpdateAdoptionListingOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/adoption/listings/{listing_id}/{action}": {
+            "patch": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Altera o status de um anúncio. Ações disponíveis: publish (draft/paused → published), pause (published → paused), archive (qualquer → archived). Apenas o responsável pode realizar esta ação.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Adoção - Anúncios"
+                ],
+                "summary": "Altera o status de um anúncio de adoção",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID do anúncio",
+                        "name": "listing_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "publish",
+                            "pause",
+                            "archive"
+                        ],
+                        "type": "string",
+                        "description": "Ação",
+                        "name": "action",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/usecases.ChangeAdoptionListingStatusOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "consumes": [
@@ -3962,6 +4361,101 @@
                 }
             }
         },
+        "entities.AdoptionListing": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "adopted_at": {
+                    "type": "string"
+                },
+                "adoption_reason": {
+                    "type": "string"
+                },
+                "age_group": {
+                    "type": "string"
+                },
+                "city_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "deactivated_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "dewormed": {
+                    "type": "boolean"
+                },
+                "good_with_cats": {
+                    "type": "boolean"
+                },
+                "good_with_children": {
+                    "type": "boolean"
+                },
+                "good_with_dogs": {
+                    "type": "boolean"
+                },
+                "guardian_profile": {
+                    "$ref": "#/definitions/entities.AdoptionGuardianProfile"
+                },
+                "guardian_profile_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "neutered": {
+                    "type": "boolean"
+                },
+                "pet": {
+                    "$ref": "#/definitions/entities.Pet"
+                },
+                "pet_id": {
+                    "type": "string"
+                },
+                "published_at": {
+                    "type": "string"
+                },
+                "requires_house_screening": {
+                    "type": "boolean"
+                },
+                "sex": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "string"
+                },
+                "special_needs": {
+                    "type": "boolean"
+                },
+                "state_id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "vaccinated": {
+                    "type": "boolean"
+                }
+            }
+        },
         "entities.Breed": {
             "type": "object",
             "properties": {
@@ -4689,6 +5183,17 @@
                 }
             }
         },
+        "usecases.ChangeAdoptionListingStatusOutput": {
+            "type": "object",
+            "properties": {
+                "listing": {
+                    "$ref": "#/definitions/entities.AdoptionListing"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "usecases.ChangePasswordInputBody": {
             "type": "object",
             "properties": {
@@ -4831,6 +5336,79 @@
                 },
                 "profile": {
                     "$ref": "#/definitions/entities.AdoptionGuardianProfile"
+                }
+            }
+        },
+        "usecases.CreateAdoptionListingInputBody": {
+            "type": "object",
+            "properties": {
+                "adoption_reason": {
+                    "type": "string"
+                },
+                "age_group": {
+                    "type": "string"
+                },
+                "city_id": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "dewormed": {
+                    "type": "boolean"
+                },
+                "good_with_cats": {
+                    "type": "boolean"
+                },
+                "good_with_children": {
+                    "type": "boolean"
+                },
+                "good_with_dogs": {
+                    "type": "boolean"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "neutered": {
+                    "type": "boolean"
+                },
+                "pet_id": {
+                    "type": "string"
+                },
+                "requires_house_screening": {
+                    "type": "boolean"
+                },
+                "sex": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "string"
+                },
+                "special_needs": {
+                    "type": "boolean"
+                },
+                "state_id": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "vaccinated": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "usecases.CreateAdoptionListingOutput": {
+            "type": "object",
+            "properties": {
+                "listing": {
+                    "$ref": "#/definitions/entities.AdoptionListing"
+                },
+                "message": {
+                    "type": "string"
                 }
             }
         },
@@ -5025,6 +5603,14 @@
                 }
             }
         },
+        "usecases.GetPublicAdoptionListingOutput": {
+            "type": "object",
+            "properties": {
+                "listing": {
+                    "$ref": "#/definitions/entities.AdoptionListing"
+                }
+            }
+        },
         "usecases.GetRequestOutput": {
             "type": "object",
             "properties": {
@@ -5112,6 +5698,20 @@
                 }
             }
         },
+        "usecases.ListMyAdoptionListingsOutput": {
+            "type": "object",
+            "properties": {
+                "listings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.AdoptionListing"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/usecases.PaginationMetadata"
+                }
+            }
+        },
         "usecases.ListPetsOutput": {
             "type": "object",
             "properties": {
@@ -5132,6 +5732,20 @@
                 },
                 "total_pages": {
                     "type": "integer"
+                }
+            }
+        },
+        "usecases.ListPublicAdoptionListingsOutput": {
+            "type": "object",
+            "properties": {
+                "listings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.AdoptionListing"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/usecases.PaginationMetadata"
                 }
             }
         },
@@ -5711,6 +6325,76 @@
                 },
                 "profile": {
                     "$ref": "#/definitions/entities.AdoptionGuardianProfile"
+                }
+            }
+        },
+        "usecases.UpdateAdoptionListingInputBody": {
+            "type": "object",
+            "properties": {
+                "adoption_reason": {
+                    "type": "string"
+                },
+                "age_group": {
+                    "type": "string"
+                },
+                "city_id": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "dewormed": {
+                    "type": "boolean"
+                },
+                "good_with_cats": {
+                    "type": "boolean"
+                },
+                "good_with_children": {
+                    "type": "boolean"
+                },
+                "good_with_dogs": {
+                    "type": "boolean"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "neutered": {
+                    "type": "boolean"
+                },
+                "requires_house_screening": {
+                    "type": "boolean"
+                },
+                "sex": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "string"
+                },
+                "special_needs": {
+                    "type": "boolean"
+                },
+                "state_id": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "vaccinated": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "usecases.UpdateAdoptionListingOutput": {
+            "type": "object",
+            "properties": {
+                "listing": {
+                    "$ref": "#/definitions/entities.AdoptionListing"
+                },
+                "message": {
+                    "type": "string"
                 }
             }
         },

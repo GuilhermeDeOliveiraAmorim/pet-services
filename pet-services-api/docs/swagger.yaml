@@ -58,6 +58,69 @@ definitions:
       whatsapp:
         type: string
     type: object
+  entities.AdoptionListing:
+    properties:
+      active:
+        type: boolean
+      adopted_at:
+        type: string
+      adoption_reason:
+        type: string
+      age_group:
+        type: string
+      city_id:
+        type: string
+      created_at:
+        type: string
+      deactivated_at:
+        type: string
+      description:
+        type: string
+      dewormed:
+        type: boolean
+      good_with_cats:
+        type: boolean
+      good_with_children:
+        type: boolean
+      good_with_dogs:
+        type: boolean
+      guardian_profile:
+        $ref: '#/definitions/entities.AdoptionGuardianProfile'
+      guardian_profile_id:
+        type: string
+      id:
+        type: string
+      latitude:
+        type: number
+      longitude:
+        type: number
+      neutered:
+        type: boolean
+      pet:
+        $ref: '#/definitions/entities.Pet'
+      pet_id:
+        type: string
+      published_at:
+        type: string
+      requires_house_screening:
+        type: boolean
+      sex:
+        type: string
+      size:
+        type: string
+      special_needs:
+        type: boolean
+      state_id:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      vaccinated:
+        type: boolean
+    type: object
   entities.Breed:
     properties:
       active:
@@ -531,6 +594,13 @@ definitions:
       photo:
         $ref: '#/definitions/entities.Photo'
     type: object
+  usecases.ChangeAdoptionListingStatusOutput:
+    properties:
+      listing:
+        $ref: '#/definitions/entities.AdoptionListing'
+      message:
+        type: string
+    type: object
   usecases.ChangePasswordInputBody:
     properties:
       new_password:
@@ -623,6 +693,54 @@ definitions:
         type: string
       profile:
         $ref: '#/definitions/entities.AdoptionGuardianProfile'
+    type: object
+  usecases.CreateAdoptionListingInputBody:
+    properties:
+      adoption_reason:
+        type: string
+      age_group:
+        type: string
+      city_id:
+        type: string
+      description:
+        type: string
+      dewormed:
+        type: boolean
+      good_with_cats:
+        type: boolean
+      good_with_children:
+        type: boolean
+      good_with_dogs:
+        type: boolean
+      latitude:
+        type: number
+      longitude:
+        type: number
+      neutered:
+        type: boolean
+      pet_id:
+        type: string
+      requires_house_screening:
+        type: boolean
+      sex:
+        type: string
+      size:
+        type: string
+      special_needs:
+        type: boolean
+      state_id:
+        type: string
+      title:
+        type: string
+      vaccinated:
+        type: boolean
+    type: object
+  usecases.CreateAdoptionListingOutput:
+    properties:
+      listing:
+        $ref: '#/definitions/entities.AdoptionListing'
+      message:
+        type: string
     type: object
   usecases.CreateCategoryInput:
     properties:
@@ -746,6 +864,11 @@ definitions:
       total_pages:
         type: integer
     type: object
+  usecases.GetPublicAdoptionListingOutput:
+    properties:
+      listing:
+        $ref: '#/definitions/entities.AdoptionListing'
+    type: object
   usecases.GetRequestOutput:
     properties:
       request:
@@ -801,6 +924,15 @@ definitions:
           $ref: '#/definitions/reference.Country'
         type: array
     type: object
+  usecases.ListMyAdoptionListingsOutput:
+    properties:
+      listings:
+        items:
+          $ref: '#/definitions/entities.AdoptionListing'
+        type: array
+      pagination:
+        $ref: '#/definitions/usecases.PaginationMetadata'
+    type: object
   usecases.ListPetsOutput:
     properties:
       current_page:
@@ -815,6 +947,15 @@ definitions:
         type: integer
       total_pages:
         type: integer
+    type: object
+  usecases.ListPublicAdoptionListingsOutput:
+    properties:
+      listings:
+        items:
+          $ref: '#/definitions/entities.AdoptionListing'
+        type: array
+      pagination:
+        $ref: '#/definitions/usecases.PaginationMetadata'
     type: object
   usecases.ListRequestsOutput:
     properties:
@@ -1191,6 +1332,52 @@ definitions:
       profile:
         $ref: '#/definitions/entities.AdoptionGuardianProfile'
     type: object
+  usecases.UpdateAdoptionListingInputBody:
+    properties:
+      adoption_reason:
+        type: string
+      age_group:
+        type: string
+      city_id:
+        type: string
+      description:
+        type: string
+      dewormed:
+        type: boolean
+      good_with_cats:
+        type: boolean
+      good_with_children:
+        type: boolean
+      good_with_dogs:
+        type: boolean
+      latitude:
+        type: number
+      longitude:
+        type: number
+      neutered:
+        type: boolean
+      requires_house_screening:
+        type: boolean
+      sex:
+        type: string
+      size:
+        type: string
+      special_needs:
+        type: boolean
+      state_id:
+        type: string
+      title:
+        type: string
+      vaccinated:
+        type: boolean
+    type: object
+  usecases.UpdateAdoptionListingOutput:
+    properties:
+      listing:
+        $ref: '#/definitions/entities.AdoptionListing'
+      message:
+        type: string
+    type: object
   usecases.UpdatePetInputBody:
     properties:
       age:
@@ -1532,6 +1719,274 @@ paths:
       summary: Atualiza o perfil de responsável por adoção do usuário autenticado
       tags:
       - Adoção - Perfil do Responsável
+  /adoption/listings:
+    get:
+      description: Retorna a lista paginada de anúncios de adoção com status 'published'.
+        Suporta filtros por sexo, porte, faixa etária, cidade e estado.
+      parameters:
+      - description: 'Página (padrão: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Itens por página (padrão: 12, máx: 50)'
+        in: query
+        name: page_size
+        type: integer
+      - description: Sexo do animal
+        enum:
+        - male
+        - female
+        in: query
+        name: sex
+        type: string
+      - description: Porte do animal
+        enum:
+        - small
+        - medium
+        - large
+        in: query
+        name: size
+        type: string
+      - description: Faixa etária
+        enum:
+        - puppy
+        - adult
+        - senior
+        in: query
+        name: age_group
+        type: string
+      - description: ID da cidade
+        in: query
+        name: city_id
+        type: string
+      - description: ID do estado
+        in: query
+        name: state_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.ListPublicAdoptionListingsOutput'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Lista anúncios públicos de adoção
+      tags:
+      - Adoção - Público
+    post:
+      consumes:
+      - application/json
+      description: Cria um novo anúncio de adoção vinculado ao perfil de responsável
+        aprovado do usuário autenticado. O anúncio é criado com status 'draft'.
+      parameters:
+      - description: Dados do anúncio
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.CreateAdoptionListingInputBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/usecases.CreateAdoptionListingOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Cria um anúncio de adoção
+      tags:
+      - Adoção - Anúncios
+  /adoption/listings/{listing_id}:
+    get:
+      description: Retorna os dados completos de um anúncio de adoção com status 'published',
+        incluindo dados do pet e do responsável.
+      parameters:
+      - description: ID do anúncio
+        in: path
+        name: listing_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.GetPublicAdoptionListingOutput'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      summary: Retorna o detalhe de um anúncio público de adoção
+      tags:
+      - Adoção - Público
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados de um anúncio de adoção em status 'draft' ou
+        'paused'. Apenas o responsável pelo anúncio pode editá-lo.
+      parameters:
+      - description: ID do anúncio
+        in: path
+        name: listing_id
+        required: true
+        type: string
+      - description: Campos a atualizar
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.UpdateAdoptionListingInputBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.UpdateAdoptionListingOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Atualiza um anúncio de adoção
+      tags:
+      - Adoção - Anúncios
+  /adoption/listings/{listing_id}/{action}:
+    patch:
+      description: 'Altera o status de um anúncio. Ações disponíveis: publish (draft/paused
+        → published), pause (published → paused), archive (qualquer → archived). Apenas
+        o responsável pode realizar esta ação.'
+      parameters:
+      - description: ID do anúncio
+        in: path
+        name: listing_id
+        required: true
+        type: string
+      - description: Ação
+        enum:
+        - publish
+        - pause
+        - archive
+        in: path
+        name: action
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.ChangeAdoptionListingStatusOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Altera o status de um anúncio de adoção
+      tags:
+      - Adoção - Anúncios
+  /adoption/listings/me:
+    get:
+      description: Retorna a lista paginada de anúncios de adoção vinculados ao perfil
+        de responsável do usuário autenticado, em todos os status.
+      parameters:
+      - description: 'Página (padrão: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Itens por página (padrão: 10, máx: 50)'
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.ListMyAdoptionListingsOutput'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Lista os anúncios de adoção do responsável autenticado
+      tags:
+      - Adoção - Anúncios
   /auth/login:
     post:
       consumes:
