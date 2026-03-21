@@ -305,15 +305,63 @@ PROVIDER_KEYS.lists(); // ["providers", "list"]
 PROVIDER_KEYS.details(); // ["providers", "detail"]
 PROVIDER_KEYS.detail("id"); // ["providers", "detail", "id"]
 
-// Others
-REVIEW_KEYS.all; // ["reviews"]
-REQUEST_KEYS.all; // ["requests"]
-TAG_KEYS.all; // ["tags"]
-CATEGORY_KEYS.all; // ["categories"]
-BREED_KEYS.all; // ["breeds"]
-SPECIE_KEYS.all; // ["species"]
-USER_KEYS.all; // ["user"]
+// Adoption (Adoção & Guardian)
+ADOPTION_KEYS.all; // ["adoption"]
+ADOPTION_KEYS.lists(); // ["adoption", "list"]
+ADOPTION_KEYS.list(filters); // ["adoption", "list", filters]
+ADOPTION_KEYS.details(); // ["adoption", "detail"]
+ADOPTION_KEYS.detail(listingId); // ["adoption", "detail", listingId]
+ADOPTION_KEYS.myApplicationsLists(); // ["adoption", "my-applications"]
+ADOPTION_KEYS.myApplicationsList(filters); // ["adoption", "my-applications", filters]
+ADOPTION_KEYS.myListingsLists(); // ["adoption", "my-listings"]
+ADOPTION_KEYS.myListingsList(filters); // ["adoption", "my-listings", filters]
+ADOPTION_KEYS.listingApplicationsLists(); // ["adoption", "listing-applications"]
+ADOPTION_KEYS.listingApplicationsList(input); // ["adoption", "listing-applications", input]
+ADOPTION_KEYS.myGuardianProfile(); // ["adoption", "my-guardian-profile"]
+ADOPTION_KEYS.management(); // ["adoption", "management"]
 ```
+
+---
+
+## 🐾 Exemplos de Uso — Adoção & Guardian
+
+### Consulta de listagens públicas de adoção
+
+```typescript
+const { data } = usePublicAdoptionListings({ specieId: "dog" });
+// queryKey: ADOPTION_KEYS.list({ specieId: "dog" })
+```
+
+### Consulta do perfil de responsável (guardian)
+
+```typescript
+const { data } = useMyAdoptionGuardianProfile();
+// queryKey: ADOPTION_KEYS.myGuardianProfile()
+```
+
+### Criação de candidatura à adoção
+
+```typescript
+const mutation = useAdoptionApplicationCreate();
+mutation.mutate({ listingId, message });
+// onSuccess: invalidateQueries(ADOPTION_KEYS.myApplicationsLists())
+```
+
+### Atualização de listagem de adoção
+
+```typescript
+const mutation = useAdoptionListingUpdate();
+mutation.mutate({ listingId, ... });
+// onSuccess: invalidateQueries(ADOPTION_KEYS.myListingsLists())
+//            invalidateQueries(ADOPTION_KEYS.detail(listingId))
+```
+
+### Padrão de Invalidação/Cascata
+
+- Sempre use as keys do domínio para garantir atualização correta dos dados do usuário logado e dos detalhes/listas públicas.
+- Exemplo: ao criar/editar uma listagem, invalide tanto as listas do usuário quanto o detalhe da listagem.
+
+---
 
 ---
 
