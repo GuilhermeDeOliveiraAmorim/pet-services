@@ -11,6 +11,8 @@ import {
   ListReviewsOutput,
 } from "@/application/usecases/review";
 import { createReviewCases } from "@/application/factories/review-usecase-factory";
+import { PROVIDER_KEYS } from "@/application/hooks/provider/provider-query-keys";
+import { SERVICE_KEYS } from "@/application/hooks/service/service-query-keys";
 import { createApiContext } from "@/infra";
 import { REVIEW_KEYS } from "./review-query-keys";
 
@@ -32,8 +34,13 @@ export function useReviewCreate() {
 
   return useMutation({
     mutationFn: (input: CreateReviewInput) => createReview.execute(input),
-    onSuccess: () => {
+    onSuccess: (_review, input) => {
       queryClient.invalidateQueries({ queryKey: REVIEW_KEYS.lists() });
+      queryClient.invalidateQueries({ queryKey: PROVIDER_KEYS.all });
+      queryClient.invalidateQueries({
+        queryKey: PROVIDER_KEYS.detail(input.providerId),
+      });
+      queryClient.invalidateQueries({ queryKey: SERVICE_KEYS.all });
     },
   });
 }
