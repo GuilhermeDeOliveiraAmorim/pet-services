@@ -246,6 +246,16 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	r.GET("/adoption/listings", handlerFactory.AdoptionListingHandler.ListPublicAdoptionListings)
 	r.GET("/adoption/listings/:listing_id", handlerFactory.AdoptionListingHandler.GetPublicAdoptionListing)
 
+	// Rotas protegidas para candidaturas
+	adoptionApplications := r.Group("/adoption/applications")
+	adoptionApplications.Use(middlewareFactory.AuthMiddleware())
+	{
+		adoptionApplications.POST("", handlerFactory.AdoptionApplicationHandler.CreateAdoptionApplication)
+		adoptionApplications.GET("/me", handlerFactory.AdoptionApplicationHandler.ListMyAdoptionApplications)
+		adoptionApplications.POST("/:application_id/review", handlerFactory.AdoptionApplicationHandler.ReviewAdoptionApplication)
+		adoptionApplications.POST("/:application_id/withdraw", handlerFactory.AdoptionApplicationHandler.WithdrawAdoptionApplication)
+	}
+
 	adoptionListings := r.Group("/adoption/listings")
 	adoptionListings.Use(middlewareFactory.AuthMiddleware(), profileComplete, guardianApproved)
 	{
@@ -253,6 +263,7 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		adoptionListings.GET("/me", handlerFactory.AdoptionListingHandler.ListMyAdoptionListings)
 		adoptionListings.PUT("/:listing_id", handlerFactory.AdoptionListingHandler.UpdateAdoptionListing)
 		adoptionListings.PATCH("/:listing_id/:action", handlerFactory.AdoptionListingHandler.ChangeAdoptionListingStatus)
+		adoptionListings.GET("/:listing_id/applications", handlerFactory.AdoptionApplicationHandler.ListAdoptionApplicationsByListing)
 	}
 
 	return r

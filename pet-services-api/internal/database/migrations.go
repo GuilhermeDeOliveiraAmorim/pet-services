@@ -37,6 +37,13 @@ func Migration20260321000001(db *gorm.DB) error {
 	)
 }
 
+func Migration20260321000002(db *gorm.DB) error {
+	return db.AutoMigrate(
+		&models.AdoptionApplication{},
+		&models.AdoptionApplicationEvent{},
+	)
+}
+
 func Migration20260215000000(db *gorm.DB) error {
 	return db.AutoMigrate(
 		&models.RefreshToken{},
