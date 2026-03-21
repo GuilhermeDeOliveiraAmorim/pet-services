@@ -26,6 +26,7 @@ type HandlerFactory struct {
 	CategoryHandler         *CategoryHandler
 	ReviewHandler           *ReviewHandler
 	AdoptionGuardianHandler *AdoptionGuardianHandler
+	AdoptionListingHandler  *AdoptionListingHandler
 	Logger                  logging.LoggerInterface
 }
 
@@ -46,6 +47,7 @@ func NewHandlerFactory(inputFactory database.StorageInput, logger logging.Logger
 	categoryFactory := factories.NewCategoryFactory(inputFactory.DB, logger)
 	reviewFactory := factories.NewReviewFactory(inputFactory.DB, mailService, logger)
 	adoptionGuardianFactory := factories.NewAdoptionGuardianFactory(inputFactory.DB, logger)
+	adoptionListingFactory := factories.NewAdoptionListingFactory(inputFactory.DB, logger)
 
 	return &HandlerFactory{
 		UserHandler:             NewUserHandler(userFactory, logger),
@@ -61,6 +63,7 @@ func NewHandlerFactory(inputFactory database.StorageInput, logger logging.Logger
 		CategoryHandler:         NewCategoryHandler(categoryFactory, logger),
 		ReviewHandler:           NewReviewHandler(reviewFactory, logger),
 		AdoptionGuardianHandler: NewAdoptionGuardianHandler(adoptionGuardianFactory, logger),
+		AdoptionListingHandler:  NewAdoptionListingHandler(adoptionListingFactory, logger),
 		Logger:                  logger,
 	}
 }

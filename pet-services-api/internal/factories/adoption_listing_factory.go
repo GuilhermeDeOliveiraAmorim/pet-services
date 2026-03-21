@@ -1,0 +1,32 @@
+package factories
+
+import (
+	"pet-services-api/internal/logging"
+	"pet-services-api/internal/repository_impl"
+	"pet-services-api/internal/usecases"
+
+	"gorm.io/gorm"
+)
+
+type AdoptionListingFactory struct {
+	CreateAdoptionListing       *usecases.CreateAdoptionListingUseCase
+	UpdateAdoptionListing       *usecases.UpdateAdoptionListingUseCase
+	ChangeAdoptionListingStatus *usecases.ChangeAdoptionListingStatusUseCase
+	ListPublicAdoptionListings  *usecases.ListPublicAdoptionListingsUseCase
+	GetPublicAdoptionListing    *usecases.GetPublicAdoptionListingUseCase
+	ListMyAdoptionListings      *usecases.ListMyAdoptionListingsUseCase
+}
+
+func NewAdoptionListingFactory(db *gorm.DB, logger logging.LoggerInterface) *AdoptionListingFactory {
+	petRepo := repository_impl.NewPetRepository(db)
+	listingRepo := repository_impl.NewAdoptionListingRepository(db)
+
+	return &AdoptionListingFactory{
+		CreateAdoptionListing:       usecases.NewCreateAdoptionListingUseCase(petRepo, listingRepo, logger),
+		UpdateAdoptionListing:       usecases.NewUpdateAdoptionListingUseCase(listingRepo, logger),
+		ChangeAdoptionListingStatus: usecases.NewChangeAdoptionListingStatusUseCase(listingRepo, logger),
+		ListPublicAdoptionListings:  usecases.NewListPublicAdoptionListingsUseCase(listingRepo, logger),
+		GetPublicAdoptionListing:    usecases.NewGetPublicAdoptionListingUseCase(listingRepo, logger),
+		ListMyAdoptionListings:      usecases.NewListMyAdoptionListingsUseCase(listingRepo, logger),
+	}
+}

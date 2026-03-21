@@ -243,7 +243,17 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		adoptionGuardian.PUT("/me", handlerFactory.AdoptionGuardianHandler.UpdateAdoptionGuardianProfile)
 	}
 
-	_ = guardianApproved
+	r.GET("/adoption/listings", handlerFactory.AdoptionListingHandler.ListPublicAdoptionListings)
+	r.GET("/adoption/listings/:listing_id", handlerFactory.AdoptionListingHandler.GetPublicAdoptionListing)
+
+	adoptionListings := r.Group("/adoption/listings")
+	adoptionListings.Use(middlewareFactory.AuthMiddleware(), profileComplete, guardianApproved)
+	{
+		adoptionListings.POST("", handlerFactory.AdoptionListingHandler.CreateAdoptionListing)
+		adoptionListings.GET("/me", handlerFactory.AdoptionListingHandler.ListMyAdoptionListings)
+		adoptionListings.PUT("/:listing_id", handlerFactory.AdoptionListingHandler.UpdateAdoptionListing)
+		adoptionListings.PATCH("/:listing_id/:action", handlerFactory.AdoptionListingHandler.ChangeAdoptionListingStatus)
+	}
 
 	return r
 }

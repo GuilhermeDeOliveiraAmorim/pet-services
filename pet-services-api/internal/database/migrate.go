@@ -134,5 +134,10 @@ func getMigrations() []Migration {
 			Description: "Criar tabela adoption_guardian_profiles",
 			Up:          Migration20260321000000,
 		},
+		{
+			Version:     "20260321000001",
+			Description: "Criar tabela adoption_listings",
+			Up:          Migration20260321000001,
+		},
 	}
 }
