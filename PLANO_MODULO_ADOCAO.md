@@ -6,6 +6,89 @@ Esta proposta trata adoção como um novo contexto de domínio dentro do Pet Ser
 
 Hoje o sistema está claramente organizado em torno de serviços, providers, requests e reviews. Por isso, a recomendação é que adoção seja uma vertical própria, com entidades, regras e telas específicas.
 
+## Status de Implementação
+
+Registro do progresso real de implementação por camada.
+
+### Domínio e banco
+
+| Artefato                                 | Status                                |
+| ---------------------------------------- | ------------------------------------- |
+| `entities/adoption_guardian_profile.go`  | ✅ Criado                             |
+| `entities/adoption_listing.go`           | ✅ Criado                             |
+| `entities/adoption_application.go`       | ✅ Criado                             |
+| `entities/adoption_application_event.go` | ✅ Criado                             |
+| `models/adoption_guardian_profile.go`    | ✅ Criado                             |
+| `models/adoption_listing.go`             | ⏳ Pendente                           |
+| `models/adoption_application.go`         | ⏳ Pendente                           |
+| `models/adoption_application_event.go`   | ⏳ Pendente                           |
+| Migração `adoption_guardian_profiles`    | ✅ Criada (`Migration20260321000000`) |
+| Migração `adoption_listings`             | ⏳ Pendente                           |
+| Migração `adoption_applications`         | ⏳ Pendente                           |
+
+### Repositórios
+
+| Artefato                                                  | Status      |
+| --------------------------------------------------------- | ----------- |
+| `repository_impl/adoption_guardian_profile_repository.go` | ✅ Criado   |
+| `repository_impl/adoption_listing_repository.go`          | ⏳ Pendente |
+| `repository_impl/adoption_application_repository.go`      | ⏳ Pendente |
+
+### Casos de uso
+
+| Caso de Uso                         | Status          |
+| ----------------------------------- | --------------- |
+| `CreateAdoptionGuardianProfile`     | ✅ Implementado |
+| `GetMyAdoptionGuardianProfile`      | ✅ Implementado |
+| `UpdateAdoptionGuardianProfile`     | ✅ Implementado |
+| `CreateAdoptionListing`             | ⏳ Pendente     |
+| `UpdateAdoptionListing`             | ⏳ Pendente     |
+| `PublishAdoptionListing`            | ⏳ Pendente     |
+| `ListPublicAdoptionListings`        | ⏳ Pendente     |
+| `GetPublicAdoptionListing`          | ⏳ Pendente     |
+| `CreateAdoptionApplication`         | ⏳ Pendente     |
+| `ListMyAdoptionApplications`        | ⏳ Pendente     |
+| `ListAdoptionApplicationsByListing` | ⏳ Pendente     |
+| `ReviewAdoptionApplication`         | ⏳ Pendente     |
+| `WithdrawAdoptionApplication`       | ⏳ Pendente     |
+| `MarkAdoptionListingAsAdopted`      | ⏳ Pendente     |
+| `ApproveAdoptionGuardianProfile`    | ⏳ Pendente     |
+| `RejectAdoptionGuardianProfile`     | ⏳ Pendente     |
+
+### Factories, handlers e rotas
+
+| Artefato                                         | Status                  |
+| ------------------------------------------------ | ----------------------- |
+| `factories/adoption_guardian_factory.go`         | ✅ Criado (3 use cases) |
+| `factories/adoption_listing_factory.go`          | ⏳ Pendente             |
+| `factories/adoption_application_factory.go`      | ⏳ Pendente             |
+| `handlers/adoption_guardian_handler.go`          | ✅ Criado (3 handlers)  |
+| `handlers/adoption_listing_handler.go`           | ⏳ Pendente             |
+| `handlers/adoption_application_handler.go`       | ⏳ Pendente             |
+| `middlewares/AdoptionGuardianApprovedMiddleware` | ✅ Criado               |
+
+### Rotas registradas
+
+| Método | Rota                            | Status      |
+| ------ | ------------------------------- | ----------- |
+| `POST` | `/adoption/guardian-profile`    | ✅ Ativa    |
+| `GET`  | `/adoption/guardian-profile/me` | ✅ Ativa    |
+| `PUT`  | `/adoption/guardian-profile/me` | ✅ Ativa    |
+| `POST` | `/adoption/listings`            | ⏳ Pendente |
+| `GET`  | `/adoption/listings`            | ⏳ Pendente |
+| `GET`  | `/adoption/listings/:id`        | ⏳ Pendente |
+| `POST` | `/adoption/applications`        | ⏳ Pendente |
+| `GET`  | `/adoption/applications/me`     | ⏳ Pendente |
+
+### Swagger
+
+| Artefato                           | Status         |
+| ---------------------------------- | -------------- |
+| Godoc em `AdoptionGuardianHandler` | ✅ Documentado |
+| Regeneração de `docs/swagger.json` | ✅ Atualizado  |
+
+---
+
 ## Decisão Arquitetural
 
 ### Diretriz principal
@@ -153,48 +236,67 @@ Seguindo o padrão já existente da API, a sugestão é criar:
 
 ### Entidades
 
-1. internal/entities/adoption_guardian_profile.go
-2. internal/entities/adoption_listing.go
-3. internal/entities/adoption_application.go
-4. internal/entities/adoption_application_event.go
+1. ✅ internal/entities/adoption_guardian_profile.go
+2. ✅ internal/entities/adoption_listing.go
+3. ✅ internal/entities/adoption_application.go
+4. ✅ internal/entities/adoption_application_event.go
 
 ### Modelos GORM
 
-1. internal/models/adoption_guardian_profile.go
+1. ✅ internal/models/adoption_guardian_profile.go
 2. internal/models/adoption_listing.go
 3. internal/models/adoption_application.go
 4. internal/models/adoption_application_event.go
 
 ### Repositórios
 
-1. internal/repository_impl/adoption_guardian_profile_repository.go
+1. ✅ internal/repository_impl/adoption_guardian_profile_repository.go
 2. internal/repository_impl/adoption_listing_repository.go
 3. internal/repository_impl/adoption_application_repository.go
 
 ### Casos de uso
 
-1. internal/usecases/create_adoption_guardian_profile.go
-2. internal/usecases/create_adoption_listing.go
-3. internal/usecases/publish_adoption_listing.go
-4. internal/usecases/list_adoption_listings.go
-5. internal/usecases/create_adoption_application.go
-6. internal/usecases/review_adoption_application.go
-7. internal/usecases/mark_adoption_listing_as_adopted.go
+1. ✅ internal/usecases/create_adoption_guardian_profile.go
+2. ✅ internal/usecases/get_my_adoption_guardian_profile.go
+3. ✅ internal/usecases/update_adoption_guardian_profile.go
+4. internal/usecases/create_adoption_listing.go
+5. internal/usecases/update_adoption_listing.go
+6. internal/usecases/publish_adoption_listing.go
+7. internal/usecases/list_public_adoption_listings.go
+8. internal/usecases/get_public_adoption_listing.go
+9. internal/usecases/create_adoption_application.go
+10. internal/usecases/list_my_adoption_applications.go
+11. internal/usecases/list_adoption_applications_by_listing.go
+12. internal/usecases/review_adoption_application.go
+13. internal/usecases/withdraw_adoption_application.go
+14. internal/usecases/mark_adoption_listing_as_adopted.go
+15. internal/usecases/approve_adoption_guardian_profile.go
+16. internal/usecases/reject_adoption_guardian_profile.go
+
+### Factories
+
+1. ✅ internal/factories/adoption_guardian_factory.go
+2. internal/factories/adoption_listing_factory.go
+3. internal/factories/adoption_application_factory.go
 
 ### Handlers
 
-1. internal/handlers/adoption_guardian_handler.go
+1. ✅ internal/handlers/adoption_guardian_handler.go
 2. internal/handlers/adoption_listing_handler.go
 3. internal/handlers/adoption_application_handler.go
 
+### Middlewares
+
+1. ✅ AdoptionGuardianApprovedMiddleware (em internal/middlewares/middlewares.go)
+
 ### Rotas
 
-1. internal/routes/adoption_routes.go
+As rotas de adoção foram integradas diretamente em `internal/routes/routes.go`, seguindo o padrão existente.
 
 ### Migrações e seeds
 
-1. internal/database/migrations.go
-2. internal/database/migrate.go
+1. ✅ internal/database/migrations.go — Migration20260321000000 (adoption_guardian_profiles)
+2. ✅ internal/database/migrate.go — entrada registrada
 
 ## Casos de Uso Necessários
 
@@ -272,9 +374,9 @@ Esses casos são relevantes, mas não precisam estar no primeiro ciclo de implem
 
 Se a ideia for começar a pasta de use cases agora, a ordem mais pragmática é:
 
-1. CreateAdoptionGuardianProfile.
-2. GetMyAdoptionGuardianProfile.
-3. UpdateAdoptionGuardianProfile.
+1. ✅ CreateAdoptionGuardianProfile.
+2. ✅ GetMyAdoptionGuardianProfile.
+3. ✅ UpdateAdoptionGuardianProfile.
 4. CreateAdoptionListing.
 5. UpdateAdoptionListing.
 6. PublishAdoptionListing.
@@ -462,12 +564,12 @@ Desde o MVP, vale acompanhar:
 
 ### Fase 1: Fundamento de domínio e banco
 
-1. Criar modelos e migrações de AdoptionGuardianProfile.
+1. ✅ Criar modelos e migrações de AdoptionGuardianProfile.
 2. Criar modelos e migrações de AdoptionListing.
 3. Criar modelos e migrações de AdoptionApplication.
 4. Criar modelo de histórico AdoptionApplicationEvent.
 5. Adicionar seeds básicos com pets para adoção.
-6. Definir enums e validações de status.
+6. ✅ Definir enums e validações de status.
 
 Critério de pronto:
 
@@ -507,13 +609,14 @@ Critério de pronto:
 
 ### Fase 4: painel do guardian
 
-1. Criar cadastro de perfil de guardian.
-2. Criar fluxo de criação de anúncio.
-3. Criar fluxo de edição de anúncio.
-4. Criar ação de publicar e pausar.
-5. Criar listagem das candidaturas por anúncio.
-6. Criar transições de status da candidatura.
-7. Criar ação de marcar pet como adotado.
+1. ✅ Criar cadastro de perfil de guardian (POST /adoption/guardian-profile).
+2. ✅ Consultar e editar perfil de guardian (GET/PUT /adoption/guardian-profile/me).
+3. Criar fluxo de criação de anúncio.
+4. Criar fluxo de edição de anúncio.
+5. Criar ação de publicar e pausar.
+6. Criar listagem das candidaturas por anúncio.
+7. Criar transições de status da candidatura.
+8. Criar ação de marcar pet como adotado.
 
 Critério de pronto:
 
