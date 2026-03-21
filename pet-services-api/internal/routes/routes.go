@@ -264,6 +264,14 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		adoptionListings.PUT("/:listing_id", handlerFactory.AdoptionListingHandler.UpdateAdoptionListing)
 		adoptionListings.PATCH("/:listing_id/:action", handlerFactory.AdoptionListingHandler.ChangeAdoptionListingStatus)
 		adoptionListings.GET("/:listing_id/applications", handlerFactory.AdoptionApplicationHandler.ListAdoptionApplicationsByListing)
+		adoptionListings.POST("/:id/mark-adopted", handlerFactory.AdoptionListingHandler.MarkAdoptionListingAsAdopted)
+	}
+
+	adoptionAdminGuardian := r.Group("/adoption/admin/guardian-profiles")
+	adoptionAdminGuardian.Use(middlewareFactory.AuthMiddleware(), middlewareFactory.AdminOnlyMiddleware())
+	{
+		adoptionAdminGuardian.POST("/:id/approve", handlerFactory.AdoptionGuardianHandler.ApproveAdoptionGuardianProfile)
+		adoptionAdminGuardian.POST("/:id/reject", handlerFactory.AdoptionGuardianHandler.RejectAdoptionGuardianProfile)
 	}
 
 	return r

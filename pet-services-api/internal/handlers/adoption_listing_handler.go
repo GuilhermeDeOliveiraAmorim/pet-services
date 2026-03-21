@@ -331,3 +331,45 @@ func (h *AdoptionListingHandler) ListMyAdoptionListings(c *gin.Context) {
 
 	c.JSON(http.StatusOK, output)
 }
+
+// MarkAdoptionListingAsAdopted godoc
+// @Summary Marca um anúncio como adotado
+// @Description Marca um anúncio como adotado. Apenas o responsável proprietário do anúncio pode executar esta ação.
+// @Tags Adoção - Anúncios
+// @Accept json
+// @Produce json
+// @Param id path string true "ID do anúncio"
+// @Success 200 {object} usecases.MarkAdoptionListingAsAdoptedOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Failure 401 {object} exceptions.ProblemDetails
+// @Failure 403 {object} exceptions.ProblemDetails
+// @Failure 404 {object} exceptions.ProblemDetails
+// @Failure 500 {object} exceptions.ProblemDetails
+// @Security Bearer
+// @Router /adoption/listings/{id}/mark-adopted [post]
+func (h *AdoptionListingHandler) MarkAdoptionListingAsAdopted(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	listingID := c.Param("id")
+	guardianProfileID, exists := c.Get("guardian_profile_id")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Forbidden, exceptions.ErrorMessage{
+			Title:  "Perfil não aprovado",
+			Detail: "Apenas responsáveis com perfil aprovado podem marcar um anúncio como adotado",
+		})
+		h.Logger.LogBadRequest(ctx, "AdoptionListingHandler.MarkAdoptionListingAsAdopted", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusForbidden, problem)
+		return
+	}
+
+	output, errs := h.AdoptionListingFactory.MarkAdoptionListingAsAdopted.Execute(ctx, usecases.MarkAdoptionListingAsAdoptedInput{
+		ListingID:         listingID,
+		GuardianProfileID: guardianProfileID.(string),
+	})
+	if len(errs) > 0 {
+		exceptions.HandleErrors(c, errs)
+		return
+	}
+
+	c.JSON(http.StatusOK, output)
+}

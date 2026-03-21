@@ -9,9 +9,11 @@ import (
 )
 
 type AdoptionGuardianFactory struct {
-	CreateAdoptionGuardianProfile *usecases.CreateAdoptionGuardianProfileUseCase
-	GetMyAdoptionGuardianProfile  *usecases.GetMyAdoptionGuardianProfileUseCase
-	UpdateAdoptionGuardianProfile *usecases.UpdateAdoptionGuardianProfileUseCase
+	CreateAdoptionGuardianProfile  *usecases.CreateAdoptionGuardianProfileUseCase
+	GetMyAdoptionGuardianProfile   *usecases.GetMyAdoptionGuardianProfileUseCase
+	UpdateAdoptionGuardianProfile  *usecases.UpdateAdoptionGuardianProfileUseCase
+	ApproveAdoptionGuardianProfile *usecases.ApproveAdoptionGuardianProfileUseCase
+	RejectAdoptionGuardianProfile  *usecases.RejectAdoptionGuardianProfileUseCase
 }
 
 func NewAdoptionGuardianFactory(db *gorm.DB, logger logging.LoggerInterface) *AdoptionGuardianFactory {
@@ -19,8 +21,10 @@ func NewAdoptionGuardianFactory(db *gorm.DB, logger logging.LoggerInterface) *Ad
 	guardianProfileRepo := repository_impl.NewAdoptionGuardianProfileRepository(db)
 
 	return &AdoptionGuardianFactory{
-		CreateAdoptionGuardianProfile: usecases.NewCreateAdoptionGuardianProfileUseCase(userRepo, guardianProfileRepo, logger),
-		GetMyAdoptionGuardianProfile:  usecases.NewGetMyAdoptionGuardianProfileUseCase(guardianProfileRepo, logger),
-		UpdateAdoptionGuardianProfile: usecases.NewUpdateAdoptionGuardianProfileUseCase(guardianProfileRepo, logger),
+		CreateAdoptionGuardianProfile:  usecases.NewCreateAdoptionGuardianProfileUseCase(userRepo, guardianProfileRepo, logger),
+		GetMyAdoptionGuardianProfile:   usecases.NewGetMyAdoptionGuardianProfileUseCase(guardianProfileRepo, logger),
+		UpdateAdoptionGuardianProfile:  usecases.NewUpdateAdoptionGuardianProfileUseCase(guardianProfileRepo, logger),
+		ApproveAdoptionGuardianProfile: usecases.NewApproveAdoptionGuardianProfileUseCase(guardianProfileRepo, logger),
+		RejectAdoptionGuardianProfile:  usecases.NewRejectAdoptionGuardianProfileUseCase(guardianProfileRepo, logger),
 	}
 }

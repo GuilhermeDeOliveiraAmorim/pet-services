@@ -9,12 +9,13 @@ import (
 )
 
 type AdoptionListingFactory struct {
-	CreateAdoptionListing       *usecases.CreateAdoptionListingUseCase
-	UpdateAdoptionListing       *usecases.UpdateAdoptionListingUseCase
-	ChangeAdoptionListingStatus *usecases.ChangeAdoptionListingStatusUseCase
-	ListPublicAdoptionListings  *usecases.ListPublicAdoptionListingsUseCase
-	GetPublicAdoptionListing    *usecases.GetPublicAdoptionListingUseCase
-	ListMyAdoptionListings      *usecases.ListMyAdoptionListingsUseCase
+	CreateAdoptionListing        *usecases.CreateAdoptionListingUseCase
+	UpdateAdoptionListing        *usecases.UpdateAdoptionListingUseCase
+	ChangeAdoptionListingStatus  *usecases.ChangeAdoptionListingStatusUseCase
+	ListPublicAdoptionListings   *usecases.ListPublicAdoptionListingsUseCase
+	GetPublicAdoptionListing     *usecases.GetPublicAdoptionListingUseCase
+	ListMyAdoptionListings       *usecases.ListMyAdoptionListingsUseCase
+	MarkAdoptionListingAsAdopted *usecases.MarkAdoptionListingAsAdoptedUseCase
 }
 
 func NewAdoptionListingFactory(db *gorm.DB, logger logging.LoggerInterface) *AdoptionListingFactory {
@@ -22,11 +23,12 @@ func NewAdoptionListingFactory(db *gorm.DB, logger logging.LoggerInterface) *Ado
 	listingRepo := repository_impl.NewAdoptionListingRepository(db)
 
 	return &AdoptionListingFactory{
-		CreateAdoptionListing:       usecases.NewCreateAdoptionListingUseCase(petRepo, listingRepo, logger),
-		UpdateAdoptionListing:       usecases.NewUpdateAdoptionListingUseCase(listingRepo, logger),
-		ChangeAdoptionListingStatus: usecases.NewChangeAdoptionListingStatusUseCase(listingRepo, logger),
-		ListPublicAdoptionListings:  usecases.NewListPublicAdoptionListingsUseCase(listingRepo, logger),
-		GetPublicAdoptionListing:    usecases.NewGetPublicAdoptionListingUseCase(listingRepo, logger),
-		ListMyAdoptionListings:      usecases.NewListMyAdoptionListingsUseCase(listingRepo, logger),
+		CreateAdoptionListing:        usecases.NewCreateAdoptionListingUseCase(petRepo, listingRepo, logger),
+		UpdateAdoptionListing:        usecases.NewUpdateAdoptionListingUseCase(listingRepo, logger),
+		ChangeAdoptionListingStatus:  usecases.NewChangeAdoptionListingStatusUseCase(listingRepo, logger),
+		ListPublicAdoptionListings:   usecases.NewListPublicAdoptionListingsUseCase(listingRepo, logger),
+		GetPublicAdoptionListing:     usecases.NewGetPublicAdoptionListingUseCase(listingRepo, logger),
+		ListMyAdoptionListings:       usecases.NewListMyAdoptionListingsUseCase(listingRepo, logger),
+		MarkAdoptionListingAsAdopted: usecases.NewMarkAdoptionListingAsAdoptedUseCase(listingRepo, logger),
 	}
 }

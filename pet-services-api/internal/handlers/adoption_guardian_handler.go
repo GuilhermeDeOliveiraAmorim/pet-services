@@ -181,3 +181,100 @@ func (h *AdoptionGuardianHandler) UpdateAdoptionGuardianProfile(c *gin.Context) 
 
 	c.JSON(http.StatusOK, output)
 }
+
+// ApproveAdoptionGuardianProfile godoc
+// @Summary Aprova um perfil de responsável por adoção
+// @Description Aprova um perfil de responsável por adoção pendente. Apenas administradores podem executar esta ação.
+// @Tags Adoção - Perfil do Responsável
+// @Accept json
+// @Produce json
+// @Param id path string true "ID do perfil de responsável"
+// @Success 200 {object} usecases.ApproveAdoptionGuardianProfileOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Failure 401 {object} exceptions.ProblemDetails
+// @Failure 403 {object} exceptions.ProblemDetails
+// @Failure 404 {object} exceptions.ProblemDetails
+// @Failure 500 {object} exceptions.ProblemDetails
+// @Security Bearer
+// @Router /adoption/admin/guardian-profiles/{id}/approve [post]
+func (h *AdoptionGuardianHandler) ApproveAdoptionGuardianProfile(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	profileID := c.Param("id")
+	reviewedBy, exists := c.Get("user_id")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Usuário não autenticado",
+			Detail: "Não foi possível obter o ID do usuário autenticado",
+		})
+		h.Logger.LogBadRequest(ctx, "AdoptionGuardianHandler.ApproveAdoptionGuardianProfile", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
+		return
+	}
+
+	output, errs := h.AdoptionGuardianFactory.ApproveAdoptionGuardianProfile.Execute(ctx, usecases.ApproveAdoptionGuardianProfileInput{
+		ProfileID:  profileID,
+		ApprovedBy: reviewedBy.(string),
+	})
+	if len(errs) > 0 {
+		exceptions.HandleErrors(c, errs)
+		return
+	}
+
+	c.JSON(http.StatusOK, output)
+}
+
+// RejectAdoptionGuardianProfile godoc
+// @Summary Rejeita um perfil de responsável por adoção
+// @Description Rejeita um perfil de responsável por adoção pendente. Apenas administradores podem executar esta ação.
+// @Tags Adoção - Perfil do Responsável
+// @Accept json
+// @Produce json
+// @Param id path string true "ID do perfil de responsável"
+// @Param input body usecases.RejectAdoptionGuardianProfileInputBody true "Motivo da rejeição"
+// @Success 200 {object} usecases.RejectAdoptionGuardianProfileOutput
+// @Failure 400 {object} exceptions.ProblemDetails
+// @Failure 401 {object} exceptions.ProblemDetails
+// @Failure 403 {object} exceptions.ProblemDetails
+// @Failure 404 {object} exceptions.ProblemDetails
+// @Failure 500 {object} exceptions.ProblemDetails
+// @Security Bearer
+// @Router /adoption/admin/guardian-profiles/{id}/reject [post]
+func (h *AdoptionGuardianHandler) RejectAdoptionGuardianProfile(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	profileID := c.Param("id")
+	reviewedBy, exists := c.Get("user_id")
+	if !exists {
+		problem := exceptions.NewProblemDetails(exceptions.Unauthorized, exceptions.ErrorMessage{
+			Title:  "Usuário não autenticado",
+			Detail: "Não foi possível obter o ID do usuário autenticado",
+		})
+		h.Logger.LogBadRequest(ctx, "AdoptionGuardianHandler.RejectAdoptionGuardianProfile", problem.Detail, nil)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, problem)
+		return
+	}
+
+	var inputBody usecases.RejectAdoptionGuardianProfileInputBody
+	if err := c.ShouldBindJSON(&inputBody); err != nil {
+		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
+			Title:  "Erro ao fazer o parser",
+			Detail: "Erro ao fazer o parser dos dados da rejeição",
+		})
+		h.Logger.LogBadRequest(ctx, "AdoptionGuardianHandler.RejectAdoptionGuardianProfile", problem.Detail, err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, problem)
+		return
+	}
+
+	output, errs := h.AdoptionGuardianFactory.RejectAdoptionGuardianProfile.Execute(ctx, usecases.RejectAdoptionGuardianProfileInput{
+		ProfileID:                              profileID,
+		ReviewedBy:                             reviewedBy.(string),
+		RejectAdoptionGuardianProfileInputBody: inputBody,
+	})
+	if len(errs) > 0 {
+		exceptions.HandleErrors(c, errs)
+		return
+	}
+
+	c.JSON(http.StatusOK, output)
+}
