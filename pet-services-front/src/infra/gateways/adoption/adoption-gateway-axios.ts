@@ -1,10 +1,16 @@
 import axios from "axios";
 import type {
+  ChangeAdoptionListingStatusInput,
+  ChangeAdoptionListingStatusOutput,
   AdoptionApplicationItem,
   AdoptionGuardianProfile,
   AdoptionApplicationsPagination,
   CreateAdoptionApplicationInput,
   CreateAdoptionApplicationOutput,
+  CreateAdoptionGuardianProfileInput,
+  CreateAdoptionGuardianProfileOutput,
+  CreateAdoptionListingInput,
+  CreateAdoptionListingOutput,
   GetMyAdoptionGuardianProfileInput,
   GetMyAdoptionGuardianProfileOutput,
   GetPublicAdoptionListingInput,
@@ -17,6 +23,14 @@ import type {
   ListAdoptionApplicationsByListingOutput,
   ListPublicAdoptionListingsInput,
   ListPublicAdoptionListingsOutput,
+  MarkAdoptionListingAsAdoptedInput,
+  MarkAdoptionListingAsAdoptedOutput,
+  ReviewAdoptionApplicationInput,
+  ReviewAdoptionApplicationOutput,
+  UpdateAdoptionGuardianProfileInput,
+  UpdateAdoptionGuardianProfileOutput,
+  UpdateAdoptionListingInput,
+  UpdateAdoptionListingOutput,
   WithdrawAdoptionApplicationOutput,
 } from "@/application/usecases/adoption";
 import type { AdoptionListing, Pet } from "@/domain";
@@ -103,6 +117,7 @@ type AdoptionListingApi = {
   cityId?: string;
   latitude?: number;
   longitude?: number;
+  vaccinated?: boolean;
   good_with_children?: boolean;
   goodWithChildren?: boolean;
   good_with_dogs?: boolean;
@@ -215,6 +230,7 @@ const mapListingApiToDomain = (
     cityId: listing.cityId ?? listing.city_id ?? "",
     latitude: listing.latitude,
     longitude: listing.longitude,
+    vaccinated: listing.vaccinated ?? false,
     goodWithChildren:
       listing.goodWithChildren ?? listing.good_with_children ?? false,
     goodWithDogs: listing.goodWithDogs ?? listing.good_with_dogs ?? false,
@@ -248,6 +264,100 @@ const mapListingApiToDomain = (
 export class AdoptionGatewayAxios {
   constructor(private readonly http: AxiosInstance) {}
 
+  async createGuardianProfile(
+    input: CreateAdoptionGuardianProfileInput,
+  ): Promise<CreateAdoptionGuardianProfileOutput> {
+    const { data } = await this.http.post<{
+      message?: string;
+      detail?: string;
+      profile?: AdoptionGuardianProfileApi;
+    }>("/adoption/guardian-profile", {
+      display_name: input.displayName,
+      guardian_type: input.guardianType,
+      document: input.document,
+      phone: input.phone,
+      whatsapp: input.whatsapp,
+      about: input.about,
+      city_id: input.cityId,
+      state_id: input.stateId,
+    });
+
+    const profileApi = data.profile;
+
+    return {
+      message: data.message,
+      detail: data.detail,
+      profile: profileApi
+        ? {
+            id: profileApi.id ?? "",
+            userId: profileApi.userId ?? profileApi.user_id ?? "",
+            displayName:
+              profileApi.displayName ?? profileApi.display_name ?? "",
+            guardianType:
+              profileApi.guardianType ?? profileApi.guardian_type ?? "",
+            document: profileApi.document ?? "",
+            phone: profileApi.phone ?? "",
+            whatsapp: profileApi.whatsapp ?? "",
+            about: profileApi.about ?? "",
+            cityId: profileApi.cityId ?? profileApi.city_id ?? "",
+            stateId: profileApi.stateId ?? profileApi.state_id ?? "",
+            approvalStatus:
+              profileApi.approvalStatus ?? profileApi.approval_status ?? "",
+            approvedBy:
+              profileApi.approvedBy ?? profileApi.approved_by ?? undefined,
+            approvedAt:
+              profileApi.approvedAt ?? profileApi.approved_at ?? undefined,
+          }
+        : undefined,
+    };
+  }
+
+  async updateGuardianProfile(
+    input: UpdateAdoptionGuardianProfileInput,
+  ): Promise<UpdateAdoptionGuardianProfileOutput> {
+    const { data } = await this.http.put<{
+      message?: string;
+      profile?: AdoptionGuardianProfileApi;
+    }>("/adoption/guardian-profile/me", {
+      display_name: input.displayName,
+      guardian_type: input.guardianType,
+      document: input.document,
+      phone: input.phone,
+      whatsapp: input.whatsapp,
+      about: input.about,
+      city_id: input.cityId,
+      state_id: input.stateId,
+    });
+
+    const profileApi = data.profile;
+
+    return {
+      message: data.message,
+      profile: profileApi
+        ? {
+            id: profileApi.id ?? "",
+            userId: profileApi.userId ?? profileApi.user_id ?? "",
+            displayName:
+              profileApi.displayName ?? profileApi.display_name ?? "",
+            guardianType:
+              profileApi.guardianType ?? profileApi.guardian_type ?? "",
+            document: profileApi.document ?? "",
+            phone: profileApi.phone ?? "",
+            whatsapp: profileApi.whatsapp ?? "",
+            about: profileApi.about ?? "",
+            cityId: profileApi.cityId ?? profileApi.city_id ?? "",
+            stateId: profileApi.stateId ?? profileApi.state_id ?? "",
+            approvalStatus:
+              profileApi.approvalStatus ?? profileApi.approval_status ?? "",
+            approvedBy:
+              profileApi.approvedBy ?? profileApi.approved_by ?? undefined,
+            approvedAt:
+              profileApi.approvedAt ?? profileApi.approved_at ?? undefined,
+          }
+        : undefined,
+    };
+  }
+
   async listMyListings(
     input?: ListMyAdoptionListingsInput,
   ): Promise<ListMyAdoptionListingsOutput> {
@@ -280,6 +390,87 @@ export class AdoptionGatewayAxios {
           data.listings?.length ??
           0,
       },
+    };
+  }
+
+  async createListing(
+    input: CreateAdoptionListingInput,
+  ): Promise<CreateAdoptionListingOutput> {
+    const { data } = await this.http.post<{
+      message?: string;
+      listing?: AdoptionListingApi;
+    }>("/adoption/listings", {
+      pet_id: input.petId,
+      title: input.title,
+      description: input.description,
+      adoption_reason: input.adoptionReason,
+      sex: input.sex,
+      size: input.size,
+      age_group: input.ageGroup,
+      city_id: input.cityId,
+      state_id: input.stateId,
+      latitude: input.latitude,
+      longitude: input.longitude,
+      vaccinated: input.vaccinated ?? false,
+      neutered: input.neutered ?? false,
+      dewormed: input.dewormed ?? false,
+      special_needs: input.specialNeeds ?? false,
+      good_with_children: input.goodWithChildren ?? false,
+      good_with_dogs: input.goodWithDogs ?? false,
+      good_with_cats: input.goodWithCats ?? false,
+      requires_house_screening: input.requiresHouseScreening ?? false,
+    });
+
+    return {
+      message: data.message,
+      listing: data.listing ? mapListingApiToDomain(data.listing) : undefined,
+    };
+  }
+
+  async updateListing(
+    input: UpdateAdoptionListingInput,
+  ): Promise<UpdateAdoptionListingOutput> {
+    const { data } = await this.http.put<{
+      message?: string;
+      listing?: AdoptionListingApi;
+    }>(`/adoption/listings/${input.listingId}`, {
+      title: input.title,
+      description: input.description,
+      adoption_reason: input.adoptionReason,
+      sex: input.sex,
+      size: input.size,
+      age_group: input.ageGroup,
+      city_id: input.cityId,
+      state_id: input.stateId,
+      latitude: input.latitude,
+      longitude: input.longitude,
+      vaccinated: input.vaccinated,
+      neutered: input.neutered,
+      dewormed: input.dewormed,
+      special_needs: input.specialNeeds,
+      good_with_children: input.goodWithChildren,
+      good_with_dogs: input.goodWithDogs,
+      good_with_cats: input.goodWithCats,
+      requires_house_screening: input.requiresHouseScreening,
+    });
+
+    return {
+      message: data.message,
+      listing: data.listing ? mapListingApiToDomain(data.listing) : undefined,
+    };
+  }
+
+  async changeListingStatus(
+    input: ChangeAdoptionListingStatusInput,
+  ): Promise<ChangeAdoptionListingStatusOutput> {
+    const { data } = await this.http.patch<{
+      message?: string;
+      listing?: AdoptionListingApi;
+    }>(`/adoption/listings/${input.listingId}/${input.action}`);
+
+    return {
+      message: data.message,
+      listing: data.listing ? mapListingApiToDomain(data.listing) : undefined,
     };
   }
 
@@ -417,6 +608,36 @@ export class AdoptionGatewayAxios {
           paginationApi.total_records ??
           applications.length,
       },
+    };
+  }
+
+  async reviewApplication(
+    input: ReviewAdoptionApplicationInput,
+  ): Promise<ReviewAdoptionApplicationOutput> {
+    const { data } = await this.http.post<{ id?: string; status?: string }>(
+      `/adoption/applications/${input.applicationId}/review`,
+      {
+        action: input.action,
+        notes_internal: input.notesInternal,
+      },
+    );
+
+    return {
+      id: data.id ?? input.applicationId,
+      status: data.status ?? input.action,
+    };
+  }
+
+  async markListingAsAdopted(
+    input: MarkAdoptionListingAsAdoptedInput,
+  ): Promise<MarkAdoptionListingAsAdoptedOutput> {
+    const { data } = await this.http.post<{ id?: string; status?: string }>(
+      `/adoption/listings/${input.listingId}/mark-adopted`,
+    );
+
+    return {
+      id: data.id ?? input.listingId,
+      status: data.status ?? "adopted",
     };
   }
 
