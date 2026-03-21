@@ -52,6 +52,9 @@ export default function MainNav({
   const canAccessRequests = isOwnerUser || isProviderUser;
   const navItems = [
     ...baseNavItems,
+    ...(isAuthenticated
+      ? [{ label: "Minhas candidaturas", href: "/adoption/applications" }]
+      : []),
     ...(isAuthenticated ? [{ label: "Perfil", href: "/profile" }] : []),
     ...(isAuthenticated ? [{ label: "Configurações", href: "/settings" }] : []),
     ...(isOwnerUser ? [{ label: "Owner", href: "/owner" }] : []),
