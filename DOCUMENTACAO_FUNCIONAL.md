@@ -18,7 +18,8 @@
 8. [Categorias e Tags](#8-categorias-e-tags)
 9. [Referências (Países, Estados, Cidades)](#9-referências-países-estados-cidades)
 10. [Espécies](#10-espécies)
-11. [Saúde do Sistema](#11-saúde-do-sistema)
+
+11. [Adoção & Guardian](#12-adoção--guardian)
 
 ---
 
@@ -31,6 +32,7 @@
 **Quem pode usar:** Qualquer pessoa (sem necessidade de login).
 
 **Informações necessárias:**
+
 - Nome completo
 - Email
 - Senha
@@ -39,6 +41,7 @@
 **O que retorna:** Confirmação de que o cadastro foi criado com sucesso.
 
 **Regras de negócio importantes:**
+
 - Email deve ser único (não pode ter duas pessoas com mesmo email)
 - Senha deve atender requisitos mínimos de segurança
 - Após cadastro, usuário precisa verificar o email antes de fazer login
@@ -53,15 +56,18 @@
 **Quem pode usar:** Usuários já cadastrados.
 
 **Informações necessárias:**
+
 - Email
 - Senha
 
 **O que retorna:**
+
 - Dados do usuário logado
 - Tokens de acesso (credenciais temporárias para usar o sistema)
 - Tempo de validade dos tokens
 
 **Regras de negócio importantes:**
+
 - Email precisa estar verificado
 - Conta precisa estar ativa (não desativada)
 - Senha deve estar correta
@@ -76,12 +82,14 @@
 **Quem pode usar:** Usuários logados.
 
 **Informações necessárias:**
+
 - Pode sair apenas do dispositivo atual OU
 - Pode sair de todos os dispositivos de uma vez
 
 **O que retorna:** Confirmação de logout.
 
 **Regras de negócio importantes:**
+
 - Revoga os tokens de acesso (credenciais)
 - Usuário precisará fazer login novamente para acessar
 
@@ -94,13 +102,16 @@
 **Quem pode usar:** Usuários que já fizeram login.
 
 **Informações necessárias:**
+
 - Token de renovação (gerado no login)
 
 **O que retorna:**
+
 - Novos tokens de acesso
 - Tempo de validade
 
 **Regras de negócio importantes:**
+
 - Token de renovação deve estar válido e não expirado
 - Usuário deve estar com conta ativa
 - Email deve estar verificado
@@ -114,11 +125,13 @@
 **Quem pode usar:** Usuários que acabaram de se cadastrar.
 
 **Informações necessárias:**
+
 - Código de verificação (recebido por email)
 
 **O que retorna:** Confirmação de que email foi verificado.
 
 **Regras de negócio importantes:**
+
 - Código tem validade de 24 horas
 - Após verificar email, usuário pode fazer login
 - Se já verificado, retorna mensagem informando
@@ -132,11 +145,13 @@
 **Quem pode usar:** Usuários que ainda não verificaram o email.
 
 **Informações necessárias:**
+
 - Email cadastrado
 
 **O que retorna:** Confirmação de que novo email foi enviado.
 
 **Regras de negócio importantes:**
+
 - Revoga códigos anteriores
 - Só envia se email ainda não foi verificado
 - Novo código tem validade de 24 horas
@@ -150,11 +165,13 @@
 **Quem pode usar:** Qualquer pessoa com email cadastrado.
 
 **Informações necessárias:**
+
 - Email cadastrado
 
 **O que retorna:** Confirmação de que instruções foram enviadas por email.
 
 **Regras de negócio importantes:**
+
 - Revoga todos os códigos anteriores de redefinição
 - Código tem validade de 1 hora
 - Por segurança, sempre retorna sucesso mesmo se email não existir
@@ -168,12 +185,14 @@
 **Quem pode usar:** Usuários que solicitaram redefinição de senha.
 
 **Informações necessárias:**
+
 - Código de redefinição (recebido por email)
 - Nova senha
 
 **O que retorna:** Confirmação de que senha foi alterada.
 
 **Regras de negócio importantes:**
+
 - Código deve estar válido e não expirado
 - Nova senha deve atender requisitos de segurança
 - Código é revogado após uso
@@ -187,12 +206,14 @@
 **Quem pode usar:** Usuários logados.
 
 **Informações necessárias:**
+
 - Senha atual
 - Nova senha
 
 **O que retorna:** Confirmação de que senha foi alterada.
 
 **Regras de negócio importantes:**
+
 - Senha atual deve estar correta
 - Nova senha deve atender requisitos de segurança
 - Nova senha não pode ser igual à atual
@@ -206,6 +227,7 @@
 **Quem pode usar:** Apenas outros administradores.
 
 **Informações necessárias:**
+
 - Nome completo
 - Email
 - Senha
@@ -215,6 +237,7 @@
 **O que retorna:** Confirmação de que administrador foi criado.
 
 **Regras de negócio importantes:**
+
 - Apenas administradores podem criar outros administradores
 - Email deve ser único
 - Administrador tem acesso completo ao sistema
@@ -232,6 +255,7 @@
 **Informações necessárias:** Nenhuma (usa dados do usuário logado).
 
 **O que retorna:**
+
 - Nome
 - Email
 - Tipo de usuário (dono de pet, prestador ou admin)
@@ -242,6 +266,7 @@
 - Status do email (verificado/não verificado)
 
 **Regras de negócio importantes:**
+
 - Foto de perfil tem link temporário (válido por 15 minutos)
 
 ---
@@ -253,11 +278,13 @@
 **Quem pode usar:** Usuários logados.
 
 **Informações necessárias:**
+
 - ID do usuário que deseja visualizar
 
 **O que retorna:** Dados públicos do usuário.
 
 **Regras de negócio importantes:**
+
 - Administradores podem ver qualquer perfil
 - Donos de pets só podem ver perfis de prestadores
 - Outros tipos não podem ver perfis alheios
@@ -272,15 +299,18 @@
 **Quem pode usar:** Administradores.
 
 **Informações necessárias:**
+
 - Número da página
 - Quantidade de itens por página (máximo 100)
 
 **O que retorna:**
+
 - Lista de usuários
 - Total de usuários
 - Informações de paginação
 
 **Regras de negócio importantes:**
+
 - Paginação obrigatória
 - Limite máximo de 100 usuários por página
 
@@ -293,16 +323,19 @@
 **Quem pode usar:** Usuários logados.
 
 **Informações necessárias (opcionais):**
+
 - Nome
 - Tipo de usuário (dono de pet ou prestador)
 - Telefone
 - Endereço completo
 
 **O que retorna:**
+
 - Dados atualizados do usuário
 - Confirmação de sucesso
 
 **Regras de negócio importantes:**
+
 - Não é possível tornar-se administrador por esta função
 - Tipo deve ser "dono de pet" (owner) ou "prestador" (provider)
 - Perfil é marcado como completo quando todos os dados obrigatórios estão preenchidos
@@ -317,13 +350,16 @@
 **Quem pode usar:** Usuários logados.
 
 **Informações necessárias:**
+
 - Arquivo de imagem
 
 **O que retorna:**
+
 - Link da foto enviada
 - Confirmação de sucesso
 
 **Regras de negócio importantes:**
+
 - Apenas imagens são aceitas
 - Substitui foto anterior se existir
 - Foto antiga é removida do sistema
@@ -341,6 +377,7 @@
 **O que retorna:** Confirmação de desativação.
 
 **Regras de negócio importantes:**
+
 - Revoga todos os tokens de acesso (faz logout de todos os dispositivos)
 - Conta desativada não pode fazer login
 - Dados não são excluídos (conta pode ser reativada)
@@ -358,6 +395,7 @@
 **O que retorna:** Confirmação de reativação.
 
 **Regras de negócio importantes:**
+
 - Usuário pode fazer login novamente após reativação
 - Se conta já estiver ativa, apenas informa
 
@@ -370,11 +408,13 @@
 **Quem pode usar:** Administradores.
 
 **Informações necessárias:**
+
 - ID do usuário
 
 **O que retorna:** Confirmação de remoção.
 
 **Regras de negócio importantes:**
+
 - Na verdade desativa o usuário (não exclui do banco)
 - Usuário já inativo retorna erro
 - Dados permanecem no sistema por questões de auditoria
@@ -388,13 +428,16 @@
 **Quem pode usar:** Qualquer pessoa.
 
 **Informações necessárias:**
+
 - Email a verificar
 
 **O que retorna:**
+
 - Se email existe ou não
 - Mensagem informativa
 
 **Regras de negócio importantes:**
+
 - Email deve ter formato válido
 - Útil antes de tentar cadastrar
 
@@ -407,15 +450,18 @@
 **Quem pode usar:** Qualquer pessoa.
 
 **Informações necessárias:**
+
 - Código do país
 - DDD
 - Número
 
 **O que retorna:**
+
 - Se telefone existe ou não
 - Mensagem informativa
 
 **Regras de negócio importantes:**
+
 - Todos os componentes do telefone são obrigatórios
 - Validação de formato
 
@@ -430,6 +476,7 @@
 **Quem pode usar:** Apenas donos de pets.
 
 **Informações necessárias:**
+
 - Nome do pet
 - Espécie (ID da espécie cadastrada)
 - Idade
@@ -437,10 +484,12 @@
 - Observações (opcional)
 
 **O que retorna:**
+
 - Dados completos do pet cadastrado
 - Confirmação de sucesso
 
 **Regras de negócio importantes:**
+
 - Apenas donos de pets podem cadastrar
 - Espécie deve existir no sistema
 - Idade e peso devem ser positivos
@@ -454,15 +503,18 @@
 **Quem pode usar:** Apenas donos de pets.
 
 **Informações necessárias:**
+
 - Número da página
 - Quantidade por página
 
 **O que retorna:**
+
 - Lista de pets do usuário
 - Fotos dos pets (se houver)
 - Informações de paginação
 
 **Regras de negócio importantes:**
+
 - Apenas o próprio dono vê seus pets
 - Máximo 100 pets por página
 - Links de fotos válidos por 15 minutos
@@ -476,14 +528,17 @@
 **Quem pode usar:** Apenas o dono do pet.
 
 **Informações necessárias:**
+
 - ID do pet
 
 **O que retorna:**
+
 - Nome, espécie, idade, peso
 - Observações
 - Fotos do pet
 
 **Regras de negócio importantes:**
+
 - Apenas dono pode ver seus pets
 - Pet deve estar ativo
 - Links de fotos válidos por 15 minutos
@@ -497,6 +552,7 @@
 **Quem pode usar:** Apenas o dono do pet.
 
 **Informações necessárias (opcionais):**
+
 - Nome
 - Espécie
 - Idade
@@ -504,10 +560,12 @@
 - Observações
 
 **O que retorna:**
+
 - Dados atualizados do pet
 - Confirmação de sucesso
 
 **Regras de negócio importantes:**
+
 - Apenas dono pode atualizar seus pets
 - Pet deve estar ativo
 - Valores não podem ser negativos
@@ -522,11 +580,13 @@
 **Quem pode usar:** Apenas o dono do pet.
 
 **Informações necessárias:**
+
 - ID do pet
 
 **O que retorna:** Confirmação de remoção.
 
 **Regras de negócio importantes:**
+
 - Apenas dono pode remover seus pets
 - Pet é desativado (não excluído)
 - Pet já inativo retorna erro
@@ -540,14 +600,17 @@
 **Quem pode usar:** Apenas o dono do pet.
 
 **Informações necessárias:**
+
 - ID do pet
 - Arquivo de imagem
 
 **O que retorna:**
+
 - Link da foto enviada
 - Confirmação de sucesso
 
 **Regras de negócio importantes:**
+
 - Apenas imagens são aceitas
 - Limite de 10 fotos por pet
 - Apenas dono do pet pode adicionar fotos
@@ -561,12 +624,14 @@
 **Quem pode usar:** Apenas o dono do pet.
 
 **Informações necessárias:**
+
 - ID do pet
 - ID da foto
 
 **O que retorna:** Confirmação de remoção.
 
 **Regras de negócio importantes:**
+
 - Apenas dono pode remover fotos dos seus pets
 - Foto é excluída do armazenamento
 - Foto deve pertencer ao pet especificado
@@ -582,16 +647,19 @@
 **Quem pode usar:** Usuários com tipo "prestador".
 
 **Informações necessárias:**
+
 - Nome do negócio/empresa
 - Descrição dos serviços
 - Faixa de preço (ex: "$$", "$$$")
 - Endereço completo com coordenadas
 
 **O que retorna:**
+
 - Dados do prestador criado
 - Confirmação de sucesso
 
 **Regras de negócio importantes:**
+
 - Apenas usuários tipo "prestador" podem criar
 - Cada usuário pode ter apenas um perfil de prestador
 - Endereço deve incluir coordenadas para busca por localização
@@ -606,11 +674,13 @@
 **Quem pode usar:** Qualquer usuário.
 
 **Informações necessárias:**
+
 - ID do prestador
 - Número da página de serviços
 - Quantidade de serviços por página
 
 **O que retorna:**
+
 - Dados completos do prestador
 - Lista de serviços oferecidos
 - Fotos do prestador
@@ -618,6 +688,7 @@
 - Paginação dos serviços
 
 **Regras de negócio importantes:**
+
 - Prestador deve estar ativo
 - Máximo 100 serviços por página
 - Links de fotos válidos por 15 minutos
@@ -632,11 +703,13 @@
 **Quem pode usar:** Apenas o próprio prestador.
 
 **Informações necessárias:**
+
 - ID do prestador
 
 **O que retorna:** Confirmação de remoção.
 
 **Regras de negócio importantes:**
+
 - Apenas o próprio prestador pode remover
 - Prestador é desativado (não excluído)
 - Prestador já inativo retorna erro
@@ -651,13 +724,16 @@
 **Quem pode usar:** Apenas o próprio prestador.
 
 **Informações necessárias:**
+
 - Arquivo de imagem
 
 **O que retorna:**
+
 - Link da foto enviada
 - Confirmação de sucesso
 
 **Regras de negócio importantes:**
+
 - Apenas imagens são aceitas
 - Limite de 10 fotos por prestador
 - Apenas o próprio prestador pode adicionar
@@ -671,11 +747,13 @@
 **Quem pode usar:** Apenas o próprio prestador.
 
 **Informações necessárias:**
+
 - ID da foto
 
 **O que retorna:** Confirmação de remoção.
 
 **Regras de negócio importantes:**
+
 - Foto é excluída do armazenamento
 - Apenas o próprio prestador pode remover
 - Foto deve pertencer ao prestador
@@ -691,16 +769,19 @@
 **Quem pode usar:** Apenas prestadores.
 
 **Informações necessárias:**
+
 - Nome do serviço
 - Descrição
 - Preço fixo OU faixa de preço (mínimo e máximo)
 - Duração estimada em minutos
 
 **O que retorna:**
+
 - Dados completos do serviço
 - Confirmação de sucesso
 
 **Regras de negócio importantes:**
+
 - Apenas prestadores podem cadastrar
 - Deve informar preço fixo OU faixa de preço (não ambos)
 - Se usar faixa, preço mínimo deve ser menor que máximo
@@ -716,6 +797,7 @@
 **Quem pode usar:** Qualquer usuário.
 
 **Informações necessárias (opcionais):**
+
 - ID do prestador (para ver serviços de um prestador específico)
 - ID da categoria
 - ID da tag
@@ -724,12 +806,14 @@
 - Paginação
 
 **O que retorna:**
+
 - Lista de serviços
 - Nome do prestador
 - Fotos, categorias e tags de cada serviço
 - Paginação
 
 **Regras de negócio importantes:**
+
 - Mostra apenas serviços ativos
 - Máximo 100 serviços por página
 - Links de fotos válidos por 15 minutos
@@ -743,6 +827,7 @@
 **Quem pode usar:** Qualquer usuário.
 
 **Informações necessárias (opcionais):**
+
 - Texto de busca (nome ou descrição)
 - Categoria
 - Tag
@@ -751,12 +836,14 @@
 - Paginação
 
 **O que retorna:**
+
 - Lista de serviços que atendem aos critérios
 - Distância do usuário (se informou localização)
 - Dados do prestador
 - Fotos do serviço
 
 **Regras de negócio importantes:**
+
 - Busca por proximidade usa raio padrão de 10km
 - Combina todos os filtros informados (busca E filtros)
 - Máximo 100 resultados por página
@@ -771,15 +858,18 @@
 **Quem pode usar:** Qualquer usuário.
 
 **Informações necessárias:**
+
 - ID do serviço
 
 **O que retorna:**
+
 - Nome, descrição, preços, duração
 - Fotos do serviço
 - Categorias e tags
 - Dados do prestador
 
 **Regras de negócio importantes:**
+
 - Serviço deve estar ativo
 - Links de fotos válidos por 15 minutos
 
@@ -792,16 +882,19 @@
 **Quem pode usar:** Apenas o prestador dono do serviço.
 
 **Informações necessárias (opcionais):**
+
 - Nome
 - Descrição
 - Preços
 - Duração
 
 **O que retorna:**
+
 - Dados atualizados do serviço
 - Confirmação de sucesso
 
 **Regras de negócio importantes:**
+
 - Apenas prestador dono pode atualizar
 - Serviço deve estar ativo
 - Validações de preço e duração mantêm-se
@@ -816,11 +909,13 @@
 **Quem pode usar:** Apenas o prestador dono do serviço.
 
 **Informações necessárias:**
+
 - ID do serviço
 
 **O que retorna:** Confirmação de remoção.
 
 **Regras de negócio importantes:**
+
 - Apenas prestador dono pode remover
 - Serviço é desativado (não excluído)
 - Serviço já inativo retorna erro
@@ -834,14 +929,17 @@
 **Quem pode usar:** Apenas o prestador dono do serviço.
 
 **Informações necessárias:**
+
 - ID do serviço
 - Arquivo de imagem
 
 **O que retorna:**
+
 - Link da foto enviada
 - Confirmação de sucesso
 
 **Regras de negócio importantes:**
+
 - Apenas imagens são aceitas
 - Limite de 10 fotos por serviço
 - Serviço deve estar ativo
@@ -855,12 +953,14 @@
 **Quem pode usar:** Apenas o prestador dono do serviço.
 
 **Informações necessárias:**
+
 - ID do serviço
 - ID da foto
 
 **O que retorna:** Confirmação de remoção.
 
 **Regras de negócio importantes:**
+
 - Foto é excluída do armazenamento
 - Serviço deve estar ativo
 - Foto deve pertencer ao serviço
@@ -874,14 +974,17 @@
 **Quem pode usar:** Apenas o prestador dono do serviço.
 
 **Informações necessárias:**
+
 - ID do serviço
 - ID da categoria
 
 **O que retorna:**
+
 - Categoria vinculada
 - Confirmação de sucesso
 
 **Regras de negócio importantes:**
+
 - Categoria deve existir e estar ativa
 - Serviço deve estar ativo
 - Não pode vincular categoria duplicada
@@ -896,14 +999,17 @@
 **Quem pode usar:** Apenas o prestador dono do serviço.
 
 **Informações necessárias:**
+
 - ID do serviço
 - ID da tag OU nome da tag (cria se não existir)
 
 **O que retorna:**
+
 - Tag vinculada
 - Confirmação de sucesso
 
 **Regras de negócio importantes:**
+
 - Se tag não existir, cria automaticamente
 - Tag deve estar ativa
 - Serviço deve estar ativo
@@ -920,15 +1026,18 @@
 **Quem pode usar:** Apenas donos de pets.
 
 **Informações necessárias:**
+
 - ID do serviço desejado
 - ID do pet
 - Observações (opcional)
 
 **O que retorna:**
+
 - Dados completos da solicitação
 - Confirmação de envio
 
 **Regras de negócio importantes:**
+
 - Apenas donos de pets podem solicitar
 - Pet deve pertencer ao dono
 - Serviço e prestador devem estar ativos
@@ -944,10 +1053,12 @@
 **Quem pode usar:** Donos de pets e prestadores.
 
 **Informações necessárias (opcionais):**
+
 - Filtro por status (pendente, aceita, rejeitada, concluída)
 - Paginação
 
 **O que retorna:**
+
 - Lista de solicitações
 - Dados do pet
 - Nome do serviço
@@ -955,6 +1066,7 @@
 - Paginação
 
 **Regras de negócio importantes:**
+
 - Dono vê solicitações que fez
 - Prestador vê solicitações recebidas
 - Máximo 100 por página
@@ -969,9 +1081,11 @@
 **Quem pode usar:** Dono que fez a solicitação OU prestador que recebeu.
 
 **Informações necessárias:**
+
 - ID da solicitação
 
 **O que retorna:**
+
 - Dados completos da solicitação
 - Informações do pet com fotos
 - Dados do serviço
@@ -979,6 +1093,7 @@
 - Motivo de rejeição (se aplicável)
 
 **Regras de negócio importantes:**
+
 - Apenas participantes podem ver (dono ou prestador)
 - Links de fotos válidos por 15 minutos
 
@@ -991,13 +1106,16 @@
 **Quem pode usar:** Apenas o prestador que recebeu a solicitação.
 
 **Informações necessárias:**
+
 - ID da solicitação
 
 **O que retorna:**
+
 - Dados atualizados da solicitação
 - Confirmação de aceite
 
 **Regras de negócio importantes:**
+
 - Apenas prestador dono do serviço pode aceitar
 - Solicitação deve estar com status "pendente"
 - Status muda para "aceita"
@@ -1012,14 +1130,17 @@
 **Quem pode usar:** Apenas o prestador que recebeu a solicitação.
 
 **Informações necessárias:**
+
 - ID da solicitação
 - Motivo da rejeição (obrigatório)
 
 **O que retorna:**
+
 - Dados atualizados da solicitação
 - Confirmação de rejeição
 
 **Regras de negócio importantes:**
+
 - Apenas prestador dono do serviço pode rejeitar
 - Solicitação deve estar com status "pendente"
 - Motivo é obrigatório (máximo 500 caracteres)
@@ -1034,13 +1155,16 @@
 **Quem pode usar:** Apenas o prestador que recebeu a solicitação.
 
 **Informações necessárias:**
+
 - ID da solicitação
 
 **O que retorna:**
+
 - Dados atualizados da solicitação
 - Confirmação de conclusão
 
 **Regras de negócio importantes:**
+
 - Apenas prestador dono do serviço pode concluir
 - Solicitação deve estar com status "aceita"
 - Status muda para "concluída"
@@ -1057,15 +1181,18 @@
 **Quem pode usar:** Apenas donos de pets.
 
 **Informações necessárias:**
+
 - ID do prestador
 - Nota (0 a 5)
 - Comentário (opcional)
 
 **O que retorna:**
+
 - Dados da avaliação criada
 - Confirmação de sucesso
 
 **Regras de negócio importantes:**
+
 - Apenas donos podem avaliar
 - Deve ter pelo menos uma solicitação concluída com o prestador
 - Nota entre 0 e 5
@@ -1081,10 +1208,12 @@
 **Quem pode usar:** Qualquer usuário.
 
 **Informações necessárias:**
+
 - ID do prestador OU ID do usuário
 - Paginação
 
 **O que retorna:**
+
 - Lista de avaliações
 - Nota e comentário
 - Nome do avaliador
@@ -1092,6 +1221,7 @@
 - Paginação
 
 **Regras de negócio importantes:**
+
 - Deve informar pelo menos um filtro (prestador ou usuário)
 - Máximo 100 avaliações por página
 - Avaliações ordenadas da mais recente para mais antiga
@@ -1107,13 +1237,16 @@
 **Quem pode usar:** Apenas administradores.
 
 **Informações necessárias:**
+
 - Nome da categoria
 
 **O que retorna:**
+
 - Dados da categoria criada
 - Confirmação de sucesso
 
 **Regras de negócio importantes:**
+
 - Apenas administradores podem criar
 - Nome deve ser único
 - Categoria criada como ativa
@@ -1127,14 +1260,17 @@
 **Quem pode usar:** Qualquer usuário.
 
 **Informações necessárias (opcionais):**
+
 - Filtro por nome
 - Paginação
 
 **O que retorna:**
+
 - Lista de categorias ativas
 - Total de categorias
 
 **Regras de negócio importantes:**
+
 - Mostra apenas categorias ativas
 - Permite busca por nome
 
@@ -1147,14 +1283,17 @@
 **Quem pode usar:** Qualquer usuário.
 
 **Informações necessárias (opcionais):**
+
 - Filtro por nome
 - Paginação
 
 **O que retorna:**
+
 - Lista de tags ativas
 - Total de tags
 
 **Regras de negócio importantes:**
+
 - Mostra apenas tags ativas
 - Permite busca por nome
 - Tags são criadas automaticamente ao adicionar em serviços
@@ -1174,6 +1313,7 @@
 **O que retorna:** Lista completa de países.
 
 **Regras de negócio importantes:**
+
 - Lista pré-cadastrada no sistema
 - Usado para preenchimento de endereços
 
@@ -1190,6 +1330,7 @@
 **O que retorna:** Lista completa de estados.
 
 **Regras de negócio importantes:**
+
 - Lista pré-cadastrada no sistema
 - Usado para preenchimento de endereços
 
@@ -1202,11 +1343,13 @@
 **Quem pode usar:** Qualquer usuário.
 
 **Informações necessárias (opcional):**
+
 - ID do estado (para filtrar cidades daquele estado)
 
 **O que retorna:** Lista de cidades.
 
 **Regras de negócio importantes:**
+
 - Se informar estado, retorna apenas cidades daquele estado
 - Sem filtro, retorna todas as cidades
 - Usado para preenchimento de endereços
@@ -1226,13 +1369,147 @@
 **O que retorna:** Lista completa de espécies.
 
 **Regras de negócio importantes:**
+
 - Lista pré-cadastrada no sistema
 - Usado ao cadastrar pets
 - Inclui nome comum da espécie
 
 ---
 
-## 11. Saúde do Sistema
+## 12. Adoção & Guardian
+
+### 12.1 Criar/Editar Perfil de Responsável (Guardian)
+
+**O que faz:** Permite que ONGs, protetores ou tutores publiquem pets para adoção criando um perfil de responsável.
+
+**Quem pode usar:** Usuários autenticados (não admin, não provider).
+
+**Informações necessárias:**
+
+- Nome de exibição
+- Tipo de responsável (ONG, protetor, tutor)
+- Documento (CNPJ/CPF)
+- Telefone/Whatsapp
+- Sobre (opcional)
+- Cidade/Estado
+
+**O que retorna:** Dados do perfil criado/atualizado, status de aprovação.
+
+**Regras de negócio importantes:**
+
+- Cada usuário pode ter apenas 1 perfil de responsável
+- Perfil criado fica com status "pendente" até aprovação admin
+- Admin pode aprovar/rejeitar perfis
+- Apenas perfis aprovados podem publicar pets para adoção
+
+---
+
+### 12.2 Publicar/Listar Pets para Adoção
+
+**O que faz:** Permite que responsáveis publiquem pets disponíveis para adoção.
+
+**Quem pode usar:** Responsáveis (guardian) com perfil aprovado.
+
+**Informações necessárias:**
+
+- Nome do pet, espécie, idade, peso, descrição, fotos
+- Cidade/Estado
+
+**O que retorna:** Dados da listagem criada, status (ativo/adotado)
+
+**Regras de negócio importantes:**
+
+- Apenas guardian aprovado pode publicar
+- Listagens podem ser editadas/removidas pelo próprio responsável
+- Admin pode gerenciar todas as listagens
+
+---
+
+### 12.3 Candidatar-se à Adoção
+
+**O que faz:** Permite que usuários interessados se candidatem para adotar um pet.
+
+**Quem pode usar:** Usuários autenticados (não admin, não guardian do pet).
+
+**Informações necessárias:**
+
+- Mensagem de apresentação
+
+**O que retorna:** Confirmação de candidatura, status (pendente)
+
+**Regras de negócio importantes:**
+
+- Não pode se candidatar ao próprio pet
+- Não pode candidatar-se mais de uma vez para o mesmo pet
+- Guardian recebe notificação de nova candidatura
+
+---
+
+### 12.4 Revisar/Alterar Status de Candidatura
+
+**O que faz:** Permite que o responsável aprove ou rejeite candidaturas recebidas.
+
+**Quem pode usar:** Guardian responsável pela listagem.
+
+**Informações necessárias:**
+
+- Aprovar ou rejeitar (com motivo)
+
+**O que retorna:** Status atualizado da candidatura
+
+**Regras de negócio importantes:**
+
+- Apenas guardian pode aprovar/rejeitar candidaturas de seus pets
+- Candidatura aprovada: contato do responsável é enviado ao adotante
+- Candidatura rejeitada: notificação ao candidato
+
+---
+
+### 12.5 Marcar Pet como Adotado
+
+**O que faz:** Permite que o responsável marque o pet como adotado, encerrando a listagem.
+
+**Quem pode usar:** Guardian responsável pela listagem.
+
+**Informações necessárias:**
+
+- ID da listagem
+
+**O que retorna:** Status atualizado da listagem (adotado)
+
+**Regras de negócio importantes:**
+
+- Apenas guardian pode marcar como adotado
+- Todos os candidatos não aprovados recebem notificação de encerramento
+
+---
+
+### 12.6 Aprovação/Rejeição de Perfis (Admin)
+
+**O que faz:** Permite que administradores aprovem ou rejeitem perfis de responsável (guardian).
+
+**Quem pode usar:** Administradores
+
+**Informações necessárias:**
+
+- ID do perfil, decisão (aprovar/rejeitar), motivo (se rejeitar)
+
+**O que retorna:** Status atualizado do perfil
+
+**Regras de negócio importantes:**
+
+- Apenas admin pode aprovar/rejeitar
+- Guardian recebe notificação da decisão
+
+---
+
+### 12.7 Permissões e Notificações
+
+- Apenas guardian aprovado pode publicar/adotar
+- Admin pode gerenciar todos os perfis e listagens
+- Notificações por e-mail para todos os eventos críticos (candidatura, aprovação, rejeição, adoção)
+
+---
 
 ### 11.1 Verificar Status da API
 
@@ -1245,6 +1522,7 @@
 **O que retorna:** Status "ok" se sistema está funcionando.
 
 **Regras de negócio importantes:**
+
 - Endpoint público
 - Usado para monitoramento
 
@@ -1258,11 +1536,13 @@
 
 **Informações necessárias:** Nenhuma.
 
-**O que retorna:** 
+**O que retorna:**
+
 - Status "ok" se banco está acessível
 - Status "error" se houver problemas
 
 **Regras de negócio importantes:**
+
 - Endpoint público
 - Usado para monitoramento e diagnóstico
 
