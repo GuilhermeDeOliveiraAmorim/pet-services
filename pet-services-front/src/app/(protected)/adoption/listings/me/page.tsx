@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import {
   Badge,
   Box,
@@ -14,9 +15,13 @@ import {
 
 import {
   type AdoptionApplicationItem,
+  useAdoptionApplicationReview,
   useAdoptionApplicationsByListing,
   useGuardianStatus,
+  useAdoptionListingMarkAsAdopted,
+  useAdoptionListingStatusChange,
   useMyAdoptionListings,
+  useMyAdoptionGuardianProfile,
 } from "@/application";
 import MainNav from "@/components/common/MainNav";
 import PageWrapper from "@/components/common/PageWrapper";
@@ -30,6 +35,12 @@ const listingStatusLabels: Record<string, string> = {
   paused: "Pausado",
   adopted: "Adotado",
   archived: "Arquivado",
+};
+
+const guardianApprovalLabels: Record<string, string> = {
+  pending: "Em análise",
+  approved: "Aprovado",
+  rejected: "Rejeitado",
 };
 
 const applicationStatusLabels: Record<string, string> = {
@@ -73,11 +84,17 @@ const formatDate = (value?: string | null) => {
 };
 
 function ListingApplicationsPreview({ listingId }: { listingId: string }) {
+  const [feedback, setFeedback] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
   const { data, isLoading, error } = useAdoptionApplicationsByListing({
     listingId,
     page: 1,
     pageSize: 5,
   });
+  const { mutateAsync: reviewApplication, isPending } =
+    useAdoptionApplicationReview();
 
   if (isLoading) {
     return <LoadingState message="Carregando candidaturas recebidas..." />;
@@ -96,6 +113,29 @@ function ListingApplicationsPreview({ listingId }: { listingId: string }) {
 
   const applications: AdoptionApplicationItem[] = data?.applications ?? [];
 
+  const handleReview = async (
+    applicationId: string,
+    action: "under_review" | "interview" | "approve" | "reject",
+  ) => {
+    setFeedback(null);
+
+    try {
+      await reviewApplication({ applicationId, action });
+      setFeedback({
+        type: "success",
+        message: "Status da candidatura atualizado com sucesso.",
+      });
+    } catch (reviewError) {
+      setFeedback({
+        type: "error",
+        message: getApiErrorMessage(
+          reviewError,
+          "Não foi possível atualizar a candidatura.",
+        ),
+      });
+    }
+  };
+
   if (applications.length === 0) {
     return (
       <EmptyState message="Nenhuma candidatura recebida para este anúncio até o momento." />
@@ -104,6 +144,23 @@ function ListingApplicationsPreview({ listingId }: { listingId: string }) {
 
   return (
     <VStack align="stretch" gap={3}>
+      {feedback ? (
+        <Box
+          borderRadius="xl"
+          borderWidth="1px"
+          borderColor={feedback.type === "success" ? "green.200" : "red.200"}
+          bg={feedback.type === "success" ? "green.50" : "red.50"}
+          p={3}
+        >
+          <Text
+            fontSize="sm"
+            color={feedback.type === "success" ? "green.700" : "red.700"}
+          >
+            {feedback.message}
+          </Text>
+        </Box>
+      ) : null}
+
       {applications.map((application) => (
         <Box
           key={application.id}
@@ -137,6 +194,47 @@ function ListingApplicationsPreview({ listingId }: { listingId: string }) {
             <Text fontSize="sm" color="gray.600">
               Contato: {application.contactPhone || "-"}
             </Text>
+
+            <HStack gap={2} wrap="wrap" pt={1}>
+              <Button
+                size="xs"
+                borderRadius="full"
+                variant="outline"
+                disabled={isPending}
+                onClick={() => handleReview(application.id, "under_review")}
+              >
+                Em análise
+              </Button>
+              <Button
+                size="xs"
+                borderRadius="full"
+                variant="outline"
+                disabled={isPending}
+                onClick={() => handleReview(application.id, "interview")}
+              >
+                Entrevista
+              </Button>
+              <Button
+                size="xs"
+                borderRadius="full"
+                colorPalette="green"
+                variant="subtle"
+                disabled={isPending}
+                onClick={() => handleReview(application.id, "approve")}
+              >
+                Aprovar
+              </Button>
+              <Button
+                size="xs"
+                borderRadius="full"
+                colorPalette="red"
+                variant="subtle"
+                disabled={isPending}
+                onClick={() => handleReview(application.id, "reject")}
+              >
+                Rejeitar
+              </Button>
+            </HStack>
           </VStack>
         </Box>
       ))}
@@ -145,10 +243,24 @@ function ListingApplicationsPreview({ listingId }: { listingId: string }) {
 }
 
 export default function MyAdoptionListingsPage() {
-  const { isLoading: isGuardianLoading, isApprovedGuardian } =
-    useGuardianStatus({
-      enabled: true,
-    });
+  const [feedback, setFeedback] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+  const {
+    data: guardianStatusData,
+    isLoading: isGuardianLoading,
+    isApprovedGuardian,
+  } = useGuardianStatus({
+    enabled: true,
+  });
+  const { data: guardianProfileData } = useMyAdoptionGuardianProfile({
+    enabled: true,
+  });
+  const { mutateAsync: changeListingStatus, isPending: isUpdatingStatus } =
+    useAdoptionListingStatusChange();
+  const { mutateAsync: markAsAdopted, isPending: isMarkingAsAdopted } =
+    useAdoptionListingMarkAsAdopted();
 
   const {
     data: listingsData,
@@ -165,6 +277,8 @@ export default function MyAdoptionListingsPage() {
   );
 
   const listings: AdoptionListing[] = listingsData?.listings ?? [];
+  const guardianProfile =
+    guardianProfileData?.profile ?? guardianStatusData?.profile;
 
   const listingsErrorMessage = listingsError
     ? getApiErrorMessage(
@@ -172,6 +286,49 @@ export default function MyAdoptionListingsPage() {
         "Não foi possível carregar seus anúncios de adoção.",
       )
     : "";
+
+  const handleStatusAction = async (
+    listingId: string,
+    action: "publish" | "pause" | "archive",
+  ) => {
+    setFeedback(null);
+
+    try {
+      const result = await changeListingStatus({ listingId, action });
+      setFeedback({
+        type: "success",
+        message: result.message ?? "Status do anúncio atualizado com sucesso.",
+      });
+    } catch (actionError) {
+      setFeedback({
+        type: "error",
+        message: getApiErrorMessage(
+          actionError,
+          "Não foi possível atualizar o status do anúncio.",
+        ),
+      });
+    }
+  };
+
+  const handleMarkAsAdopted = async (listingId: string) => {
+    setFeedback(null);
+
+    try {
+      await markAsAdopted({ listingId });
+      setFeedback({
+        type: "success",
+        message: "Anúncio marcado como adotado com sucesso.",
+      });
+    } catch (actionError) {
+      setFeedback({
+        type: "error",
+        message: getApiErrorMessage(
+          actionError,
+          "Não foi possível marcar o anúncio como adotado.",
+        ),
+      });
+    }
+  };
 
   return (
     <PageWrapper gap={10}>
@@ -184,18 +341,63 @@ export default function MyAdoptionListingsPage() {
         </Text>
       </VStack>
 
+      {feedback ? (
+        <Box
+          borderRadius="2xl"
+          borderWidth="1px"
+          borderColor={feedback.type === "success" ? "green.200" : "red.200"}
+          bg={feedback.type === "success" ? "green.50" : "red.50"}
+          p={4}
+        >
+          <Text
+            fontSize="sm"
+            color={feedback.type === "success" ? "green.700" : "red.700"}
+          >
+            {feedback.message}
+          </Text>
+        </Box>
+      ) : null}
+
       {isGuardianLoading ? (
         <LoadingState message="Verificando seu perfil de guardião..." />
       ) : !isApprovedGuardian ? (
-        <ErrorState message="Seu perfil de guardião ainda não está aprovado para acessar esta área." />
+        <ErrorState
+          message={
+            guardianProfile
+              ? `Seu perfil de guardião está com status ${guardianApprovalLabels[guardianProfile.approvalStatus] ?? guardianProfile.approvalStatus}.`
+              : "Você ainda não possui um perfil de guardião cadastrado."
+          }
+        >
+          <Button asChild mt={4} borderRadius="full">
+            <Link href="/adoption/guardian">
+              {guardianProfile
+                ? "Revisar perfil de guardião"
+                : "Criar perfil de guardião"}
+            </Link>
+          </Button>
+        </ErrorState>
       ) : isListingsLoading ? (
         <LoadingState message="Carregando seus anúncios de adoção..." />
       ) : listingsErrorMessage ? (
         <ErrorState message={listingsErrorMessage} />
       ) : listings.length === 0 ? (
-        <EmptyState message="Você ainda não possui anúncios de adoção cadastrados." />
+        <EmptyState message="Você ainda não possui anúncios de adoção cadastrados.">
+          <Button asChild mt={4} borderRadius="full">
+            <Link href="/adoption/listings/new">Criar primeiro anúncio</Link>
+          </Button>
+        </EmptyState>
       ) : (
         <VStack align="stretch" gap={5}>
+          <HStack justify="space-between" wrap="wrap">
+            <Text color="gray.600">
+              Gerencie status, revisão de candidaturas e atualização dos seus
+              anúncios.
+            </Text>
+            <Button asChild borderRadius="full">
+              <Link href="/adoption/listings/new">Novo anúncio</Link>
+            </Button>
+          </HStack>
+
           {listings.map((listing) => (
             <Box
               key={listing.id}
@@ -248,16 +450,86 @@ export default function MyAdoptionListingsPage() {
                 </HStack>
 
                 <HStack justify="space-between" align="center" pt={1}>
-                  <Button
-                    asChild
-                    variant="outline"
-                    borderRadius="full"
-                    size="sm"
-                  >
-                    <Link href={`/adoption/${listing.id}`}>
-                      Ver anúncio público
-                    </Link>
-                  </Button>
+                  <HStack wrap="wrap" gap={2}>
+                    <Button
+                      asChild
+                      variant="outline"
+                      borderRadius="full"
+                      size="sm"
+                    >
+                      <Link href={`/adoption/${listing.id}`}>
+                        Ver anúncio público
+                      </Link>
+                    </Button>
+
+                    {listing.status === "draft" ||
+                    listing.status === "paused" ? (
+                      <Button
+                        asChild
+                        variant="outline"
+                        borderRadius="full"
+                        size="sm"
+                      >
+                        <Link href={`/adoption/listings/${listing.id}/edit`}>
+                          Editar
+                        </Link>
+                      </Button>
+                    ) : null}
+
+                    {listing.status === "draft" ||
+                    listing.status === "paused" ? (
+                      <Button
+                        borderRadius="full"
+                        size="sm"
+                        disabled={isUpdatingStatus}
+                        onClick={() =>
+                          handleStatusAction(listing.id, "publish")
+                        }
+                      >
+                        Publicar
+                      </Button>
+                    ) : null}
+
+                    {listing.status === "published" ? (
+                      <Button
+                        borderRadius="full"
+                        size="sm"
+                        variant="outline"
+                        disabled={isUpdatingStatus}
+                        onClick={() => handleStatusAction(listing.id, "pause")}
+                      >
+                        Pausar
+                      </Button>
+                    ) : null}
+
+                    {listing.status !== "archived" &&
+                    listing.status !== "adopted" ? (
+                      <Button
+                        borderRadius="full"
+                        size="sm"
+                        variant="outline"
+                        disabled={isUpdatingStatus}
+                        onClick={() =>
+                          handleStatusAction(listing.id, "archive")
+                        }
+                      >
+                        Arquivar
+                      </Button>
+                    ) : null}
+
+                    {listing.status === "published" ? (
+                      <Button
+                        borderRadius="full"
+                        size="sm"
+                        colorPalette="teal"
+                        variant="subtle"
+                        disabled={isMarkingAsAdopted}
+                        onClick={() => handleMarkAsAdopted(listing.id)}
+                      >
+                        Marcar como adotado
+                      </Button>
+                    ) : null}
+                  </HStack>
                 </HStack>
 
                 <VStack align="stretch" gap={3} pt={2}>
