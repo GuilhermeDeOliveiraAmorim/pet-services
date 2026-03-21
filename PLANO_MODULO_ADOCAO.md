@@ -196,6 +196,119 @@ Seguindo o padrão já existente da API, a sugestão é criar:
 1. internal/database/migrations.go
 2. internal/database/migrate.go
 
+## Casos de Uso Necessários
+
+Os casos de uso abaixo foram derivados diretamente das entidades já definidas para o domínio de adoção. A ideia é organizar a aplicação em torno dos fluxos reais do produto e evitar lacunas entre entidade, regra de negócio, endpoint e interface do front.
+
+### MVP essencial
+
+Esses são os casos de uso que formam o núcleo funcional do módulo.
+
+1. Criar perfil de responsável pela adoção.
+2. Consultar meu perfil de responsável.
+3. Atualizar perfil de responsável.
+4. Submeter perfil para aprovação.
+5. Criar anúncio de adoção.
+6. Consultar meu anúncio de adoção.
+7. Listar meus anúncios de adoção.
+8. Atualizar anúncio de adoção.
+9. Publicar anúncio de adoção.
+10. Pausar anúncio de adoção.
+11. Marcar anúncio como em processo.
+12. Marcar anúncio como adotado.
+13. Arquivar anúncio.
+14. Listar anúncios públicos.
+15. Consultar detalhe de anúncio público.
+16. Criar candidatura de adoção.
+17. Listar minhas candidaturas.
+18. Consultar detalhe da minha candidatura.
+19. Desistir da candidatura.
+20. Listar candidaturas de um anúncio.
+21. Colocar candidatura em análise.
+22. Avançar candidatura para entrevista.
+23. Aprovar candidatura.
+24. Rejeitar candidatura.
+25. Registrar evento da candidatura.
+26. Listar histórico de eventos da candidatura.
+
+### Administração e moderação
+
+Esses casos de uso entram logo depois do núcleo, porque são importantes para governança, auditoria e operação segura do módulo.
+
+1. Listar perfis de responsável pendentes de aprovação.
+2. Aprovar perfil de responsável.
+3. Rejeitar perfil de responsável.
+4. Listar anúncios para moderação.
+5. Bloquear ou desativar anúncio, se necessário.
+6. Consultar candidaturas de qualquer anúncio em contexto administrativo.
+7. Consultar trilha de eventos para auditoria.
+
+### Casos de uso de suporte
+
+Esses casos de uso não são necessariamente a primeira entrega, mas costumam aparecer cedo porque complementam o fluxo principal.
+
+1. Ver perfil público do responsável.
+2. Validar elegibilidade para publicar anúncio.
+3. Validar se usuário já se candidatou ao anúncio.
+4. Validar se anúncio aceita candidatura no estado atual.
+5. Notificar responsável sobre nova candidatura.
+6. Notificar candidato sobre mudança de status.
+7. Fechar automaticamente outras candidaturas quando um anúncio for marcado como adotado.
+
+### Casos de uso de fase 2
+
+Esses casos são relevantes, mas não precisam estar no primeiro ciclo de implementação.
+
+1. Favoritar anúncio de adoção.
+2. Remover favorito.
+3. Listar favoritos.
+4. Buscar anúncios por geolocalização e raio.
+5. Anexar documentos do candidato.
+6. Agendar visita ou entrevista.
+7. Reabrir anúncio pausado ou arquivado com regras mais refinadas.
+8. Exportar relatório operacional de adoção.
+
+### Recorte recomendado para implementação imediata
+
+Se a ideia for começar a pasta de use cases agora, a ordem mais pragmática é:
+
+1. CreateAdoptionGuardianProfile.
+2. GetMyAdoptionGuardianProfile.
+3. UpdateAdoptionGuardianProfile.
+4. CreateAdoptionListing.
+5. UpdateAdoptionListing.
+6. PublishAdoptionListing.
+7. ListPublicAdoptionListings.
+8. GetPublicAdoptionListing.
+9. CreateAdoptionApplication.
+10. ListMyAdoptionApplications.
+11. ListAdoptionApplicationsByListing.
+12. ReviewAdoptionApplication.
+13. WithdrawAdoptionApplication.
+14. MarkAdoptionListingAsAdopted.
+15. ApproveAdoptionGuardianProfile.
+16. RejectAdoptionGuardianProfile.
+
+### Recomendação de agrupamento por fase
+
+Para evitar abrir casos de uso demais cedo, o agrupamento recomendado é:
+
+#### Fase 1
+
+1. Perfis de responsável.
+2. Criação e publicação de anúncio.
+3. Catálogo público.
+4. Candidatura.
+5. Revisão de candidatura.
+6. Aprovação administrativa de responsável.
+
+#### Fase 2
+
+1. Histórico detalhado.
+2. Notificações.
+3. Favoritos.
+4. Moderação ampliada.
+
 ## Endpoints Sugeridos
 
 ### Públicos
