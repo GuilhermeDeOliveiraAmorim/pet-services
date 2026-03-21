@@ -30,6 +30,7 @@ type ReviewAdoptionApplicationOutput struct {
 type ReviewAdoptionApplicationUseCase struct {
 	applicationRepo entities.AdoptionApplicationRepository
 	listingRepo     entities.AdoptionListingRepository
+	guardianRepo    entities.AdoptionGuardianProfileRepository
 	userRepository  entities.UserRepository
 	emailService    mail.EmailService
 	logger          logging.LoggerInterface
@@ -38,6 +39,7 @@ type ReviewAdoptionApplicationUseCase struct {
 func NewReviewAdoptionApplicationUseCase(
 	applicationRepo entities.AdoptionApplicationRepository,
 	listingRepo entities.AdoptionListingRepository,
+	guardianRepo entities.AdoptionGuardianProfileRepository,
 	userRepository entities.UserRepository,
 	emailService mail.EmailService,
 	logger logging.LoggerInterface,
@@ -45,6 +47,7 @@ func NewReviewAdoptionApplicationUseCase(
 	return &ReviewAdoptionApplicationUseCase{
 		applicationRepo: applicationRepo,
 		listingRepo:     listingRepo,
+		guardianRepo:    guardianRepo,
 		userRepository:  userRepository,
 		emailService:    emailService,
 		logger:          logger,
@@ -114,11 +117,13 @@ func (u *ReviewAdoptionApplicationUseCase) Execute(ctx context.Context, input Re
 	if applicantUser != nil && listing != nil {
 		switch input.Action {
 		case "approve":
-			// Buscar email do guardian para passar no email
-			guardian, _ := u.userRepository.FindByID("") // Placeholder - precisaria buscar via ListingID
 			guardianContact := ""
-			if guardian != nil {
-				guardianContact = guardian.Login.Email
+			if guardianProfile, err := u.guardianRepo.FindByID(listing.GuardianProfileID); err == nil {
+				if guardianProfile.Phone != "" {
+					guardianContact = guardianProfile.Phone
+				} else if guardianProfile.Whatsapp != "" {
+					guardianContact = guardianProfile.Whatsapp
+				}
 			}
 			if err := u.emailService.SendAdoptionApplicationApprovedEmail(applicantUser.Login.Email, applicantUser.Name, listing.Title, guardianContact); err != nil {
 				u.logger.LogError(ctx, "ReviewAdoptionApplicationUseCase", "Erro ao enviar email de aprovação", err)

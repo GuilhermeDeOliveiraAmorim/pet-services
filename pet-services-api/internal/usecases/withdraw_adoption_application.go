@@ -8,6 +8,7 @@ import (
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
+	"pet-services-api/internal/mail"
 )
 
 type WithdrawAdoptionApplicationInput struct {
@@ -22,15 +23,27 @@ type WithdrawAdoptionApplicationOutput struct {
 
 type WithdrawAdoptionApplicationUseCase struct {
 	applicationRepo entities.AdoptionApplicationRepository
+	listingRepo     entities.AdoptionListingRepository
+	guardianRepo    entities.AdoptionGuardianProfileRepository
+	userRepository  entities.UserRepository
+	emailService    mail.EmailService
 	logger          logging.LoggerInterface
 }
 
 func NewWithdrawAdoptionApplicationUseCase(
 	applicationRepo entities.AdoptionApplicationRepository,
+	listingRepo entities.AdoptionListingRepository,
+	guardianRepo entities.AdoptionGuardianProfileRepository,
+	userRepository entities.UserRepository,
+	emailService mail.EmailService,
 	logger logging.LoggerInterface,
 ) *WithdrawAdoptionApplicationUseCase {
 	return &WithdrawAdoptionApplicationUseCase{
 		applicationRepo: applicationRepo,
+		listingRepo:     listingRepo,
+		guardianRepo:    guardianRepo,
+		userRepository:  userRepository,
+		emailService:    emailService,
 		logger:          logger,
 	}
 }
@@ -81,6 +94,29 @@ func (u *WithdrawAdoptionApplicationUseCase) Execute(ctx context.Context, input 
 	}
 
 	u.logger.LogInfo(ctx, "WithdrawAdoptionApplicationUseCase", "Candidatura "+input.ApplicationID+" retirada")
+
+	go func() {
+		listing, err := u.listingRepo.FindByID(application.ListingID)
+		if err != nil {
+			return
+		}
+		guardianProfile, err := u.guardianRepo.FindByID(listing.GuardianProfileID)
+		if err != nil {
+			return
+		}
+		guardianUser, err := u.userRepository.FindByID(guardianProfile.UserID)
+		if err != nil {
+			return
+		}
+		applicantUser, err := u.userRepository.FindByID(application.ApplicantUserID)
+		applicantName := ""
+		if err == nil && applicantUser != nil {
+			applicantName = applicantUser.Name
+		}
+		if err := u.emailService.SendAdoptionApplicationWithdrawnGuardianEmail(guardianUser.Login.Email, guardianProfile.DisplayName, applicantName, listing.Title); err != nil {
+			u.logger.LogError(ctx, "WithdrawAdoptionApplicationUseCase", "Erro ao enviar email ao guardian", err)
+		}
+	}()
 
 	return &WithdrawAdoptionApplicationOutput{
 		ID:     application.ID,
