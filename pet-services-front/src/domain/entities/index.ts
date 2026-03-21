@@ -19,7 +19,21 @@ export type { PasswordResetToken } from "./password-reset-token";
 export type { Country } from "./country";
 export type { State } from "./state";
 export type { City } from "./city";
+export type {
+  AdoptionGuardianProfileSummary,
+  AdoptionListing,
+  AdoptionListingAgeGroupValue,
+  AdoptionListingSexValue,
+  AdoptionListingSizeValue,
+  AdoptionListingStatusValue,
+} from "./adoption-listing";
 export { UserTypes } from "./user";
+export {
+  AdoptionListingAgeGroup,
+  AdoptionListingSex,
+  AdoptionListingSize,
+  AdoptionListingStatus,
+} from "./adoption-listing";
 export type { UserType } from "./user";
 export { TokenTypes } from "./refresh-token";
 export type { TokenType } from "./refresh-token";

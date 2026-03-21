@@ -2,6 +2,7 @@ package database
 
 import (
 	"pet-services-api/internal/models"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -42,6 +43,269 @@ func Migration20260321000002(db *gorm.DB) error {
 		&models.AdoptionApplication{},
 		&models.AdoptionApplicationEvent{},
 	)
+}
+
+func Migration20260321000003(db *gorm.DB) error {
+	seedTime := time.Date(2026, time.March, 21, 15, 0, 0, 0, time.UTC)
+
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte("Adocao@123"), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	users := []models.User{
+		{
+			ID:              "01KQAD0NG1USR0000000000001",
+			Name:            "ONG Patas Urbanas",
+			UserType:        "owner",
+			Email:           "adocao.ong1@petservices.local",
+			Password:        string(passwordHash),
+			CountryCode:     "+55",
+			AreaCode:        "11",
+			PhoneNumber:     "988880101",
+			EmailVerified:   true,
+			ProfileComplete: true,
+			Active:          true,
+			Street:          "Rua dos Resgates",
+			Number:          "120",
+			Neighborhood:    "Vila Mariana",
+			City:            "Sao Paulo",
+			ZipCode:         "04101-000",
+			State:           "SP",
+			Country:         "BR",
+			Complement:      "Casa sede",
+			Latitude:        -23.589842,
+			Longitude:       -46.634587,
+		},
+		{
+			ID:              "01KQAD0NG2USR0000000000001",
+			Name:            "Instituto Rabo Feliz",
+			UserType:        "owner",
+			Email:           "adocao.ong2@petservices.local",
+			Password:        string(passwordHash),
+			CountryCode:     "+55",
+			AreaCode:        "21",
+			PhoneNumber:     "977770202",
+			EmailVerified:   true,
+			ProfileComplete: true,
+			Active:          true,
+			Street:          "Rua da Adoção",
+			Number:          "88",
+			Neighborhood:    "Botafogo",
+			City:            "Rio de Janeiro",
+			ZipCode:         "22250-040",
+			State:           "RJ",
+			Country:         "BR",
+			Complement:      "Galpão A",
+			Latitude:        -22.951916,
+			Longitude:       -43.182236,
+		},
+		{
+			ID:              "01KQAD0IN1USR0000000000001",
+			Name:            "Marina Costa",
+			UserType:        "owner",
+			Email:           "adocao.protetor1@petservices.local",
+			Password:        string(passwordHash),
+			CountryCode:     "+55",
+			AreaCode:        "71",
+			PhoneNumber:     "966660303",
+			EmailVerified:   true,
+			ProfileComplete: true,
+			Active:          true,
+			Street:          "Alameda dos Bichos",
+			Number:          "45",
+			Neighborhood:    "Rio Vermelho",
+			City:            "Salvador",
+			ZipCode:         "41950-000",
+			State:           "BA",
+			Country:         "BR",
+			Complement:      "Casa 2",
+			Latitude:        -13.013534,
+			Longitude:       -38.487602,
+		},
+	}
+
+	for _, user := range users {
+		if err := db.Clauses(clause.OnConflict{
+			Columns: []clause.Column{{Name: "email"}},
+			DoUpdates: clause.AssignmentColumns([]string{
+				"name",
+				"user_type",
+				"password",
+				"country_code",
+				"area_code",
+				"phone_number",
+				"email_verified",
+				"profile_complete",
+				"active",
+				"street",
+				"number",
+				"neighborhood",
+				"city",
+				"zip_code",
+				"state",
+				"country",
+				"complement",
+				"latitude",
+				"longitude",
+			}),
+		}).Create(&user).Error; err != nil {
+			return err
+		}
+	}
+
+	guardianProfiles := []models.AdoptionGuardianProfile{
+		{
+			ID:             "01KQAD0NG1PRF0000000000001",
+			UserID:         "01KQAD0NG1USR0000000000001",
+			DisplayName:    "ONG Patas Urbanas",
+			GuardianType:   "ngo",
+			Document:       "12.345.678/0001-01",
+			Phone:          "+55 11 98888-0101",
+			Whatsapp:       "+55 11 98888-0101",
+			About:          "ONG focada em resgate urbano, recuperação e adoção responsável de cães e gatos em Sao Paulo.",
+			CityID:         "3550308",
+			StateID:        "SP",
+			ApprovalStatus: "approved",
+			ApprovedAt:     &seedTime,
+			Active:         true,
+		},
+		{
+			ID:             "01KQAD0NG2PRF0000000000001",
+			UserID:         "01KQAD0NG2USR0000000000001",
+			DisplayName:    "Instituto Rabo Feliz",
+			GuardianType:   "ngo",
+			Document:       "98.765.432/0001-10",
+			Phone:          "+55 21 97777-0202",
+			Whatsapp:       "+55 21 97777-0202",
+			About:          "Instituto dedicado a reabilitação, feiras de adoção e acompanhamento pós-adoção no Rio de Janeiro.",
+			CityID:         "3304557",
+			StateID:        "RJ",
+			ApprovalStatus: "approved",
+			ApprovedAt:     &seedTime,
+			Active:         true,
+		},
+		{
+			ID:             "01KQAD0IN1PRF0000000000001",
+			UserID:         "01KQAD0IN1USR0000000000001",
+			DisplayName:    "Marina Costa",
+			GuardianType:   "independent",
+			Document:       "123.456.789-00",
+			Phone:          "+55 71 96666-0303",
+			Whatsapp:       "+55 71 96666-0303",
+			About:          "Protetora independente com foco em acolhimento temporário, socialização e adoção consciente em Salvador.",
+			CityID:         "2927408",
+			StateID:        "BA",
+			ApprovalStatus: "approved",
+			ApprovedAt:     &seedTime,
+			Active:         true,
+		},
+	}
+
+	for _, profile := range guardianProfiles {
+		if err := db.Clauses(clause.OnConflict{
+			Columns: []clause.Column{{Name: "user_id"}},
+			DoUpdates: clause.AssignmentColumns([]string{
+				"display_name",
+				"guardian_type",
+				"document",
+				"phone",
+				"whatsapp",
+				"about",
+				"city_id",
+				"state_id",
+				"approval_status",
+				"approved_at",
+				"active",
+			}),
+		}).Create(&profile).Error; err != nil {
+			return err
+		}
+	}
+
+	pets := []models.Pet{
+		{ID: "01KQAD0NG1PET0000000000001", UserID: "01KQAD0NG1USR0000000000001", Name: "Luna", SpeciesID: "01KG7BG1XR2FA63J6N46CPVCKS", Breed: "SRD", Age: 2, Weight: 4.20, Notes: "Gata dócil, adaptada a apartamento.", Active: true},
+		{ID: "01KQAD0NG1PET0000000000002", UserID: "01KQAD0NG1USR0000000000001", Name: "Tobias", SpeciesID: "01KG7BG1XN0BQ4KHKPHY5V5ZEW", Breed: "Beagle", Age: 4, Weight: 13.50, Notes: "Cão brincalhão e sociável.", Active: true},
+		{ID: "01KQAD0NG1PET0000000000003", UserID: "01KQAD0NG1USR0000000000001", Name: "Nina", SpeciesID: "01KG7BG1XR2FA63J6N46CPVCKS", Breed: "SRD", Age: 1, Weight: 3.80, Notes: "Filhote curiosa e muito carinhosa.", Active: true},
+		{ID: "01KQAD0NG1PET0000000000004", UserID: "01KQAD0NG1USR0000000000001", Name: "Max", SpeciesID: "01KG7BG1XN0BQ4KHKPHY5V5ZEW", Breed: "SRD", Age: 6, Weight: 22.30, Notes: "Adulto tranquilo, ótimo para famílias.", Active: true},
+		{ID: "01KQAD0NG2PET0000000000001", UserID: "01KQAD0NG2USR0000000000001", Name: "Mel", SpeciesID: "01KG7BG1XN0BQ4KHKPHY5V5ZEW", Breed: "Cocker Spaniel", Age: 3, Weight: 11.20, Notes: "Muito apegada a humanos e obediente.", Active: true},
+		{ID: "01KQAD0NG2PET0000000000002", UserID: "01KQAD0NG2USR0000000000001", Name: "Chico", SpeciesID: "01KG7BG1XR2FA63J6N46CPVCKS", Breed: "SRD", Age: 7, Weight: 5.10, Notes: "Gato adulto calmo, ideal para ambientes silenciosos.", Active: true},
+		{ID: "01KQAD0NG2PET0000000000003", UserID: "01KQAD0NG2USR0000000000001", Name: "Pipoca", SpeciesID: "01KG7BG1XN0BQ4KHKPHY5V5ZEW", Breed: "Pinscher", Age: 2, Weight: 5.60, Notes: "Pequena no tamanho, grande na personalidade.", Active: true},
+		{ID: "01KQAD0NG2PET0000000000004", UserID: "01KQAD0NG2USR0000000000001", Name: "Jade", SpeciesID: "01KG7BG1XR2FA63J6N46CPVCKS", Breed: "SRD", Age: 5, Weight: 4.90, Notes: "Fêmea independente, mas muito afetuosa após adaptação.", Active: true},
+		{ID: "01KQAD0IN1PET0000000000001", UserID: "01KQAD0IN1USR0000000000001", Name: "Fred", SpeciesID: "01KG7BG1XN0BQ4KHKPHY5V5ZEW", Breed: "SRD", Age: 8, Weight: 19.70, Notes: "Senior estável e ótimo companheiro para rotina tranquila.", Active: true},
+		{ID: "01KQAD0IN1PET0000000000002", UserID: "01KQAD0IN1USR0000000000001", Name: "Amora", SpeciesID: "01KG7BG1XR2FA63J6N46CPVCKS", Breed: "SRD", Age: 2, Weight: 4.10, Notes: "Gata jovem, curiosa e brincalhona.", Active: true},
+		{ID: "01KQAD0IN1PET0000000000003", UserID: "01KQAD0IN1USR0000000000001", Name: "Bento", SpeciesID: "01KG7BG1XN0BQ4KHKPHY5V5ZEW", Breed: "SRD", Age: 1, Weight: 9.30, Notes: "Filhote sociável, se dá bem com outros cães.", Active: true},
+		{ID: "01KQAD0IN1PET0000000000004", UserID: "01KQAD0IN1USR0000000000001", Name: "Lili", SpeciesID: "01KG7BG1XR2FA63J6N46CPVCKS", Breed: "Persa", Age: 4, Weight: 4.60, Notes: "Gata tranquila que prefere ambientes internos.", Active: true},
+	}
+
+	for _, pet := range pets {
+		if err := db.Clauses(clause.OnConflict{
+			Columns: []clause.Column{{Name: "id"}},
+			DoUpdates: clause.AssignmentColumns([]string{
+				"user_id",
+				"name",
+				"species_id",
+				"breed",
+				"age",
+				"weight",
+				"notes",
+				"active",
+			}),
+		}).Create(&pet).Error; err != nil {
+			return err
+		}
+	}
+
+	publishedAt := seedTime
+	listings := []models.AdoptionListing{
+		{ID: "01KQAD0NG1LST0000000000001", PetID: "01KQAD0NG1PET0000000000001", GuardianProfileID: "01KQAD0NG1PRF0000000000001", Title: "Luna procura um lar tranquilo", Description: "Luna é uma gata carinhosa, já adaptada a apartamento e com ótima convivência com humanos.", AdoptionReason: "Resgatada em área urbana e pronta para adoção responsável.", Status: "published", Sex: "female", Size: "small", AgeGroup: "adult", Vaccinated: true, Neutered: true, Dewormed: true, GoodWithChildren: true, GoodWithCats: true, RequiresHouseScreening: true, CityID: "3550308", StateID: "SP", Latitude: -23.589842, Longitude: -46.634587, PublishedAt: &publishedAt, Active: true},
+		{ID: "01KQAD0NG1LST0000000000002", PetID: "01KQAD0NG1PET0000000000002", GuardianProfileID: "01KQAD0NG1PRF0000000000001", Title: "Tobias quer companhia e espaço para brincar", Description: "Tobias é um cão alegre, sociável e ótimo para famílias com rotina ativa.", AdoptionReason: "Foi acolhido após abandono e está saudável para adoção.", Status: "published", Sex: "male", Size: "medium", AgeGroup: "adult", Vaccinated: true, Neutered: true, Dewormed: true, GoodWithChildren: true, GoodWithDogs: true, RequiresHouseScreening: true, CityID: "3550308", StateID: "SP", Latitude: -23.589842, Longitude: -46.634587, PublishedAt: &publishedAt, Active: true},
+		{ID: "01KQAD0NG1LST0000000000003", PetID: "01KQAD0NG1PET0000000000003", GuardianProfileID: "01KQAD0NG1PRF0000000000001", Title: "Nina está pronta para crescer em família", Description: "Filhote muito curiosa, com energia equilibrada e boa adaptação a outros gatos.", AdoptionReason: "Ninhada resgatada e encaminhada para adoção com acompanhamento.", Status: "published", Sex: "female", Size: "small", AgeGroup: "puppy", Vaccinated: true, Neutered: false, Dewormed: true, GoodWithChildren: true, GoodWithCats: true, RequiresHouseScreening: false, CityID: "3550308", StateID: "SP", Latitude: -23.589842, Longitude: -46.634587, PublishedAt: &publishedAt, Active: true},
+		{ID: "01KQAD0NG1LST0000000000004", PetID: "01KQAD0NG1PET0000000000004", GuardianProfileID: "01KQAD0NG1PRF0000000000001", Title: "Max busca adoção com afeto e rotina estável", Description: "Max é um adulto equilibrado, carinhoso e excelente para adoção por famílias com crianças.", AdoptionReason: "Tutor não pôde seguir com os cuidados e optou pela adoção responsável.", Status: "published", Sex: "male", Size: "large", AgeGroup: "adult", Vaccinated: true, Neutered: true, Dewormed: true, GoodWithChildren: true, GoodWithDogs: true, RequiresHouseScreening: true, CityID: "3550308", StateID: "SP", Latitude: -23.589842, Longitude: -46.634587, PublishedAt: &publishedAt, Active: true},
+		{ID: "01KQAD0NG2LST0000000000001", PetID: "01KQAD0NG2PET0000000000001", GuardianProfileID: "01KQAD0NG2PRF0000000000001", Title: "Mel adora companhia e passeios leves", Description: "Mel é dócil, acostumada com carinho e interação diária com pessoas.", AdoptionReason: "Resgate concluído com sucesso e agora busca família definitiva.", Status: "published", Sex: "female", Size: "medium", AgeGroup: "adult", Vaccinated: true, Neutered: true, Dewormed: true, GoodWithChildren: true, GoodWithDogs: true, RequiresHouseScreening: true, CityID: "3304557", StateID: "RJ", Latitude: -22.951916, Longitude: -43.182236, PublishedAt: &publishedAt, Active: true},
+		{ID: "01KQAD0NG2LST0000000000002", PetID: "01KQAD0NG2PET0000000000002", GuardianProfileID: "01KQAD0NG2PRF0000000000001", Title: "Chico prefere lares silenciosos", Description: "Gato adulto calmo, independente e excelente para quem procura um companheiro sereno.", AdoptionReason: "Chegou ao instituto após mudança da família anterior.", Status: "published", Sex: "male", Size: "small", AgeGroup: "senior", Vaccinated: true, Neutered: true, Dewormed: true, GoodWithCats: true, RequiresHouseScreening: false, CityID: "3304557", StateID: "RJ", Latitude: -22.951916, Longitude: -43.182236, PublishedAt: &publishedAt, Active: true},
+		{ID: "01KQAD0NG2LST0000000000003", PetID: "01KQAD0NG2PET0000000000003", GuardianProfileID: "01KQAD0NG2PRF0000000000001", Title: "Pipoca leva energia e alegria para qualquer casa", Description: "Cadela pequena, atenta e muito ligada às pessoas. Ideal para ambientes com rotina ativa.", AdoptionReason: "Foi acolhida ainda jovem e está pronta para adoção definitiva.", Status: "published", Sex: "female", Size: "small", AgeGroup: "adult", Vaccinated: true, Neutered: true, Dewormed: true, GoodWithChildren: true, GoodWithDogs: true, RequiresHouseScreening: false, CityID: "3304557", StateID: "RJ", Latitude: -22.951916, Longitude: -43.182236, PublishedAt: &publishedAt, Active: true},
+		{ID: "01KQAD0NG2LST0000000000004", PetID: "01KQAD0NG2PET0000000000004", GuardianProfileID: "01KQAD0NG2PRF0000000000001", Title: "Jade merece um recomeço seguro", Description: "Jade leva algum tempo para se adaptar, mas cria vínculos profundos depois de ganhar confiança.", AdoptionReason: "Busca um lar estável após longo período em abrigo.", Status: "published", Sex: "female", Size: "small", AgeGroup: "adult", Vaccinated: true, Neutered: true, Dewormed: true, SpecialNeeds: false, GoodWithCats: true, RequiresHouseScreening: true, CityID: "3304557", StateID: "RJ", Latitude: -22.951916, Longitude: -43.182236, PublishedAt: &publishedAt, Active: true},
+		{ID: "01KQAD0IN1LST0000000000001", PetID: "01KQAD0IN1PET0000000000001", GuardianProfileID: "01KQAD0IN1PRF0000000000001", Title: "Fred procura um lar para envelhecer com conforto", Description: "Fred é um cão sênior, tranquilo, afetuoso e muito companheiro para rotinas calmas.", AdoptionReason: "Tutor faleceu e ele está sob acolhimento temporário.", Status: "published", Sex: "male", Size: "large", AgeGroup: "senior", Vaccinated: true, Neutered: true, Dewormed: true, GoodWithChildren: true, GoodWithDogs: true, RequiresHouseScreening: true, CityID: "2927408", StateID: "BA", Latitude: -13.013534, Longitude: -38.487602, PublishedAt: &publishedAt, Active: true},
+		{ID: "01KQAD0IN1LST0000000000002", PetID: "01KQAD0IN1PET0000000000002", GuardianProfileID: "01KQAD0IN1PRF0000000000001", Title: "Amora é curiosa e companheira", Description: "Gata jovem, brincalhona e com adaptação rápida a novos espaços.", AdoptionReason: "Foi resgatada com a ninhada e agora busca adoção individual.", Status: "published", Sex: "female", Size: "small", AgeGroup: "adult", Vaccinated: true, Neutered: true, Dewormed: true, GoodWithChildren: true, GoodWithCats: true, RequiresHouseScreening: false, CityID: "2927408", StateID: "BA", Latitude: -13.013534, Longitude: -38.487602, PublishedAt: &publishedAt, Active: true},
+		{ID: "01KQAD0IN1LST0000000000003", PetID: "01KQAD0IN1PET0000000000003", GuardianProfileID: "01KQAD0IN1PRF0000000000001", Title: "Bento quer crescer com espaço e carinho", Description: "Filhote de porte médio, sociável e ótimo para casas com quintal ou rotina ativa.", AdoptionReason: "Acolhido ainda filhote e preparado para adoção responsável.", Status: "published", Sex: "male", Size: "medium", AgeGroup: "puppy", Vaccinated: true, Neutered: false, Dewormed: true, GoodWithChildren: true, GoodWithDogs: true, RequiresHouseScreening: true, CityID: "2927408", StateID: "BA", Latitude: -13.013534, Longitude: -38.487602, PublishedAt: &publishedAt, Active: true},
+		{ID: "01KQAD0IN1LST0000000000004", PetID: "01KQAD0IN1PET0000000000004", GuardianProfileID: "01KQAD0IN1PRF0000000000001", Title: "Lili busca um lar interno e seguro", Description: "Gata tranquila, excelente para apartamentos e pessoas que valorizam um pet mais reservado.", AdoptionReason: "Encaminhada para adoção após tratamento e recuperação completa.", Status: "published", Sex: "female", Size: "small", AgeGroup: "adult", Vaccinated: true, Neutered: true, Dewormed: true, GoodWithCats: true, RequiresHouseScreening: false, CityID: "2927408", StateID: "BA", Latitude: -13.013534, Longitude: -38.487602, PublishedAt: &publishedAt, Active: true},
+	}
+
+	for _, listing := range listings {
+		if err := db.Clauses(clause.OnConflict{
+			Columns: []clause.Column{{Name: "id"}},
+			DoUpdates: clause.AssignmentColumns([]string{
+				"pet_id",
+				"guardian_profile_id",
+				"title",
+				"description",
+				"adoption_reason",
+				"status",
+				"sex",
+				"size",
+				"age_group",
+				"vaccinated",
+				"neutered",
+				"dewormed",
+				"special_needs",
+				"good_with_children",
+				"good_with_dogs",
+				"good_with_cats",
+				"requires_house_screening",
+				"city_id",
+				"state_id",
+				"latitude",
+				"longitude",
+				"published_at",
+				"active",
+			}),
+		}).Create(&listing).Error; err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func Migration20260215000000(db *gorm.DB) error {

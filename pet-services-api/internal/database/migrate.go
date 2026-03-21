@@ -144,5 +144,10 @@ func getMigrations() []Migration {
 			Description: "Criar tabelas adoption_applications e adoption_application_events",
 			Up:          Migration20260321000002,
 		},
+		{
+			Version:     "20260321000003",
+			Description: "Seed de 2 ONGs e 1 protetor independente com 12 pets e anúncios de adoção",
+			Up:          Migration20260321000003,
+		},
 	}
 }
