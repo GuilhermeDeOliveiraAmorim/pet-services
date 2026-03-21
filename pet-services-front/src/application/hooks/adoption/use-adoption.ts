@@ -8,8 +8,12 @@ import {
 } from "@tanstack/react-query";
 
 import {
+  type ListAdoptionApplicationsByListingInput,
+  type ListAdoptionApplicationsByListingOutput,
   type ListMyAdoptionApplicationsInput,
   type ListMyAdoptionApplicationsOutput,
+  type ListMyAdoptionListingsInput,
+  type ListMyAdoptionListingsOutput,
   type CreateAdoptionApplicationInput,
   type CreateAdoptionApplicationOutput,
   type GetMyAdoptionGuardianProfileOutput,
@@ -54,6 +58,16 @@ type CreateAdoptionApplicationOptions = Omit<
 
 type ListMyAdoptionApplicationsOptions = Omit<
   UseQueryOptions<ListMyAdoptionApplicationsOutput, Error>,
+  "queryKey" | "queryFn"
+>;
+
+type ListMyAdoptionListingsOptions = Omit<
+  UseQueryOptions<ListMyAdoptionListingsOutput, Error>,
+  "queryKey" | "queryFn"
+>;
+
+type ListAdoptionApplicationsByListingOptions = Omit<
+  UseQueryOptions<ListAdoptionApplicationsByListingOutput, Error>,
   "queryKey" | "queryFn"
 >;
 
@@ -132,6 +146,35 @@ export const useMyAdoptionApplications = (
   });
 };
 
+export const useMyAdoptionListings = (
+  input?: ListMyAdoptionListingsInput,
+  options?: ListMyAdoptionListingsOptions,
+) => {
+  const { listMyAdoptionListings } = useAdoptionUseCases();
+
+  return useQuery({
+    queryKey: ADOPTION_KEYS.myListingsList(input),
+    queryFn: () => listMyAdoptionListings.execute(input),
+    ...options,
+  });
+};
+
+export const useAdoptionApplicationsByListing = (
+  input?: ListAdoptionApplicationsByListingInput,
+  options?: ListAdoptionApplicationsByListingOptions,
+) => {
+  const { listAdoptionApplicationsByListing } = useAdoptionUseCases();
+
+  return useQuery({
+    queryKey: ADOPTION_KEYS.listingApplicationsList(
+      input ?? { listingId: "unknown" },
+    ),
+    queryFn: () => listAdoptionApplicationsByListing.execute(input!),
+    enabled: Boolean(input?.listingId),
+    ...options,
+  });
+};
+
 export const useMyAdoptionGuardianProfile = (
   options?: GetMyAdoptionGuardianProfileOptions,
 ) => {
@@ -167,6 +210,9 @@ export const useAdoptionApplicationWithdraw = (
     onSuccess: async (...args) => {
       await queryClient.invalidateQueries({
         queryKey: ADOPTION_KEYS.myApplicationsLists(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ADOPTION_KEYS.listingApplicationsLists(),
       });
       await options?.onSuccess?.(...args);
     },

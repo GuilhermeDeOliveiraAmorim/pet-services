@@ -3,6 +3,10 @@ import type {
   CreateAdoptionApplicationOutput,
   GetMyAdoptionGuardianProfileInput,
   GetMyAdoptionGuardianProfileOutput,
+  ListAdoptionApplicationsByListingInput,
+  ListAdoptionApplicationsByListingOutput,
+  ListMyAdoptionListingsInput,
+  ListMyAdoptionListingsOutput,
   GetPublicAdoptionListingInput,
   GetPublicAdoptionListingOutput,
   ListMyAdoptionApplicationsInput,
@@ -25,6 +29,12 @@ export interface AdoptionGateway {
   listMyApplications(
     input?: ListMyAdoptionApplicationsInput,
   ): Promise<ListMyAdoptionApplicationsOutput>;
+  listMyListings(
+    input?: ListMyAdoptionListingsInput,
+  ): Promise<ListMyAdoptionListingsOutput>;
+  listApplicationsByListing(
+    input: ListAdoptionApplicationsByListingInput,
+  ): Promise<ListAdoptionApplicationsByListingOutput>;
   getMyGuardianProfile(
     input?: GetMyAdoptionGuardianProfileInput,
   ): Promise<GetMyAdoptionGuardianProfileOutput | null>;

@@ -3,7 +3,9 @@ import {
   CreateAdoptionApplicationUseCase,
   GetMyAdoptionGuardianProfileUseCase,
   GetPublicAdoptionListingUseCase,
+  ListAdoptionApplicationsByListingUseCase,
   ListMyAdoptionApplicationsUseCase,
+  ListMyAdoptionListingsUseCase,
   ListPublicAdoptionListingsUseCase,
   WithdrawAdoptionApplicationUseCase,
 } from "../usecases/adoption";
@@ -17,6 +19,9 @@ export const createAdoptionCases = (gateway: AdoptionGateway) => {
     ),
     createAdoptionApplication: new CreateAdoptionApplicationUseCase(gateway),
     listMyAdoptionApplications: new ListMyAdoptionApplicationsUseCase(gateway),
+    listMyAdoptionListings: new ListMyAdoptionListingsUseCase(gateway),
+    listAdoptionApplicationsByListing:
+      new ListAdoptionApplicationsByListingUseCase(gateway),
     withdrawAdoptionApplication: new WithdrawAdoptionApplicationUseCase(
       gateway,
     ),
