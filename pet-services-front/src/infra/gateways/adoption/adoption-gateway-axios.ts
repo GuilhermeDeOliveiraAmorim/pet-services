@@ -1,5 +1,7 @@
 import type {
   AdoptionGateway,
+  CreateAdoptionApplicationInput,
+  CreateAdoptionApplicationOutput,
   GetPublicAdoptionListingOutput,
   ListPublicAdoptionListingsInput,
   ListPublicAdoptionListingsOutput,
@@ -206,6 +208,35 @@ const mapListingApiToDomain = (
 
 export class AdoptionGatewayAxios implements AdoptionGateway {
   constructor(private readonly http: AxiosInstance) {}
+
+  async createApplication(
+    input: CreateAdoptionApplicationInput,
+  ): Promise<CreateAdoptionApplicationOutput> {
+    const payload = {
+      listing_id: input.listingId,
+      motivation: input.motivation,
+      housing_type: input.housingType,
+      pet_experience: input.petExperience,
+      contact_phone: input.contactPhone,
+      family_members: input.familyMembers,
+      agrees_home_visit: input.agreesHomeVisit,
+      has_other_pets: input.hasOtherPets,
+    };
+
+    const { data } = await this.http.post<{
+      id?: string;
+      listing_id?: string;
+      applicant_user_id?: string;
+      status?: string;
+    }>("/adoption/applications", payload);
+
+    return {
+      id: data.id ?? "",
+      listingId: data.listing_id ?? input.listingId,
+      applicantUserId: data.applicant_user_id ?? "",
+      status: data.status ?? "pending",
+    };
+  }
 
   async listPublicListings(
     input?: ListPublicAdoptionListingsInput,
