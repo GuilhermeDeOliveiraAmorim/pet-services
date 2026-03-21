@@ -141,6 +141,179 @@ const docTemplate = `{
                 }
             }
         },
+        "/adoption/guardian-profile": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Cria um perfil de responsável por adoção vinculado ao usuário autenticado. Cada usuário pode ter apenas um perfil. Após criação, o perfil fica aguardando aprovação pelo administrador.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Adoção - Perfil do Responsável"
+                ],
+                "summary": "Cria o perfil de responsável por adoção do usuário autenticado",
+                "parameters": [
+                    {
+                        "description": "Dados do perfil de responsável",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/usecases.CreateAdoptionGuardianProfileInputBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/usecases.CreateAdoptionGuardianProfileOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/adoption/guardian-profile/me": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retorna os dados do perfil de responsável por adoção vinculado ao usuário autenticado, incluindo o status de aprovação.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Adoção - Perfil do Responsável"
+                ],
+                "summary": "Retorna o perfil de responsável por adoção do usuário autenticado",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/usecases.GetMyAdoptionGuardianProfileOutput"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Atualiza os dados do perfil de responsável por adoção vinculado ao usuário autenticado. Apenas os campos enviados no corpo são atualizados.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Adoção - Perfil do Responsável"
+                ],
+                "summary": "Atualiza o perfil de responsável por adoção do usuário autenticado",
+                "parameters": [
+                    {
+                        "description": "Dados a atualizar",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/usecases.UpdateAdoptionGuardianProfileInputBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/usecases.UpdateAdoptionGuardianProfileOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "consumes": [
@@ -3739,6 +3912,62 @@ const docTemplate = `{
                 }
             }
         },
+        "entities.AdoptionGuardianProfile": {
+            "type": "object",
+            "properties": {
+                "about": {
+                    "type": "string"
+                },
+                "active": {
+                    "type": "boolean"
+                },
+                "approval_status": {
+                    "type": "string"
+                },
+                "approved_at": {
+                    "type": "string"
+                },
+                "approved_by": {
+                    "type": "string"
+                },
+                "city_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "deactivated_at": {
+                    "type": "string"
+                },
+                "display_name": {
+                    "type": "string"
+                },
+                "document": {
+                    "type": "string"
+                },
+                "guardian_type": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "state_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "whatsapp": {
+                    "type": "string"
+                }
+            }
+        },
         "entities.Breed": {
             "type": "object",
             "properties": {
@@ -4568,6 +4797,49 @@ const docTemplate = `{
                 }
             }
         },
+        "usecases.CreateAdoptionGuardianProfileInputBody": {
+            "type": "object",
+            "properties": {
+                "about": {
+                    "type": "string"
+                },
+                "city_id": {
+                    "type": "string"
+                },
+                "display_name": {
+                    "type": "string"
+                },
+                "document": {
+                    "type": "string"
+                },
+                "guardian_type": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "state_id": {
+                    "type": "string"
+                },
+                "whatsapp": {
+                    "type": "string"
+                }
+            }
+        },
+        "usecases.CreateAdoptionGuardianProfileOutput": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "profile": {
+                    "$ref": "#/definitions/entities.AdoptionGuardianProfile"
+                }
+            }
+        },
         "usecases.CreateCategoryInput": {
             "type": "object",
             "properties": {
@@ -4703,6 +4975,14 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "usecases.GetMyAdoptionGuardianProfileOutput": {
+            "type": "object",
+            "properties": {
+                "profile": {
+                    "$ref": "#/definitions/entities.AdoptionGuardianProfile"
                 }
             }
         },
@@ -5397,6 +5677,46 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/entities.Tag"
                     }
+                }
+            }
+        },
+        "usecases.UpdateAdoptionGuardianProfileInputBody": {
+            "type": "object",
+            "properties": {
+                "about": {
+                    "type": "string"
+                },
+                "city_id": {
+                    "type": "string"
+                },
+                "display_name": {
+                    "type": "string"
+                },
+                "document": {
+                    "type": "string"
+                },
+                "guardian_type": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "state_id": {
+                    "type": "string"
+                },
+                "whatsapp": {
+                    "type": "string"
+                }
+            }
+        },
+        "usecases.UpdateAdoptionGuardianProfileOutput": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "profile": {
+                    "$ref": "#/definitions/entities.AdoptionGuardianProfile"
                 }
             }
         },

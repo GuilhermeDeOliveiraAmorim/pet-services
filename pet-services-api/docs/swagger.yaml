@@ -21,6 +21,43 @@ definitions:
       zip_code:
         type: string
     type: object
+  entities.AdoptionGuardianProfile:
+    properties:
+      about:
+        type: string
+      active:
+        type: boolean
+      approval_status:
+        type: string
+      approved_at:
+        type: string
+      approved_by:
+        type: string
+      city_id:
+        type: string
+      created_at:
+        type: string
+      deactivated_at:
+        type: string
+      display_name:
+        type: string
+      document:
+        type: string
+      guardian_type:
+        type: string
+      id:
+        type: string
+      phone:
+        type: string
+      state_id:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+      whatsapp:
+        type: string
+    type: object
   entities.Breed:
     properties:
       active:
@@ -559,6 +596,34 @@ definitions:
       message:
         type: string
     type: object
+  usecases.CreateAdoptionGuardianProfileInputBody:
+    properties:
+      about:
+        type: string
+      city_id:
+        type: string
+      display_name:
+        type: string
+      document:
+        type: string
+      guardian_type:
+        type: string
+      phone:
+        type: string
+      state_id:
+        type: string
+      whatsapp:
+        type: string
+    type: object
+  usecases.CreateAdoptionGuardianProfileOutput:
+    properties:
+      detail:
+        type: string
+      message:
+        type: string
+      profile:
+        $ref: '#/definitions/entities.AdoptionGuardianProfile'
+    type: object
   usecases.CreateCategoryInput:
     properties:
       is_admin:
@@ -646,6 +711,11 @@ definitions:
         type: string
       message:
         type: string
+    type: object
+  usecases.GetMyAdoptionGuardianProfileOutput:
+    properties:
+      profile:
+        $ref: '#/definitions/entities.AdoptionGuardianProfile'
     type: object
   usecases.GetPetOutput:
     properties:
@@ -1095,6 +1165,32 @@ definitions:
           $ref: '#/definitions/entities.Tag'
         type: array
     type: object
+  usecases.UpdateAdoptionGuardianProfileInputBody:
+    properties:
+      about:
+        type: string
+      city_id:
+        type: string
+      display_name:
+        type: string
+      document:
+        type: string
+      guardian_type:
+        type: string
+      phone:
+        type: string
+      state_id:
+        type: string
+      whatsapp:
+        type: string
+    type: object
+  usecases.UpdateAdoptionGuardianProfileOutput:
+    properties:
+      message:
+        type: string
+      profile:
+        $ref: '#/definitions/entities.AdoptionGuardianProfile'
+    type: object
   usecases.UpdatePetInputBody:
     properties:
       age:
@@ -1322,6 +1418,120 @@ paths:
       summary: Cria uma nova categoria de serviço
       tags:
       - Categorias
+  /adoption/guardian-profile:
+    post:
+      consumes:
+      - application/json
+      description: Cria um perfil de responsável por adoção vinculado ao usuário autenticado.
+        Cada usuário pode ter apenas um perfil. Após criação, o perfil fica aguardando
+        aprovação pelo administrador.
+      parameters:
+      - description: Dados do perfil de responsável
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.CreateAdoptionGuardianProfileInputBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/usecases.CreateAdoptionGuardianProfileOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Cria o perfil de responsável por adoção do usuário autenticado
+      tags:
+      - Adoção - Perfil do Responsável
+  /adoption/guardian-profile/me:
+    get:
+      description: Retorna os dados do perfil de responsável por adoção vinculado
+        ao usuário autenticado, incluindo o status de aprovação.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.GetMyAdoptionGuardianProfileOutput'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Retorna o perfil de responsável por adoção do usuário autenticado
+      tags:
+      - Adoção - Perfil do Responsável
+    put:
+      consumes:
+      - application/json
+      description: Atualiza os dados do perfil de responsável por adoção vinculado
+        ao usuário autenticado. Apenas os campos enviados no corpo são atualizados.
+      parameters:
+      - description: Dados a atualizar
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.UpdateAdoptionGuardianProfileInputBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.UpdateAdoptionGuardianProfileOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Atualiza o perfil de responsável por adoção do usuário autenticado
+      tags:
+      - Adoção - Perfil do Responsável
   /auth/login:
     post:
       consumes:
