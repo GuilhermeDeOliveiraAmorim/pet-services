@@ -1,6 +1,42 @@
 # Pet Services API
 
-API robusta e escalável para gerenciamento de serviços pet, desenvolvida em Go com arquitetura limpa. A plataforma conecta tutores de animais com prestadores de serviços qualificados, oferecendo funcionalidades completas de autenticação, gerenciamento de perfil, agendamento e avaliações.
+<details>
+<summary><strong>Sumário</strong> (clique para expandir)</summary>
+
+- [Visão Geral](#pet-services-api)
+- [Funcionalidades Principais](#🎯-funcionalidades-principais)
+- [Notificações por E-mail](#✉️-notificações-por-e-mail)
+- [Arquitetura](#📊-arquitetura)
+- [Stack Técnico](#🛠️-stack-técnico)
+- [Dependências](#📦-dependências-principais)
+- [Início Rápido](#🚀-início-rápido)
+- [Desenvolvimento](#🔄-desenvolvimento)
+- [Endpoints Principais](#📡-endpoints-principais)
+- [Autenticação e Autorização](#🔐-autenticação-e-autorização)
+- [Modelos de Dados](#💾-modelos-de-dados)
+- [Gerenciamento de Fotos](#🖼️-gerenciamento-de-fotos)
+- [Busca e Filtros](#🔍-busca-e-filtros)
+- [Soft Delete](#📝-soft-delete)
+- [Segurança](#🛡️-segurança)
+- [Migrações](#📊-migrações)
+- [Testes](#🧪-testes)
+- [Performance](#📈-performance)
+- [Deploy](#🚢-deploy)
+- [Logging](#🐛-logging)
+- [Respostas da API](#📚-estrutura-de-respostas)
+- [Contribuindo](#🤝-contribuindo)
+- [Armazenamento em Cloud](#☁️-armazenamento-em-cloud-google-cloud-storage)
+
+</details>
+
+API robusta e escalável para gerenciamento de serviços pet, desenvolvida em Go com Clean Architecture, foco em segurança, extensibilidade e observabilidade. A plataforma conecta tutores de animais, prestadores de serviços e administradores, com fluxos completos de autenticação, perfis, agendamento, avaliações e gestão de adoção.
+
+**Diferenciais:**
+
+- Clean Architecture (Go): separação clara de camadas, fácil manutenção e testes.
+- Observabilidade: logging estruturado, health checks, documentação Swagger.
+- Segurança: JWT, rate limiting, roles, soft delete, validações rígidas.
+- Pronto para produção: Docker, variáveis seguras, integração MinIO/GCS.
 
 ## 🎯 Funcionalidades Principais
 
@@ -71,10 +107,19 @@ API robusta e escalável para gerenciamento de serviços pet, desenvolvida em Go
 - ✅ Categorias de serviço (criação restrita a admins)
 - ✅ Tags para serviços
 
-### Admin
+### Admin & Fluxos Especiais
 
 - ✅ Criação de novos usuários admins
 - ✅ Criação e gerenciamento de categorias
+- ✅ Aprovação/rejeição de perfis sensíveis (ex: guardian)
+- ✅ Gerenciamento de adoção (listagens, candidaturas, status)
+
+### Adoção & Guardian (se aplicável)
+
+- ✅ Cadastro e atualização de perfil de responsável (guardian)
+- ✅ Criação e edição de listagens de adoção
+- ✅ Candidatura a adoção, revisão e status
+- ✅ Aprovação de perfis e candidaturas (admin)
 
 ### Infraestrutura
 
@@ -88,30 +133,46 @@ API robusta e escalável para gerenciamento de serviços pet, desenvolvida em Go
 
 ## ✉️ Notificações por E-mail
 
-### Eventos cobertos
+### Eventos cobertos (completos)
 
-- ✅ Verificação de e-mail no cadastro
-- ✅ Boas-vindas após verificação de conta
-- ✅ Solicitação de reset de senha
-- ✅ Confirmação de senha redefinida
-- ✅ Alerta de alteração de senha
-- ✅ Alerta por tentativa de login bloqueada
-- ✅ Conta desativada
-- ✅ Conta reativada
-- ✅ Conta removida (soft delete)
-- ✅ Nova solicitação recebida pelo provider
-- ✅ Confirmação de solicitação enviada para owner
-- ✅ Solicitação aceita
-- ✅ Solicitação rejeitada
-- ✅ Solicitação concluída
-- ✅ Notificação de nova review para provider
-- ✅ Lembrete de avaliação para owner após solicitação concluída
+- **Autenticação e Conta**
+  - Verificação de e-mail no cadastro
+  - Boas-vindas após verificação de conta
+  - Alerta de login bloqueado
+  - Solicitação de reset de senha
+  - Confirmação de senha redefinida
+  - Alerta de alteração de senha
+  - Conta desativada
+  - Conta reativada
+  - Conta removida (soft delete)
 
-### Lembrete de avaliação assíncrono
+- **Requisições de Serviço**
+  - Nova solicitação recebida pelo provider
+  - Confirmação de solicitação enviada para owner
+  - Solicitação aceita (owner)
+  - Solicitação rejeitada (owner)
+  - Solicitação concluída (owner)
 
-- O lembrete de avaliação é agendado em background após a conclusão da solicitação.
-- Antes de enviar, o sistema verifica se o owner já avaliou o provider.
-- Se já existir review, o lembrete não é enviado.
+- **Avaliações**
+  - Lembrete de avaliação para owner após solicitação concluída (assíncrono)
+  - Notificação de nova review recebida para provider
+
+- **Adoção & Guardian**
+  - Aprovação de perfil de responsável (guardian)
+  - Rejeição de perfil de responsável (guardian)
+  - Candidatura submetida (applicant)
+  - Candidatura recebida (guardian)
+  - Candidatura aprovada (applicant, com contato do guardian)
+  - Candidatura rejeitada (applicant)
+  - Candidatura retirada (guardian)
+  - Pet adotado (guardian)
+  - Pet adotado (applicant aprovado)
+  - Pet adotado (notificação para candidatos rejeitados)
+
+- **Administração**
+  - Notificações administrativas de aprovação/rejeição de perfis sensíveis
+
+> O lembrete de avaliação é agendado em background após a conclusão da solicitação. Antes de enviar, o sistema verifica se o owner já avaliou o provider. Se já existir review, o lembrete não é enviado.
 
 Variável de ambiente opcional:
 
@@ -123,6 +184,17 @@ REVIEW_REMINDER_DELAY_MINUTES=1440
 - O agendamento atual é em memória do processo da API. Em caso de restart antes do tempo de disparo, o lembrete pode não ser enviado.
 
 ## 📊 Arquitetura
+
+> **Padrão Clean Architecture:**
+>
+> - Handlers (entrada HTTP)
+> - Usecases (lógica de negócio)
+> - Repositories (persistência)
+> - Entities (domínio)
+> - Middlewares (autorização, rate limit, profile)
+> - Factories (injeção de dependências)
+> - Storage (MinIO/GCS)
+> - Mail (SMTP, eventos)
 
 A API segue os princípios de **Clean Architecture** com separação clara de responsabilidades:
 
@@ -210,6 +282,8 @@ cd pet-services/pet-services-api
 
 ### 2. Configure Variáveis de Ambiente
 
+> **Dica:** Use `.env.example` como base. Nunca suba secrets em repositórios públicos.
+
 Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
 
 ```bash
@@ -261,6 +335,8 @@ MAX_CHANGE_EMAIL_ATTEMPTS=3
 
 ### 3. Suba a Infraestrutura (Docker)
 
+> **Dica:** Use `docker-compose` para ambiente local completo (API, banco, storage, e-mail fake).
+
 ```bash
 cd ../pet-services-infra
 docker-compose up -d
@@ -287,6 +363,8 @@ make migrate
 ```
 
 ### 6. Inicie a API
+
+> **Swagger:** Documentação interativa em `http://localhost:8080/swagger/index.html`
 
 ```bash
 make run
@@ -328,6 +406,8 @@ make test-coverage
 
 ### Lint e Formatação
 
+> **Dica:** Use `make lint` e `make fmt` antes de commitar para manter o padrão do projeto.
+
 ```bash
 # Formatar código
 make fmt
@@ -345,6 +425,8 @@ make doc
 Isso gera/atualiza a documentação Swagger baseada nos comentários das handlers.
 
 ## 📡 Endpoints Principais
+
+> **Dica:** Veja exemplos completos e contratos no Swagger.
 
 ### Autenticação
 
@@ -427,6 +509,8 @@ Isso gera/atualiza a documentação Swagger baseada nos comentários das handler
 
 - `POST /admin` - Criar novo admin
 - `POST /admin/categories` - Criar categoria
+- `POST /adoption/admin/guardian-profiles/:id/approve` - Aprovar perfil de responsável (admin)
+- `POST /adoption/admin/guardian-profiles/:id/reject` - Rejeitar perfil de responsável (admin)
 
 ### Health Check
 
@@ -463,6 +547,8 @@ Isso gera/atualiza a documentação Swagger baseada nos comentários das handler
 - **StrictRateLimitMiddleware**: Limita endpoints sensíveis (10 req/min)
 
 ## 💾 Modelos de Dados
+
+> **Dica:** Veja detalhes e exemplos de payloads no Swagger.
 
 ### User
 
@@ -608,6 +694,13 @@ Quando um registro é deletado:
 
 ## 🛡️ Segurança
 
+> **Boas práticas:**
+>
+> - Use JWT_SECRET forte e rotacione periodicamente.
+> - Ative HTTPS em produção.
+> - Configure CORS restritivo.
+> - Use variáveis de ambiente para secrets.
+
 ### Senhas
 
 - Hashing com bcrypt
@@ -658,6 +751,8 @@ Para adicionar nova migração, crie função em `internal/database/migrations.g
 
 ## 🧪 Testes
 
+> **Cobertura:** Busque sempre >80% de cobertura para casos críticos.
+
 ### Estrutura
 
 ```bash
@@ -703,6 +798,8 @@ go test -bench=. -benchmem ./...
 ```
 
 ## 🚢 Deploy
+
+> **Dica:** Use Docker Compose para dev/local e pipelines CI/CD para produção.
 
 ### Docker
 
@@ -806,6 +903,8 @@ make dev
 - Use interfaces para dependências
 
 ### Commit Messages
+
+> Siga o padrão Conventional Commits para facilitar o changelog e automações.
 
 ```
 feat: adicionar endpoint de busca geoespacial
@@ -960,6 +1059,8 @@ go run ./scripts/migrate-to-gcs/main.go \
 ```
 
 #### 🏗️ Arquitetura de Armazenamento
+
+> **Dica:** Para produção, prefira GCS com bucket privado e rotação de chaves.
 
 Ambos os provedores implementam a interface `ObjectStorage`:
 
