@@ -129,5 +129,20 @@ func getMigrations() []Migration {
 			Description: "Criar tabela de raças, adicionar campo breed em pets e seed de raças para cachorro/gato",
 			Up:          Migration20260315000002,
 		},
+		{
+			Version:     "20260321000000",
+			Description: "Criar tabela adoption_guardian_profiles",
+			Up:          Migration20260321000000,
+		},
+		{
+			Version:     "20260321000001",
+			Description: "Criar tabela adoption_listings",
+			Up:          Migration20260321000001,
+		},
+		{
+			Version:     "20260321000002",
+			Description: "Criar tabelas adoption_applications e adoption_application_events",
+			Up:          Migration20260321000002,
+		},
 	}
 }
