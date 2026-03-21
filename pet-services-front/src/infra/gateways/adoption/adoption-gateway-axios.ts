@@ -11,6 +11,10 @@ import type {
   GetPublicAdoptionListingOutput,
   ListMyAdoptionApplicationsInput,
   ListMyAdoptionApplicationsOutput,
+  ListMyAdoptionListingsInput,
+  ListMyAdoptionListingsOutput,
+  ListAdoptionApplicationsByListingInput,
+  ListAdoptionApplicationsByListingOutput,
   ListPublicAdoptionListingsInput,
   ListPublicAdoptionListingsOutput,
   WithdrawAdoptionApplicationOutput,
@@ -244,6 +248,41 @@ const mapListingApiToDomain = (
 export class AdoptionGatewayAxios {
   constructor(private readonly http: AxiosInstance) {}
 
+  async listMyListings(
+    input?: ListMyAdoptionListingsInput,
+  ): Promise<ListMyAdoptionListingsOutput> {
+    const params: Record<string, number> = {};
+
+    if (input?.page) params.page = input.page;
+    if (input?.pageSize) params.page_size = input.pageSize;
+
+    const { data } = await this.http.get<{
+      listings?: AdoptionListingApi[];
+      pagination?: PaginationApi;
+    }>("/adoption/listings/me", { params });
+
+    const paginationApi = data.pagination ?? {};
+
+    return {
+      listings: (data.listings ?? []).map(mapListingApiToDomain),
+      pagination: {
+        currentPage:
+          paginationApi.currentPage ?? paginationApi.current_page ?? 1,
+        perPage:
+          paginationApi.perPage ??
+          paginationApi.per_page ??
+          input?.pageSize ??
+          10,
+        totalPages: paginationApi.totalPages ?? paginationApi.total_pages ?? 1,
+        totalRecords:
+          paginationApi.totalRecords ??
+          paginationApi.total_records ??
+          data.listings?.length ??
+          0,
+      },
+    };
+  }
+
   async getMyGuardianProfile(
     input?: GetMyAdoptionGuardianProfileInput,
   ): Promise<GetMyAdoptionGuardianProfileOutput | null> {
@@ -332,6 +371,52 @@ export class AdoptionGatewayAxios {
     return {
       applications,
       pagination,
+    };
+  }
+
+  async listApplicationsByListing(
+    input: ListAdoptionApplicationsByListingInput,
+  ): Promise<ListAdoptionApplicationsByListingOutput> {
+    const params: Record<string, number> = {};
+
+    if (input.page) params.page = input.page;
+    if (input.pageSize) params.page_size = input.pageSize;
+
+    const { data } = await this.http.get<{
+      applications?: AdoptionApplicationApi[];
+      pagination?: PaginationApi;
+    }>(`/adoption/listings/${input.listingId}/applications`, { params });
+
+    const applications: AdoptionApplicationItem[] = (
+      data.applications ?? []
+    ).map((item) => ({
+      id: item.id ?? "",
+      listingId: item.listingId ?? item.listing_id ?? "",
+      status: item.status ?? "",
+      motivation: item.motivation ?? "",
+      contactPhone: item.contactPhone ?? item.contact_phone ?? "",
+      reviewedAt: item.reviewedAt ?? item.reviewed_at ?? undefined,
+      createdAt: item.createdAt ?? item.created_at ?? "",
+    }));
+
+    const paginationApi = data.pagination ?? {};
+
+    return {
+      applications,
+      pagination: {
+        currentPage:
+          paginationApi.currentPage ?? paginationApi.current_page ?? 1,
+        perPage:
+          paginationApi.perPage ??
+          paginationApi.per_page ??
+          input.pageSize ??
+          10,
+        totalPages: paginationApi.totalPages ?? paginationApi.total_pages ?? 1,
+        totalRecords:
+          paginationApi.totalRecords ??
+          paginationApi.total_records ??
+          applications.length,
+      },
     };
   }
 
