@@ -11,6 +11,7 @@ import {
   BreedGatewayAxios,
   SpecieGatewayAxios,
   TagGatewayAxios,
+  AdoptionGatewayAxios,
   UserGatewayAxios,
 } from "../gateways";
 
@@ -31,5 +32,6 @@ export const createApiContext = (baseURL?: string) => {
     reviewGateway: new ReviewGatewayAxios(http),
     categoryGateway: new CategoryGatewayAxios(http),
     tagGateway: new TagGatewayAxios(http),
+    adoptionGateway: new AdoptionGatewayAxios(http),
   };
 };
