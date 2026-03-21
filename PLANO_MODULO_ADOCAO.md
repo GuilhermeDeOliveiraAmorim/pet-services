@@ -52,38 +52,41 @@ Registro do progresso real de implementação por camada.
 | `ListAdoptionApplicationsByListing` | ✅ Implementado |
 | `ReviewAdoptionApplication`         | ✅ Implementado |
 | `WithdrawAdoptionApplication`       | ✅ Implementado |
-| `MarkAdoptionListingAsAdopted`      | ⏳ Pendente     |
-| `ApproveAdoptionGuardianProfile`    | ⏳ Pendente     |
-| `RejectAdoptionGuardianProfile`     | ⏳ Pendente     |
+| `MarkAdoptionListingAsAdopted`      | ✅ Implementado |
+| `ApproveAdoptionGuardianProfile`    | ✅ Implementado |
+| `RejectAdoptionGuardianProfile`     | ✅ Implementado |
 
 ### Factories, handlers e rotas
 
 | Artefato                                         | Status                  |
 | ------------------------------------------------ | ----------------------- |
-| `factories/adoption_guardian_factory.go`         | ✅ Criado (3 use cases) |
-| `factories/adoption_listing_factory.go`          | ✅ Criado (6 use cases) |
+| `factories/adoption_guardian_factory.go`         | ✅ Criado (5 use cases) |
+| `factories/adoption_listing_factory.go`          | ✅ Criado (7 use cases) |
 | `factories/adoption_application_factory.go`      | ✅ Criado (5 use cases) |
-| `handlers/adoption_guardian_handler.go`          | ✅ Criado (3 handlers)  |
-| `handlers/adoption_listing_handler.go`           | ✅ Criado (6 handlers)  |
+| `handlers/adoption_guardian_handler.go`          | ✅ Criado (5 handlers)  |
+| `handlers/adoption_listing_handler.go`           | ✅ Criado (7 handlers)  |
 | `handlers/adoption_application_handler.go`       | ✅ Criado (5 handlers)  |
 | `middlewares/AdoptionGuardianApprovedMiddleware` | ✅ Criado               |
 
 ### Rotas registradas
 
-| Método  | Rota                                          | Status   |
-| ------- | --------------------------------------------- | -------- |
-| `POST`  | `/adoption/guardian-profile`                  | ✅ Ativa |
-| `GET`   | `/adoption/guardian-profile/me`               | ✅ Ativa |
-| `PUT`   | `/adoption/guardian-profile/me`               | ✅ Ativa |
-| `POST`  | `/adoption/listings`                          | ✅ Ativa |
-| `GET`   | `/adoption/listings`                          | ✅ Ativa |
-| `GET`   | `/adoption/listings/:listing_id`              | ✅ Ativa |
-| `GET`   | `/adoption/listings/me`                       | ✅ Ativa |
-| `PUT`   | `/adoption/listings/:listing_id`              | ✅ Ativa |
-| `PATCH` | `/adoption/listings/:listing_id/:action`      | ✅ Ativa |
-| `POST`  | `/adoption/applications`                      | ✅ Ativa |
-| `GET`   | `/adoption/applications/me`                   | ✅ Ativa |
-| `GET`   | `/adoption/listings/:listing_id/applications` | ✅ Ativa |
+| Método  | Rota                                            | Status   |
+| ------- | ----------------------------------------------- | -------- |
+| `POST`  | `/adoption/guardian-profile`                    | ✅ Ativa |
+| `GET`   | `/adoption/guardian-profile/me`                 | ✅ Ativa |
+| `PUT`   | `/adoption/guardian-profile/me`                 | ✅ Ativa |
+| `POST`  | `/adoption/listings`                            | ✅ Ativa |
+| `GET`   | `/adoption/listings`                            | ✅ Ativa |
+| `GET`   | `/adoption/listings/:listing_id`                | ✅ Ativa |
+| `GET`   | `/adoption/listings/me`                         | ✅ Ativa |
+| `PUT`   | `/adoption/listings/:listing_id`                | ✅ Ativa |
+| `PATCH` | `/adoption/listings/:listing_id/:action`        | ✅ Ativa |
+| `POST`  | `/adoption/applications`                        | ✅ Ativa |
+| `GET`   | `/adoption/applications/me`                     | ✅ Ativa |
+| `GET`   | `/adoption/listings/:listing_id/applications`   | ✅ Ativa |
+| `POST`  | `/adoption/listings/:id/mark-adopted`           | ✅ Ativa |
+| `POST`  | `/adoption/admin/guardian-profiles/:id/approve` | ✅ Ativa |
+| `POST`  | `/adoption/admin/guardian-profiles/:id/reject`  | ✅ Ativa |
 
 ### Swagger
 
