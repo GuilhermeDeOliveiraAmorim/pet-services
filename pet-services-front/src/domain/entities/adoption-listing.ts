@@ -59,6 +59,7 @@ export interface AdoptionListing extends Base {
   cityId: string;
   latitude?: number;
   longitude?: number;
+  vaccinated: boolean;
   goodWithChildren: boolean;
   goodWithDogs: boolean;
   goodWithCats: boolean;
