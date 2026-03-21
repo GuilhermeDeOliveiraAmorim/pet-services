@@ -74,10 +74,16 @@ export default function MainNav({
   const navItems = [
     ...baseNavItems,
     ...(isAuthenticated
+      ? [{ label: "Perfil de guardião", href: "/adoption/guardian" }]
+      : []),
+    ...(isAuthenticated
       ? [{ label: "Minhas candidaturas", href: "/adoption/applications" }]
       : []),
     ...(isApprovedGuardian
       ? [{ label: "Meus anúncios", href: "/adoption/listings/me" }]
+      : []),
+    ...(isApprovedGuardian
+      ? [{ label: "Novo anúncio", href: "/adoption/listings/new" }]
       : []),
     ...(isAuthenticated ? [{ label: "Perfil", href: "/profile" }] : []),
     ...(isAuthenticated ? [{ label: "Configurações", href: "/settings" }] : []),
