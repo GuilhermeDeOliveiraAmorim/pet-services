@@ -24,14 +24,13 @@ type EmailService interface {
 	SendRequestCompletedEmail(to, ownerName, providerName, petName, requestID string) error
 	SendReviewReminderEmail(to, ownerName, providerName, petName, requestID string) error
 	SendReviewReceivedEmail(to, providerName, ownerName string, rating float64, comment string) error
-
-	// Adoption Module
 	SendAdoptionGuardianProfileApprovedEmail(to, name string) error
 	SendAdoptionGuardianProfileRejectedEmail(to, name, reason string) error
 	SendAdoptionApplicationSubmittedEmail(to, applicantName, petName string) error
 	SendAdoptionApplicationReceivedGuardianEmail(to, guardianName, applicantName, petName string) error
 	SendAdoptionApplicationApprovedEmail(to, applicantName, petName, guardianContact string) error
 	SendAdoptionApplicationRejectedEmail(to, applicantName, petName string) error
+	SendAdoptionApplicationWithdrawnGuardianEmail(to, guardianName, applicantName, petName string) error
 	SendPetAdoptedGuardianEmail(to, guardianName, petName string) error
 	SendPetAdoptedApplicantEmail(to, applicantName, petName string) error
 	SendPetAdoptedRejectedApplicantsEmail(to, petName string) error
@@ -1312,6 +1311,57 @@ func (s *SMTPEmailService) SendPetAdoptedRejectedApplicantsEmail(to, petName str
 </body>
 </html>
 `, html.EscapeString(petName))
+
+	return s.sendEmail(to, subject, body)
+}
+
+func (s *SMTPEmailService) SendAdoptionApplicationWithdrawnGuardianEmail(to, guardianName, applicantName, petName string) error {
+	subject := "Candidato retirou a candidatura - Pet Services"
+
+	body := fmt.Sprintf(`
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+		body { margin: 0; padding: 0; background-color: #f4f7fb; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif; color: #1f2937; }
+		.wrapper { width: 100%%; padding: 28px 12px; }
+		.container { max-width: 620px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; }
+		.header { padding: 28px 24px; text-align: center; color: #ffffff; background: linear-gradient(135deg, #6b7280 0%%, #9ca3af 100%%); }
+		.header h1 { margin: 0; font-size: 26px; line-height: 1.2; }
+		.content { padding: 28px 24px; font-size: 16px; line-height: 1.6; }
+		.content p { margin: 0 0 14px 0; }
+		.details { background-color: #f3f4f6; border: 1px solid #d1d5db; border-radius: 10px; padding: 14px; margin: 18px 0; }
+		.callout { background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 14px; margin: 18px 0; }
+		.footer { text-align: center; padding: 20px 16px 26px 16px; font-size: 12px; color: #6b7280; }
+	</style>
+</head>
+<body>
+	<div class="wrapper">
+		<div class="container">
+			<div class="header">
+				<h1>Candidatura retirada</h1>
+			</div>
+			<div class="content">
+				<p>Ola %s,</p>
+				<p>Informamos que um candidato retirou sua candidatura ao seu anuncio de adocao.</p>
+				<div class="details">
+					<p><strong>Candidato:</strong> %s</p>
+					<p><strong>Anuncio:</strong> %s</p>
+				</div>
+				<div class="callout">
+					<p>Seu anuncio continua ativo e outros candidatos podem se inscrever. Acesse o painel para acompanhar as candidaturas restantes.</p>
+				</div>
+			</div>
+			<div class="footer">
+				&copy; 2026 Pet Services. Todos os direitos reservados.
+			</div>
+		</div>
+	</div>
+</body>
+</html>
+`, html.EscapeString(guardianName), html.EscapeString(applicantName), html.EscapeString(petName))
 
 	return s.sendEmail(to, subject, body)
 }

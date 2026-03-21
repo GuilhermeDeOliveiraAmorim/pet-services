@@ -49,7 +49,6 @@ func NewMarkAdoptionListingAsAdoptedUseCase(
 }
 
 func (u *MarkAdoptionListingAsAdoptedUseCase) Execute(ctx context.Context, input MarkAdoptionListingAsAdoptedInput) (*MarkAdoptionListingAsAdoptedOutput, []exceptions.ProblemDetails) {
-	// Buscar anúncio
 	listing, err := u.listingRepository.FindByID(input.ListingID)
 	if err != nil {
 		if errors.Is(err, errors.New(consts.AdoptionListingNotFoundError)) {
@@ -63,15 +62,12 @@ func (u *MarkAdoptionListingAsAdoptedUseCase) Execute(ctx context.Context, input
 		return nil, []exceptions.ProblemDetails{problem}
 	}
 
-	// Verificar se pertence ao perfil de guardian
 	if listing.GuardianProfileID != input.GuardianProfileID {
 		return nil, u.logger.LogForbidden(ctx, "MarkAdoptionListingAsAdoptedUseCase", "Permissão negada", errors.New("Você não tem permissão para marcar este anúncio como adotado"))
 	}
 
-	// Marcar como adotado
 	listing.MarkAdopted()
 
-	// Persistir
 	if err := u.listingRepository.Update(listing); err != nil {
 		problem := exceptions.NewProblemDetails(exceptions.InternalServerError, exceptions.ErrorMessage{
 			Title:  "Erro ao atualizar anúncio",
@@ -83,9 +79,8 @@ func (u *MarkAdoptionListingAsAdoptedUseCase) Execute(ctx context.Context, input
 
 	u.logger.LogInfo(ctx, "MarkAdoptionListingAsAdoptedUseCase", "Anúncio "+input.ListingID+" marcado como adotado")
 
-	// Enviar emails de celebração
 	go func() {
-		// Email ao guardian
+
 		guardian, err := u.guardianRepository.FindByID(listing.GuardianProfileID)
 		if err == nil && guardian != nil {
 			guardianUser, err := u.userRepository.FindByID(guardian.UserID)
@@ -96,19 +91,18 @@ func (u *MarkAdoptionListingAsAdoptedUseCase) Execute(ctx context.Context, input
 			}
 		}
 
-		// Buscar e enviar emails aos candidatos
 		applications, _, err := u.applicationRepository.ListByListingID(listing.ID, 1, 100)
 		if err == nil && applications != nil {
 			for _, app := range applications {
 				applicantUser, err := u.userRepository.FindByID(app.ApplicantUserID)
 				if err == nil && applicantUser != nil {
 					if app.Status == "accepted" {
-						// Email ao candidato aprovado (adotou)
+
 						if err := u.emailService.SendPetAdoptedApplicantEmail(applicantUser.Login.Email, applicantUser.Name, listing.Title); err != nil {
 							u.logger.LogError(ctx, "MarkAdoptionListingAsAdoptedUseCase", "Erro ao enviar email ao adotante", err)
 						}
 					} else if app.Status != "rejected" && app.Status != "withdrawn" {
-						// Email aos outros candidatos (listem) que não foram os escolhidos
+
 						if err := u.emailService.SendPetAdoptedRejectedApplicantsEmail(applicantUser.Login.Email, listing.Title); err != nil {
 							u.logger.LogError(ctx, "MarkAdoptionListingAsAdoptedUseCase", "Erro ao enviar email aos candidatos não selecionados", err)
 						}

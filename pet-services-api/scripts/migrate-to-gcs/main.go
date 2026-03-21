@@ -30,7 +30,6 @@ func main() {
 
 	ctx := context.Background()
 
-	// Initialize MinIO client
 	minioClient, err := minio.New(*minioEndpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(*minioAccessKey, *minioSecretKey, ""),
 		Secure: false,
@@ -39,7 +38,6 @@ func main() {
 		log.Fatalf("Erro ao conectar MinIO: %v", err)
 	}
 
-	// Initialize GCS client
 	gcsClient, err := storage.NewClient(ctx)
 	if err != nil {
 		log.Fatalf("Erro ao criar cliente GCS: %v", err)
@@ -48,7 +46,6 @@ func main() {
 
 	gcsBucketHandle := gcsClient.Bucket(*gcsBucket)
 
-	// List and migrate all objects from MinIO
 	objectsCh := minioClient.ListObjects(ctx, *minioBucket, minio.ListObjectsOptions{
 		Recursive: true,
 	})
@@ -66,7 +63,6 @@ func main() {
 		objectName := object.Key
 		fmt.Printf("Migrando: %s... ", objectName)
 
-		// Download from MinIO
 		reader, err := minioClient.GetObject(ctx, *minioBucket, objectName, minio.GetObjectOptions{})
 		if err != nil {
 			fmt.Printf("ERRO (download): %v\n", err)
@@ -75,11 +71,9 @@ func main() {
 		}
 		defer reader.Close()
 
-		// Upload to GCS
 		wctx, cancel := context.WithCancel(ctx)
 		w := gcsBucketHandle.Object(objectName).NewWriter(wctx)
 
-		// Preserve content type if available
 		if object.ContentType != "" {
 			w.ContentType = object.ContentType
 		}

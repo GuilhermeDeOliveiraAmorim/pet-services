@@ -102,7 +102,6 @@ func (uc *ListServicesUseCase) Execute(ctx context.Context, input ListServicesIn
 
 	serviceItems := make([]*ServiceListItem, len(services))
 	for i, svc := range services {
-		// Buscar dados do provider
 		businessName := ""
 		averageRating := 0.0
 		reviewCount := 0
@@ -113,7 +112,6 @@ func (uc *ListServicesUseCase) Execute(ctx context.Context, input ListServicesIn
 			reviewCount = len(provider.Reviews)
 		}
 
-		// Assinar URLs das fotos
 		if len(svc.Photos) > 0 {
 			for j := range svc.Photos {
 				key := svc.Photos[j].URL

@@ -13,7 +13,7 @@ import (
 type ChangeAdoptionListingStatusInput struct {
 	ListingID         string `json:"listing_id"`
 	GuardianProfileID string `json:"guardian_profile_id"`
-	Action            string `json:"action"` // publish | pause
+	Action            string `json:"action"`
 }
 
 type ChangeAdoptionListingStatusOutput struct {

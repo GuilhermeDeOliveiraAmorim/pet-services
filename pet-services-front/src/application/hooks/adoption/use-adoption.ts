@@ -8,15 +8,29 @@ import {
 } from "@tanstack/react-query";
 
 import {
+  type ChangeAdoptionListingStatusInput,
+  type ChangeAdoptionListingStatusOutput,
+  type CreateAdoptionGuardianProfileInput,
+  type CreateAdoptionGuardianProfileOutput,
+  type CreateAdoptionListingInput,
+  type CreateAdoptionListingOutput,
   type ListAdoptionApplicationsByListingInput,
   type ListAdoptionApplicationsByListingOutput,
   type ListMyAdoptionApplicationsInput,
   type ListMyAdoptionApplicationsOutput,
   type ListMyAdoptionListingsInput,
   type ListMyAdoptionListingsOutput,
+  type MarkAdoptionListingAsAdoptedInput,
+  type MarkAdoptionListingAsAdoptedOutput,
   type CreateAdoptionApplicationInput,
   type CreateAdoptionApplicationOutput,
   type GetMyAdoptionGuardianProfileOutput,
+  type ReviewAdoptionApplicationInput,
+  type ReviewAdoptionApplicationOutput,
+  type UpdateAdoptionGuardianProfileInput,
+  type UpdateAdoptionGuardianProfileOutput,
+  type UpdateAdoptionListingInput,
+  type UpdateAdoptionListingOutput,
   type WithdrawAdoptionApplicationInput,
   type WithdrawAdoptionApplicationOutput,
   createAdoptionCases,
@@ -52,6 +66,69 @@ type CreateAdoptionApplicationOptions = Omit<
     CreateAdoptionApplicationOutput,
     Error,
     CreateAdoptionApplicationInput
+  >,
+  "mutationFn"
+>;
+
+type CreateAdoptionGuardianProfileOptions = Omit<
+  UseMutationOptions<
+    CreateAdoptionGuardianProfileOutput,
+    Error,
+    CreateAdoptionGuardianProfileInput
+  >,
+  "mutationFn"
+>;
+
+type UpdateAdoptionGuardianProfileOptions = Omit<
+  UseMutationOptions<
+    UpdateAdoptionGuardianProfileOutput,
+    Error,
+    UpdateAdoptionGuardianProfileInput
+  >,
+  "mutationFn"
+>;
+
+type CreateAdoptionListingOptions = Omit<
+  UseMutationOptions<
+    CreateAdoptionListingOutput,
+    Error,
+    CreateAdoptionListingInput
+  >,
+  "mutationFn"
+>;
+
+type UpdateAdoptionListingOptions = Omit<
+  UseMutationOptions<
+    UpdateAdoptionListingOutput,
+    Error,
+    UpdateAdoptionListingInput
+  >,
+  "mutationFn"
+>;
+
+type ChangeAdoptionListingStatusOptions = Omit<
+  UseMutationOptions<
+    ChangeAdoptionListingStatusOutput,
+    Error,
+    ChangeAdoptionListingStatusInput
+  >,
+  "mutationFn"
+>;
+
+type ReviewAdoptionApplicationOptions = Omit<
+  UseMutationOptions<
+    ReviewAdoptionApplicationOutput,
+    Error,
+    ReviewAdoptionApplicationInput
+  >,
+  "mutationFn"
+>;
+
+type MarkAdoptionListingAsAdoptedOptions = Omit<
+  UseMutationOptions<
+    MarkAdoptionListingAsAdoptedOutput,
+    Error,
+    MarkAdoptionListingAsAdoptedInput
   >,
   "mutationFn"
 >;
@@ -126,6 +203,156 @@ export const useAdoptionApplicationCreate = (
     onSuccess: async (...args) => {
       await queryClient.invalidateQueries({
         queryKey: ADOPTION_KEYS.myApplicationsLists(),
+      });
+      await options?.onSuccess?.(...args);
+    },
+    ...options,
+  });
+};
+
+export const useAdoptionGuardianProfileCreate = (
+  options?: CreateAdoptionGuardianProfileOptions,
+) => {
+  const queryClient = useQueryClient();
+  const { createAdoptionGuardianProfile } = useAdoptionUseCases();
+
+  return useMutation({
+    mutationFn: (input) => createAdoptionGuardianProfile.execute(input),
+    onSuccess: async (...args) => {
+      await queryClient.invalidateQueries({
+        queryKey: ADOPTION_KEYS.myGuardianProfile(),
+      });
+      await options?.onSuccess?.(...args);
+    },
+    ...options,
+  });
+};
+
+export const useAdoptionGuardianProfileUpdate = (
+  options?: UpdateAdoptionGuardianProfileOptions,
+) => {
+  const queryClient = useQueryClient();
+  const { updateAdoptionGuardianProfile } = useAdoptionUseCases();
+
+  return useMutation({
+    mutationFn: (input) => updateAdoptionGuardianProfile.execute(input),
+    onSuccess: async (...args) => {
+      await queryClient.invalidateQueries({
+        queryKey: ADOPTION_KEYS.myGuardianProfile(),
+      });
+      await options?.onSuccess?.(...args);
+    },
+    ...options,
+  });
+};
+
+export const useAdoptionListingCreate = (
+  options?: CreateAdoptionListingOptions,
+) => {
+  const queryClient = useQueryClient();
+  const { createAdoptionListing } = useAdoptionUseCases();
+
+  return useMutation({
+    mutationFn: (input) => createAdoptionListing.execute(input),
+    onSuccess: async (...args) => {
+      await queryClient.invalidateQueries({
+        queryKey: ADOPTION_KEYS.myListingsLists(),
+      });
+      await options?.onSuccess?.(...args);
+    },
+    ...options,
+  });
+};
+
+export const useAdoptionListingUpdate = (
+  options?: UpdateAdoptionListingOptions,
+) => {
+  const queryClient = useQueryClient();
+  const { updateAdoptionListing } = useAdoptionUseCases();
+
+  return useMutation({
+    mutationFn: (input) => updateAdoptionListing.execute(input),
+    onSuccess: async (...args) => {
+      const [, variables] = args;
+      await queryClient.invalidateQueries({
+        queryKey: ADOPTION_KEYS.myListingsLists(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ADOPTION_KEYS.detail(variables.listingId),
+      });
+      await options?.onSuccess?.(...args);
+    },
+    ...options,
+  });
+};
+
+export const useAdoptionListingStatusChange = (
+  options?: ChangeAdoptionListingStatusOptions,
+) => {
+  const queryClient = useQueryClient();
+  const { changeAdoptionListingStatus } = useAdoptionUseCases();
+
+  return useMutation({
+    mutationFn: (input) => changeAdoptionListingStatus.execute(input),
+    onSuccess: async (...args) => {
+      const [, variables] = args;
+      await queryClient.invalidateQueries({
+        queryKey: ADOPTION_KEYS.myListingsLists(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ADOPTION_KEYS.detail(variables.listingId),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ADOPTION_KEYS.lists(),
+      });
+      await options?.onSuccess?.(...args);
+    },
+    ...options,
+  });
+};
+
+export const useAdoptionApplicationReview = (
+  options?: ReviewAdoptionApplicationOptions,
+) => {
+  const queryClient = useQueryClient();
+  const { reviewAdoptionApplication } = useAdoptionUseCases();
+
+  return useMutation({
+    mutationFn: (input) => reviewAdoptionApplication.execute(input),
+    onSuccess: async (...args) => {
+      await queryClient.invalidateQueries({
+        queryKey: ADOPTION_KEYS.listingApplicationsLists(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ADOPTION_KEYS.myListingsLists(),
+      });
+      await options?.onSuccess?.(...args);
+    },
+    ...options,
+  });
+};
+
+export const useAdoptionListingMarkAsAdopted = (
+  options?: MarkAdoptionListingAsAdoptedOptions,
+) => {
+  const queryClient = useQueryClient();
+  const { markAdoptionListingAsAdopted } = useAdoptionUseCases();
+
+  return useMutation({
+    mutationFn: (input) => markAdoptionListingAsAdopted.execute(input),
+    onSuccess: async (...args) => {
+      const [, variables] = args;
+      await queryClient.invalidateQueries({
+        queryKey: ADOPTION_KEYS.myListingsLists(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ADOPTION_KEYS.detail(variables.listingId),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ADOPTION_KEYS.listingApplicationsLists(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ADOPTION_KEYS.lists(),
       });
       await options?.onSuccess?.(...args);
     },

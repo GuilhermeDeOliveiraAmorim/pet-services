@@ -153,7 +153,6 @@ func (r *serviceRepository) Search(query, categoryID, tagID string, latitude, lo
 		Where("providers.active = ?", true).
 		Where("services.active = ?", true)
 
-	// Busca textual por serviço, profissional e localização
 	if query != "" {
 		searchPattern := "%" + query + "%"
 		baseQuery = baseQuery.Where(
@@ -166,27 +165,22 @@ func (r *serviceRepository) Search(query, categoryID, tagID string, latitude, lo
 		)
 	}
 
-	// Filtro por categoria
 	if categoryID != "" {
 		baseQuery = baseQuery.Joins("INNER JOIN service_categories ON service_categories.service_id = services.id").
 			Where("service_categories.category_id = ?", categoryID)
 	}
 
-	// Filtro por tag
 	if tagID != "" {
 		baseQuery = baseQuery.Joins("INNER JOIN service_tags ON service_tags.service_id = services.id").
 			Where("service_tags.tag_id = ?", tagID)
 	}
 
-	// Busca geoespacial por raio
 	if latitude != 0 && longitude != 0 && radiusKm > 0 {
-		// Fórmula Haversine para calcular distância em km
-		// earthRadiusKm = 6371
+
 		baseQuery = baseQuery.Where("(6371 * acos(cos(radians(?)) * cos(radians(providers.latitude)) * cos(radians(providers.longitude) - radians(?)) + sin(radians(?)) * sin(radians(providers.latitude)))) <= ?",
 			latitude, longitude, latitude, radiusKm)
 	}
 
-	// Filtro por faixa de preço
 	if priceMin > 0 {
 		baseQuery = baseQuery.Where("services.price_minimum >= ?", priceMin)
 	}
@@ -195,12 +189,10 @@ func (r *serviceRepository) Search(query, categoryID, tagID string, latitude, lo
 		baseQuery = baseQuery.Where("services.price_maximum <= ?", priceMax)
 	}
 
-	// Contar total de resultados
 	if err := baseQuery.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
-	// Aplicar paginação e ordenação
 	offset := (page - 1) * pageSize
 	if err := baseQuery.Order("services.created_at DESC").
 		Offset(offset).
