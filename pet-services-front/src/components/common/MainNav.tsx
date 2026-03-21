@@ -20,6 +20,7 @@ import Image from "next/image";
 
 const baseNavItems = [
   { label: "Encontre Serviços", href: "/services" },
+  { label: "Adote um Pet", href: "/adoption" },
   { label: "Seja um Parceiro", href: "/partner" },
 ];
 
