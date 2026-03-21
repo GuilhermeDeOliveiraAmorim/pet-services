@@ -54,7 +54,9 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	handlerFactory := handlers.NewHandlerFactory(storageInput, logger)
 	middlewareFactory := middlewares.NewMiddlewareFactory(logger)
 	userRepo := repository_impl.NewUserRepository(storageInput.DB)
+	guardianRepo := repository_impl.NewAdoptionGuardianProfileRepository(storageInput.DB)
 	profileComplete := middlewares.ProfileCompleteMiddleware(logger, userRepo)
+	guardianApproved := middlewareFactory.AdoptionGuardianApprovedMiddleware(guardianRepo)
 
 	r := gin.Default()
 
@@ -231,6 +233,45 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	{
 		authorizedAdmin.POST("", handlerFactory.UserHandler.CreateAdmin)
 		authorizedAdmin.POST("/categories", handlerFactory.CategoryHandler.CreateCategory)
+	}
+
+	adoptionGuardian := r.Group("/adoption/guardian-profile")
+	adoptionGuardian.Use(middlewareFactory.AuthMiddleware(), profileComplete)
+	{
+		adoptionGuardian.POST("", handlerFactory.AdoptionGuardianHandler.CreateAdoptionGuardianProfile)
+		adoptionGuardian.GET("/me", handlerFactory.AdoptionGuardianHandler.GetMyAdoptionGuardianProfile)
+		adoptionGuardian.PUT("/me", handlerFactory.AdoptionGuardianHandler.UpdateAdoptionGuardianProfile)
+	}
+
+	r.GET("/adoption/listings", handlerFactory.AdoptionListingHandler.ListPublicAdoptionListings)
+	r.GET("/adoption/listings/:listing_id", handlerFactory.AdoptionListingHandler.GetPublicAdoptionListing)
+
+	// Rotas protegidas para candidaturas
+	adoptionApplications := r.Group("/adoption/applications")
+	adoptionApplications.Use(middlewareFactory.AuthMiddleware())
+	{
+		adoptionApplications.POST("", handlerFactory.AdoptionApplicationHandler.CreateAdoptionApplication)
+		adoptionApplications.GET("/me", handlerFactory.AdoptionApplicationHandler.ListMyAdoptionApplications)
+		adoptionApplications.POST("/:application_id/review", handlerFactory.AdoptionApplicationHandler.ReviewAdoptionApplication)
+		adoptionApplications.POST("/:application_id/withdraw", handlerFactory.AdoptionApplicationHandler.WithdrawAdoptionApplication)
+	}
+
+	adoptionListings := r.Group("/adoption/listings")
+	adoptionListings.Use(middlewareFactory.AuthMiddleware(), profileComplete, guardianApproved)
+	{
+		adoptionListings.POST("", handlerFactory.AdoptionListingHandler.CreateAdoptionListing)
+		adoptionListings.GET("/me", handlerFactory.AdoptionListingHandler.ListMyAdoptionListings)
+		adoptionListings.PUT("/:listing_id", handlerFactory.AdoptionListingHandler.UpdateAdoptionListing)
+		adoptionListings.PATCH("/:listing_id/:action", handlerFactory.AdoptionListingHandler.ChangeAdoptionListingStatus)
+		adoptionListings.GET("/:listing_id/applications", handlerFactory.AdoptionApplicationHandler.ListAdoptionApplicationsByListing)
+		adoptionListings.POST("/:id/mark-adopted", handlerFactory.AdoptionListingHandler.MarkAdoptionListingAsAdopted)
+	}
+
+	adoptionAdminGuardian := r.Group("/adoption/admin/guardian-profiles")
+	adoptionAdminGuardian.Use(middlewareFactory.AuthMiddleware(), middlewareFactory.AdminOnlyMiddleware())
+	{
+		adoptionAdminGuardian.POST("/:id/approve", handlerFactory.AdoptionGuardianHandler.ApproveAdoptionGuardianProfile)
+		adoptionAdminGuardian.POST("/:id/reject", handlerFactory.AdoptionGuardianHandler.RejectAdoptionGuardianProfile)
 	}
 
 	return r

@@ -10,4 +10,8 @@ const (
 	CategoryNotFoundError = "categoria não encontrada"
 	RequestNotFoundError  = "request not found"
 	PhotoNotFoundError    = "foto não encontrada"
+
+	AdoptionGuardianProfileNotFoundError = "perfil de responsável por adoção não encontrado"
+	AdoptionListingNotFoundError         = "anúncio de adoção não encontrado"
+	AdoptionApplicationNotFoundError     = "candidatura de adoção não encontrada"
 )

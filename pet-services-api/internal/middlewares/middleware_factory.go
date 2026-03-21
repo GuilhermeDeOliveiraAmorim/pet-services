@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"pet-services-api/internal/entities"
 	"pet-services-api/internal/logging"
 
 	"github.com/gin-gonic/gin"
@@ -40,4 +41,8 @@ func (f *MiddlewareFactory) StrictRateLimitMiddleware() gin.HandlerFunc {
 
 func (f *MiddlewareFactory) RateLimitMiddleware(config RateLimiterConfig) gin.HandlerFunc {
 	return RateLimitMiddleware(config, f.Logger)
+}
+
+func (f *MiddlewareFactory) AdoptionGuardianApprovedMiddleware(guardianRepo entities.AdoptionGuardianProfileRepository) gin.HandlerFunc {
+	return AdoptionGuardianApprovedMiddleware(f.Logger, guardianRepo)
 }
