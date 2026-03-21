@@ -10,3 +10,4 @@ export { RequestGatewayAxios } from "./request/request-gateway-axios";
 export { ReviewGatewayAxios } from "./review/review-gateway-axios";
 export { CategoryGatewayAxios } from "./category/category-gateway-axios";
 export { TagGatewayAxios } from "./tag/tag-gateway-axios";
+export { AdoptionGatewayAxios } from "./adoption/adoption-gateway-axios";

@@ -13,13 +13,19 @@ import {
   VStack,
 } from "@chakra-ui/react";
 
-import { useAuthLogout, useAuthSession, useUserProfile } from "@/application";
+import {
+  useAuthLogout,
+  useAuthSession,
+  useGuardianStatus,
+  useUserProfile,
+} from "@/application";
 import { UserTypes } from "@/domain";
 
 import Image from "next/image";
 
 const baseNavItems = [
   { label: "Encontre Serviços", href: "/services" },
+  { label: "Adote um Pet", href: "/adoption" },
   { label: "Seja um Parceiro", href: "/partner" },
 ];
 
@@ -40,17 +46,39 @@ export default function MainNav({
   const { session, isAuthenticated, isHydrated, clearSession } =
     useAuthSession();
   const { data: profileData } = useUserProfile({ enabled: isAuthenticated });
+  const { isApprovedGuardian } = useGuardianStatus({
+    enabled: isAuthenticated,
+  });
   const { mutateAsync: logout, isPending } = useAuthLogout();
   const registerHref = pathname?.startsWith("/partner")
     ? "/register?user_type=provider"
     : "/register";
-  const isActive = (href: string) =>
-    pathname === href || pathname?.startsWith(`${href}/`);
+  const isActive = (href: string) => {
+    if (!pathname) {
+      return false;
+    }
+
+    if (href === "/adoption") {
+      return (
+        pathname === "/adoption" ||
+        (/^\/adoption\/[^/]+$/.test(pathname) &&
+          !pathname.startsWith("/adoption/applications"))
+      );
+    }
+
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
   const isOwnerUser = profileData?.user?.userType === UserTypes.Owner;
   const isProviderUser = profileData?.user?.userType === UserTypes.Provider;
   const canAccessRequests = isOwnerUser || isProviderUser;
   const navItems = [
     ...baseNavItems,
+    ...(isAuthenticated
+      ? [{ label: "Minhas candidaturas", href: "/adoption/applications" }]
+      : []),
+    ...(isApprovedGuardian
+      ? [{ label: "Meus anúncios", href: "/adoption/listings/me" }]
+      : []),
     ...(isAuthenticated ? [{ label: "Perfil", href: "/profile" }] : []),
     ...(isAuthenticated ? [{ label: "Configurações", href: "/settings" }] : []),
     ...(isOwnerUser ? [{ label: "Owner", href: "/owner" }] : []),
@@ -76,8 +104,18 @@ export default function MainNav({
   }, [pathname]);
 
   return (
-    <Box as="header" className={className}>
-      <Flex align="center" justify="space-between" py={{ base: "2", md: "3" }}>
+    <Box
+      as="header"
+      className={className}
+      bg="white"
+      borderWidth="1px"
+      borderColor="gray.200"
+      borderRadius="2xl"
+      px={{ base: 4, md: 5 }}
+      py={{ base: 3, md: 4 }}
+      boxShadow="sm"
+    >
+      <Flex align="center" justify="space-between" gap={4}>
         <ChakraLink
           as={Link}
           href="/"
@@ -99,36 +137,13 @@ export default function MainNav({
           </Text>
         </ChakraLink>
 
-        {showLinks ? (
-          <HStack
-            display={{ base: "none", lg: "flex" }}
-            gap="6"
-            fontSize="sm"
-            fontWeight="medium"
-            color="gray.600"
-          >
-            {navItems.map((item) => (
-              <ChakraLink
-                key={item.href}
-                as={Link}
-                href={item.href}
-                color={isActive(item.href) ? "teal.600" : "gray.600"}
-                fontWeight={isActive(item.href) ? "semibold" : "medium"}
-                _hover={{
-                  textDecoration: "none",
-                  color: "gray.800",
-                }}
-                _focus={{ outline: "none", boxShadow: "none" }}
-                _focusVisible={{ outline: "none", boxShadow: "none" }}
-              >
-                {item.label}
-              </ChakraLink>
-            ))}
-          </HStack>
-        ) : null}
-
         {showActions ? (
-          <HStack gap="3" align="center" display={{ base: "none", lg: "flex" }}>
+          <HStack
+            gap="3"
+            align="center"
+            display={{ base: "none", lg: "flex" }}
+            flexShrink={0}
+          >
             {!isHydrated ? (
               <Box w="10" h="9" />
             ) : isAuthenticated ? (
@@ -213,6 +228,46 @@ export default function MainNav({
           </Button>
         ) : null}
       </Flex>
+
+      {showLinks ? (
+        <Flex
+          display={{ base: "none", lg: "flex" }}
+          mt={4}
+          pt={4}
+          borderTopWidth="1px"
+          borderTopColor="gray.100"
+          gap={2}
+          wrap="wrap"
+        >
+          {navItems.map((item) => (
+            <ChakraLink
+              key={item.href}
+              as={Link}
+              href={item.href}
+              px={3}
+              py={2}
+              borderRadius="full"
+              borderWidth="1px"
+              borderColor={isActive(item.href) ? "teal.200" : "gray.200"}
+              bg={isActive(item.href) ? "teal.50" : "white"}
+              color={isActive(item.href) ? "teal.700" : "gray.700"}
+              fontSize="sm"
+              fontWeight={isActive(item.href) ? "semibold" : "medium"}
+              whiteSpace="nowrap"
+              _hover={{
+                textDecoration: "none",
+                color: "teal.700",
+                borderColor: "teal.200",
+                bg: "teal.50",
+              }}
+              _focus={{ outline: "none", boxShadow: "none" }}
+              _focusVisible={{ outline: "none", boxShadow: "none" }}
+            >
+              {item.label}
+            </ChakraLink>
+          ))}
+        </Flex>
+      ) : null}
 
       {(showLinks || showActions) && isMobileMenuOpen ? (
         <VStack

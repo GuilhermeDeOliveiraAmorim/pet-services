@@ -13,4 +13,5 @@ export * from "./usecases/request";
 export * from "./usecases/review";
 export * from "./usecases/category";
 export * from "./usecases/tag";
+export * from "./usecases/adoption";
 export * from "./ports";
