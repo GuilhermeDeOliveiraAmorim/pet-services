@@ -10,3 +10,4 @@ export { createRequestCases } from "./request-usecase-factory";
 export { createReviewCases } from "./review-usecase-factory";
 export { createCategoryCases } from "./category-usecase-factory";
 export { createTagCases } from "./tag-usecase-factory";
+export { createAdoptionCases } from "./adoption-usecase-factory";

@@ -10,3 +10,4 @@ export * from "./request";
 export * from "./review";
 export * from "./category";
 export * from "./tag";
+export * from "./adoption";

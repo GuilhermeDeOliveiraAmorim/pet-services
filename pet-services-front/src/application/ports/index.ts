@@ -10,3 +10,4 @@ export type { RequestGateway } from "./request-gateway";
 export type { ReviewGateway } from "./review-gateway";
 export type { CategoryGateway } from "./category-gateway";
 export type { TagGateway } from "./tag-gateway";
+export type { AdoptionGateway } from "./adoption-gateway";
