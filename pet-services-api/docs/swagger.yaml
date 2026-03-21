@@ -594,6 +594,23 @@ definitions:
       photo:
         $ref: '#/definitions/entities.Photo'
     type: object
+  usecases.AdoptionApplicationDTO:
+    properties:
+      contact_phone:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      listing_id:
+        type: string
+      motivation:
+        type: string
+      reviewed_at:
+        type: string
+      status:
+        type: string
+    type: object
   usecases.ChangeAdoptionListingStatusOutput:
     properties:
       listing:
@@ -664,6 +681,39 @@ definitions:
       detail:
         type: string
       message:
+        type: string
+    type: object
+  usecases.CreateAdoptionApplicationInputBody:
+    properties:
+      agrees_home_visit:
+        type: boolean
+      contact_phone:
+        type: string
+      family_members:
+        type: integer
+      has_other_pets:
+        type: boolean
+      housing_type:
+        type: string
+      listing_id:
+        type: string
+      motivation:
+        type: string
+      pet_experience:
+        type: string
+    required:
+    - listing_id
+    - motivation
+    type: object
+  usecases.CreateAdoptionApplicationOutput:
+    properties:
+      applicant_user_id:
+        type: string
+      id:
+        type: string
+      listing_id:
+        type: string
+      status:
         type: string
     type: object
   usecases.CreateAdoptionGuardianProfileInputBody:
@@ -894,6 +944,15 @@ definitions:
       status:
         type: string
     type: object
+  usecases.ListAdoptionApplicationsByListingOutput:
+    properties:
+      applications:
+        items:
+          $ref: '#/definitions/usecases.AdoptionApplicationDTO'
+        type: array
+      pagination:
+        $ref: '#/definitions/usecases.PaginationMetadata'
+    type: object
   usecases.ListBreedsOutput:
     properties:
       breeds:
@@ -923,6 +982,15 @@ definitions:
         items:
           $ref: '#/definitions/reference.Country'
         type: array
+    type: object
+  usecases.ListMyAdoptionApplicationsOutput:
+    properties:
+      applications:
+        items:
+          $ref: '#/definitions/usecases.AdoptionApplicationDTO'
+        type: array
+      pagination:
+        $ref: '#/definitions/usecases.PaginationMetadata'
     type: object
   usecases.ListMyAdoptionListingsOutput:
     properties:
@@ -1235,6 +1303,23 @@ definitions:
       message:
         type: string
     type: object
+  usecases.ReviewAdoptionApplicationInputBody:
+    properties:
+      action:
+        description: under_review, interview, approve, reject
+        type: string
+      notes_internal:
+        type: string
+    required:
+    - action
+    type: object
+  usecases.ReviewAdoptionApplicationOutput:
+    properties:
+      id:
+        type: string
+      status:
+        type: string
+    type: object
   usecases.SearchLocation:
     properties:
       latitude:
@@ -1518,6 +1603,13 @@ definitions:
       message:
         type: string
     type: object
+  usecases.WithdrawAdoptionApplicationOutput:
+    properties:
+      id:
+        type: string
+      status:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -1605,6 +1697,173 @@ paths:
       summary: Cria uma nova categoria de serviço
       tags:
       - Categorias
+  /adoption/applications:
+    post:
+      consumes:
+      - application/json
+      description: Submete uma candidatura para adotar um pet a partir de um anúncio
+        publicado. O usuário autenticado é registrado como candidato.
+      parameters:
+      - description: Dados da candidatura
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.CreateAdoptionApplicationInputBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/usecases.CreateAdoptionApplicationOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Cria uma candidatura de adoção
+      tags:
+      - Adoção - Candidaturas
+  /adoption/applications/{application_id}/review:
+    post:
+      consumes:
+      - application/json
+      description: Permite o responsável pelo anúncio ou admin mover a candidatura
+        para analysis, entrevista, aprovação ou rejeição. A ação determina a transição
+        de status.
+      parameters:
+      - description: ID da candidatura
+        in: path
+        name: application_id
+        required: true
+        type: string
+      - description: Ação e notas
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.ReviewAdoptionApplicationInputBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.ReviewAdoptionApplicationOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Analisa e muda o status de uma candidatura
+      tags:
+      - Adoção - Candidaturas
+  /adoption/applications/{application_id}/withdraw:
+    post:
+      description: Permite que o candidato retire sua candidatura, desde que ela ainda
+        não tenha sido aprovada, rejeitada ou retirada.
+      parameters:
+      - description: ID da candidatura
+        in: path
+        name: application_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.WithdrawAdoptionApplicationOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Retira uma candidatura de adoção
+      tags:
+      - Adoção - Candidaturas
+  /adoption/applications/me:
+    get:
+      description: Retorna a lista paginada de candidaturas do usuário autenticado
+        em todos os estágios.
+      parameters:
+      - description: 'Página (padrão: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Itens por página (padrão: 10, máx: 50)'
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.ListMyAdoptionApplicationsOutput'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Lista as minhas candidaturas de adoção
+      tags:
+      - Adoção - Candidaturas
   /adoption/guardian-profile:
     post:
       consumes:
@@ -1950,6 +2209,52 @@ paths:
       summary: Altera o status de um anúncio de adoção
       tags:
       - Adoção - Anúncios
+  /adoption/listings/{listing_id}/applications:
+    get:
+      description: Retorna a lista paginada de candidaturas para um anúncio específico.
+        Apenas o responsável pelo anúncio ou admin podem acessar.
+      parameters:
+      - description: ID do anúncio
+        in: path
+        name: listing_id
+        required: true
+        type: string
+      - description: 'Página (padrão: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Itens por página (padrão: 10, máx: 50)'
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.ListAdoptionApplicationsByListingOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Lista as candidaturas de um anúncio
+      tags:
+      - Adoção - Candidaturas
   /adoption/listings/me:
     get:
       description: Retorna a lista paginada de anúncios de adoção vinculados ao perfil
