@@ -1,9 +1,13 @@
 import type {
   CreateAdoptionApplicationInput,
   CreateAdoptionApplicationOutput,
+  GetPublicAdoptionListingInput,
   GetPublicAdoptionListingOutput,
+  ListMyAdoptionApplicationsInput,
+  ListMyAdoptionApplicationsOutput,
   ListPublicAdoptionListingsInput,
   ListPublicAdoptionListingsOutput,
+  WithdrawAdoptionApplicationOutput,
 } from "../usecases/adoption";
 
 export interface AdoptionGateway {
@@ -11,9 +15,15 @@ export interface AdoptionGateway {
     input?: ListPublicAdoptionListingsInput,
   ): Promise<ListPublicAdoptionListingsOutput>;
   getPublicListing(
-    listingId: string | number,
+    input: GetPublicAdoptionListingInput,
   ): Promise<GetPublicAdoptionListingOutput>;
   createApplication(
     input: CreateAdoptionApplicationInput,
   ): Promise<CreateAdoptionApplicationOutput>;
+  listMyApplications(
+    input?: ListMyAdoptionApplicationsInput,
+  ): Promise<ListMyAdoptionApplicationsOutput>;
+  withdrawApplication(
+    applicationId: string,
+  ): Promise<WithdrawAdoptionApplicationOutput>;
 }

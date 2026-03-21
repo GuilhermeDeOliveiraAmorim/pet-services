@@ -1,10 +1,16 @@
 import type {
   AdoptionGateway,
+  AdoptionApplicationItem,
+  AdoptionApplicationsPagination,
   CreateAdoptionApplicationInput,
   CreateAdoptionApplicationOutput,
+  GetPublicAdoptionListingInput,
   GetPublicAdoptionListingOutput,
+  ListMyAdoptionApplicationsInput,
+  ListMyAdoptionApplicationsOutput,
   ListPublicAdoptionListingsInput,
   ListPublicAdoptionListingsOutput,
+  WithdrawAdoptionApplicationOutput,
 } from "@/application";
 import type { AdoptionListing, Pet } from "@/domain";
 import type { AxiosInstance } from "axios";
@@ -114,6 +120,20 @@ type PaginationApi = {
   totalRecords?: number;
 };
 
+type AdoptionApplicationApi = {
+  id?: string;
+  listing_id?: string;
+  listingId?: string;
+  status?: string;
+  motivation?: string;
+  contact_phone?: string;
+  contactPhone?: string;
+  reviewed_at?: string;
+  reviewedAt?: string;
+  created_at?: string;
+  createdAt?: string;
+};
+
 const mapPetApiToDomain = (pet?: PetApi): Pet | undefined => {
   if (!pet) {
     return undefined;
@@ -209,6 +229,65 @@ const mapListingApiToDomain = (
 export class AdoptionGatewayAxios implements AdoptionGateway {
   constructor(private readonly http: AxiosInstance) {}
 
+  async listMyApplications(
+    input?: ListMyAdoptionApplicationsInput,
+  ): Promise<ListMyAdoptionApplicationsOutput> {
+    const params: Record<string, number> = {};
+
+    if (input?.page) params.page = input.page;
+    if (input?.pageSize) params.page_size = input.pageSize;
+
+    const { data } = await this.http.get<{
+      applications?: AdoptionApplicationApi[];
+      pagination?: PaginationApi;
+    }>("/adoption/applications/me", { params });
+
+    const applications: AdoptionApplicationItem[] = (
+      data.applications ?? []
+    ).map((item) => ({
+      id: item.id ?? "",
+      listingId: item.listingId ?? item.listing_id ?? "",
+      status: item.status ?? "",
+      motivation: item.motivation ?? "",
+      contactPhone: item.contactPhone ?? item.contact_phone ?? "",
+      reviewedAt: item.reviewedAt ?? item.reviewed_at ?? undefined,
+      createdAt: item.createdAt ?? item.created_at ?? "",
+    }));
+
+    const paginationApi = data.pagination ?? {};
+    const pagination: AdoptionApplicationsPagination = {
+      currentPage: paginationApi.currentPage ?? paginationApi.current_page ?? 1,
+      perPage:
+        paginationApi.perPage ??
+        paginationApi.per_page ??
+        input?.pageSize ??
+        10,
+      totalPages: paginationApi.totalPages ?? paginationApi.total_pages ?? 1,
+      totalRecords:
+        paginationApi.totalRecords ??
+        paginationApi.total_records ??
+        applications.length,
+    };
+
+    return {
+      applications,
+      pagination,
+    };
+  }
+
+  async withdrawApplication(
+    applicationId: string,
+  ): Promise<WithdrawAdoptionApplicationOutput> {
+    const { data } = await this.http.post<{ id?: string; status?: string }>(
+      `/adoption/applications/${applicationId}/withdraw`,
+    );
+
+    return {
+      id: data.id ?? applicationId,
+      status: data.status ?? "withdrawn",
+    };
+  }
+
   async createApplication(
     input: CreateAdoptionApplicationInput,
   ): Promise<CreateAdoptionApplicationOutput> {
@@ -275,10 +354,10 @@ export class AdoptionGatewayAxios implements AdoptionGateway {
   }
 
   async getPublicListing(
-    listingId: string | number,
+    input: GetPublicAdoptionListingInput,
   ): Promise<GetPublicAdoptionListingOutput> {
     const { data } = await this.http.get<{ listing?: AdoptionListingApi }>(
-      `/adoption/listings/${listingId}`,
+      `/adoption/listings/${input.listingId}`,
     );
 
     return {
