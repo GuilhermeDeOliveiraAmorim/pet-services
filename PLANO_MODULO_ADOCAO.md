@@ -19,11 +19,11 @@ Registro do progresso real de implementação por camada.
 | `entities/adoption_application.go`       | ✅ Criado                             |
 | `entities/adoption_application_event.go` | ✅ Criado                             |
 | `models/adoption_guardian_profile.go`    | ✅ Criado                             |
-| `models/adoption_listing.go`             | ⏳ Pendente                           |
+| `models/adoption_listing.go`             | ✅ Criado                             |
 | `models/adoption_application.go`         | ⏳ Pendente                           |
 | `models/adoption_application_event.go`   | ⏳ Pendente                           |
 | Migração `adoption_guardian_profiles`    | ✅ Criada (`Migration20260321000000`) |
-| Migração `adoption_listings`             | ⏳ Pendente                           |
+| Migração `adoption_listings`             | ✅ Criada (`Migration20260321000001`) |
 | Migração `adoption_applications`         | ⏳ Pendente                           |
 
 ### Repositórios
@@ -31,7 +31,7 @@ Registro do progresso real de implementação por camada.
 | Artefato                                                  | Status      |
 | --------------------------------------------------------- | ----------- |
 | `repository_impl/adoption_guardian_profile_repository.go` | ✅ Criado   |
-| `repository_impl/adoption_listing_repository.go`          | ⏳ Pendente |
+| `repository_impl/adoption_listing_repository.go`          | ✅ Criado   |
 | `repository_impl/adoption_application_repository.go`      | ⏳ Pendente |
 
 ### Casos de uso
@@ -41,11 +41,12 @@ Registro do progresso real de implementação por camada.
 | `CreateAdoptionGuardianProfile`     | ✅ Implementado |
 | `GetMyAdoptionGuardianProfile`      | ✅ Implementado |
 | `UpdateAdoptionGuardianProfile`     | ✅ Implementado |
-| `CreateAdoptionListing`             | ⏳ Pendente     |
-| `UpdateAdoptionListing`             | ⏳ Pendente     |
-| `PublishAdoptionListing`            | ⏳ Pendente     |
-| `ListPublicAdoptionListings`        | ⏳ Pendente     |
-| `GetPublicAdoptionListing`          | ⏳ Pendente     |
+| `CreateAdoptionListing`             | ✅ Implementado |
+| `UpdateAdoptionListing`             | ✅ Implementado |
+| `ChangeAdoptionListingStatus`       | ✅ Implementado |
+| `ListPublicAdoptionListings`        | ✅ Implementado |
+| `GetPublicAdoptionListing`          | ✅ Implementado |
+| `ListMyAdoptionListings`            | ✅ Implementado |
 | `CreateAdoptionApplication`         | ⏳ Pendente     |
 | `ListMyAdoptionApplications`        | ⏳ Pendente     |
 | `ListAdoptionApplicationsByListing` | ⏳ Pendente     |
@@ -60,25 +61,28 @@ Registro do progresso real de implementação por camada.
 | Artefato                                         | Status                  |
 | ------------------------------------------------ | ----------------------- |
 | `factories/adoption_guardian_factory.go`         | ✅ Criado (3 use cases) |
-| `factories/adoption_listing_factory.go`          | ⏳ Pendente             |
+| `factories/adoption_listing_factory.go`          | ✅ Criado (6 use cases) |
 | `factories/adoption_application_factory.go`      | ⏳ Pendente             |
 | `handlers/adoption_guardian_handler.go`          | ✅ Criado (3 handlers)  |
-| `handlers/adoption_listing_handler.go`           | ⏳ Pendente             |
+| `handlers/adoption_listing_handler.go`           | ✅ Criado (6 handlers)  |
 | `handlers/adoption_application_handler.go`       | ⏳ Pendente             |
 | `middlewares/AdoptionGuardianApprovedMiddleware` | ✅ Criado               |
 
 ### Rotas registradas
 
-| Método | Rota                            | Status      |
-| ------ | ------------------------------- | ----------- |
-| `POST` | `/adoption/guardian-profile`    | ✅ Ativa    |
-| `GET`  | `/adoption/guardian-profile/me` | ✅ Ativa    |
-| `PUT`  | `/adoption/guardian-profile/me` | ✅ Ativa    |
-| `POST` | `/adoption/listings`            | ⏳ Pendente |
-| `GET`  | `/adoption/listings`            | ⏳ Pendente |
-| `GET`  | `/adoption/listings/:id`        | ⏳ Pendente |
-| `POST` | `/adoption/applications`        | ⏳ Pendente |
-| `GET`  | `/adoption/applications/me`     | ⏳ Pendente |
+| Método  | Rota                                     | Status      |
+| ------- | ---------------------------------------- | ----------- |
+| `POST`  | `/adoption/guardian-profile`             | ✅ Ativa    |
+| `GET`   | `/adoption/guardian-profile/me`          | ✅ Ativa    |
+| `PUT`   | `/adoption/guardian-profile/me`          | ✅ Ativa    |
+| `POST`  | `/adoption/listings`                     | ✅ Ativa    |
+| `GET`   | `/adoption/listings`                     | ✅ Ativa    |
+| `GET`   | `/adoption/listings/:listing_id`         | ✅ Ativa    |
+| `GET`   | `/adoption/listings/me`                  | ✅ Ativa    |
+| `PUT`   | `/adoption/listings/:listing_id`         | ✅ Ativa    |
+| `PATCH` | `/adoption/listings/:listing_id/:action` | ✅ Ativa    |
+| `POST`  | `/adoption/applications`                 | ⏳ Pendente |
+| `GET`   | `/adoption/applications/me`              | ⏳ Pendente |
 
 ### Swagger
 
