@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { use, useMemo, useState } from "react";
 import { notFound } from "next/navigation";
 import {
   Badge,
@@ -50,11 +50,8 @@ type AdoptionListingDetailPageProps = {
 export default function AdoptionListingDetailPage({
   params,
 }: AdoptionListingDetailPageProps) {
-  const resolved = (params as unknown as { listingId: string })?.listingId
-    ? (params as unknown as { listingId: string })
-    : null;
-
-  const listingId = resolved?.listingId;
+  const resolvedParams = use(params);
+  const listingId = resolvedParams?.listingId;
   const { data, isLoading, isError } = usePublicAdoptionListing(listingId);
   const { isAuthenticated, isHydrated } = useAuthSession();
   const {
@@ -232,17 +229,25 @@ export default function AdoptionListingDetailPage({
                           Enviar candidatura
                         </Text>
                         <Text fontSize="sm" color="gray.600">
-                          Conte por que sua casa é uma boa combinação para este pet.
+                          Conte por que sua casa é uma boa combinação para este
+                          pet.
                         </Text>
                       </Box>
 
                       <Box>
-                        <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                        <Text
+                          fontSize="sm"
+                          fontWeight="medium"
+                          color="gray.700"
+                          mb={2}
+                        >
                           Motivação
                         </Text>
                         <Textarea
                           value={motivation}
-                          onChange={(event) => setMotivation(event.target.value)}
+                          onChange={(event) =>
+                            setMotivation(event.target.value)
+                          }
                           minH="24"
                           placeholder="Explique sua rotina, disponibilidade e por que deseja adotar este pet."
                           bg="white"
@@ -252,13 +257,20 @@ export default function AdoptionListingDetailPage({
                       </Box>
 
                       <Box>
-                        <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                        <Text
+                          fontSize="sm"
+                          fontWeight="medium"
+                          color="gray.700"
+                          mb={2}
+                        >
                           Tipo de moradia
                         </Text>
                         <NativeSelect.Root>
                           <NativeSelect.Field
                             value={housingType}
-                            onChange={(event) => setHousingType(event.target.value)}
+                            onChange={(event) =>
+                              setHousingType(event.target.value)
+                            }
                             bg="white"
                             borderColor="gray.200"
                           >
@@ -274,12 +286,19 @@ export default function AdoptionListingDetailPage({
 
                       <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
                         <Box>
-                          <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                          <Text
+                            fontSize="sm"
+                            fontWeight="medium"
+                            color="gray.700"
+                            mb={2}
+                          >
                             Telefone de contato
                           </Text>
                           <Input
                             value={contactPhone}
-                            onChange={(event) => setContactPhone(event.target.value)}
+                            onChange={(event) =>
+                              setContactPhone(event.target.value)
+                            }
                             placeholder="(11) 99999-9999"
                             bg="white"
                             borderColor="gray.200"
@@ -287,14 +306,21 @@ export default function AdoptionListingDetailPage({
                           />
                         </Box>
                         <Box>
-                          <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                          <Text
+                            fontSize="sm"
+                            fontWeight="medium"
+                            color="gray.700"
+                            mb={2}
+                          >
                             Pessoas na família
                           </Text>
                           <Input
                             type="number"
                             min={1}
                             value={familyMembers}
-                            onChange={(event) => setFamilyMembers(event.target.value)}
+                            onChange={(event) =>
+                              setFamilyMembers(event.target.value)
+                            }
                             bg="white"
                             borderColor="gray.200"
                             focusRingColor="teal.200"
@@ -303,12 +329,19 @@ export default function AdoptionListingDetailPage({
                       </SimpleGrid>
 
                       <Box>
-                        <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
+                        <Text
+                          fontSize="sm"
+                          fontWeight="medium"
+                          color="gray.700"
+                          mb={2}
+                        >
                           Experiência com pets
                         </Text>
                         <Textarea
                           value={petExperience}
-                          onChange={(event) => setPetExperience(event.target.value)}
+                          onChange={(event) =>
+                            setPetExperience(event.target.value)
+                          }
                           minH="20"
                           placeholder="Descreva sua experiência prévia com animais e cuidados diários."
                           bg="white"
@@ -339,7 +372,9 @@ export default function AdoptionListingDetailPage({
                         >
                           <Checkbox.HiddenInput />
                           <Checkbox.Control />
-                          <Checkbox.Label>Já tenho outros pets em casa</Checkbox.Label>
+                          <Checkbox.Label>
+                            Já tenho outros pets em casa
+                          </Checkbox.Label>
                         </Checkbox.Root>
                       </VStack>
 
@@ -348,7 +383,9 @@ export default function AdoptionListingDetailPage({
                         bg="gray.900"
                         color="white"
                         _hover={{ bg: "gray.700" }}
-                        disabled={!isApplicationValid || isSubmittingApplication}
+                        disabled={
+                          !isApplicationValid || isSubmittingApplication
+                        }
                         onClick={handleSubmitApplication}
                       >
                         {isSubmittingApplication
