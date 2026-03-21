@@ -611,6 +611,13 @@ definitions:
       status:
         type: string
     type: object
+  usecases.ApproveAdoptionGuardianProfileOutput:
+    properties:
+      approval_status:
+        type: string
+      id:
+        type: string
+    type: object
   usecases.ChangeAdoptionListingStatusOutput:
     properties:
       listing:
@@ -1142,6 +1149,13 @@ definitions:
       message:
         type: string
     type: object
+  usecases.MarkAdoptionListingAsAdoptedOutput:
+    properties:
+      id:
+        type: string
+      status:
+        type: string
+    type: object
   usecases.PaginationMetadata:
     properties:
       current_page:
@@ -1194,6 +1208,18 @@ definitions:
       detail:
         type: string
       message:
+        type: string
+    type: object
+  usecases.RejectAdoptionGuardianProfileInputBody:
+    properties:
+      reason:
+        type: string
+    type: object
+  usecases.RejectAdoptionGuardianProfileOutput:
+    properties:
+      approval_status:
+        type: string
+      id:
         type: string
     type: object
   usecases.RejectRequestInputBody:
@@ -1697,6 +1723,100 @@ paths:
       summary: Cria uma nova categoria de serviço
       tags:
       - Categorias
+  /adoption/admin/guardian-profiles/{id}/approve:
+    post:
+      consumes:
+      - application/json
+      description: Aprova um perfil de responsável por adoção pendente. Apenas administradores
+        podem executar esta ação.
+      parameters:
+      - description: ID do perfil de responsável
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.ApproveAdoptionGuardianProfileOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Aprova um perfil de responsável por adoção
+      tags:
+      - Adoção - Perfil do Responsável
+  /adoption/admin/guardian-profiles/{id}/reject:
+    post:
+      consumes:
+      - application/json
+      description: Rejeita um perfil de responsável por adoção pendente. Apenas administradores
+        podem executar esta ação.
+      parameters:
+      - description: ID do perfil de responsável
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Motivo da rejeição
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecases.RejectAdoptionGuardianProfileInputBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.RejectAdoptionGuardianProfileOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Rejeita um perfil de responsável por adoção
+      tags:
+      - Adoção - Perfil do Responsável
   /adoption/applications:
     post:
       consumes:
@@ -2078,6 +2198,50 @@ paths:
       security:
       - Bearer: []
       summary: Cria um anúncio de adoção
+      tags:
+      - Adoção - Anúncios
+  /adoption/listings/{id}/mark-adopted:
+    post:
+      consumes:
+      - application/json
+      description: Marca um anúncio como adotado. Apenas o responsável proprietário
+        do anúncio pode executar esta ação.
+      parameters:
+      - description: ID do anúncio
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecases.MarkAdoptionListingAsAdoptedOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/exceptions.ProblemDetails'
+      security:
+      - Bearer: []
+      summary: Marca um anúncio como adotado
       tags:
       - Adoção - Anúncios
   /adoption/listings/{listing_id}:

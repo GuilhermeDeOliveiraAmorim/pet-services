@@ -141,6 +141,149 @@ const docTemplate = `{
                 }
             }
         },
+        "/adoption/admin/guardian-profiles/{id}/approve": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Aprova um perfil de responsável por adoção pendente. Apenas administradores podem executar esta ação.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Adoção - Perfil do Responsável"
+                ],
+                "summary": "Aprova um perfil de responsável por adoção",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID do perfil de responsável",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/usecases.ApproveAdoptionGuardianProfileOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/adoption/admin/guardian-profiles/{id}/reject": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Rejeita um perfil de responsável por adoção pendente. Apenas administradores podem executar esta ação.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Adoção - Perfil do Responsável"
+                ],
+                "summary": "Rejeita um perfil de responsável por adoção",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID do perfil de responsável",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Motivo da rejeição",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/usecases.RejectAdoptionGuardianProfileInputBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/usecases.RejectAdoptionGuardianProfileOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
         "/adoption/applications": {
             "post": {
                 "security": [
@@ -763,6 +906,73 @@ const docTemplate = `{
                     },
                     "403": {
                         "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    }
+                }
+            }
+        },
+        "/adoption/listings/{id}/mark-adopted": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Marca um anúncio como adotado. Apenas o responsável proprietário do anúncio pode executar esta ação.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Adoção - Anúncios"
+                ],
+                "summary": "Marca um anúncio como adotado",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID do anúncio",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/usecases.MarkAdoptionListingAsAdoptedOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/exceptions.ProblemDetails"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/exceptions.ProblemDetails"
                         }
@@ -5539,6 +5749,17 @@ const docTemplate = `{
                 }
             }
         },
+        "usecases.ApproveAdoptionGuardianProfileOutput": {
+            "type": "object",
+            "properties": {
+                "approval_status": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
         "usecases.ChangeAdoptionListingStatusOutput": {
             "type": "object",
             "properties": {
@@ -6364,6 +6585,17 @@ const docTemplate = `{
                 }
             }
         },
+        "usecases.MarkAdoptionListingAsAdoptedOutput": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "usecases.PaginationMetadata": {
             "type": "object",
             "properties": {
@@ -6444,6 +6676,25 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "usecases.RejectAdoptionGuardianProfileInputBody": {
+            "type": "object",
+            "properties": {
+                "reason": {
+                    "type": "string"
+                }
+            }
+        },
+        "usecases.RejectAdoptionGuardianProfileOutput": {
+            "type": "object",
+            "properties": {
+                "approval_status": {
+                    "type": "string"
+                },
+                "id": {
                     "type": "string"
                 }
             }
