@@ -1,9 +1,12 @@
+import axios from "axios";
 import type {
-  AdoptionGateway,
   AdoptionApplicationItem,
+  AdoptionGuardianProfile,
   AdoptionApplicationsPagination,
   CreateAdoptionApplicationInput,
   CreateAdoptionApplicationOutput,
+  GetMyAdoptionGuardianProfileInput,
+  GetMyAdoptionGuardianProfileOutput,
   GetPublicAdoptionListingInput,
   GetPublicAdoptionListingOutput,
   ListMyAdoptionApplicationsInput,
@@ -11,20 +14,32 @@ import type {
   ListPublicAdoptionListingsInput,
   ListPublicAdoptionListingsOutput,
   WithdrawAdoptionApplicationOutput,
-} from "@/application";
+} from "@/application/usecases/adoption";
 import type { AdoptionListing, Pet } from "@/domain";
 import type { AxiosInstance } from "axios";
 
 type AdoptionGuardianProfileApi = {
   id?: string;
+  user_id?: string;
+  userId?: string;
   display_name?: string;
   displayName?: string;
+  guardian_type?: string;
+  guardianType?: string;
+  document?: string;
+  phone?: string;
   about?: string;
   whatsapp?: string;
   city_id?: string;
   cityId?: string;
   state_id?: string;
   stateId?: string;
+  approval_status?: string;
+  approvalStatus?: string;
+  approved_by?: string;
+  approvedBy?: string;
+  approved_at?: string;
+  approvedAt?: string;
 };
 
 type PetApi = {
@@ -226,8 +241,53 @@ const mapListingApiToDomain = (
   };
 };
 
-export class AdoptionGatewayAxios implements AdoptionGateway {
+export class AdoptionGatewayAxios {
   constructor(private readonly http: AxiosInstance) {}
+
+  async getMyGuardianProfile(
+    input?: GetMyAdoptionGuardianProfileInput,
+  ): Promise<GetMyAdoptionGuardianProfileOutput | null> {
+    void input;
+    try {
+      const { data } = await this.http.get<{
+        profile?: AdoptionGuardianProfileApi;
+      }>("/adoption/guardian-profile/me");
+
+      const profileApi = data.profile;
+      if (!profileApi) {
+        return null;
+      }
+
+      const profile: AdoptionGuardianProfile = {
+        id: profileApi.id ?? "",
+        userId: profileApi.userId ?? profileApi.user_id ?? "",
+        displayName: profileApi.displayName ?? profileApi.display_name ?? "",
+        guardianType: profileApi.guardianType ?? profileApi.guardian_type ?? "",
+        document: profileApi.document ?? "",
+        phone: profileApi.phone ?? "",
+        whatsapp: profileApi.whatsapp ?? "",
+        about: profileApi.about ?? "",
+        cityId: profileApi.cityId ?? profileApi.city_id ?? "",
+        stateId: profileApi.stateId ?? profileApi.state_id ?? "",
+        approvalStatus:
+          profileApi.approvalStatus ?? profileApi.approval_status ?? "",
+        approvedBy:
+          profileApi.approvedBy ?? profileApi.approved_by ?? undefined,
+        approvedAt:
+          profileApi.approvedAt ?? profileApi.approved_at ?? undefined,
+      };
+
+      return { profile };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status;
+        if (status === 403 || status === 404) {
+          return null;
+        }
+      }
+      throw error;
+    }
+  }
 
   async listMyApplications(
     input?: ListMyAdoptionApplicationsInput,

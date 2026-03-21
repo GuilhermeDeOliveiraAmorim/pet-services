@@ -1,6 +1,8 @@
 export {
   useAdoptionApplicationCreate,
   useAdoptionApplicationWithdraw,
+  useGuardianStatus,
+  useMyAdoptionGuardianProfile,
   useMyAdoptionApplications,
   usePublicAdoptionListing,
   usePublicAdoptionListings,

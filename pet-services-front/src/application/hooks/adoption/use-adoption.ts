@@ -12,12 +12,14 @@ import {
   type ListMyAdoptionApplicationsOutput,
   type CreateAdoptionApplicationInput,
   type CreateAdoptionApplicationOutput,
+  type GetMyAdoptionGuardianProfileOutput,
   type WithdrawAdoptionApplicationInput,
   type WithdrawAdoptionApplicationOutput,
   createAdoptionCases,
   type GetPublicAdoptionListingOutput,
   type ListPublicAdoptionListingsInput,
   type ListPublicAdoptionListingsOutput,
+  AdoptionGateway,
 } from "@/application";
 import { createApiContext } from "@/infra";
 
@@ -26,7 +28,8 @@ import { ADOPTION_KEYS } from "./adoption-query-keys";
 const useAdoptionUseCases = () => {
   return useMemo(() => {
     const { adoptionGateway } = createApiContext();
-    return createAdoptionCases(adoptionGateway);
+    const gateway = adoptionGateway as unknown as AdoptionGateway;
+    return createAdoptionCases(gateway);
   }, []);
 };
 
@@ -51,6 +54,11 @@ type CreateAdoptionApplicationOptions = Omit<
 
 type ListMyAdoptionApplicationsOptions = Omit<
   UseQueryOptions<ListMyAdoptionApplicationsOutput, Error>,
+  "queryKey" | "queryFn"
+>;
+
+type GetMyAdoptionGuardianProfileOptions = Omit<
+  UseQueryOptions<GetMyAdoptionGuardianProfileOutput | null, Error>,
   "queryKey" | "queryFn"
 >;
 
@@ -122,6 +130,30 @@ export const useMyAdoptionApplications = (
     queryFn: () => listMyAdoptionApplications.execute(input),
     ...options,
   });
+};
+
+export const useMyAdoptionGuardianProfile = (
+  options?: GetMyAdoptionGuardianProfileOptions,
+) => {
+  const { getMyAdoptionGuardianProfile } = useAdoptionUseCases();
+
+  return useQuery({
+    queryKey: ADOPTION_KEYS.myGuardianProfile(),
+    queryFn: () => getMyAdoptionGuardianProfile.execute(),
+    retry: false,
+    ...options,
+  });
+};
+
+export const useGuardianStatus = (
+  options?: GetMyAdoptionGuardianProfileOptions,
+) => {
+  const query = useMyAdoptionGuardianProfile(options);
+
+  return {
+    ...query,
+    isApprovedGuardian: query.data?.profile?.approvalStatus === "approved",
+  };
 };
 
 export const useAdoptionApplicationWithdraw = (

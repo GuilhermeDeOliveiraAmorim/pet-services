@@ -13,7 +13,12 @@ import {
   VStack,
 } from "@chakra-ui/react";
 
-import { useAuthLogout, useAuthSession, useUserProfile } from "@/application";
+import {
+  useAuthLogout,
+  useAuthSession,
+  useGuardianStatus,
+  useUserProfile,
+} from "@/application";
 import { UserTypes } from "@/domain";
 
 import Image from "next/image";
@@ -41,6 +46,9 @@ export default function MainNav({
   const { session, isAuthenticated, isHydrated, clearSession } =
     useAuthSession();
   const { data: profileData } = useUserProfile({ enabled: isAuthenticated });
+  const { isApprovedGuardian } = useGuardianStatus({
+    enabled: isAuthenticated,
+  });
   const { mutateAsync: logout, isPending } = useAuthLogout();
   const registerHref = pathname?.startsWith("/partner")
     ? "/register?user_type=provider"
@@ -67,6 +75,9 @@ export default function MainNav({
     ...baseNavItems,
     ...(isAuthenticated
       ? [{ label: "Minhas candidaturas", href: "/adoption/applications" }]
+      : []),
+    ...(isApprovedGuardian
+      ? [{ label: "Meus anúncios", href: "/adoption/listings/me" }]
       : []),
     ...(isAuthenticated ? [{ label: "Perfil", href: "/profile" }] : []),
     ...(isAuthenticated ? [{ label: "Configurações", href: "/settings" }] : []),
