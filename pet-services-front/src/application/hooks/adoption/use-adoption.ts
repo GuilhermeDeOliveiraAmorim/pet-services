@@ -1,7 +1,14 @@
 import { useMemo } from "react";
-import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  type UseMutationOptions,
+  type UseQueryOptions,
+} from "@tanstack/react-query";
 
 import {
+  type CreateAdoptionApplicationInput,
+  type CreateAdoptionApplicationOutput,
   createAdoptionCases,
   type GetPublicAdoptionListingOutput,
   type ListPublicAdoptionListingsInput,
@@ -28,6 +35,15 @@ type GetPublicAdoptionListingOptions = Omit<
   "queryKey" | "queryFn"
 >;
 
+type CreateAdoptionApplicationOptions = Omit<
+  UseMutationOptions<
+    CreateAdoptionApplicationOutput,
+    Error,
+    CreateAdoptionApplicationInput
+  >,
+  "mutationFn"
+>;
+
 export const usePublicAdoptionListings = (
   input?: ListPublicAdoptionListingsInput,
   options?: ListPublicAdoptionListingsOptions,
@@ -51,6 +67,17 @@ export const usePublicAdoptionListing = (
     queryKey: ADOPTION_KEYS.detail(listingId ?? "unknown"),
     queryFn: () => getPublicAdoptionListing.execute(listingId!),
     enabled: Boolean(listingId),
+    ...options,
+  });
+};
+
+export const useAdoptionApplicationCreate = (
+  options?: CreateAdoptionApplicationOptions,
+) => {
+  const { createAdoptionApplication } = useAdoptionUseCases();
+
+  return useMutation({
+    mutationFn: (input) => createAdoptionApplication.execute(input),
     ...options,
   });
 };

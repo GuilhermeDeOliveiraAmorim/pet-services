@@ -1,4 +1,6 @@
 import type {
+  CreateAdoptionApplicationInput,
+  CreateAdoptionApplicationOutput,
   GetPublicAdoptionListingOutput,
   ListPublicAdoptionListingsInput,
   ListPublicAdoptionListingsOutput,
@@ -11,4 +13,7 @@ export interface AdoptionGateway {
   getPublicListing(
     listingId: string | number,
   ): Promise<GetPublicAdoptionListingOutput>;
+  createApplication(
+    input: CreateAdoptionApplicationInput,
+  ): Promise<CreateAdoptionApplicationOutput>;
 }
