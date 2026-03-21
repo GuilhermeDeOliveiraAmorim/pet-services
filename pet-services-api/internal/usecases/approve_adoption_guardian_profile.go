@@ -43,7 +43,6 @@ func NewApproveAdoptionGuardianProfileUseCase(
 }
 
 func (u *ApproveAdoptionGuardianProfileUseCase) Execute(ctx context.Context, input ApproveAdoptionGuardianProfileInput) (*ApproveAdoptionGuardianProfileOutput, []exceptions.ProblemDetails) {
-	// Buscar perfil
 	profile, err := u.guardianProfileRepo.FindByID(input.ProfileID)
 	if err != nil {
 		if errors.Is(err, errors.New(consts.AdoptionGuardianProfileNotFoundError)) {
@@ -57,7 +56,6 @@ func (u *ApproveAdoptionGuardianProfileUseCase) Execute(ctx context.Context, inp
 		return nil, []exceptions.ProblemDetails{problem}
 	}
 
-	// Verificar se está pendente
 	if profile.ApprovalStatus != entities.AdoptionGuardianApprovalStatuses.Pending {
 		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
 			Title:  "Perfil já foi analisado",
@@ -67,10 +65,8 @@ func (u *ApproveAdoptionGuardianProfileUseCase) Execute(ctx context.Context, inp
 		return nil, []exceptions.ProblemDetails{problem}
 	}
 
-	// Aprovar
 	profile.Approve(input.ApprovedBy)
 
-	// Persistir
 	if err := u.guardianProfileRepo.Update(profile); err != nil {
 		problem := exceptions.NewProblemDetails(exceptions.InternalServerError, exceptions.ErrorMessage{
 			Title:  "Erro ao atualizar perfil",
@@ -82,12 +78,11 @@ func (u *ApproveAdoptionGuardianProfileUseCase) Execute(ctx context.Context, inp
 
 	u.logger.LogInfo(ctx, "ApproveAdoptionGuardianProfileUseCase", "Perfil "+input.ProfileID+" aprovado")
 
-	// Buscar email do usuário e enviar notificação
 	user, err := u.userRepository.FindByID(profile.UserID)
 	if err == nil {
 		if err := u.emailService.SendAdoptionGuardianProfileApprovedEmail(user.Login.Email, user.Name); err != nil {
 			u.logger.LogError(ctx, "ApproveAdoptionGuardianProfileUseCase", "Erro ao enviar email de aprovação", err)
-			// Continue even if email fails (graceful degradation)
+
 		}
 	} else {
 		u.logger.LogError(ctx, "ApproveAdoptionGuardianProfileUseCase", "Erro ao buscar usuário para enviar email", err)

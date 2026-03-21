@@ -92,9 +92,8 @@ func (uc *SearchServicesUseCase) Execute(ctx context.Context, input SearchServic
 		input.PageSize = 100
 	}
 
-	// Validação de parâmetros de localização
 	if (input.Latitude != 0 || input.Longitude != 0) && input.RadiusKm <= 0 {
-		input.RadiusKm = 10 // Default: 10km de raio
+		input.RadiusKm = 10
 	}
 
 	services, total, err := uc.serviceRepository.Search(
@@ -117,7 +116,6 @@ func (uc *SearchServicesUseCase) Execute(ctx context.Context, input SearchServic
 
 	serviceItems := make([]*ServiceListItem, len(services))
 	for i, svc := range services {
-		// Buscar dados do provider
 		businessName := ""
 		averageRating := 0.0
 		reviewCount := 0
@@ -138,7 +136,6 @@ func (uc *SearchServicesUseCase) Execute(ctx context.Context, input SearchServic
 			}
 		}
 
-		// Assinar URLs das fotos
 		if len(svc.Photos) > 0 {
 			for j := range svc.Photos {
 				key := svc.Photos[j].URL

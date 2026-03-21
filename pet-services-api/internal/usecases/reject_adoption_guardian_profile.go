@@ -48,7 +48,6 @@ func NewRejectAdoptionGuardianProfileUseCase(
 }
 
 func (u *RejectAdoptionGuardianProfileUseCase) Execute(ctx context.Context, input RejectAdoptionGuardianProfileInput) (*RejectAdoptionGuardianProfileOutput, []exceptions.ProblemDetails) {
-	// Buscar perfil
 	profile, err := u.guardianProfileRepo.FindByID(input.ProfileID)
 	if err != nil {
 		if errors.Is(err, errors.New(consts.AdoptionGuardianProfileNotFoundError)) {
@@ -62,7 +61,6 @@ func (u *RejectAdoptionGuardianProfileUseCase) Execute(ctx context.Context, inpu
 		return nil, []exceptions.ProblemDetails{problem}
 	}
 
-	// Verificar se está pendente
 	if profile.ApprovalStatus != entities.AdoptionGuardianApprovalStatuses.Pending {
 		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
 			Title:  "Perfil já foi analisado",
@@ -72,10 +70,8 @@ func (u *RejectAdoptionGuardianProfileUseCase) Execute(ctx context.Context, inpu
 		return nil, []exceptions.ProblemDetails{problem}
 	}
 
-	// Rejeitar
 	profile.Reject(input.ReviewedBy)
 
-	// Persistir
 	if err := u.guardianProfileRepo.Update(profile); err != nil {
 		problem := exceptions.NewProblemDetails(exceptions.InternalServerError, exceptions.ErrorMessage{
 			Title:  "Erro ao atualizar perfil",
@@ -87,12 +83,11 @@ func (u *RejectAdoptionGuardianProfileUseCase) Execute(ctx context.Context, inpu
 
 	u.logger.LogInfo(ctx, "RejectAdoptionGuardianProfileUseCase", "Perfil "+input.ProfileID+" rejeitado")
 
-	// Buscar email do usuário e enviar notificação
 	user, err := u.userRepository.FindByID(profile.UserID)
 	if err == nil {
 		if err := u.emailService.SendAdoptionGuardianProfileRejectedEmail(user.Login.Email, user.Name, input.Reason); err != nil {
 			u.logger.LogError(ctx, "RejectAdoptionGuardianProfileUseCase", "Erro ao enviar email de rejeição", err)
-			// Continue even if email fails (graceful degradation)
+
 		}
 	} else {
 		u.logger.LogError(ctx, "RejectAdoptionGuardianProfileUseCase", "Erro ao buscar usuário para enviar email", err)

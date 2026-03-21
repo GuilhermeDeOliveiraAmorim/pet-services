@@ -62,7 +62,6 @@ func NewCreateAdoptionApplicationUseCase(
 }
 
 func (u *CreateAdoptionApplicationUseCase) Execute(ctx context.Context, input CreateAdoptionApplicationInput) (*CreateAdoptionApplicationOutput, []exceptions.ProblemDetails) {
-	// Validar se anúncio existe e está publicado
 	listing, err := u.listingRepository.FindByID(input.ListingID)
 	if err != nil {
 		if errors.Is(err, errors.New(consts.AdoptionListingNotFoundError)) {
@@ -76,7 +75,6 @@ func (u *CreateAdoptionApplicationUseCase) Execute(ctx context.Context, input Cr
 		return nil, []exceptions.ProblemDetails{problem}
 	}
 
-	// Verificar se anúncio está publicado
 	if listing.Status != entities.AdoptionListingStatuses.Published {
 		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
 			Title:  "Anúncio não disponível",
@@ -86,10 +84,9 @@ func (u *CreateAdoptionApplicationUseCase) Execute(ctx context.Context, input Cr
 		return nil, []exceptions.ProblemDetails{problem}
 	}
 
-	// Verificar se usuário já se candidatou
 	_, err = u.applicationRepo.FindByListingIDAndApplicantUserID(input.ListingID, input.UserID)
 	if err == nil {
-		// Já existe candidatura
+
 		problem := exceptions.NewProblemDetails(exceptions.Conflict, exceptions.ErrorMessage{
 			Title:  "Candidatura duplicada",
 			Detail: "Você já se candidatou a este anúncio",
@@ -98,7 +95,6 @@ func (u *CreateAdoptionApplicationUseCase) Execute(ctx context.Context, input Cr
 		return nil, []exceptions.ProblemDetails{problem}
 	}
 
-	// Criar candidatura
 	application, problems := entities.NewAdoptionApplication(
 		input.ListingID,
 		input.UserID,
@@ -116,7 +112,6 @@ func (u *CreateAdoptionApplicationUseCase) Execute(ctx context.Context, input Cr
 		return nil, problems
 	}
 
-	// Persistir
 	if err := u.applicationRepo.Create(application); err != nil {
 		problem := exceptions.NewProblemDetails(exceptions.InternalServerError, exceptions.ErrorMessage{
 			Title:  "Erro ao criar candidatura",
@@ -128,22 +123,21 @@ func (u *CreateAdoptionApplicationUseCase) Execute(ctx context.Context, input Cr
 
 	u.logger.LogInfo(ctx, "CreateAdoptionApplicationUseCase", "Candidatura criada: "+application.ID)
 
-	// Buscar dados para envio de emails
 	applicantUser, err := u.userRepository.FindByID(input.UserID)
 	guardian, err2 := u.guardianRepository.FindByID(listing.GuardianProfileID)
 
 	if err == nil && applicantUser != nil {
-		// Enviar email ao candidato
+
 		if err := u.emailService.SendAdoptionApplicationSubmittedEmail(applicantUser.Login.Email, applicantUser.Name, listing.Title); err != nil {
 			u.logger.LogError(ctx, "CreateAdoptionApplicationUseCase", "Erro ao enviar email ao candidato", err)
 		}
 	}
 
 	if err2 == nil && guardian != nil {
-		// Buscar email do guardian
+
 		guardianUser, err := u.userRepository.FindByID(guardian.UserID)
 		if err == nil && guardianUser != nil && applicantUser != nil {
-			// Enviar email ao guardian
+
 			if err := u.emailService.SendAdoptionApplicationReceivedGuardianEmail(guardianUser.Login.Email, guardian.DisplayName, applicantUser.Name, listing.Title); err != nil {
 				u.logger.LogError(ctx, "CreateAdoptionApplicationUseCase", "Erro ao enviar email ao guardian", err)
 			}

@@ -327,7 +327,9 @@ func (h *ProviderHandler) DeleteProvider(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, output)
-} // GetProvider godoc
+}
+
+// GetProvider godoc
 // @Summary Obtém detalhes de um provedor
 // @Tags Provedores
 // @Accept json

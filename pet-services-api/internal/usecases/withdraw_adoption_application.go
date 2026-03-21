@@ -49,7 +49,6 @@ func NewWithdrawAdoptionApplicationUseCase(
 }
 
 func (u *WithdrawAdoptionApplicationUseCase) Execute(ctx context.Context, input WithdrawAdoptionApplicationInput) (*WithdrawAdoptionApplicationOutput, []exceptions.ProblemDetails) {
-	// Buscar candidatura
 	application, err := u.applicationRepo.FindByID(input.ApplicationID)
 	if err != nil {
 		if errors.Is(err, errors.New(consts.AdoptionApplicationNotFoundError)) {
@@ -63,12 +62,10 @@ func (u *WithdrawAdoptionApplicationUseCase) Execute(ctx context.Context, input 
 		return nil, []exceptions.ProblemDetails{problem}
 	}
 
-	// Verificar permissão (apenas o candidato pode desistir)
 	if application.ApplicantUserID != input.UserID {
 		return nil, u.logger.LogForbidden(ctx, "WithdrawAdoptionApplicationUseCase", "Permissão negada", errors.New("Apenas o candidato pode desistir desta candidatura"))
 	}
 
-	// Verificar se já foi rejeitada, aprovada, retirada
 	if application.Status == entities.AdoptionApplicationStatuses.Withdrawn ||
 		application.Status == entities.AdoptionApplicationStatuses.Approved ||
 		application.Status == entities.AdoptionApplicationStatuses.Rejected {
@@ -80,10 +77,8 @@ func (u *WithdrawAdoptionApplicationUseCase) Execute(ctx context.Context, input 
 		return nil, []exceptions.ProblemDetails{problem}
 	}
 
-	// Retirar candidatura
 	application.Withdraw()
 
-	// Persistir
 	if err := u.applicationRepo.Update(application); err != nil {
 		problem := exceptions.NewProblemDetails(exceptions.InternalServerError, exceptions.ErrorMessage{
 			Title:  "Erro ao atualizar candidatura",

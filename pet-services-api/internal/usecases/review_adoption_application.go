@@ -12,7 +12,7 @@ import (
 )
 
 type ReviewAdoptionApplicationInputBody struct {
-	Action        string `json:"action" binding:"required"` // under_review, interview, approve, reject
+	Action        string `json:"action" binding:"required"`
 	NotesInternal string `json:"notes_internal,omitempty"`
 }
 
@@ -55,7 +55,6 @@ func NewReviewAdoptionApplicationUseCase(
 }
 
 func (u *ReviewAdoptionApplicationUseCase) Execute(ctx context.Context, input ReviewAdoptionApplicationInput) (*ReviewAdoptionApplicationOutput, []exceptions.ProblemDetails) {
-	// Buscar candidatura
 	application, err := u.applicationRepo.FindByID(input.ApplicationID)
 	if err != nil {
 		if errors.Is(err, errors.New(consts.AdoptionApplicationNotFoundError)) {
@@ -69,7 +68,6 @@ func (u *ReviewAdoptionApplicationUseCase) Execute(ctx context.Context, input Re
 		return nil, []exceptions.ProblemDetails{problem}
 	}
 
-	// Validar ação
 	if input.Action == "" {
 		problem := exceptions.NewProblemDetails(exceptions.BadRequest, exceptions.ErrorMessage{
 			Title:  "Ação ausente",
@@ -79,7 +77,6 @@ func (u *ReviewAdoptionApplicationUseCase) Execute(ctx context.Context, input Re
 		return nil, []exceptions.ProblemDetails{problem}
 	}
 
-	// Aplicar ação
 	switch input.Action {
 	case "under_review":
 		application.MoveToUnderReview(input.ReviewerID)
@@ -98,7 +95,6 @@ func (u *ReviewAdoptionApplicationUseCase) Execute(ctx context.Context, input Re
 		return nil, []exceptions.ProblemDetails{problem}
 	}
 
-	// Persistir
 	if err := u.applicationRepo.Update(application); err != nil {
 		problem := exceptions.NewProblemDetails(exceptions.InternalServerError, exceptions.ErrorMessage{
 			Title:  "Erro ao atualizar candidatura",
@@ -110,7 +106,6 @@ func (u *ReviewAdoptionApplicationUseCase) Execute(ctx context.Context, input Re
 
 	u.logger.LogInfo(ctx, "ReviewAdoptionApplicationUseCase", "Candidatura "+input.ApplicationID+" movida para "+application.Status)
 
-	// Enviar emails baseado na ação
 	applicantUser, _ := u.userRepository.FindByID(application.ApplicantUserID)
 	listing, _ := u.listingRepo.FindByID(application.ListingID)
 
