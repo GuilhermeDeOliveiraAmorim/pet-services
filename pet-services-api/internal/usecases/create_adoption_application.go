@@ -8,6 +8,7 @@ import (
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
+	"pet-services-api/internal/mail"
 )
 
 type CreateAdoptionApplicationInputBody struct {
@@ -34,20 +35,29 @@ type CreateAdoptionApplicationOutput struct {
 }
 
 type CreateAdoptionApplicationUseCase struct {
-	listingRepository entities.AdoptionListingRepository
-	applicationRepo   entities.AdoptionApplicationRepository
-	logger            logging.LoggerInterface
+	listingRepository  entities.AdoptionListingRepository
+	guardianRepository entities.AdoptionGuardianProfileRepository
+	userRepository     entities.UserRepository
+	applicationRepo    entities.AdoptionApplicationRepository
+	emailService       mail.EmailService
+	logger             logging.LoggerInterface
 }
 
 func NewCreateAdoptionApplicationUseCase(
 	listingRepository entities.AdoptionListingRepository,
+	guardianRepository entities.AdoptionGuardianProfileRepository,
+	userRepository entities.UserRepository,
 	applicationRepo entities.AdoptionApplicationRepository,
+	emailService mail.EmailService,
 	logger logging.LoggerInterface,
 ) *CreateAdoptionApplicationUseCase {
 	return &CreateAdoptionApplicationUseCase{
-		listingRepository: listingRepository,
-		applicationRepo:   applicationRepo,
-		logger:            logger,
+		listingRepository:  listingRepository,
+		guardianRepository: guardianRepository,
+		userRepository:     userRepository,
+		applicationRepo:    applicationRepo,
+		emailService:       emailService,
+		logger:             logger,
 	}
 }
 
@@ -117,6 +127,28 @@ func (u *CreateAdoptionApplicationUseCase) Execute(ctx context.Context, input Cr
 	}
 
 	u.logger.LogInfo(ctx, "CreateAdoptionApplicationUseCase", "Candidatura criada: "+application.ID)
+
+	// Buscar dados para envio de emails
+	applicantUser, err := u.userRepository.FindByID(input.UserID)
+	guardian, err2 := u.guardianRepository.FindByID(listing.GuardianProfileID)
+
+	if err == nil && applicantUser != nil {
+		// Enviar email ao candidato
+		if err := u.emailService.SendAdoptionApplicationSubmittedEmail(applicantUser.Login.Email, applicantUser.Name, listing.Title); err != nil {
+			u.logger.LogError(ctx, "CreateAdoptionApplicationUseCase", "Erro ao enviar email ao candidato", err)
+		}
+	}
+
+	if err2 == nil && guardian != nil {
+		// Buscar email do guardian
+		guardianUser, err := u.userRepository.FindByID(guardian.UserID)
+		if err == nil && guardianUser != nil && applicantUser != nil {
+			// Enviar email ao guardian
+			if err := u.emailService.SendAdoptionApplicationReceivedGuardianEmail(guardianUser.Login.Email, guardian.DisplayName, applicantUser.Name, listing.Title); err != nil {
+				u.logger.LogError(ctx, "CreateAdoptionApplicationUseCase", "Erro ao enviar email ao guardian", err)
+			}
+		}
+	}
 
 	return &CreateAdoptionApplicationOutput{
 		ID:              application.ID,

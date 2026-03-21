@@ -8,6 +8,7 @@ import (
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
+	"pet-services-api/internal/mail"
 )
 
 type RejectAdoptionGuardianProfileInputBody struct {
@@ -27,15 +28,21 @@ type RejectAdoptionGuardianProfileOutput struct {
 
 type RejectAdoptionGuardianProfileUseCase struct {
 	guardianProfileRepo entities.AdoptionGuardianProfileRepository
+	userRepository      entities.UserRepository
+	emailService        mail.EmailService
 	logger              logging.LoggerInterface
 }
 
 func NewRejectAdoptionGuardianProfileUseCase(
 	guardianProfileRepo entities.AdoptionGuardianProfileRepository,
+	userRepository entities.UserRepository,
+	emailService mail.EmailService,
 	logger logging.LoggerInterface,
 ) *RejectAdoptionGuardianProfileUseCase {
 	return &RejectAdoptionGuardianProfileUseCase{
 		guardianProfileRepo: guardianProfileRepo,
+		userRepository:      userRepository,
+		emailService:        emailService,
 		logger:              logger,
 	}
 }
@@ -79,6 +86,17 @@ func (u *RejectAdoptionGuardianProfileUseCase) Execute(ctx context.Context, inpu
 	}
 
 	u.logger.LogInfo(ctx, "RejectAdoptionGuardianProfileUseCase", "Perfil "+input.ProfileID+" rejeitado")
+
+	// Buscar email do usuário e enviar notificação
+	user, err := u.userRepository.FindByID(profile.UserID)
+	if err == nil {
+		if err := u.emailService.SendAdoptionGuardianProfileRejectedEmail(user.Login.Email, user.Name, input.Reason); err != nil {
+			u.logger.LogError(ctx, "RejectAdoptionGuardianProfileUseCase", "Erro ao enviar email de rejeição", err)
+			// Continue even if email fails (graceful degradation)
+		}
+	} else {
+		u.logger.LogError(ctx, "RejectAdoptionGuardianProfileUseCase", "Erro ao buscar usuário para enviar email", err)
+	}
 
 	return &RejectAdoptionGuardianProfileOutput{
 		ID:             profile.ID,

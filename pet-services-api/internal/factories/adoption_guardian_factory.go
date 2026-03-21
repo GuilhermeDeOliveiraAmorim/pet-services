@@ -2,6 +2,7 @@ package factories
 
 import (
 	"pet-services-api/internal/logging"
+	"pet-services-api/internal/mail"
 	"pet-services-api/internal/repository_impl"
 	"pet-services-api/internal/usecases"
 
@@ -16,7 +17,7 @@ type AdoptionGuardianFactory struct {
 	RejectAdoptionGuardianProfile  *usecases.RejectAdoptionGuardianProfileUseCase
 }
 
-func NewAdoptionGuardianFactory(db *gorm.DB, logger logging.LoggerInterface) *AdoptionGuardianFactory {
+func NewAdoptionGuardianFactory(db *gorm.DB, mailService mail.EmailService, logger logging.LoggerInterface) *AdoptionGuardianFactory {
 	userRepo := repository_impl.NewUserRepository(db)
 	guardianProfileRepo := repository_impl.NewAdoptionGuardianProfileRepository(db)
 
@@ -24,7 +25,7 @@ func NewAdoptionGuardianFactory(db *gorm.DB, logger logging.LoggerInterface) *Ad
 		CreateAdoptionGuardianProfile:  usecases.NewCreateAdoptionGuardianProfileUseCase(userRepo, guardianProfileRepo, logger),
 		GetMyAdoptionGuardianProfile:   usecases.NewGetMyAdoptionGuardianProfileUseCase(guardianProfileRepo, logger),
 		UpdateAdoptionGuardianProfile:  usecases.NewUpdateAdoptionGuardianProfileUseCase(guardianProfileRepo, logger),
-		ApproveAdoptionGuardianProfile: usecases.NewApproveAdoptionGuardianProfileUseCase(guardianProfileRepo, logger),
-		RejectAdoptionGuardianProfile:  usecases.NewRejectAdoptionGuardianProfileUseCase(guardianProfileRepo, logger),
+		ApproveAdoptionGuardianProfile: usecases.NewApproveAdoptionGuardianProfileUseCase(guardianProfileRepo, userRepo, mailService, logger),
+		RejectAdoptionGuardianProfile:  usecases.NewRejectAdoptionGuardianProfileUseCase(guardianProfileRepo, userRepo, mailService, logger),
 	}
 }

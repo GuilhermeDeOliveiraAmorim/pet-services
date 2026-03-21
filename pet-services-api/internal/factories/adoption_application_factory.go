@@ -2,6 +2,7 @@ package factories
 
 import (
 	"pet-services-api/internal/logging"
+	"pet-services-api/internal/mail"
 	"pet-services-api/internal/repository_impl"
 	"pet-services-api/internal/usecases"
 
@@ -16,14 +17,19 @@ type AdoptionApplicationFactory struct {
 	WithdrawAdoptionApplication       *usecases.WithdrawAdoptionApplicationUseCase
 }
 
-func NewAdoptionApplicationFactory(db *gorm.DB, logger logging.LoggerInterface) *AdoptionApplicationFactory {
+func NewAdoptionApplicationFactory(db *gorm.DB, mailService mail.EmailService, logger logging.LoggerInterface) *AdoptionApplicationFactory {
 	listingRepo := repository_impl.NewAdoptionListingRepository(db)
 	applicationRepo := repository_impl.NewAdoptionApplicationRepository(db)
+	userRepo := repository_impl.NewUserRepository(db)
+	guardianRepo := repository_impl.NewAdoptionGuardianProfileRepository(db)
 
 	return &AdoptionApplicationFactory{
 		CreateAdoptionApplication: usecases.NewCreateAdoptionApplicationUseCase(
 			listingRepo,
+			guardianRepo,
+			userRepo,
 			applicationRepo,
+			mailService,
 			logger,
 		),
 		ListMyAdoptionApplications: usecases.NewListMyAdoptionApplicationsUseCase(
@@ -37,6 +43,9 @@ func NewAdoptionApplicationFactory(db *gorm.DB, logger logging.LoggerInterface) 
 		),
 		ReviewAdoptionApplication: usecases.NewReviewAdoptionApplicationUseCase(
 			applicationRepo,
+			listingRepo,
+			userRepo,
+			mailService,
 			logger,
 		),
 		WithdrawAdoptionApplication: usecases.NewWithdrawAdoptionApplicationUseCase(

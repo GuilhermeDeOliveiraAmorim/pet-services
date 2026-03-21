@@ -47,9 +47,9 @@ func NewHandlerFactory(inputFactory database.StorageInput, logger logging.Logger
 	requestFactory := factories.NewRequestFactory(inputFactory.DB, storageService, mailService, logger)
 	categoryFactory := factories.NewCategoryFactory(inputFactory.DB, logger)
 	reviewFactory := factories.NewReviewFactory(inputFactory.DB, mailService, logger)
-	adoptionGuardianFactory := factories.NewAdoptionGuardianFactory(inputFactory.DB, logger)
-	adoptionListingFactory := factories.NewAdoptionListingFactory(inputFactory.DB, logger)
-	adoptionApplicationFactory := factories.NewAdoptionApplicationFactory(inputFactory.DB, logger)
+	adoptionGuardianFactory := factories.NewAdoptionGuardianFactory(inputFactory.DB, mailService, logger)
+	adoptionListingFactory := factories.NewAdoptionListingFactory(inputFactory.DB, mailService, logger)
+	adoptionApplicationFactory := factories.NewAdoptionApplicationFactory(inputFactory.DB, mailService, logger)
 
 	return &HandlerFactory{
 		UserHandler:                NewUserHandler(userFactory, logger),

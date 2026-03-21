@@ -8,6 +8,7 @@ import (
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
+	"pet-services-api/internal/mail"
 )
 
 type MarkAdoptionListingAsAdoptedInput struct {
@@ -21,17 +22,29 @@ type MarkAdoptionListingAsAdoptedOutput struct {
 }
 
 type MarkAdoptionListingAsAdoptedUseCase struct {
-	listingRepository entities.AdoptionListingRepository
-	logger            logging.LoggerInterface
+	listingRepository     entities.AdoptionListingRepository
+	applicationRepository entities.AdoptionApplicationRepository
+	guardianRepository    entities.AdoptionGuardianProfileRepository
+	userRepository        entities.UserRepository
+	emailService          mail.EmailService
+	logger                logging.LoggerInterface
 }
 
 func NewMarkAdoptionListingAsAdoptedUseCase(
 	listingRepository entities.AdoptionListingRepository,
+	applicationRepository entities.AdoptionApplicationRepository,
+	guardianRepository entities.AdoptionGuardianProfileRepository,
+	userRepository entities.UserRepository,
+	emailService mail.EmailService,
 	logger logging.LoggerInterface,
 ) *MarkAdoptionListingAsAdoptedUseCase {
 	return &MarkAdoptionListingAsAdoptedUseCase{
-		listingRepository: listingRepository,
-		logger:            logger,
+		listingRepository:     listingRepository,
+		applicationRepository: applicationRepository,
+		guardianRepository:    guardianRepository,
+		userRepository:        userRepository,
+		emailService:          emailService,
+		logger:                logger,
 	}
 }
 
@@ -69,6 +82,41 @@ func (u *MarkAdoptionListingAsAdoptedUseCase) Execute(ctx context.Context, input
 	}
 
 	u.logger.LogInfo(ctx, "MarkAdoptionListingAsAdoptedUseCase", "Anúncio "+input.ListingID+" marcado como adotado")
+
+	// Enviar emails de celebração
+	go func() {
+		// Email ao guardian
+		guardian, err := u.guardianRepository.FindByID(listing.GuardianProfileID)
+		if err == nil && guardian != nil {
+			guardianUser, err := u.userRepository.FindByID(guardian.UserID)
+			if err == nil && guardianUser != nil {
+				if err := u.emailService.SendPetAdoptedGuardianEmail(guardianUser.Login.Email, guardianUser.Name, listing.Title); err != nil {
+					u.logger.LogError(ctx, "MarkAdoptionListingAsAdoptedUseCase", "Erro ao enviar email ao guardian", err)
+				}
+			}
+		}
+
+		// Buscar e enviar emails aos candidatos
+		applications, _, err := u.applicationRepository.ListByListingID(listing.ID, 1, 100)
+		if err == nil && applications != nil {
+			for _, app := range applications {
+				applicantUser, err := u.userRepository.FindByID(app.ApplicantUserID)
+				if err == nil && applicantUser != nil {
+					if app.Status == "accepted" {
+						// Email ao candidato aprovado (adotou)
+						if err := u.emailService.SendPetAdoptedApplicantEmail(applicantUser.Login.Email, applicantUser.Name, listing.Title); err != nil {
+							u.logger.LogError(ctx, "MarkAdoptionListingAsAdoptedUseCase", "Erro ao enviar email ao adotante", err)
+						}
+					} else if app.Status != "rejected" && app.Status != "withdrawn" {
+						// Email aos outros candidatos (listem) que não foram os escolhidos
+						if err := u.emailService.SendPetAdoptedRejectedApplicantsEmail(applicantUser.Login.Email, listing.Title); err != nil {
+							u.logger.LogError(ctx, "MarkAdoptionListingAsAdoptedUseCase", "Erro ao enviar email aos candidatos não selecionados", err)
+						}
+					}
+				}
+			}
+		}
+	}()
 
 	return &MarkAdoptionListingAsAdoptedOutput{
 		ID:     listing.ID,

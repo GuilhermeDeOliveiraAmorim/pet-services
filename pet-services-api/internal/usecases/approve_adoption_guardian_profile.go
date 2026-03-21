@@ -8,6 +8,7 @@ import (
 	"pet-services-api/internal/entities"
 	"pet-services-api/internal/exceptions"
 	"pet-services-api/internal/logging"
+	"pet-services-api/internal/mail"
 )
 
 type ApproveAdoptionGuardianProfileInput struct {
@@ -22,15 +23,21 @@ type ApproveAdoptionGuardianProfileOutput struct {
 
 type ApproveAdoptionGuardianProfileUseCase struct {
 	guardianProfileRepo entities.AdoptionGuardianProfileRepository
+	userRepository      entities.UserRepository
+	emailService        mail.EmailService
 	logger              logging.LoggerInterface
 }
 
 func NewApproveAdoptionGuardianProfileUseCase(
 	guardianProfileRepo entities.AdoptionGuardianProfileRepository,
+	userRepository entities.UserRepository,
+	emailService mail.EmailService,
 	logger logging.LoggerInterface,
 ) *ApproveAdoptionGuardianProfileUseCase {
 	return &ApproveAdoptionGuardianProfileUseCase{
 		guardianProfileRepo: guardianProfileRepo,
+		userRepository:      userRepository,
+		emailService:        emailService,
 		logger:              logger,
 	}
 }
@@ -74,6 +81,17 @@ func (u *ApproveAdoptionGuardianProfileUseCase) Execute(ctx context.Context, inp
 	}
 
 	u.logger.LogInfo(ctx, "ApproveAdoptionGuardianProfileUseCase", "Perfil "+input.ProfileID+" aprovado")
+
+	// Buscar email do usuário e enviar notificação
+	user, err := u.userRepository.FindByID(profile.UserID)
+	if err == nil {
+		if err := u.emailService.SendAdoptionGuardianProfileApprovedEmail(user.Login.Email, user.Name); err != nil {
+			u.logger.LogError(ctx, "ApproveAdoptionGuardianProfileUseCase", "Erro ao enviar email de aprovação", err)
+			// Continue even if email fails (graceful degradation)
+		}
+	} else {
+		u.logger.LogError(ctx, "ApproveAdoptionGuardianProfileUseCase", "Erro ao buscar usuário para enviar email", err)
+	}
 
 	return &ApproveAdoptionGuardianProfileOutput{
 		ID:             profile.ID,
