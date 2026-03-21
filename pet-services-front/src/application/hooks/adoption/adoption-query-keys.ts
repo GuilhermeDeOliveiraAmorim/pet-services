@@ -25,4 +25,5 @@ export const ADOPTION_KEYS = {
     [...ADOPTION_KEYS.listingApplicationsLists(), input] as const,
   myGuardianProfile: () =>
     [...ADOPTION_KEYS.all, "my-guardian-profile"] as const,
+  management: () => [...ADOPTION_KEYS.all, "management"] as const,
 } as const;
