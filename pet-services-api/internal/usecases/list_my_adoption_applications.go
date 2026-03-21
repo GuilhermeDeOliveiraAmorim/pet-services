@@ -45,7 +45,6 @@ func NewListMyAdoptionApplicationsUseCase(
 }
 
 func (u *ListMyAdoptionApplicationsUseCase) Execute(ctx context.Context, input ListMyAdoptionApplicationsInput) (*ListMyAdoptionApplicationsOutput, []exceptions.ProblemDetails) {
-	// Validar paginação
 	if input.Page < 1 {
 		input.Page = 1
 	}

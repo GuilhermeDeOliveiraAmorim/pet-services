@@ -62,7 +62,7 @@ func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 		return
 	}
 
-	input.IsAdmin = true // Garantido pelo middleware
+	input.IsAdmin = true
 
 	output, errs := h.CategoryFactory.CreateCategory.Execute(ctx, input)
 	if len(errs) > 0 {

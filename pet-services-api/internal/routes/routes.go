@@ -60,21 +60,18 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 
 	r := gin.Default()
 
-	// Desabilitar redirecionamento automático de trailing slash para evitar problemas com CORS
 	r.RedirectTrailingSlash = false
 
 	corsOrigins := config.GetCORSOrigins()
 	allowOrigins := []string{}
 
 	if corsOrigins != "" {
-		// Split CORS_ORIGINS by comma
 		for _, origin := range splitAndTrim(corsOrigins, ",") {
 			if origin != "" {
 				allowOrigins = append(allowOrigins, origin)
 			}
 		}
 	} else {
-		// Fallback to old env vars
 		devURL, prodURL := config.GetFrontendURLs()
 		if devURL != "" {
 			allowOrigins = append(allowOrigins, devURL)
@@ -160,7 +157,6 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		publicReference.GET("/cities", handlerFactory.ReferenceHandler.ListCities)
 	}
 
-	// Rotas utilitárias públicas - sem autenticação
 	publicUtil := r.Group("/util")
 	{
 		publicUtil.GET("/species", handlerFactory.SpecieHandler.ListSpecies)
@@ -246,7 +242,6 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	r.GET("/adoption/listings", handlerFactory.AdoptionListingHandler.ListPublicAdoptionListings)
 	r.GET("/adoption/listings/:listing_id", handlerFactory.AdoptionListingHandler.GetPublicAdoptionListing)
 
-	// Rotas protegidas para candidaturas
 	adoptionApplications := r.Group("/adoption/applications")
 	adoptionApplications.Use(middlewareFactory.AuthMiddleware())
 	{

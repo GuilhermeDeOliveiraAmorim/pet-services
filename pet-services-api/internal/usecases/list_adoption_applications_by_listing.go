@@ -40,7 +40,6 @@ func NewListAdoptionApplicationsByListingUseCase(
 }
 
 func (u *ListAdoptionApplicationsByListingUseCase) Execute(ctx context.Context, input ListAdoptionApplicationsByListingInput) (*ListAdoptionApplicationsByListingOutput, []exceptions.ProblemDetails) {
-	// Validar se anúncio existe
 	_, err := u.listingRepository.FindByID(input.ListingID)
 	if err != nil {
 		if errors.Is(err, errors.New(consts.AdoptionListingNotFoundError)) {
@@ -54,7 +53,6 @@ func (u *ListAdoptionApplicationsByListingUseCase) Execute(ctx context.Context, 
 		return nil, []exceptions.ProblemDetails{problem}
 	}
 
-	// Validar paginação
 	if input.Page < 1 {
 		input.Page = 1
 	}

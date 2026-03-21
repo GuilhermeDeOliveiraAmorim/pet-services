@@ -44,12 +44,17 @@ func NewAdoptionApplicationFactory(db *gorm.DB, mailService mail.EmailService, l
 		ReviewAdoptionApplication: usecases.NewReviewAdoptionApplicationUseCase(
 			applicationRepo,
 			listingRepo,
+			guardianRepo,
 			userRepo,
 			mailService,
 			logger,
 		),
 		WithdrawAdoptionApplication: usecases.NewWithdrawAdoptionApplicationUseCase(
 			applicationRepo,
+			listingRepo,
+			guardianRepo,
+			userRepo,
+			mailService,
 			logger,
 		),
 	}

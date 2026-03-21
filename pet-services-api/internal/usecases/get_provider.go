@@ -80,7 +80,6 @@ func (uc *GetProviderUseCase) Execute(ctx context.Context, input GetProviderInpu
 		return nil, uc.logger.LogBadRequest(ctx, from, "Provedor inativo", errors.New("O provedor informado está inativo"))
 	}
 
-	// Assinar fotos do provedor
 	if len(provider.Photos) > 0 {
 		for i := range provider.Photos {
 			key := provider.Photos[i].URL
@@ -101,7 +100,6 @@ func (uc *GetProviderUseCase) Execute(ctx context.Context, input GetProviderInpu
 		return nil, uc.logger.LogInternalServerError(ctx, from, "Erro ao listar serviços do provedor", err)
 	}
 
-	// Assinar fotos dos serviços
 	for i := range services {
 		if len(services[i].Photos) == 0 {
 			continue
