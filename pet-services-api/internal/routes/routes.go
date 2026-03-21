@@ -54,7 +54,9 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 	handlerFactory := handlers.NewHandlerFactory(storageInput, logger)
 	middlewareFactory := middlewares.NewMiddlewareFactory(logger)
 	userRepo := repository_impl.NewUserRepository(storageInput.DB)
+	guardianRepo := repository_impl.NewAdoptionGuardianProfileRepository(storageInput.DB)
 	profileComplete := middlewares.ProfileCompleteMiddleware(logger, userRepo)
+	guardianApproved := middlewareFactory.AdoptionGuardianApprovedMiddleware(guardianRepo)
 
 	r := gin.Default()
 
@@ -232,6 +234,16 @@ func SetupRouter(storageInput database.StorageInput, ctx context.Context, logger
 		authorizedAdmin.POST("", handlerFactory.UserHandler.CreateAdmin)
 		authorizedAdmin.POST("/categories", handlerFactory.CategoryHandler.CreateCategory)
 	}
+
+	adoptionGuardian := r.Group("/adoption/guardian-profile")
+	adoptionGuardian.Use(middlewareFactory.AuthMiddleware(), profileComplete)
+	{
+		adoptionGuardian.POST("", handlerFactory.AdoptionGuardianHandler.CreateAdoptionGuardianProfile)
+		adoptionGuardian.GET("/me", handlerFactory.AdoptionGuardianHandler.GetMyAdoptionGuardianProfile)
+		adoptionGuardian.PUT("/me", handlerFactory.AdoptionGuardianHandler.UpdateAdoptionGuardianProfile)
+	}
+
+	_ = guardianApproved
 
 	return r
 }

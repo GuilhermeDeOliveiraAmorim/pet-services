@@ -25,6 +25,12 @@ func Migration20260110000000(db *gorm.DB) error {
 	)
 }
 
+func Migration20260321000000(db *gorm.DB) error {
+	return db.AutoMigrate(
+		&models.AdoptionGuardianProfile{},
+	)
+}
+
 func Migration20260215000000(db *gorm.DB) error {
 	return db.AutoMigrate(
 		&models.RefreshToken{},

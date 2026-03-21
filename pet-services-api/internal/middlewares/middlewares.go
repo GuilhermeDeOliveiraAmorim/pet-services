@@ -155,3 +155,46 @@ func ProfileCompleteMiddleware(logger logging.LoggerInterface, userRepository en
 		c.AbortWithStatusJSON(http.StatusForbidden, problem)
 	}
 }
+
+func AdoptionGuardianApprovedMiddleware(logger logging.LoggerInterface, guardianRepo entities.AdoptionGuardianProfileRepository) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userID, exists := c.Get("user_id")
+		if !exists {
+			abortUnauthorized(c, "Usuário não autenticado", "Não foi possível obter o ID do usuário autenticado", logger)
+			return
+		}
+
+		profile, err := guardianRepo.FindByUserID(userID.(string))
+		if err != nil {
+			if err.Error() == consts.AdoptionGuardianProfileNotFoundError {
+				problem := exceptions.NewProblemDetails(exceptions.Forbidden, exceptions.ErrorMessage{
+					Title:  "Perfil de responsável não encontrado",
+					Detail: "Você precisa criar e ter seu perfil de responsável por adoção aprovado para realizar esta ação",
+				})
+				logger.LogError(c.Request.Context(), "AdoptionGuardianApprovedMiddleware", problem.Detail, errors.New(problem.Detail))
+				c.AbortWithStatusJSON(http.StatusForbidden, problem)
+				return
+			}
+			problem := exceptions.NewProblemDetails(exceptions.InternalServerError, exceptions.ErrorMessage{
+				Title:  "Erro ao verificar perfil",
+				Detail: "Não foi possível verificar o perfil de responsável por adoção",
+			})
+			logger.LogError(c.Request.Context(), "AdoptionGuardianApprovedMiddleware", problem.Detail, err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, problem)
+			return
+		}
+
+		if profile.ApprovalStatus != entities.AdoptionGuardianApprovalStatuses.Approved {
+			problem := exceptions.NewProblemDetails(exceptions.Forbidden, exceptions.ErrorMessage{
+				Title:  "Perfil não aprovado",
+				Detail: "Seu perfil de responsável por adoção ainda não foi aprovado. Aguarde a análise da equipe",
+			})
+			logger.LogError(c.Request.Context(), "AdoptionGuardianApprovedMiddleware", problem.Detail, errors.New(problem.Detail))
+			c.AbortWithStatusJSON(http.StatusForbidden, problem)
+			return
+		}
+
+		c.Set("guardian_profile_id", profile.ID)
+		c.Next()
+	}
+}

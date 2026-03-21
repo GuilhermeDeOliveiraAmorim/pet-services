@@ -13,19 +13,20 @@ import (
 )
 
 type HandlerFactory struct {
-	UserHandler      *UserHandler
-	TokenHandler     *TokenHandler
-	HealthHandler    *HealthHandler
-	ReferenceHandler *ReferenceHandler
-	SpecieHandler    *SpecieHandler
-	BreedHandler     *BreedHandler
-	PetHandler       *PetHandler
-	ProviderHandler  *ProviderHandler
-	ServiceHandler   *ServiceHandler
-	RequestHandler   *RequestHandler
-	CategoryHandler  *CategoryHandler
-	ReviewHandler    *ReviewHandler
-	Logger           logging.LoggerInterface
+	UserHandler             *UserHandler
+	TokenHandler            *TokenHandler
+	HealthHandler           *HealthHandler
+	ReferenceHandler        *ReferenceHandler
+	SpecieHandler           *SpecieHandler
+	BreedHandler            *BreedHandler
+	PetHandler              *PetHandler
+	ProviderHandler         *ProviderHandler
+	ServiceHandler          *ServiceHandler
+	RequestHandler          *RequestHandler
+	CategoryHandler         *CategoryHandler
+	ReviewHandler           *ReviewHandler
+	AdoptionGuardianHandler *AdoptionGuardianHandler
+	Logger                  logging.LoggerInterface
 }
 
 func NewHandlerFactory(inputFactory database.StorageInput, logger logging.LoggerInterface) *HandlerFactory {
@@ -44,21 +45,23 @@ func NewHandlerFactory(inputFactory database.StorageInput, logger logging.Logger
 	requestFactory := factories.NewRequestFactory(inputFactory.DB, storageService, mailService, logger)
 	categoryFactory := factories.NewCategoryFactory(inputFactory.DB, logger)
 	reviewFactory := factories.NewReviewFactory(inputFactory.DB, mailService, logger)
+	adoptionGuardianFactory := factories.NewAdoptionGuardianFactory(inputFactory.DB, logger)
 
 	return &HandlerFactory{
-		UserHandler:      NewUserHandler(userFactory, logger),
-		TokenHandler:     NewTokenHandler(tokenFactory, logger),
-		HealthHandler:    NewHealthHandler(healthFactory, logger),
-		ReferenceHandler: NewReferenceHandler(referenceFactory, logger),
-		SpecieHandler:    NewSpecieHandler(specieFactory, logger),
-		BreedHandler:     NewBreedHandler(breedFactory, logger),
-		PetHandler:       NewPetHandler(petFactory, logger),
-		ProviderHandler:  NewProviderHandler(providerFactory, logger),
-		ServiceHandler:   NewServiceHandler(serviceFactory, logger),
-		RequestHandler:   NewRequestHandler(requestFactory, logger),
-		CategoryHandler:  NewCategoryHandler(categoryFactory, logger),
-		ReviewHandler:    NewReviewHandler(reviewFactory, logger),
-		Logger:           logger,
+		UserHandler:             NewUserHandler(userFactory, logger),
+		TokenHandler:            NewTokenHandler(tokenFactory, logger),
+		HealthHandler:           NewHealthHandler(healthFactory, logger),
+		ReferenceHandler:        NewReferenceHandler(referenceFactory, logger),
+		SpecieHandler:           NewSpecieHandler(specieFactory, logger),
+		BreedHandler:            NewBreedHandler(breedFactory, logger),
+		PetHandler:              NewPetHandler(petFactory, logger),
+		ProviderHandler:         NewProviderHandler(providerFactory, logger),
+		ServiceHandler:          NewServiceHandler(serviceFactory, logger),
+		RequestHandler:          NewRequestHandler(requestFactory, logger),
+		CategoryHandler:         NewCategoryHandler(categoryFactory, logger),
+		ReviewHandler:           NewReviewHandler(reviewFactory, logger),
+		AdoptionGuardianHandler: NewAdoptionGuardianHandler(adoptionGuardianFactory, logger),
+		Logger:                  logger,
 	}
 }
 func initializeStorageService(logger logging.LoggerInterface) storage.ObjectStorage {
